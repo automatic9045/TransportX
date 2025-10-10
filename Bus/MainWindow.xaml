@@ -1,0 +1,37 @@
+﻿<Window x:Class="Bus.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:ri="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+        xmlns:local="clr-namespace:Bus"
+        xmlns:components="clr-namespace:Bus.Components"
+        xmlns:behaviors="clr-namespace:Bus.Components.Behaviors"
+        xmlns:vm="clr-namespace:Bus.ViewModels"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="KeyDown">
+            <ri:EventToReactiveCommand Command="{Binding KeyDownCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="KeyUp">
+            <ri:EventToReactiveCommand Command="{Binding KeyUpCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="MouseWheel">
+            <ri:EventToReactiveCommand Command="{Binding MouseWheelCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <i:Interaction.Behaviors>
+        <behaviors:DetectDragBehavior Offset="{Binding MouseDragOffset.Value, Mode=OneWayToSource}"/>
+    </i:Interaction.Behaviors>
+    <Grid>
+        <components:D3D11Window DXHost="{Binding DXHost.Value}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Rendering">
+                    <ri:EventToReactiveCommand Command="{Binding RenderingCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </components:D3D11Window>
+    </Grid>
+</Window>

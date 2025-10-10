@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+
+using Bus.Common.Worlds;
+
+using Bus.Common.Scripting.Commands;
+
+namespace Bus.Common.Scripting
+{
+    public class ScriptWorld : WorldBase
+    {
+        internal static readonly ScriptOptions ScriptOptions = ScriptOptions.Default
+            .AddReferences(typeof(MessageBox).Assembly)
+            .AddReferences(typeof(Matrix4x4).Assembly)
+            .AddReferences(typeof(WorldBase).Assembly)
+            .AddReferences(typeof(ScriptWorld).Assembly)
+            .AddImports("System", "System.Collections.Generic", "System.Linq", "System.Numerics", "System.Text")
+            .AddImports(typeof(MessageBox).Namespace!)
+            .AddImports(GetAllNamespaces(typeof(WorldBase).Assembly))
+            .AddImports(GetAllNamespaces(typeof(ScriptWorld).Assembly));
+
+        private static IEnumerable<string> GetAllNamespaces(Assembly assembly)
+        {
+            return assembly.GetTypes()
+                .Select(t => t.Namespace ?? string.Empty)
+                .Where(n => n != string.Empty)
+                .Distinct();
+        }
+
+
+        public override IModelCollection Models { get; } = new ModelCollection();
+
+        public string ScriptPath { get; }
+        internal Commander Commander { get; }
+
+        public ScriptWorld(WorldBuilder builder) : base(builder)
+        {
+            if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
+
+            ScriptPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Args[0]));
+            BaseDirectory = Path.GetDirectoryName(ScriptPath)!;
+
+            Commander = new Commander(this);
+
+            string code = File.ReadAllText(ScriptPath);
+            ScriptOptions options = ScriptOptions.WithFilePath(ScriptPath);
+            CSharpScript.RunAsync(code, options, Commander).Wait();
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            Commander.Dispose();
+        }
+
+        public override void ComputeTick(TimeSpan elapsed)
+        {
+        }
+
+        public override void Tick(TimeSpan elapsed)
+        {
+            Commander.Triggers.Tick(elapsed);
+        }
+    }
+}

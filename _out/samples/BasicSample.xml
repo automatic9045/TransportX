@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<WorldInfo>
+    <Title>サンプルワールド</Title>
+    <Description>動作確認用のワールドです。</Description>
+    <Author>automatic9045</Author>
+    <Path>$(bin)\Bus.Common.Scripting.dll</Path>
+    <!--<Path>D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll</Path>-->
+    <Args>
+        <Arg>BasicSample\World.csx</Arg>
+    </Args>
+</WorldInfo>
