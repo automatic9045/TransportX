@@ -4,9 +4,11 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
 using Vortice.Direct3D11;
 
 using Bus.Common.Input;
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
 namespace Bus.Common.Vehicles
@@ -18,6 +20,7 @@ namespace Bus.Common.Vehicles
         public abstract string Author { get; }
 
         public IDXHost DXHost { get; }
+        public IPhysicsHost PhysicsHost { get; }
         public ITimeManager TimeManager { get; }
         public InputManager InputManager { get; }
         public Camera Camera { get; }
@@ -25,6 +28,7 @@ namespace Bus.Common.Vehicles
         public VehicleBase(VehicleBuilder builder) : base()
         {
             DXHost = builder.DXHost;
+            PhysicsHost = builder.PhysicsHost;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
             Camera = builder.Camera;

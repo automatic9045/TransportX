@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Input;
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
 namespace Bus.Common.Vehicles
@@ -15,6 +16,7 @@ namespace Bus.Common.Vehicles
     public class VehicleBuilder
     {
         public required IDXHost DXHost { get; init; }
+        public required IPhysicsHost PhysicsHost { get; init; }
         public required ITimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }

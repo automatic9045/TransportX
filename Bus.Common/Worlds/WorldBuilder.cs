@@ -6,7 +6,9 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
+
 using Bus.Common.Input;
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
 namespace Bus.Common.Worlds
@@ -16,6 +18,7 @@ namespace Bus.Common.Worlds
         public IWorldInfo Info { get; }
 
         public required IDXHost DXHost { get; init; }
+        public required IPhysicsHost PhysicsHost { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }

@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Bus.Common.Input;
 using Bus.Common.Rendering;
+using Bus.Common.Physics;
 using Bus.Common.Scenery;
 
 namespace Bus.Common.Worlds
@@ -14,6 +16,7 @@ namespace Bus.Common.Worlds
     {
         public IWorldInfo Info { get; }
         public IDXHost DXHost { get; }
+        public IPhysicsHost PhysicsHost { get; }
         public TimeManager TimeManager { get; }
         public InputManager InputManager { get; }
         public Camera Camera { get; }
@@ -30,6 +33,7 @@ namespace Bus.Common.Worlds
         {
             Info = builder.Info;
             DXHost = builder.DXHost;
+            PhysicsHost = builder.PhysicsHost;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
             Camera = builder.Camera;

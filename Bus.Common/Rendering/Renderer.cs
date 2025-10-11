@@ -6,12 +6,17 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+
+using BepuPhysics;
+using BepuUtilities.Memory;
+
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
 using Bus.Common.Input;
+using Bus.Common.Physics;
 using Bus.Common.Vehicles;
 using Bus.Common.Worlds;
 
@@ -20,6 +25,7 @@ namespace Bus.Common.Rendering
     public class Renderer : IRenderer
     {
         protected readonly IDXHost DXHost;
+        protected readonly PhysicsHost PhysicsHost;
 
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
@@ -44,6 +50,7 @@ namespace Bus.Common.Rendering
         public Renderer(IDXHost dxHost, IWorldInfo worldInfo)
         {
             DXHost = dxHost;
+            PhysicsHost = PhysicsHost.Create();
 
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
@@ -146,6 +153,7 @@ namespace Bus.Common.Rendering
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
             {
                 DXHost = DXHost,
+                PhysicsHost = PhysicsHost,
                 TimeManager = TimeManager,
                 InputManager = InputManager,
                 Camera = Camera,
@@ -160,6 +168,7 @@ namespace Bus.Common.Rendering
             VehicleBuilder vehicleBuilder = new VehicleBuilder()
             {
                 DXHost = DXHost,
+                PhysicsHost = PhysicsHost,
                 TimeManager = TimeManager,
                 InputManager = InputManager,
                 Camera = Camera,
@@ -171,6 +180,11 @@ namespace Bus.Common.Rendering
 
         public virtual void Dispose()
         {
+            World.Dispose();
+            Vehicle?.Dispose();
+
+            PhysicsHost.Dispose();
+
             VertexShader.Dispose();
             PixelShader.Dispose();
             InputLayout.Dispose();
@@ -178,9 +192,6 @@ namespace Bus.Common.Rendering
             TextureSamplerState.Dispose();
             RasterizerState.Dispose();
             BlendState.Dispose();
-
-            World.Dispose();
-            Vehicle?.Dispose();
         }
 
         public virtual void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
@@ -210,6 +221,8 @@ namespace Bus.Common.Rendering
         {
             World.ComputeTick(elapsed);
             Vehicle?.ComputeTick(elapsed);
+
+            PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds);
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
