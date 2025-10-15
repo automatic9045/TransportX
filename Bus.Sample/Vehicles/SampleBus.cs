@@ -6,10 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-using BepuPhysics;
-using BepuPhysics.Collidables;
-
-using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Vehicles;
@@ -37,7 +33,7 @@ namespace Bus.Sample.Vehicles
 
             ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation);
             CollidableModel model = modelFactory.FromFile(@"Bus\Bus.obj");
-            AttachModel(model, (float)Spec.Weight);
+            _ = AttachModel(model, (float)Spec.Weight, Matrix4x4.Identity);
 
             SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice);
             Inputs = [new KeyboardInput(InputManager)];
@@ -47,7 +43,7 @@ namespace Bus.Sample.Vehicles
 
         public override void Dispose()
         {
-            Model.Model.Dispose();
+            foreach (DynamicLocatedModel model in Models) model.Model.Dispose();
             Drives.Dispose();
         }
 

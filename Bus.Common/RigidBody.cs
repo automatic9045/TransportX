@@ -6,9 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
-using BepuPhysics.Collidables;
 
-using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 
@@ -16,15 +14,10 @@ namespace Bus.Common
 {
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
-        protected readonly Simulation Simulation;
+        private readonly Simulation Simulation;
 
-        public bool IsModelAttached { get; private set; } = false;
-
-        private LocatedModel ModelKey = new LocatedModel(Rendering.Model.Empty, Matrix4x4.Identity);
-        public LocatedModel Model => IsModelAttached ? ModelKey : throw new InvalidOperationException("まだモデルがアタッチされていません。");
-
-        private BodyHandle HandleKey = default;
-        public BodyHandle Handle => IsModelAttached ? HandleKey : throw new InvalidOperationException("まだモデルがアタッチされていません。");
+        private readonly List<DynamicLocatedModel> ModelsKey = new List<DynamicLocatedModel>();
+        public IReadOnlyList<DynamicLocatedModel> Models => ModelsKey;
 
         public RigidBody(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
         {
@@ -43,34 +36,26 @@ namespace Bus.Common
         {
         }
 
-        public void AttachModel(ICollidableModel model, float mass)
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 locator)
         {
-            if (IsModelAttached) throw new InvalidOperationException("既にモデルがアタッチされています。");
+            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(Simulation, model, mass, locator);
+            locatedModel.Locator = locatedModel.InitialLocator * Locator;
 
-            ModelKey = new LocatedModel(model, Locator);
-
-            BodyInertia inertia = model.Collider.ComputeInertia(mass);
-            BodyDescription desc = BodyDescription.CreateDynamic(Locator.ToRigidPose(), inertia, model.Collider.ShapeIndex, 0.001f);
-            HandleKey = Simulation.Bodies.Add(desc);
-
-            IsModelAttached = true;
+            ModelsKey.Add(locatedModel);
+            return locatedModel;
         }
 
         public virtual void ComputeTick(TimeSpan elapsed)
         {
-            if (!IsModelAttached) return;
+            if (Models.Count == 0) return;
 
-            BodyReference bodyRef = Simulation.Bodies[Handle];
-            ICollider collider = ((ICollidableModel)Model.Model).Collider;
+            foreach (DynamicLocatedModel model in Models) model.SyncLocator();
 
-            Matrix4x4 locator = collider.TransformInverse * bodyRef.Pose.ToMatrix4x4();
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, locator);
-
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, Models[0].InitialLocatorInverse * Models[0].Locator);
             if (!plateOffset.IsZero)
             {
-                bodyRef.Pose = (collider.Transform * Locator).ToRigidPose();
+                foreach (DynamicLocatedModel model in Models) model.Locator = model.InitialLocator * Locator;
             }
-            Model.Locator = Locator;
         }
 
         public virtual void Tick(TimeSpan elapsed)
@@ -79,7 +64,7 @@ namespace Bus.Common
 
         public virtual void Draw(DrawContext context)
         {
-            Model.Draw(context);
+            foreach (DynamicLocatedModel model in Models) model.Draw(context);
         }
     }
 }
