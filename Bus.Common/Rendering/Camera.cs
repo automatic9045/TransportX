@@ -97,13 +97,18 @@ namespace Bus.Common.Rendering
             }
         }
 
-        public void DrawVehicles(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, VehicleBase vehicle, GdiSize clientSize)
+        public void DrawBodies(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, IEnumerable<RigidBody> bodies, GdiSize clientSize)
         {
             UpdateLocation();
 
-            PlateOffset plateOffset = new PlateOffset(vehicle.PlateX - PlateX, vehicle.PlateZ - PlateZ);
-            DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, CreateProjection(clientSize));
-            vehicle.Draw(drawContext);
+            Matrix4x4 projection = CreateProjection(clientSize);
+
+            foreach (RigidBody body in bodies)
+            {
+                PlateOffset plateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ);
+                DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, projection);
+                body.Draw(drawContext);
+            }
         }
 
         protected void UpdateLocation()

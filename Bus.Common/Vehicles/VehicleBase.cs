@@ -30,7 +30,5 @@ namespace Bus.Common.Vehicles
             InputManager = builder.InputManager;
             Camera = builder.Camera;
         }
-
-        public abstract void Tick(TimeSpan elapsed);
     }
 }

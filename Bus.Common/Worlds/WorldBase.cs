@@ -28,6 +28,7 @@ namespace Bus.Common.Worlds
 
         public List<LocatedModel> BackgroundModels { get; } = new List<LocatedModel>();
         public PlateCollection Plates { get; } = new PlateCollection();
+        public List<RigidBody> Bodies { get; } = new List<RigidBody>();
 
         public WorldBase(WorldBuilder builder)
         {
@@ -44,14 +45,19 @@ namespace Bus.Common.Worlds
 
         public virtual void Dispose()
         {
+            foreach (RigidBody body in Bodies) body.Dispose();
             Models.Dispose();
         }
 
         public virtual void ComputeTick(TimeSpan elapsed)
         {
             Plates.ComputeTick(Camera.PlateX, Camera.PlateZ);
+            foreach (RigidBody body in Bodies) body.ComputeTick(elapsed);
         }
 
-        public abstract void Tick(TimeSpan elapsed);
+        public virtual void Tick(TimeSpan elapsed)
+        {
+            foreach (RigidBody body in Bodies) body.Tick(elapsed);
+        }
     }
 }

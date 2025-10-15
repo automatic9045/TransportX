@@ -143,7 +143,9 @@ namespace Bus.Common.Rendering
             };
 
             World = LoadWorld(worldInfo);
+
             Vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
+            World.Bodies.Add(Vehicle);
 
             Camera.Viewpoint = new AttachableObject(Vehicle, Matrix4x4.CreateTranslation(0.67f, 2, -1.3f));
         }
@@ -181,7 +183,6 @@ namespace Bus.Common.Rendering
         public virtual void Dispose()
         {
             World.Dispose();
-            Vehicle?.Dispose();
 
             PhysicsHost.Dispose();
 
@@ -220,7 +221,6 @@ namespace Bus.Common.Rendering
         protected virtual void OnComputeTick(TimeSpan elapsed)
         {
             World.ComputeTick(elapsed);
-            Vehicle?.ComputeTick(elapsed);
 
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds);
         }
@@ -228,7 +228,6 @@ namespace Bus.Common.Rendering
         protected virtual void OnTick(TimeSpan elapsed)
         {
             World.Tick(elapsed);
-            Vehicle?.Tick(elapsed);
         }
 
         protected virtual void OnDraw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
@@ -251,7 +250,7 @@ namespace Bus.Common.Rendering
             Camera.DrawBackground(DXHost.Context, ConstantBuffer, World.BackgroundModels, size);
             DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
             Camera.DrawPlates(DXHost.Context, ConstantBuffer, World.Plates, size);
-            if (Vehicle is not null) Camera.DrawVehicles(DXHost.Context, ConstantBuffer, Vehicle, size);
+            Camera.DrawBodies(DXHost.Context, ConstantBuffer, World.Bodies, size);
         }
 
         public void OnKeyDown(System.Windows.Input.Key key) => InputManager.OnKeyDown(key);

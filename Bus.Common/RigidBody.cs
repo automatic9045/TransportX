@@ -73,6 +73,10 @@ namespace Bus.Common
             Model.Locator = Locator;
         }
 
+        public virtual void Tick(TimeSpan elapsed)
+        {
+        }
+
         public virtual void Draw(DrawContext context)
         {
             Model.Draw(context);

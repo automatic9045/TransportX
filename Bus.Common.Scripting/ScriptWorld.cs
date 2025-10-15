@@ -58,13 +58,14 @@ namespace Bus.Common.Scripting
 
         public override void Dispose()
         {
-            base.Dispose();
             Commander.Dispose();
+            base.Dispose();
         }
 
         public override void Tick(TimeSpan elapsed)
         {
             Commander.Triggers.Tick(elapsed);
+            base.Tick(elapsed);
         }
     }
 }
