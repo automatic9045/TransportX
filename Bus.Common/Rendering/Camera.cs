@@ -101,7 +101,8 @@ namespace Bus.Common.Rendering
         {
             UpdateLocation();
 
-            DrawContext drawContext = new(deviceContext, constantBuffer, PlateOffset.Identity, View, CreateProjection(clientSize));
+            PlateOffset plateOffset = new PlateOffset(vehicle.PlateX - PlateX, vehicle.PlateZ - PlateZ);
+            DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, CreateProjection(clientSize));
             vehicle.Draw(drawContext);
         }
 
