@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Vortice.Direct3D11;
 
+using BepuPhysics;
+
+using Bus.Common.Rendering;
 using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Scenery
 {
-    public class Plate
+    public class Plate : IDrawable
     {
         public static readonly int Size = 250;
 
+
+        private bool IsFar = false;
 
         public List<LocatedModel> Models { get; } = new List<LocatedModel>();
         public List<NetworkElement> Network { get; } = new List<NetworkElement>();
@@ -22,16 +25,37 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public void Draw(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, Matrix4x4 view, Matrix4x4 projection)
+        public void ComputeTick(PlateOffset plateOffset)
         {
-            foreach (LocatedModel model in Models)
+            bool isFar = 2 <= int.Abs(plateOffset.DeltaX) || 2 <= int.Abs(plateOffset.DeltaZ);
+            if (IsFar && isFar) return;
+
+            foreach (StaticLocatedModel model in Models)
             {
-                model.Draw(context, constantBuffer, view, projection);
+                model.UpdateColliderPose(plateOffset);
             }
 
             foreach (NetworkElement element in Network)
             {
-                element.Draw(context, constantBuffer, view, projection);
+                foreach (StaticLocatedModel model in element.Models)
+                {
+                    model.UpdateColliderPose(plateOffset);
+                }
+            }
+
+            IsFar = isFar;
+        }
+
+        public void Draw(DrawContext context)
+        {
+            foreach (LocatedModel model in Models)
+            {
+                model.Draw(context);
+            }
+
+            foreach (NetworkElement element in Network)
+            {
+                element.Draw(context);
             }
         }
     }

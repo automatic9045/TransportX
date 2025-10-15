@@ -47,7 +47,10 @@ namespace Bus.Common.Worlds
             Models.Dispose();
         }
 
-        public abstract void ComputeTick(TimeSpan elapsed);
+        public virtual void ComputeTick(TimeSpan elapsed)
+        {
+            Plates.ComputeTick(Camera.PlateX, Camera.PlateZ);
+        }
 
         public abstract void Tick(TimeSpan elapsed);
     }

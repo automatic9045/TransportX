@@ -27,7 +27,7 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 locator, double span, double interval)
         {
-            LocatedModel[] models = modelKeys.Select(key => new LocatedModel(World.Models[key], locator)).ToArray();
+            LocatedModel[] models = modelKeys.Select(key => LocatedModel.CreateStaticOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], locator)).ToArray();
             SplineStructure structure = new SplineStructure(models, 0, span, interval, int.MaxValue);
             StructuresKey.Add(structure);
             return structure;
@@ -47,7 +47,7 @@ namespace Bus.Common.Scripting.Commands
 
         internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 locator)
         {
-            SplineFactory factory = new SplineFactory(plateX, plateZ, locator, Port);
+            SplineFactory factory = new SplineFactory(World.PhysicsHost.Simulation, plateX, plateZ, locator, Port);
             return factory;
         }
     }

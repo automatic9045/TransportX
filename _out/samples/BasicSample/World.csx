@@ -4,7 +4,7 @@ Models.LoadList("Models.txt");
 Background.Add("Background");
 
 Plates[0, 0].PutStructure("Grass", 0, -0.01, 0);
-Plates[0, 0].PutStructure("Signal", 120, 0, 150);
+Plates[0, 0].PutStructure("Signal", 20, 0, 40);
 
 Plates[0, 1].PutStructure("Grass", 0, -0.01, 0);
 

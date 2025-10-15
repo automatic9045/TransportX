@@ -5,23 +5,27 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using BepuPhysics;
+
 namespace Bus.Common.Scenery.Networks
 {
     public class SplineFactory : LocatableObject
     {
+        protected readonly Simulation Simulation;
         protected readonly LaneConnector BasePairedPort;
 
         protected readonly List<Spline> CreatedSplinesKey = new List<Spline>();
         public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
 
-        public SplineFactory(int plateX, int plateZ, Matrix4x4 locator, LaneConnector basePairedPort) : base(plateX, plateZ, locator)
+        public SplineFactory(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator, LaneConnector basePairedPort) : base(plateX, plateZ, locator)
         {
+            Simulation = simulation;
             BasePairedPort = basePairedPort;
         }
 
         public Spline ByCurvature(double curvature, double length)
         {
-            Spline spline = new Spline(PlateX, PlateZ, Locator, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
+            Spline spline = new Spline(Simulation, PlateX, PlateZ, Locator, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
 
             Move(spline.Path.Transition);
 

@@ -37,8 +37,9 @@ namespace Bus.Common
             Locate(plateX, plateZ, position);
         }
 
-        protected void Locate(int plateX, int plateZ, Matrix4x4 locator, bool normalize)
+        protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 locator, bool normalize)
         {
+            PlateOffset plateOffset = PlateOffset.Identity;
             if (normalize)
             {
                 Vector3 translation = locator.Translation;
@@ -50,6 +51,8 @@ namespace Bus.Common
 
                 plateX += dx;
                 plateZ += dz;
+
+                plateOffset = new PlateOffset(dx, dz);
             }
 
             PlateX = plateX;
@@ -61,6 +64,8 @@ namespace Bus.Common
 
             Moved?.Invoke(this, EventArgs.Empty);
 
+            return plateOffset;
+
 
             static int GetPlateDelta(float delta)
             {
@@ -68,31 +73,31 @@ namespace Bus.Common
             }
         }
 
-        protected void Locate(int plateX, int plateZ, Matrix4x4 locator)
+        protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 locator)
         {
-            Locate(plateX, plateZ, locator, true);
+            return Locate(plateX, plateZ, locator, true);
         }
 
-        protected void Locate(int plateX, int plateZ, SixDoF position)
+        protected PlateOffset Locate(int plateX, int plateZ, SixDoF position)
         {
             Matrix4x4 locator = position.CreateTransform();
-            Locate(plateX, plateZ, locator);
+            return Locate(plateX, plateZ, locator);
         }
 
-        protected void Locate(LocatableObject attachTo, Matrix4x4 locator)
+        protected PlateOffset Locate(LocatableObject attachTo, Matrix4x4 locator)
         {
-            Locate(attachTo.PlateX, attachTo.PlateZ, locator);
+            return Locate(attachTo.PlateX, attachTo.PlateZ, locator);
         }
 
-        protected void Locate(LocatableObject attachTo)
+        protected PlateOffset Locate(LocatableObject attachTo)
         {
-            Locate(attachTo, attachTo.Locator);
+            return Locate(attachTo, attachTo.Locator);
         }
 
-        protected void Move(Matrix4x4 transform)
+        protected PlateOffset Move(Matrix4x4 transform)
         {
             Matrix4x4 newLocator = transform * Locator;
-            Locate(PlateX, PlateZ, newLocator);
+            return Locate(PlateX, PlateZ, newLocator);
         }
     }
 }

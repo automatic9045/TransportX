@@ -1,26 +1,34 @@
-﻿using Bus.Common.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Vortice.Direct3D11;
+
+using BepuPhysics;
+
+using Bus.Common.Rendering;
 
 namespace Bus.Common.Scenery.Networks
 {
     public class Spline : NetworkEdge
     {
+        private readonly Simulation Simulation;
+
         public override LaneConnector Port { get; }
         public override ElementPath Path { get; }
 
         public double Curvature { get; }
         public double Length { get; }
-        public List<LocatedModel> CompiledModels { get; } = new List<LocatedModel>();
 
-        public Spline(int plateX, int plateZ, Matrix4x4 locator, LaneConnector pairedPort, double curvature, double length, bool isRoot)
+        private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
+        public override IReadOnlyList<LocatedModel> Models => CompiledModels;
+
+        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator, LaneConnector pairedPort, double curvature, double length, bool isRoot)
             : base(plateX, plateZ, locator, isRoot)
         {
+            Simulation = simulation;
+
             Curvature = curvature;
             Length = length;
 
@@ -36,7 +44,9 @@ namespace Bus.Common.Scenery.Networks
             for (int i = 0; i < structure.Count; i++)
             {
                 LocatedModel source = structure.Models[i % structure.Models.Count];
-                LocatedModel compiled = new LocatedModel(source.Model, source.InitialLocator * span * world);
+                Matrix4x4 locator = source.InitialLocator * span * world;
+
+                LocatedModel compiled = LocatedModel.CreateStaticOrNonCollision(Simulation, source.Model, locator);
                 CompiledModels.Add(compiled);
 
                 world = GetTransform(structure.Interval) * world;
@@ -57,14 +67,6 @@ namespace Bus.Common.Scenery.Networks
             double x = Curvature == 0 ? 0 : (1 - double.Cos(angle)) / Curvature;
             double z = Curvature == 0 ? at : double.Sin(angle) / Curvature;
             return Matrix4x4.CreateRotationY((float)angle) * Matrix4x4.CreateTranslation((float)x, 0, (float)z);
-        }
-
-        public override void Draw(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, Matrix4x4 view, Matrix4x4 projection)
-        {
-            foreach (LocatedModel model in CompiledModels)
-            {
-                model.Draw(context, constantBuffer, view, projection);
-            }
         }
     }
 }

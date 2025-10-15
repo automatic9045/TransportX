@@ -13,8 +13,6 @@ namespace Bus.Common.Physics
     public interface IPhysicsHost
     {
         BufferPool BufferPool { get; }
-        INarrowPhaseCallbacks NarrowPhaseCallbacks { get; }
-        IPoseIntegratorCallbacks PoseIntegratorCallbacks { get; }
         Simulation Simulation { get; }
     }
 }

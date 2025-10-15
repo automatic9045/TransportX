@@ -4,9 +4,12 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 using Vortice.XAudio2;
+
+using GdiSize = System.Drawing.Size;
 
 using Bus.Common.Scenery;
 using Bus.Common.Vehicles;
@@ -57,22 +60,25 @@ namespace Bus.Common.Rendering
             RelativeRotation = rotation;
         }
 
-        public void DrawBackground(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, IEnumerable<LocatedModel> models, System.Drawing.Size clientSize)
+        public void DrawBackground(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, IEnumerable<LocatedModel> models, GdiSize clientSize)
         {
             UpdateLocation();
 
             foreach (LocatedModel model in models)
             {
                 model.Locator = Matrix4x4.CreateTranslation(Locator.Translation);
-                model.Draw(context, constantBuffer, View, CreateProjection(clientSize));
+
+                DrawContext drawContext = new(deviceContext, constantBuffer, PlateOffset.Identity, View, CreateProjection(clientSize));
+                model.Draw(drawContext);
             }
         }
 
-        public void DrawPlates(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, PlateCollection plates, System.Drawing.Size clientSize)
+        public void DrawPlates(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, PlateCollection plates, GdiSize clientSize)
         {
             UpdateLocation();
 
-            List<(int i, int x, int z)> a = new List<(int i, int x, int z)>();
+            Matrix4x4 projection = CreateProjection(clientSize);
+
             for (int i = DrawPlateCount - 1; 0 <= i; i--)
             {
                 for (int x = PlateX - i; x <= PlateX + i; x++)
@@ -80,23 +86,23 @@ namespace Bus.Common.Rendering
                     int dz = int.Abs(x - PlateX) == i ? 1 : i * 2;
                     for (int z = PlateZ - i; z <= PlateZ + i; z += dz)
                     {
-                        a.Add((i, x, z));
                         if (plates.TryGetValue(x, z, out LocatedPlate? plate))
                         {
-                            Vector3 platePosition = Plate.Size * new Vector3(PlateX - x, 0, PlateZ - z);
-                            Matrix4x4 view = Matrix4x4.CreateTranslation(-platePosition) * View;
-                            plate!.Plate.Draw(context, constantBuffer, view, CreateProjection(clientSize));
+                            PlateOffset plateOffset = new PlateOffset(x - PlateX, z - PlateZ);
+                            DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, projection);
+                            plate!.Plate.Draw(drawContext);
                         }
                     }
                 }
             }
         }
 
-        public void DrawVehicles(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, VehicleBase vehicle, System.Drawing.Size clientSize)
+        public void DrawVehicles(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, VehicleBase vehicle, GdiSize clientSize)
         {
             UpdateLocation();
 
-            vehicle.Draw(context, constantBuffer, View, CreateProjection(clientSize));
+            DrawContext drawContext = new(deviceContext, constantBuffer, PlateOffset.Identity, View, CreateProjection(clientSize));
+            vehicle.Draw(drawContext);
         }
 
         protected void UpdateLocation()
@@ -104,7 +110,7 @@ namespace Bus.Common.Rendering
             Locate(Viewpoint, RelativeRotation * Viewpoint.Locator);
         }
 
-        protected Matrix4x4 CreateProjection(System.Drawing.Size clientSize)
+        protected Matrix4x4 CreateProjection(GdiSize clientSize)
         {
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);

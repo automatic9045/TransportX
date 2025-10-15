@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BepuPhysics" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bus.Common.Extensions\Bus.Common.Extensions.csproj" />
     <ProjectReference Include="..\Bus.Common\Bus.Common.csproj" />
   </ItemGroup>

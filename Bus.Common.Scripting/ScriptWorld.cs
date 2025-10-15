@@ -62,10 +62,6 @@ namespace Bus.Common.Scripting
             Commander.Dispose();
         }
 
-        public override void ComputeTick(TimeSpan elapsed)
-        {
-        }
-
         public override void Tick(TimeSpan elapsed)
         {
             Commander.Triggers.Tick(elapsed);

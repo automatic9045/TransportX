@@ -4,8 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Vortice.Direct3D11;
 
+using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
@@ -33,10 +33,6 @@ namespace Bus.Common.Extensions.Networks
             
             Matrix4x4 transition = locatorInverse * betweenPlates * child.Locator;
             PathKey = new ElementPath(transition, Port.CreateOpposition());
-        }
-
-        public override void Draw(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, Matrix4x4 view, Matrix4x4 projection)
-        {
         }
     }
 }

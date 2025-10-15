@@ -1,11 +1,11 @@
-Background	Models\Background.obj
-Grass	Models\Grass.obj
-Signal	Models\Signal.obj
-Road1_1	Models\Road1\1.x
-Road1_2	Models\Road1\2.x
-Road1_3	Models\Road1\3.x
-Road1_Sidewalk	Models\Road1\Sidewalk.x
-Road1_10m	Models\Road1\10_1.x
-R100	Models\R100.obj
-S10	Models\S10.obj
+Background	Models\Background.obj	$NonCollision
+Grass	Models\Grass.obj	$ClosedModel
+Signal	Models\Signal.obj	$ClosedModel
+Road1_1	Models\Road1\1.x	$ClosedModel
+Road1_2	Models\Road1\2.x	$ClosedModel
+Road1_3	Models\Road1\3.x	$ClosedModel
+Road1_Sidewalk	Models\Road1\Sidewalk.x	$ClosedModel
+Road1_10m	Models\Road1\10_1.x	$ClosedModel
+R100	Models\R100.obj	$ClosedModel
+S10	Models\S10.obj	$ClosedModel
 Dot	Models\Dot.x

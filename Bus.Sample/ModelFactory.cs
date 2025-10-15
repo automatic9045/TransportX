@@ -5,6 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+
+using BepuPhysics;
+using BepuPhysics.Collidables;
 using Vortice.Direct3D11;
 
 using Bus.Common.Rendering;
@@ -18,17 +21,19 @@ namespace Bus.Sample
 
         private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
+        private readonly Simulation Simulation;
 
-        public ModelFactory(ID3D11Device device, ID3D11DeviceContext context)
+        public ModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation)
         {
             Device = device;
             Context = context;
+            Simulation = simulation;
         }
 
-        public Model FromFile(string relativePath)
+        public CollidableModel FromFile(string relativePath)
         {
             string path = Path.Combine(BaseDirectory, relativePath);
-            Model model = Model.FromFile(Device, Context, path);
+            CollidableModel model = CollidableModel.LoadWithBoundingBox(Device, Context, Simulation, path);
             return model;
         }
     }

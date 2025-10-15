@@ -5,8 +5,11 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Vortice.Direct3D11;
 
+using BepuPhysics;
+using BepuPhysics.Collidables;
+
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Vehicles;
@@ -20,8 +23,6 @@ namespace Bus.Sample.Vehicles
     [VehicleIdentifier("Sample")]
     public class SampleBus : VehicleBase
     {
-        private readonly LocatedModel Model;
-
         private readonly IReadOnlyList<IInput> Inputs;
         private readonly InterfaceSet Interfaces;
         private readonly DriveSet Drives;
@@ -34,9 +35,9 @@ namespace Bus.Sample.Vehicles
         {
             Locate(0, 0, new SixDoF(10, 10, 20, 0.1f, 0, 0));
 
-            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context);
-            Model model = modelFactory.FromFile(@"Bus\Bus.obj");
-            Model = new LocatedModel(model, Matrix4x4.CreateScale(0.01f));
+            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation);
+            CollidableModel model = modelFactory.FromFile(@"Bus\Bus.obj");
+            AttachModel(model, (float)Spec.Weight);
 
             SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice);
             Inputs = [new KeyboardInput(InputManager)];
@@ -52,6 +53,7 @@ namespace Bus.Sample.Vehicles
 
         public override void ComputeTick(TimeSpan elapsed)
         {
+            base.ComputeTick(elapsed);
             Drives.ComputeTick(elapsed);
         }
 
@@ -65,7 +67,8 @@ namespace Bus.Sample.Vehicles
 
             Application.Current.MainWindow.Title =
                 $"{Drives.Engine.Rpm:f0}rpm, r={((AT)Drives.Transmission).TorqueConverter.Throttle:f2}, Te={((Engine)Drives.Engine).Torque:f0}, " +
-                $"Ttc={((AT)Drives.Transmission).TorqueConverter.Torque:f0}, Ttr={Drives.Transmission.Torque:f0}";
+                $"Ttc={((AT)Drives.Transmission).TorqueConverter.Torque:f0}, Ttr={Drives.Transmission.Torque:f0}, " +
+                $"r={Locator.Translation:f1}";
 
             /*Tire tire = Drives.Chassis.Tires[2];
             Application.Current.MainWindow.Title =
@@ -75,10 +78,9 @@ namespace Bus.Sample.Vehicles
                 $"Mx={tire.RollingResistanceMoment:F1}, My={tire.SelfAligningTorque:F1}";*/
         }
 
-        public override void Draw(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, Matrix4x4 view, Matrix4x4 projection)
+        public override void Draw(DrawContext context)
         {
-            Model.Locator = Model.InitialLocator * Locator;
-            Model.Draw(context, constantBuffer, view, projection);
+            base.Draw(context);
         }
     }
 }

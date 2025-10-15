@@ -6,9 +6,17 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
 using Assimp;
+using BepuPhysics;
+using BepuPhysics.Collidables;
+using BepuUtilities.Memory;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+
+using CollisionMesh = BepuPhysics.Collidables.Mesh;
+
+using Bus.Common.Physics;
 
 namespace Bus.Common.Rendering
 {
@@ -18,25 +26,23 @@ namespace Bus.Common.Rendering
 
         private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
+        private readonly Simulation? Simulation;
 
         private readonly AssimpContext Importer = new AssimpContext();
         private readonly List<TextureInfo> LoadedTextures = new List<TextureInfo>();
 
-        public AssimpModelFactory(ID3D11Device device, ID3D11DeviceContext context)
+        public bool IsCollisionSupported => Simulation is not null;
+
+        public AssimpModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation? simulation = null)
         {
             Device = device;
             Context = context;
+            Simulation = simulation;
         }
 
-        public Model FromFile(string filePath)
+        private Model Load(Scene visualScene, string baseDirectory)
         {
-            string baseDirectory = Path.GetDirectoryName(filePath)!;
-            string extension = Path.GetExtension(filePath);
-
-            PostProcessSteps postProcessSteps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.GenerateNormals;
-            Scene scene = Importer.ImportFile(filePath, postProcessSteps);
-
-            List<Mesh> meshes = scene.Meshes.ConvertAll(assimpMesh =>
+            List<Mesh> visualMeshes = visualScene.Meshes.ConvertAll(assimpMesh =>
             {
                 Vertex[] vertices = assimpMesh.Vertices
                     .Select((assimpVertex, i) =>
@@ -67,19 +73,98 @@ namespace Bus.Common.Rendering
                 List<ID3D11ShaderResourceView> textures = new List<ID3D11ShaderResourceView>();
                 if (0 <= assimpMesh.MaterialIndex)
                 {
-                    Material material = scene.Materials[assimpMesh.MaterialIndex];
+                    Assimp.Material material = visualScene.Materials[assimpMesh.MaterialIndex];
 
-                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(material, TextureType.Diffuse, "texture_diffuse", scene, baseDirectory);
+                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(material, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory);
                     textures.AddRange(diffuseMaps);
                 }
 
                 return Mesh.Create(Device, vertices, indices.ToArray(), textures);
             });
 
-            return new Model(meshes, LoadedTextures.ConvertAll(x => x.Texture));
+            return new Model(visualMeshes, LoadedTextures.ConvertAll(x => x.Texture));
         }
 
-        private List<ID3D11ShaderResourceView> LoadMaterialTextures(Material material, TextureType type, string typeName, Scene scene, string baseDirectory)
+        private Scene LoadVisualScene(string visualModelPath)
+        {
+            Scene visualScene = Importer.ImportFile(visualModelPath,
+                PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.GenerateNormals);
+            return visualScene;
+        }
+
+        public Model Load(string visualModelPath)
+        {
+            string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
+            Scene visualScene = LoadVisualScene(visualModelPath);
+
+            return Load(visualScene, baseDirectory);
+        }
+
+        private void CheckCollisionSupported()
+        {
+            if (!IsCollisionSupported) throw new NotSupportedException($"{nameof(Simulation)} が指定されていないため、衝突判定を読み込むことはできません。");
+        }
+
+        public CollidableModel LoadWithBoundingBox(string visualModelPath)
+        {
+            CheckCollisionSupported();
+
+            string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
+            Scene visualScene = LoadVisualScene(visualModelPath);
+            Model baseModel = Load(visualScene, baseDirectory);
+
+            Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            foreach (Assimp.Mesh mesh in visualScene.Meshes)
+            {
+                foreach (Vector3 vertex in mesh.Vertices)
+                {
+                    if (vertex.X < min.X) min.X = vertex.X;
+                    if (vertex.Y < min.Y) min.Y = vertex.Y;
+                    if (vertex.Z < min.Z) min.Z = vertex.Z;
+
+                    if (max.X < vertex.X) max.X = vertex.X;
+                    if (max.Y < vertex.Y) max.Y = vertex.Y;
+                    if (max.Z < vertex.Z) max.Z = vertex.Z;
+                }
+            }
+
+            Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
+            Vector3 origin = (min + max) / 2;
+            Matrix4x4 colliderTransform = Matrix4x4.CreateTranslation(origin);
+            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, colliderTransform);
+
+            return new CollidableModel(baseModel, collider);
+        }
+
+        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, bool isOpen)
+        {
+            CheckCollisionSupported();
+
+            Model baseModel = Load(visualModelPath);
+
+            Scene collisionScene = Importer.ImportFile(collisionModelPath,
+                PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate);
+            Simulation!.BufferPool.Take(collisionScene.Meshes.Sum(mesh => mesh.FaceCount), out Buffer<Triangle> triangles);
+
+            int i = 0;
+            foreach (Assimp.Mesh mesh in collisionScene.Meshes)
+            {
+                foreach (Face face in mesh.Faces)
+                {
+                    if (face.IndexCount != 3) throw new NotSupportedException("指定されたモデルは衝突判定に利用できません。");
+                    triangles[i] = new Triangle(mesh.Vertices[face.Indices[2]], mesh.Vertices[face.Indices[1]], mesh.Vertices[face.Indices[0]]);
+                    i++;
+                }
+            }
+
+            CollisionMesh collisionMesh = new CollisionMesh(triangles, Vector3.One, Simulation.BufferPool);
+            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, Matrix4x4.Identity, isOpen);
+
+            return new CollidableModel(baseModel, collider);
+        }
+
+        private List<ID3D11ShaderResourceView> LoadMaterialTextures(Assimp.Material material, TextureType type, string typeName, Scene scene, string baseDirectory)
         {
             List<ID3D11ShaderResourceView> textures = new List<ID3D11ShaderResourceView>();
             for (int i = 0; i < material.GetMaterialTextureCount(type); i++)

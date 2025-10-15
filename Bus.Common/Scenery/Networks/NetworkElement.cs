@@ -4,15 +4,18 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Vortice.Direct3D11;
+
+using Bus.Common.Rendering;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public abstract class NetworkElement : LocatableObject
+    public abstract class NetworkElement : LocatableObject, IDrawable
     {
         public bool IsRoot { get; }
         public abstract LaneConnector Port { get; }
         public abstract IReadOnlyList<ElementPath> Paths { get; }
+
+        public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
 
         public NetworkElement(int plateX, int plateZ, Matrix4x4 locator, bool isRoot) : base(plateX, plateZ, locator)
         {
@@ -24,7 +27,13 @@ namespace Bus.Common.Scenery.Networks
             Paths[pathIndex].SetChild(element);
         }
 
-        public abstract void Draw(ID3D11DeviceContext context, ID3D11Buffer constantBuffer, Matrix4x4 view, Matrix4x4 projection);
+        public void Draw(DrawContext context)
+        {
+            foreach (LocatedModel model in Models)
+            {
+                model.Draw(context);
+            }
+        }
 
 
         public class ElementPath

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using BepuPhysics;
+
 namespace Bus.Common.Scenery
 {
     public class PlateCollection : IEnumerable<LocatedPlate>
@@ -20,6 +22,15 @@ namespace Bus.Common.Scenery
 
         public PlateCollection()
         {
+        }
+
+        public void ComputeTick(int x, int z)
+        {
+            foreach (LocatedPlate locatedPlate in this)
+            {
+                PlateOffset offset = new PlateOffset(locatedPlate.X - x, locatedPlate.Z - z);
+                locatedPlate.Plate.ComputeTick(offset);
+            }
         }
 
         public bool TryGetValue(int x, int z, out LocatedPlate? result)

@@ -12,20 +12,15 @@ namespace Bus.Common.Physics
 {
     public class PhysicsHost : IPhysicsHost, IDisposable
     {
+        private readonly CollidableProperty<Material> Materials = new CollidableProperty<Material>();
+
         public BufferPool BufferPool { get; }
-        public CollidableProperty<Material> Materials { get; }
-        public INarrowPhaseCallbacks NarrowPhaseCallbacks { get; }
-        public IPoseIntegratorCallbacks PoseIntegratorCallbacks { get; }
         public Simulation Simulation { get; }
 
         protected PhysicsHost()
         {
             BufferPool = new BufferPool();
-            Materials = new CollidableProperty<Material>();
-            NarrowPhaseCallbacks = new NarrowPhaseCallbacks(Materials);
-            PoseIntegratorCallbacks = new PoseIntegratorCallbacks();
-            Simulation = Simulation.Create(BufferPool,
-                (NarrowPhaseCallbacks)NarrowPhaseCallbacks, (PoseIntegratorCallbacks)PoseIntegratorCallbacks,new SolveDescription(1, 8));
+            Simulation = Simulation.Create(BufferPool, new NarrowPhaseCallbacks(Materials), new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
         }
 
         internal static PhysicsHost Create()
