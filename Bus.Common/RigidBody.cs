@@ -16,8 +16,9 @@ namespace Bus.Common
     {
         private readonly Simulation Simulation;
 
-        private readonly List<DynamicLocatedModel> ModelsKey = new List<DynamicLocatedModel>();
-        public IReadOnlyList<DynamicLocatedModel> Models => ModelsKey;
+        private readonly List<LocatedModel> ModelsKey = new List<LocatedModel>();
+        public IReadOnlyList<LocatedModel> Models => ModelsKey;
+        public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
 
         public RigidBody(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
         {
@@ -45,16 +46,40 @@ namespace Bus.Common
             return locatedModel;
         }
 
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, SixDoF position)
+        {
+            return AttachModel(model, mass, position.CreateTransform());
+        }
+
+        public LocatedModel AttachModel(IModel model, Matrix4x4 locator)
+        {
+            if (RootModel is null) throw new InvalidOperationException("1 つ目のモデル (ルートモデル) は剛体である必要があります。");
+
+            LocatedModel locatedModel = new LocatedModel(model, locator);
+            locatedModel.Locator = locatedModel.InitialLocator * Locator;
+
+            ModelsKey.Add(locatedModel);
+            return locatedModel;
+        }
+
+        public LocatedModel AttachModel(IModel model, SixDoF position)
+        {
+            return AttachModel(model, position.CreateTransform());
+        }
+
         public virtual void ComputeTick(TimeSpan elapsed)
         {
-            if (Models.Count == 0) return;
+            if (RootModel is null) return;
 
-            foreach (DynamicLocatedModel model in Models) model.SyncLocator();
-
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, Models[0].InitialLocatorInverse * Models[0].Locator);
-            if (!plateOffset.IsZero)
+            foreach (LocatedModel model in Models)
             {
-                foreach (DynamicLocatedModel model in Models) model.Locator = model.InitialLocator * Locator;
+                if (model is DynamicLocatedModel dynamicModel) dynamicModel.SyncLocator();
+            }
+
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.InitialLocatorInverse * RootModel.Locator);
+            foreach (LocatedModel model in Models)
+            {
+                if (!plateOffset.IsZero || model is not DynamicLocatedModel) model.Locator = model.InitialLocator * Locator;
             }
         }
 
@@ -64,7 +89,7 @@ namespace Bus.Common
 
         public virtual void Draw(DrawContext context)
         {
-            foreach (DynamicLocatedModel model in Models) model.Draw(context);
+            foreach (LocatedModel model in Models) model.Draw(context);
         }
     }
 }
