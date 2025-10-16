@@ -12,33 +12,16 @@ using Vortice.XAudio2;
 using GdiSize = System.Drawing.Size;
 
 using Bus.Common.Scenery;
-using Bus.Common.Vehicles;
 
 namespace Bus.Common.Rendering
 {
     public class Camera : LocatableObject
     {
-        public static readonly LocatableObject DefaultViewpoint = new LocatableObject();
-
-
-        private Matrix4x4 RelativeRotation = Matrix4x4.Identity;
         private Matrix4x4 View = default;
 
         public int DrawPlateCount { get; set; } = 2;
-
-        public float Perspective { get; set; } = 1;
         public Listener Listener { get; set; } = new Listener();
-
-        private LocatableObject _Viewpoint = DefaultViewpoint;
-        public LocatableObject Viewpoint
-        {
-            get => _Viewpoint;
-            set
-            {
-                RelativeRotation = Matrix4x4.Identity;
-                _Viewpoint = value;
-            }
-        }
+        public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
         public Camera() : base()
         {
@@ -51,13 +34,6 @@ namespace Bus.Common.Rendering
 
                 Matrix4x4.Invert(Locator, out View);
             };
-        }
-
-        public void SetDirection(Vector3 direction)
-        {
-            Matrix4x4 rotation = Matrix4x4.CreateLookToLeftHanded(Vector3.Zero, direction, Vector3.UnitY);
-            Matrix4x4.Invert(rotation, out rotation);
-            RelativeRotation = rotation;
         }
 
         public void DrawBackground(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, IEnumerable<LocatedModel> models, GdiSize clientSize)
@@ -113,13 +89,13 @@ namespace Bus.Common.Rendering
 
         protected void UpdateLocation()
         {
-            Locate(Viewpoint, RelativeRotation * Viewpoint.Locator);
+            Locate(Viewpoints.Current.Source, Viewpoints.Current.Locator);
         }
 
         protected Matrix4x4 CreateProjection(GdiSize clientSize)
         {
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
+                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
             return projection;
         }
     }

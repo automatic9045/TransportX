@@ -26,5 +26,9 @@ namespace Bus.Common
                 Locate(Parent, Transform * Parent.Locator);
             }
         }
+
+        public AttachableObject(LocatableObject parent, SixDoF position) : this(parent, position.CreateTransform())
+        {
+        }
     }
 }

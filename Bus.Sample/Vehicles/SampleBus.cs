@@ -28,6 +28,9 @@ namespace Bus.Sample.Vehicles
         public override string Description { get; } = "動作確認用のバスです。";
         public override string Author { get; } = "automatic9045";
 
+        public override Viewpoint DriverViewpoint { get; }
+        public override Viewpoint BirdViewpoint { get; }
+
         public SampleBus(VehicleBuilder builder) : base(builder)
         {
             Locate(0, 0, new SixDoF(10, 10, 20, 0.1f, 0, 0));
@@ -40,6 +43,9 @@ namespace Bus.Sample.Vehicles
             Inputs = [new KeyboardInput(InputManager)];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Drives = new DriveSet(Interfaces, soundFactory, this);
+
+            DriverViewpoint = new DriverViewpoint(new AttachableObject(this, new SixDoF(0.67f, 2, -1.3f)));
+            BirdViewpoint = new BirdViewpoint(new AttachableObject(this, new SixDoF(0, 2, -3)), 20, new Vector2(0.3f, 0));
         }
 
         public override void Dispose()

@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-
-using BepuPhysics;
-using BepuUtilities.Memory;
 
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
@@ -39,11 +34,10 @@ namespace Bus.Common.Rendering
         protected readonly InputManager InputManager;
         protected readonly Camera Camera;
 
+        protected readonly ViewpointInput ViewpointInput;
+
         protected readonly WorldBase World;
         protected VehicleBase? Vehicle;
-
-        private System.Drawing.Size Size = System.Drawing.Size.Empty;
-        private Vector2 CameraAngle = Vector2.Zero;
 
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
@@ -127,27 +121,14 @@ namespace Bus.Common.Rendering
             InputManager = new InputManager();
             Camera = new Camera();
 
-            InputManager.MouseDragMoved += (sender, e) =>
-            {
-                float speed = 1.5f * Camera.Perspective;
-                CameraAngle += speed * new Vector2((float)-e.Offset.Y / int.Max(1, Size.Height), (float)-e.Offset.X / int.Max(1, Size.Width));
-                CameraAngle = new Vector2(float.Max(-float.Pi / 2 + 0.001f, float.Min(CameraAngle.X, float.Pi / 2 - 0.001f)), CameraAngle.Y % float.Tau);
-
-                Matrix4x4 rotation = Matrix4x4.CreateRotationX(CameraAngle.X) * Matrix4x4.CreateRotationY(CameraAngle.Y);
-                Camera.SetDirection(Vector3.Transform(Vector3.UnitZ, rotation));
-            };
-
-            InputManager.MouseWheel += (sender, e) =>
-            {
-                Camera.Perspective = float.Max(0.01f, float.Min(Camera.Perspective - 0.0005f * e.Delta, 1));
-            };
+            ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
 
             World = LoadWorld(worldInfo);
 
             Vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
             World.Bodies.Add(Vehicle);
 
-            Camera.Viewpoint = new AttachableObject(Vehicle, Matrix4x4.CreateTranslation(0.67f, 2, -1.3f));
+            Camera.Viewpoints.AttachedTo = Vehicle;
         }
 
         protected virtual WorldBase LoadWorld(IWorldInfo worldInfo)
@@ -197,11 +178,11 @@ namespace Bus.Common.Rendering
 
         public virtual void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
         {
-            Size = size;
+            ViewpointInput.ClientSize = new Vector2(size.Width, size.Height);
 
             TimeManager.Tick();
 
-            LocatableObject position = Vehicle ?? Camera.Viewpoint;
+            LocatableObject position = Camera;
             string plateText = $"({position.PlateX}, {position.PlateZ})";
             string coordText = $"({position.PositionInWorld.X:F1}, {position.PositionInWorld.Y:F1}, {position.PositionInWorld.Z:F1})";
             //Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";

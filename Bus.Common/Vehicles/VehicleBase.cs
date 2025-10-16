@@ -22,6 +22,9 @@ namespace Bus.Common.Vehicles
         public InputManager InputManager { get; }
         public Camera Camera { get; }
 
+        public abstract Viewpoint DriverViewpoint { get; }
+        public abstract Viewpoint BirdViewpoint { get; }
+
         public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost.Simulation)
         {
             DXHost = builder.DXHost;
