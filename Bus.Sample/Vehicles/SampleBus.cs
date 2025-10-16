@@ -50,7 +50,7 @@ namespace Bus.Sample.Vehicles
 
         public override void Dispose()
         {
-            foreach (LocatedModel model in Models) model.Model.Dispose();
+            RootModel!.Model.Dispose();
             Drives.Dispose();
         }
 
