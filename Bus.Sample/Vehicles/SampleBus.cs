@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+using Bus.Common;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Vehicles;
@@ -43,7 +44,7 @@ namespace Bus.Sample.Vehicles
 
         public override void Dispose()
         {
-            foreach (DynamicLocatedModel model in Models) model.Model.Dispose();
+            foreach (LocatedModel model in Models) model.Model.Dispose();
             Drives.Dispose();
         }
 
