@@ -55,7 +55,7 @@ namespace Bus.Common.Rendering
 
         public void SetDirection(Vector3 direction)
         {
-            Matrix4x4 rotation = Matrix4x4.CreateLookToLeftHanded(Vector3.Zero, direction, Viewpoint.Up);
+            Matrix4x4 rotation = Matrix4x4.CreateLookToLeftHanded(Vector3.Zero, direction, Vector3.UnitY);
             Matrix4x4.Invert(rotation, out rotation);
             RelativeRotation = rotation;
         }
