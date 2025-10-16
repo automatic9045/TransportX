@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Bus.Common.Worlds;
 
 namespace Bus.Common.Vehicles
 {
@@ -21,6 +22,7 @@ namespace Bus.Common.Vehicles
         public ITimeManager TimeManager { get; }
         public InputManager InputManager { get; }
         public Camera Camera { get; }
+        public WorldBase World { get; }
 
         public abstract Viewpoint DriverViewpoint { get; }
         public abstract Viewpoint BirdViewpoint { get; }
@@ -32,6 +34,7 @@ namespace Bus.Common.Vehicles
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
             Camera = builder.Camera;
+            World = builder.World;
         }
     }
 }

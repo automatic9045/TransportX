@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Bus.Common.Worlds;
 
 namespace Bus.Common.Vehicles
 {
@@ -20,6 +21,7 @@ namespace Bus.Common.Vehicles
         public required ITimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }
+        public required WorldBase World { get; init; }
 
         public VehicleBuilder()
         {

@@ -37,7 +37,6 @@ namespace Bus.Common.Rendering
         protected readonly ViewpointInput ViewpointInput;
 
         protected readonly WorldBase World;
-        protected VehicleBase? Vehicle;
 
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
@@ -125,10 +124,9 @@ namespace Bus.Common.Rendering
 
             World = LoadWorld(worldInfo);
 
-            Vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
-            World.Bodies.Add(Vehicle);
-
-            Camera.Viewpoints.AttachedTo = Vehicle;
+            VehicleBase vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
+            World.Bodies.Add(vehicle);
+            Camera.Viewpoints.AttachedTo = vehicle;
         }
 
         protected virtual WorldBase LoadWorld(IWorldInfo worldInfo)
@@ -155,6 +153,7 @@ namespace Bus.Common.Rendering
                 TimeManager = TimeManager,
                 InputManager = InputManager,
                 Camera = Camera,
+                World = World,
             };
 
             VehicleBase vehicle = vehicleBuilder.Build(path, identifier);
