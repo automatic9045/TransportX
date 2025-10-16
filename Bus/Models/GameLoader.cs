@@ -7,33 +7,34 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common;
 using Bus.Common.Rendering;
 using Bus.Common.Worlds;
 
 namespace Bus.Models
 {
-    internal class RendererLoader
+    internal class GameLoader
     {
         private readonly IDXHost DXHost;
 
-        public RendererLoader(IDXHost dxHost)
+        public GameLoader(IDXHost dxHost)
         {
             DXHost = dxHost;
         }
 
-        public IRenderer Load(IWorldInfo worldInfo)
+        public IGame Load(IWorldInfo worldInfo)
         {
-            Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(worldInfo.RendererPath);
+            Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(worldInfo.GamePath);
             Type[] types = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(IRenderer).IsAssignableFrom(t))
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(IGame).IsAssignableFrom(t))
                 .ToArray();
 
             switch (types.Length)
             {
                 case 0:
                 {
-                    string fileName = Path.GetFileName(worldInfo.RendererPath);
-                    throw new ArgumentException($"{fileName} にはレンダラーが定義されていません。", nameof(worldInfo));
+                    string fileName = Path.GetFileName(worldInfo.GamePath);
+                    throw new ArgumentException($"{fileName} にはゲームが定義されていません。", nameof(worldInfo));
                 }
 
                 case 1:
@@ -41,8 +42,8 @@ namespace Bus.Models
 
                 default:
                 {
-                    string fileName = Path.GetFileName(worldInfo.RendererPath);
-                    throw new ArgumentException($"{fileName} には 2 つ以上のレンダラーが定義されています。", nameof(worldInfo));
+                    string fileName = Path.GetFileName(worldInfo.GamePath);
+                    throw new ArgumentException($"{fileName} には 2 つ以上のゲームが定義されています。", nameof(worldInfo));
                 }
             }
 
@@ -50,8 +51,8 @@ namespace Bus.Models
             ConstructorInfo constructor = type.GetConstructor([typeof(IDXHost), typeof(IWorldInfo)])
                 ?? throw new ArgumentException($"{type.Name} にはパラメータが {nameof(IDXHost)}、{nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
 
-            IRenderer renderer = (IRenderer)constructor.Invoke([DXHost, worldInfo]);
-            return renderer;
+            IGame game = (IGame)constructor.Invoke([DXHost, worldInfo]);
+            return game;
         }
     }
 }

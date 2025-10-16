@@ -15,7 +15,7 @@ namespace Bus.Common.Worlds
         string Author { get; }
         string Path { get; }
         string? Identifier { get; }
-        string RendererPath { get; }
+        string GamePath { get; }
         IReadOnlyList<string> Args { get; }
     }
 }

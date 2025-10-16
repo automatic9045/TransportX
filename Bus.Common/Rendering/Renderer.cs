@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,17 +9,13 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
-using Bus.Common.Input;
-using Bus.Common.Physics;
-using Bus.Common.Vehicles;
 using Bus.Common.Worlds;
 
 namespace Bus.Common.Rendering
 {
-    public class Renderer : IRenderer
+    public class Renderer : IDisposable
     {
         protected readonly IDXHost DXHost;
-        protected readonly PhysicsHost PhysicsHost;
 
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
@@ -30,20 +25,9 @@ namespace Bus.Common.Rendering
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
 
-        protected readonly TimeManager TimeManager;
-        protected readonly InputManager InputManager;
-        protected readonly Camera Camera;
-
-        protected readonly ViewpointInput ViewpointInput;
-
-        protected readonly WorldBase World;
-
-        protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
-
-        public Renderer(IDXHost dxHost, IWorldInfo worldInfo)
+        public Renderer(IDXHost dxHost)
         {
             DXHost = dxHost;
-            PhysicsHost = PhysicsHost.Create();
 
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
@@ -115,57 +99,10 @@ namespace Bus.Common.Rendering
             };
 
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
-
-            TimeManager = new TimeManager();
-            InputManager = new InputManager();
-            Camera = new Camera();
-
-            ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
-
-            World = LoadWorld(worldInfo);
-
-            VehicleBase vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
-            World.Bodies.Add(vehicle);
-            Camera.Viewpoints.AttachedTo = vehicle;
         }
 
-        protected virtual WorldBase LoadWorld(IWorldInfo worldInfo)
+        public void Dispose()
         {
-            WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
-            {
-                DXHost = DXHost,
-                PhysicsHost = PhysicsHost,
-                TimeManager = TimeManager,
-                InputManager = InputManager,
-                Camera = Camera,
-            };
-
-            WorldBase world = worldBuilder.Build();
-            return world;
-        }
-
-        protected virtual VehicleBase LoadVehicle(string path, string? identifier)
-        {
-            VehicleBuilder vehicleBuilder = new VehicleBuilder()
-            {
-                DXHost = DXHost,
-                PhysicsHost = PhysicsHost,
-                TimeManager = TimeManager,
-                InputManager = InputManager,
-                Camera = Camera,
-                World = World,
-            };
-
-            VehicleBase vehicle = vehicleBuilder.Build(path, identifier);
-            return vehicle;
-        }
-
-        public virtual void Dispose()
-        {
-            World.Dispose();
-
-            PhysicsHost.Dispose();
-
             VertexShader.Dispose();
             PixelShader.Dispose();
             InputLayout.Dispose();
@@ -175,42 +112,7 @@ namespace Bus.Common.Rendering
             BlendState.Dispose();
         }
 
-        public virtual void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
-        {
-            ViewpointInput.ClientSize = new Vector2(size.Width, size.Height);
-
-            TimeManager.Tick();
-
-            LocatableObject position = Camera;
-            string plateText = $"({position.PlateX}, {position.PlateZ})";
-            string coordText = $"({position.PositionInWorld.X:F1}, {position.PositionInWorld.Y:F1}, {position.PositionInWorld.Z:F1})";
-            //Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";
-
-            TimeSpan elapsed = TimeManager.DeltaTime;
-            int computeTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
-            TimeSpan computeElapsed = elapsed / computeTickCount;
-            for (int i = 0; i < computeTickCount; i++)
-            {
-                OnComputeTick(computeElapsed);
-            }
-
-            OnTick(elapsed);
-            OnDraw(renderTarget, depthStencil, size);
-        }
-
-        protected virtual void OnComputeTick(TimeSpan elapsed)
-        {
-            World.ComputeTick(elapsed);
-
-            PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds);
-        }
-
-        protected virtual void OnTick(TimeSpan elapsed)
-        {
-            World.Tick(elapsed);
-        }
-
-        protected virtual void OnDraw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
+        public void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, Camera camera, WorldBase world, System.Drawing.Size size)
         {
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);
@@ -227,15 +129,10 @@ namespace Bus.Common.Rendering
             DXHost.Context.PSSetShader(PixelShader);
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
-            Camera.DrawBackground(DXHost.Context, ConstantBuffer, World.BackgroundModels, size);
+            camera.DrawBackground(DXHost.Context, ConstantBuffer, world.BackgroundModels, size);
             DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
-            Camera.DrawPlates(DXHost.Context, ConstantBuffer, World.Plates, size);
-            Camera.DrawBodies(DXHost.Context, ConstantBuffer, World.Bodies, size);
+            camera.DrawPlates(DXHost.Context, ConstantBuffer, world.Plates, size);
+            camera.DrawBodies(DXHost.Context, ConstantBuffer, world.Bodies, size);
         }
-
-        public void OnKeyDown(System.Windows.Input.Key key) => InputManager.OnKeyDown(key);
-        public void OnKeyUp(System.Windows.Input.Key key) => InputManager.OnKeyUp(key);
-        public void OnMouseDragMove(System.Windows.Vector offset) => InputManager.OnMouseDragMove(offset);
-        public void OnMouseWheel(int delta) => InputManager.OnMouseWheel(delta);
     }
 }

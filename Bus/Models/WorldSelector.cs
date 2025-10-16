@@ -15,7 +15,7 @@ namespace Bus.Models
             OpenFileDialog dialog = new OpenFileDialog()
             {
                 CheckFileExists = true,
-                DefaultDirectory = Path.GetDirectoryName(typeof(RendererLoader).Assembly.Location),
+                DefaultDirectory = Path.GetDirectoryName(typeof(GameLoader).Assembly.Location),
                 DefaultExt = ".xml",
                 Filter = "ワールド情報ファイル|*.xml|すべてのファイル|*.*",
             };

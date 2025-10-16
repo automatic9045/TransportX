@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Reactive.Bindings;
 using Reactive.Bindings.Disposables;
 using Reactive.Bindings.Extensions;
@@ -13,7 +14,7 @@ using Reactive.Bindings.Extensions;
 using Bus.Components;
 using Bus.Models;
 
-using Bus.Common.Rendering;
+using Bus.Common;
 using Bus.Common.Worlds;
 
 namespace Bus.ViewModels
@@ -21,7 +22,7 @@ namespace Bus.ViewModels
     internal class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         private readonly CompositeDisposable Disposables = new CompositeDisposable();
-        private readonly IRenderer Renderer;
+        private readonly IGame Game;
 
         public ReactivePropertySlim<DXHost> DXHost { get; }
         public ReactivePropertySlim<Vector> MouseDragOffset { get; }
@@ -40,23 +41,23 @@ namespace Bus.ViewModels
             DXHost = new ReactivePropertySlim<DXHost>(dx).AddTo(Disposables);
             MouseDragOffset = new ReactivePropertySlim<Vector>(mode: ReactivePropertyMode.None).AddTo(Disposables);
 
-            RendererLoader loader = new RendererLoader(dx);
-            Renderer = loader.Load(worldInfo);
+            GameLoader loader = new GameLoader(dx);
+            Game = loader.Load(worldInfo);
 
             KeyDownCommand = new ReactiveCommandSlim<KeyEventArgs>().AddTo(Disposables);
             KeyUpCommand = new ReactiveCommandSlim<KeyEventArgs>().AddTo(Disposables);
             MouseWheelCommand = new ReactiveCommandSlim<MouseWheelEventArgs>().AddTo(Disposables);
             RenderingCommand = new ReactiveCommandSlim<RenderingEventArgs>().AddTo(Disposables);
 
-            MouseDragOffset.Subscribe(Renderer.OnMouseDragMove);
-            KeyDownCommand.Subscribe(args => Renderer.OnKeyDown(args.Key));
-            KeyUpCommand.Subscribe(args => Renderer.OnKeyUp(args.Key));
-            MouseWheelCommand.Subscribe(args => Renderer.OnMouseWheel(args.Delta));
-            RenderingCommand.Subscribe(args => Renderer.Draw(args.RenderTarget, args.DepthStencil, args.Size));
+            MouseDragOffset.Subscribe(Game.OnMouseDragMove);
+            KeyDownCommand.Subscribe(args => Game.OnKeyDown(args.Key));
+            KeyUpCommand.Subscribe(args => Game.OnKeyUp(args.Key));
+            MouseWheelCommand.Subscribe(args => Game.OnMouseWheel(args.Delta));
+            RenderingCommand.Subscribe(args => Game.Draw(args.RenderTarget, args.DepthStencil, args.Size));
 
             Application.Current.Exit += (sender, e) =>
             {
-                Renderer.Dispose();
+                Game.Dispose();
                 dx.Dispose();
             };
         }

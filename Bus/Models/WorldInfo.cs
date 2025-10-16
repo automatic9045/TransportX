@@ -28,11 +28,11 @@ namespace Bus.Models
 
         public string? Identifier { get; set; } = null;
 
-        private string RendererPathKey = typeof(IWorldInfo).Assembly.Location;
-        public string RendererPath
+        private string GamePathKey = typeof(IWorldInfo).Assembly.Location;
+        public string GamePath
         {
-            get => RendererPathKey;
-            set => RendererPathKey = ExpandMacros(value);
+            get => GamePathKey;
+            set => GamePathKey = ExpandMacros(value);
         }
 
         [XmlArrayItem("Arg")]

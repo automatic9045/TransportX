@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Vortice.Direct3D11;
 
-namespace Bus.Common.Rendering
+namespace Bus.Common
 {
-    public interface IRenderer : IDisposable
+    public interface IGame : IDisposable
     {
-        void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size size);
+        void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size clientSize);
 
         void OnKeyDown(Key key) { }
         void OnKeyUp(Key key) { }
