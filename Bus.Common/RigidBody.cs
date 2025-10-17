@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using BepuPhysics.Collidables;
 
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
@@ -37,13 +38,23 @@ namespace Bus.Common
         {
         }
 
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 locator)
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
         {
-            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(Simulation, model, mass, locator);
+            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(Simulation, model, mass, collidableDescription, locator);
             locatedModel.Locator = locatedModel.InitialLocator * Locator;
 
             ModelsKey.Add(locatedModel);
             return locatedModel;
+        }
+
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, CollidableDescription collidableDescription, SixDoF position)
+        {
+            return AttachModel(model, mass, collidableDescription, position.CreateTransform());
+        }
+
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 locator)
+        {
+            return AttachModel(model, mass, model.Collider.ShapeIndex, locator);
         }
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, SixDoF position)

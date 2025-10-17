@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using BepuPhysics.Collidables;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -45,13 +46,19 @@ namespace Bus.Common.Scenery
             return new StaticLocatedModel(simulation, model, handle, locator);
         }
 
-        public static DynamicLocatedModel CreateDynamic(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 locator)
+        public static DynamicLocatedModel CreateDynamic(Simulation simulation,
+            ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
         {
             BodyInertia inertia = model.Collider.ComputeInertia(mass);
             BodyDescription desc = BodyDescription.CreateDynamic(
-                (locator * model.Collider.Transform).ToRigidPose(), inertia, model.Collider.ShapeIndex, 0.001f);
+                (locator * model.Collider.Transform).ToRigidPose(), inertia, collidableDescription, 0.001f);
             BodyHandle handle = simulation.Bodies.Add(desc);
             return new DynamicLocatedModel(simulation, model, handle, locator);
+        }
+
+        public static DynamicLocatedModel CreateDynamic(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 locator)
+        {
+            return CreateDynamic(simulation, model, mass, model.Collider.ShapeIndex, locator);
         }
 
         public void Draw(DrawContext context)
