@@ -184,7 +184,10 @@ namespace Bus.Common.Rendering
             }
 
             CollisionMesh collisionMesh = new CollisionMesh(triangles, Vector3.One, Simulation.BufferPool);
-            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, Matrix4x4.Identity, isOpen);
+            Vector3 center = isOpen ? collisionMesh.ComputeOpenCenterOfMass() : collisionMesh.ComputeClosedCenterOfMass();
+            if (float.IsNaN(center.X + center.Y + center.Z)) throw new InvalidOperationException("モデルの重心を特定できません。");
+            collisionMesh.Recenter(center);
+            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, Matrix4x4.CreateTranslation(center), isOpen);
 
             return new CollidableModel(baseModel, collider);
         }
