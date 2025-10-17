@@ -84,5 +84,12 @@ namespace Bus.Common.Rendering
             CollidableModel model = factory.LoadWithBoundingBox(visualModelPath);
             return model;
         }
+
+        public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, string visualModelPath)
+        {
+            AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
+            CollidableModel model = factory.LoadWithConvexHull(visualModelPath);
+            return model;
+        }
     }
 }

@@ -137,6 +137,31 @@ namespace Bus.Common.Rendering
             return new CollidableModel(baseModel, collider);
         }
 
+        public CollidableModel LoadWithConvexHull(string visualModelPath)
+        {
+            CheckCollisionSupported();
+
+            string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
+            Scene visualScene = LoadVisualScene(visualModelPath);
+            Model baseModel = Load(visualScene, baseDirectory);
+
+            Simulation!.BufferPool.Take(visualScene.Meshes.Sum(mesh => mesh.VertexCount), out Buffer<Vector3> pointBuffer);
+            int i = 0;
+            foreach (Assimp.Mesh mesh in visualScene.Meshes)
+            {
+                foreach (Vector3 vertex in mesh.Vertices)
+                {
+                    pointBuffer[i] = vertex;
+                    i++;
+                }
+            }
+
+            ConvexHullHelper.CreateShape(pointBuffer, Simulation.BufferPool, out Vector3 center, out ConvexHull convexHull);
+            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, Matrix4x4.CreateTranslation(center));
+
+            return new CollidableModel(baseModel, collider);
+        }
+
         public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, bool isOpen)
         {
             CheckCollisionSupported();

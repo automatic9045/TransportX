@@ -30,6 +30,15 @@ namespace Bus.Common.Physics
             return Sphere(shape, shapeIndex, transform);
         }
 
+        public static Collider<ConvexHull> ConvexHull(ConvexHull shape, TypedIndex shapeIndex, Matrix4x4 transform)
+            => new Collider<ConvexHull>(shape, shapeIndex, transform, (shape, mass) => shape.ComputeInertia(mass));
+
+        public static Collider<ConvexHull> ConvexHull(Simulation simulation, ConvexHull shape, Matrix4x4 transform)
+        {
+            TypedIndex shapeIndex = simulation.Shapes.Add(shape);
+            return ConvexHull(shape, shapeIndex, transform);
+        }
+
         public static Collider<Mesh> Mesh(Mesh shape, TypedIndex shapeIndex, Matrix4x4 transform, bool isOpen)
             => new Collider<Mesh>(shape, shapeIndex, transform,
                 isOpen ? (shape, mass) => shape.ComputeOpenInertia(mass) : (shape, mass) => shape.ComputeClosedInertia(mass));
