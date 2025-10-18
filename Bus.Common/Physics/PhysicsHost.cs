@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using BepuUtilities;
 using BepuUtilities.Memory;
 
 namespace Bus.Common.Physics
@@ -15,12 +16,14 @@ namespace Bus.Common.Physics
         private readonly CollidableProperty<Material> Materials = new CollidableProperty<Material>();
 
         public Simulation Simulation { get; }
+        public IThreadDispatcher ThreadDispatcher { get; }
 
         protected PhysicsHost()
         {
             BufferPool bufferPool = new BufferPool();
             NarrowPhaseCallbacks narrowPhaseCallbacks = new NarrowPhaseCallbacks(Groups, Materials);
             Simulation = Simulation.Create(bufferPool, narrowPhaseCallbacks, new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
+            ThreadDispatcher = new ThreadDispatcher(Environment.ProcessorCount);
         }
 
         internal static PhysicsHost Create()

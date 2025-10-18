@@ -116,7 +116,7 @@ namespace Bus.Common
         {
             World.ComputeTick(elapsed);
 
-            PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds);
+            PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
