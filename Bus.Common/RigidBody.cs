@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 
@@ -15,22 +16,22 @@ namespace Bus.Common
 {
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
-        private readonly Simulation Simulation;
+        private readonly IPhysicsHost PhysicsHost;
 
         private readonly List<LocatedModel> ModelsKey = new List<LocatedModel>();
         public IReadOnlyList<LocatedModel> Models => ModelsKey;
         public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
 
-        public RigidBody(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
         {
-            Simulation = simulation;
+            PhysicsHost = physicsHost;
         }
 
-        public RigidBody(Simulation simulation, int plateX, int plateZ, SixDoF position) : this(simulation, plateX, plateZ, position.CreateTransform())
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.CreateTransform())
         {
         }
 
-        public RigidBody(Simulation simulation) : this(simulation, 0, 0, Matrix4x4.Identity)
+        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Matrix4x4.Identity)
         {
         }
 
@@ -40,7 +41,7 @@ namespace Bus.Common
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
         {
-            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(Simulation, model, mass, collidableDescription, locator);
+            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(PhysicsHost.Simulation, model, mass, collidableDescription, locator);
             locatedModel.Locator = locatedModel.InitialLocator * Locator;
 
             ModelsKey.Add(locatedModel);
