@@ -18,6 +18,8 @@ namespace Bus.Common
     {
         private readonly IPhysicsHost PhysicsHost;
 
+        public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
+
         private readonly List<LocatedModel> ModelsKey = new List<LocatedModel>();
         public IReadOnlyList<LocatedModel> Models => ModelsKey;
         public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
@@ -39,28 +41,42 @@ namespace Bus.Common
         {
         }
 
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
+        public DynamicLocatedModel AttachModel(
+            ICollidableModel model, float mass, CollidableDescription collidableDescription, ColliderGroupHandle group, Matrix4x4 locator)
         {
             DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(PhysicsHost.Simulation, model, mass, collidableDescription, locator);
             locatedModel.Locator = locatedModel.InitialLocator * Locator;
+
+            PhysicsHost.AddToGroup(locatedModel.Handle, group);
 
             ModelsKey.Add(locatedModel);
             return locatedModel;
         }
 
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, CollidableDescription collidableDescription, SixDoF position)
+        public DynamicLocatedModel AttachModel(
+            ICollidableModel model, float mass, CollidableDescription collidableDescription, ColliderGroupHandle group, SixDoF position)
         {
-            return AttachModel(model, mass, collidableDescription, position.CreateTransform());
+            return AttachModel(model, mass, collidableDescription, group, position.CreateTransform());
+        }
+
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 locator)
+        {
+            return AttachModel(model, mass, model.Collider.ShapeIndex, group, locator);
+        }
+
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF position)
+        {
+            return AttachModel(model, mass, group, position.CreateTransform());
         }
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 locator)
         {
-            return AttachModel(model, mass, model.Collider.ShapeIndex, locator);
+            return AttachModel(model, mass, model.Collider.ShapeIndex, DefaultGroup, locator);
         }
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, SixDoF position)
         {
-            return AttachModel(model, mass, position.CreateTransform());
+            return AttachModel(model, mass, DefaultGroup, position.CreateTransform());
         }
 
         public LocatedModel AttachModel(IModel model, Matrix4x4 locator)

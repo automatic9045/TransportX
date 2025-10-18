@@ -14,19 +14,23 @@ namespace Bus.Common.Physics
 {
     public struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
     {
+        private readonly CollidableProperty<ColliderGroupHandle> Groups;
         private readonly CollidableProperty<Material> Materials;
 
-        public NarrowPhaseCallbacks(CollidableProperty<Material> materials)
+        public NarrowPhaseCallbacks(CollidableProperty<ColliderGroupHandle> groups, CollidableProperty<Material> materials)
         {
+            Groups = groups;
             Materials = materials;
         }
 
-        public NarrowPhaseCallbacks() : this(new CollidableProperty<Material>())
+        public NarrowPhaseCallbacks()
         {
+            throw new NotSupportedException();
         }
 
         public void Initialize(Simulation simulation)
         {
+            Groups.Initialize(simulation);
             Materials.Initialize(simulation);
         }
 
@@ -38,6 +42,16 @@ namespace Bus.Common.Physics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b, ref float speculativeMargin)
         {
+            if (a.Mobility != CollidableMobility.Static)
+            {
+                ColliderGroupHandle aGroup = Groups.Allocate(a);
+                ColliderGroupHandle bGroup = Groups.Allocate(b);
+                if (aGroup != ColliderGroupHandle.None && aGroup == bGroup)
+                {
+                    return false;
+                }
+            }
+
             return a.Mobility == CollidableMobility.Dynamic || b.Mobility == CollidableMobility.Dynamic;
         }
 

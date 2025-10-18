@@ -5,14 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
-using BepuPhysics.CollisionDetection;
-using BepuUtilities.Memory;
 
 namespace Bus.Common.Physics
 {
     public interface IPhysicsHost
     {
-        BufferPool BufferPool { get; }
         Simulation Simulation { get; }
+
+        void AddToGroup(BodyHandle body, ColliderGroupHandle group);
     }
 }
