@@ -21,6 +21,15 @@ namespace Bus.Common.Physics
             return Box(shape, shapeIndex, transform);
         }
 
+        public static Collider<Cylinder> Cylinder(Cylinder shape, TypedIndex shapeIndex, Matrix4x4 transform)
+            => new Collider<Cylinder>(shape, shapeIndex, transform, (shape, mass) => shape.ComputeInertia(mass));
+
+        public static Collider<Cylinder> Cylinder(Simulation simulation, Cylinder shape, Matrix4x4 transform)
+        {
+            TypedIndex shapeIndex = simulation.Shapes.Add(shape);
+            return Cylinder(shape, shapeIndex, transform);
+        }
+
         public static Collider<Sphere> Sphere(Sphere shape, TypedIndex shapeIndex, Matrix4x4 transform)
             => new Collider<Sphere>(shape, shapeIndex, transform, (shape, mass) => shape.ComputeInertia(mass));
 
