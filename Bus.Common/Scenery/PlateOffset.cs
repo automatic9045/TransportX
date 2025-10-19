@@ -14,6 +14,7 @@ namespace Bus.Common.Scenery
 
         public int DeltaX { get; }
         public int DeltaZ { get; }
+        public Vector3 Position { get; }
         public Matrix4x4 Transform { get; }
         public Matrix4x4 TransformInverse { get; }
 
@@ -28,9 +29,9 @@ namespace Bus.Common.Scenery
             DeltaX = deltaX;
             DeltaZ = deltaZ;
 
-            Vector3 platePosition = Plate.Size * new Vector3(deltaX, 0, deltaZ);
-            Transform = Matrix4x4.CreateTranslation(platePosition);
-            TransformInverse = Matrix4x4.CreateTranslation(-platePosition);
+            Position = Plate.Size * new Vector3(deltaX, 0, deltaZ);
+            Transform = Matrix4x4.CreateTranslation(Position);
+            TransformInverse = Matrix4x4.CreateTranslation(-Position);
         }
 
         public static bool operator ==(PlateOffset left, PlateOffset right) => left.DeltaX == right.DeltaX && left.DeltaZ == right.DeltaZ;

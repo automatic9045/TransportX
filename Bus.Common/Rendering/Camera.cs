@@ -20,7 +20,7 @@ namespace Bus.Common.Rendering
         private Matrix4x4 View = default;
 
         public int DrawPlateCount { get; set; } = 2;
-        public Listener Listener { get; set; } = new Listener();
+        public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
         public Camera() : base()

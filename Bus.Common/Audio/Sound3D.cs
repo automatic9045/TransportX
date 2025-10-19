@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Vortice.Multimedia;
 using Vortice.XAudio2;
+
+using Bus.Common.Scenery;
 
 namespace Bus.Common.Audio
 {
@@ -41,13 +44,13 @@ namespace Bus.Common.Audio
             return new Sound3D(masteringVoice, stream, sourceVoice);
         }
 
-        public void Update(X3DAudio x3dAudio, Listener listener)
+        public void Update(X3DAudio x3dAudio, Listener listener, int cameraX, int cameraZ)
         {
             if (AttachedTo is not null)
             {
                 Emitter.OrientFront = AttachedTo.Direction;
                 Emitter.OrientTop = AttachedTo.Up;
-                Emitter.Position = AttachedTo.Position;
+                Emitter.Position = AttachedTo.Position + new PlateOffset(AttachedTo.PlateX - cameraX, AttachedTo.PlateZ - cameraZ).Position;
                 //Emitter.Velocity = AttachedTo.Velocity;
             }
 
