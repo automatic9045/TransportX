@@ -47,13 +47,21 @@ namespace Bus.Common.Scenery
         }
 
         public static DynamicLocatedModel CreateDynamic(Simulation simulation,
+            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 locator)
+        {
+            BodyDescription desc = descFactory(model, (locator * model.Collider.Transform).ToRigidPose());
+            BodyHandle handle = simulation.Bodies.Add(desc);
+            return new DynamicLocatedModel(simulation, model, handle, locator);
+        }
+
+        public static DynamicLocatedModel CreateDynamic(Simulation simulation,
             ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
         {
             BodyInertia inertia = model.Collider.ComputeInertia(mass);
-            BodyDescription desc = BodyDescription.CreateDynamic(
-                (locator * model.Collider.Transform).ToRigidPose(), inertia, collidableDescription, 0.001f);
-            BodyHandle handle = simulation.Bodies.Add(desc);
-            return new DynamicLocatedModel(simulation, model, handle, locator);
+            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
+                => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
+
+            return CreateDynamic(simulation, model, CreateDesc, locator);
         }
 
         public static DynamicLocatedModel CreateDynamic(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 locator)
