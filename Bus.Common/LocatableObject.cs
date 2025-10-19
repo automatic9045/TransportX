@@ -68,7 +68,7 @@ namespace Bus.Common
 
             static int GetPlateDelta(float delta)
             {
-                return delta < 0 ? (int)(-delta / Plate.Size) - 1 : (int)(delta / Plate.Size);
+                return (int)Math.Floor(delta / Plate.Size);
             }
         }
 
