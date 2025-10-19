@@ -29,7 +29,7 @@ namespace Bus.Common.Scripting.Commands
 
         public LocatedModel PutStructure(string modelKey, Matrix4x4 locator)
         {
-            LocatedModel locatedModel = LocatedModel.CreateStaticOrNonCollision(World.PhysicsHost.Simulation, World.Models[modelKey], locator);
+            LocatedModel locatedModel = DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[modelKey], locator);
             Target.Models.Add(locatedModel);
             return locatedModel;
         }

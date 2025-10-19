@@ -46,7 +46,7 @@ namespace Bus.Common.Scenery.Networks
                 LocatedModel source = structure.Models[i % structure.Models.Count];
                 Matrix4x4 locator = source.InitialLocator * span * world;
 
-                LocatedModel compiled = LocatedModel.CreateStaticOrNonCollision(Simulation, source.Model, locator);
+                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(Simulation, source.Model, locator);
                 CompiledModels.Add(compiled);
 
                 world = GetTransform(structure.Interval) * world;

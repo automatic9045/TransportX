@@ -30,16 +30,16 @@ namespace Bus.Common.Scenery
             bool isFar = 2 <= int.Abs(fromCamera.DeltaX) || 2 <= int.Abs(fromCamera.DeltaZ);
             if (IsFar && isFar) return;
 
-            foreach (StaticLocatedModel model in Models)
+            foreach (LocatedModel model in Models)
             {
-                model.ComputeTick(fromCamera);
+                if (model is CollidableLocatedModel collidableModel) collidableModel.ComputeTick(fromCamera);
             }
 
             foreach (NetworkElement element in Network)
             {
-                foreach (StaticLocatedModel model in element.Models)
+                foreach (LocatedModel model in element.Models)
                 {
-                    model.ComputeTick(fromCamera);
+                    if (model is CollidableLocatedModel collidableModel) collidableModel.ComputeTick(fromCamera);
                 }
             }
 

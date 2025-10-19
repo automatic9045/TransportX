@@ -33,42 +33,6 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public static LocatedModel CreateStaticOrNonCollision(Simulation simulation, IModel model, Matrix4x4 locator)
-        {
-            return model is ICollidableModel collidableModel
-                ? CreateStatic(simulation, collidableModel, locator) : new LocatedModel(model, locator);
-        }
-
-        public static StaticLocatedModel CreateStatic(Simulation simulation, ICollidableModel model, Matrix4x4 locator)
-        {
-            StaticDescription desc = new StaticDescription((locator * model.Collider.Transform).ToRigidPose(), model.Collider.ShapeIndex);
-            StaticHandle handle = simulation.Statics.Add(desc);
-            return new StaticLocatedModel(simulation, model, handle, locator);
-        }
-
-        public static DynamicLocatedModel CreateDynamic(Simulation simulation,
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 locator)
-        {
-            BodyDescription desc = descFactory(model, (locator * model.Collider.Transform).ToRigidPose());
-            BodyHandle handle = simulation.Bodies.Add(desc);
-            return new DynamicLocatedModel(simulation, model, handle, locator);
-        }
-
-        public static DynamicLocatedModel CreateDynamic(Simulation simulation,
-            ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
-        {
-            BodyInertia inertia = model.Collider.ComputeInertia(mass);
-            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
-                => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
-
-            return CreateDynamic(simulation, model, CreateDesc, locator);
-        }
-
-        public static DynamicLocatedModel CreateDynamic(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 locator)
-        {
-            return CreateDynamic(simulation, model, mass, model.Collider.ShapeIndex, locator);
-        }
-
         public void Draw(DrawContext context)
         {
             ConstantBuffer cb = new ConstantBuffer()
@@ -84,14 +48,11 @@ namespace Bus.Common.Scenery
     }
 
 
-    public class StaticLocatedModel : LocatedModel
+    public abstract class CollidableLocatedModel : LocatedModel
     {
-        private readonly Simulation Simulation;
+        protected readonly Simulation Simulation;
 
         public new ICollidableModel Model { get; }
-        public StaticHandle Handle { get; }
-        public StaticReference Static => Simulation.Statics[Handle];
-
         public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
 
         public override Matrix4x4 Locator
@@ -100,11 +61,39 @@ namespace Bus.Common.Scenery
             set
             {
                 base.Locator = value;
-                StaticLocator = Locator;
+                ColliderLocator = Locator;
             }
         }
 
-        protected Matrix4x4 StaticLocator
+        protected abstract Matrix4x4 ColliderLocator { get; set; }
+
+        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, Matrix4x4 locator) : base(model, locator, false)
+        {
+            Simulation = simulation;
+            Model = model;
+        }
+
+        public void ComputeTick(PlateOffset fromCamera)
+        {
+            PlateOffset fromCameraDelta = fromCamera - FromCamera;
+            if (!fromCameraDelta.IsZero)
+            {
+                Matrix4x4 colliderLocator = ColliderLocator;
+                FromCamera = fromCamera;
+                ColliderLocator = colliderLocator;
+            }
+
+            base.Locator = ColliderLocator;
+        }
+    }
+
+
+    public class StaticLocatedModel : CollidableLocatedModel
+    {
+        public StaticHandle Handle { get; }
+        public StaticReference Static => Simulation.Statics[Handle];
+
+        protected override Matrix4x4 ColliderLocator
         {
             get => Model.Collider.TransformInverse * Static.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
             set
@@ -115,49 +104,34 @@ namespace Bus.Common.Scenery
             }
         }
 
-        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 locator) : base(model, locator, false)
+        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 locator)
+            : base(simulation, model, locator)
         {
-            Simulation = simulation;
-            Model = model;
             Handle = handle;
         }
 
-        public void ComputeTick(PlateOffset fromCamera)
+        public static StaticLocatedModel Create(Simulation simulation, ICollidableModel model, Matrix4x4 locator)
         {
-            PlateOffset fromCameraDelta = fromCamera - FromCamera;
-            if (!fromCameraDelta.IsZero)
-            {
-                Matrix4x4 staticLocator = StaticLocator;
-                FromCamera = fromCamera;
-                StaticLocator = staticLocator;
-            }
+            StaticDescription desc = new StaticDescription((locator * model.Collider.Transform).ToRigidPose(), model.Collider.ShapeIndex);
+            StaticHandle handle = simulation.Statics.Add(desc);
+            return new StaticLocatedModel(simulation, model, handle, locator);
+        }
 
-            base.Locator = StaticLocator;
+        public static LocatedModel CreateStaticOrNonCollision(Simulation simulation, IModel model, Matrix4x4 locator)
+        {
+            return model is ICollidableModel collidableModel
+                ? Create(simulation, collidableModel, locator) : new LocatedModel(model, locator);
         }
     }
 
 
-    public class DynamicLocatedModel : LocatedModel
+    public class DynamicLocatedModel : CollidableLocatedModel
     {
-        private readonly Simulation Simulation;
-
-        public new ICollidableModel Model { get; }
         public BodyHandle Handle { get; }
         public BodyReference Body => Simulation.Bodies[Handle];
+        public bool IsKinematic => Body.Kinematic;
 
-        public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
-
-        public override Matrix4x4 Locator
-        {
-            get => base.Locator;
-            set
-            {
-                base.Locator = value;
-                BodyLocator = Locator;
-            }
-        }
-
-        protected Matrix4x4 BodyLocator
+        protected override Matrix4x4 ColliderLocator
         {
             get => Model.Collider.TransformInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
             set
@@ -167,29 +141,52 @@ namespace Bus.Common.Scenery
             }
         }
 
-        internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 locator) : base(model, locator, false)
+        internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 locator)
+            : base(simulation, model, locator)
         {
-            Simulation = simulation;
-            Model = model;
             Handle = handle;
         }
 
-        public void ComputeTick(PlateOffset fromCamera)
+        public static DynamicLocatedModel Create(Simulation simulation,
+            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 locator)
         {
-            PlateOffset fromCameraDelta = fromCamera - FromCamera;
-            if (!fromCameraDelta.IsZero)
-            {
-                Matrix4x4 bodyLocator = BodyLocator;
-                FromCamera = fromCamera;
-                BodyLocator = bodyLocator;
-            }
+            BodyDescription desc = descFactory(model, (locator * model.Collider.Transform).ToRigidPose());
+            BodyHandle handle = simulation.Bodies.Add(desc);
+            return new DynamicLocatedModel(simulation, model, handle, locator);
+        }
 
-            base.Locator = BodyLocator;
+        public static DynamicLocatedModel Create(Simulation simulation,
+            ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 locator)
+        {
+            BodyInertia inertia = model.Collider.ComputeInertia(mass);
+            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
+                => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
+
+            return Create(simulation, model, CreateDesc, locator);
+        }
+
+        public static DynamicLocatedModel Create(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 locator)
+        {
+            return Create(simulation, model, mass, model.Collider.ShapeIndex, locator);
+        }
+
+        public static DynamicLocatedModel CreateKinematic(Simulation simulation, ICollidableModel model, Matrix4x4 locator)
+        {
+            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
+                => BodyDescription.CreateKinematic(pose, model.Collider.ShapeIndex, 0.01f);
+
+            return Create(simulation, model, CreateDesc, locator);
+        }
+
+        public static LocatedModel CreateKinematicOrNonCollision(Simulation simulation, IModel model, Matrix4x4 locator)
+        {
+            return model is ICollidableModel collidableModel
+                ? CreateKinematic(simulation, collidableModel, locator) : new LocatedModel(model, locator);
         }
 
         public void Shift(PlateOffset offset)
         {
-            Locator = Locator * offset.Transform;
+            Locator *= offset.Transform;
         }
     }
 }

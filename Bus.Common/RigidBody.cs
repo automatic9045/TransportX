@@ -56,7 +56,7 @@ namespace Bus.Common
         public DynamicLocatedModel AttachModel(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 locator)
         {
-            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(PhysicsHost.Simulation, model, descFactory, locator);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, descFactory, locator);
             return AttachModel(locatedModel, group);
         }
 
@@ -68,7 +68,7 @@ namespace Bus.Common
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 locator)
         {
-            DynamicLocatedModel locatedModel = LocatedModel.CreateDynamic(PhysicsHost.Simulation, model, mass, locator);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, mass, locator);
             return AttachModel(locatedModel, group);
         }
 
@@ -110,7 +110,7 @@ namespace Bus.Common
             PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
             {
-                if (model is DynamicLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
+                if (model is CollidableLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
             }
 
             PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.InitialLocatorInverse * RootModel.Locator);
