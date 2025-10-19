@@ -25,6 +25,9 @@ namespace Bus.Common
         public IReadOnlyList<LocatedModel> Models => ModelsKey;
         public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
 
+        public Vector3 LinearVelocity => RootModel is null ? Vector3.NaN : RootModel.LinearVelocity;
+        public Vector3 AngularVelocity => RootModel is null ? Vector3.NaN : RootModel.AngularVelocity;
+
         public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
         {
             PhysicsHost = physicsHost;

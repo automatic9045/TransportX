@@ -141,6 +141,19 @@ namespace Bus.Common.Scenery
             }
         }
 
+        public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.TransformInverse);
+        public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.TransformInverse);
+        public BodyVelocity Velocity
+        {
+            get => new BodyVelocity(LinearVelocity, AngularVelocity);
+            set
+            {
+                Vector3 linear = Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.Transform);
+                Vector3 angular = Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.Transform);
+                Body.Velocity = new BodyVelocity(linear, angular);
+            }
+        }
+
         internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 locator)
             : base(simulation, model, locator)
         {
