@@ -90,18 +90,49 @@ namespace Bus.Common.Scenery
 
         public new ICollidableModel Model { get; }
         public StaticHandle Handle { get; }
+        public StaticReference Static => Simulation.Statics[Handle];
 
-        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 locator) : base(model, locator)
+        public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
+
+        public override Matrix4x4 Locator
+        {
+            get => base.Locator;
+            set
+            {
+                base.Locator = value;
+                StaticLocator = Locator;
+            }
+        }
+
+        protected Matrix4x4 StaticLocator
+        {
+            get => Model.Collider.TransformInverse * Static.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
+            set
+            {
+                Static.GetDescription(out StaticDescription desc);
+                desc.Pose = (Model.Collider.Transform * value * FromCamera.Transform).ToRigidPose();
+                Static.ApplyDescription(desc);
+            }
+        }
+
+        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 locator) : base(model, locator, false)
         {
             Simulation = simulation;
             Model = model;
             Handle = handle;
         }
 
-        public void UpdateColliderPose(PlateOffset plateOffset)
+        public void ComputeTick(PlateOffset fromCamera)
         {
-            Matrix4x4 locator = Locator * plateOffset.Transform;
-            Simulation.Statics[Handle].Pose = (locator * Model.Collider.Transform).ToRigidPose();
+            PlateOffset fromCameraDelta = fromCamera - FromCamera;
+            if (!fromCameraDelta.IsZero)
+            {
+                Matrix4x4 staticLocator = StaticLocator;
+                FromCamera = fromCamera;
+                StaticLocator = staticLocator;
+            }
+
+            base.Locator = StaticLocator;
         }
     }
 
@@ -114,21 +145,26 @@ namespace Bus.Common.Scenery
         public BodyHandle Handle { get; }
         public BodyReference Body => Simulation.Bodies[Handle];
 
+        public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
+
         public override Matrix4x4 Locator
         {
             get => base.Locator;
             set
             {
                 base.Locator = value;
-                Simulation.Awakener.AwakenBody(Handle);
                 BodyLocator = Locator;
             }
         }
 
         protected Matrix4x4 BodyLocator
         {
-            get => Model.Collider.TransformInverse * Body.Pose.ToMatrix4x4();
-            set => Body.Pose = (Model.Collider.Transform * value).ToRigidPose();
+            get => Model.Collider.TransformInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
+            set
+            {
+                Simulation.Awakener.AwakenBody(Handle);
+                Body.Pose = (Model.Collider.Transform * value * FromCamera.Transform).ToRigidPose();
+            }
         }
 
         internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 locator) : base(model, locator, false)
@@ -138,9 +174,22 @@ namespace Bus.Common.Scenery
             Handle = handle;
         }
 
-        public void SyncLocator()
+        public void ComputeTick(PlateOffset fromCamera)
         {
+            PlateOffset fromCameraDelta = fromCamera - FromCamera;
+            if (!fromCameraDelta.IsZero)
+            {
+                Matrix4x4 bodyLocator = BodyLocator;
+                FromCamera = fromCamera;
+                BodyLocator = bodyLocator;
+            }
+
             base.Locator = BodyLocator;
+        }
+
+        public void Shift(PlateOffset offset)
+        {
+            Locator = Locator * offset.Transform;
         }
     }
 }

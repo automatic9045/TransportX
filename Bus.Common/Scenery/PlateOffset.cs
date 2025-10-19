@@ -36,6 +36,8 @@ namespace Bus.Common.Scenery
 
         public static bool operator ==(PlateOffset left, PlateOffset right) => left.DeltaX == right.DeltaX && left.DeltaZ == right.DeltaZ;
         public static bool operator !=(PlateOffset left, PlateOffset right) => !(left == right);
+        public static PlateOffset operator +(PlateOffset left, PlateOffset right) => new PlateOffset(left.DeltaX + right.DeltaX, left.DeltaZ + right.DeltaZ);
+        public static PlateOffset operator -(PlateOffset left, PlateOffset right) => new PlateOffset(left.DeltaX - right.DeltaX, left.DeltaZ - right.DeltaZ);
 
         public override bool Equals(object? obj) => obj is PlateOffset offset && this == offset;
         public override int GetHashCode() => HashCode.Combine(DeltaX, DeltaZ);

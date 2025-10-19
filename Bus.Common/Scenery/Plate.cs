@@ -25,21 +25,21 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public void ComputeTick(PlateOffset plateOffset)
+        public void ComputeTick(PlateOffset fromCamera)
         {
-            bool isFar = 2 <= int.Abs(plateOffset.DeltaX) || 2 <= int.Abs(plateOffset.DeltaZ);
+            bool isFar = 2 <= int.Abs(fromCamera.DeltaX) || 2 <= int.Abs(fromCamera.DeltaZ);
             if (IsFar && isFar) return;
 
             foreach (StaticLocatedModel model in Models)
             {
-                model.UpdateColliderPose(plateOffset);
+                model.ComputeTick(fromCamera);
             }
 
             foreach (NetworkElement element in Network)
             {
                 foreach (StaticLocatedModel model in element.Models)
                 {
-                    model.UpdateColliderPose(plateOffset);
+                    model.ComputeTick(fromCamera);
                 }
             }
 

@@ -27,7 +27,7 @@ namespace Bus.Common.Vehicles
         public abstract Viewpoint DriverViewpoint { get; }
         public abstract Viewpoint BirdViewpoint { get; }
 
-        public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost)
+        public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost, builder.Camera)
         {
             DXHost = builder.DXHost;
             PhysicsHost = builder.PhysicsHost;

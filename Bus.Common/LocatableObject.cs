@@ -11,12 +11,15 @@ namespace Bus.Common
 {
     public class LocatableObject
     {
+        public static readonly LocatableObject Origin = new LocatableObject();
+
+
         public int PlateX { get; private set; }
         public int PlateZ { get; private set; }
         public Matrix4x4 Locator { get; private set; }
 
         public Vector3 Position => Locator.Translation;
-        public Vector3 PositionInWorld => Position + Plate.Size * new Vector3(PlateX, 0, PlateZ); // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
+        public Vector3 PositionInWorld => Position + Origin.GetPlateOffset(this).Position; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
         public Vector3 Direction { get; private set; }
         public Vector3 Up { get; private set; }
 
@@ -97,6 +100,11 @@ namespace Bus.Common
         {
             Matrix4x4 newLocator = transform * Locator;
             return Locate(PlateX, PlateZ, newLocator);
+        }
+
+        public PlateOffset GetPlateOffset(LocatableObject to)
+        {
+            return new PlateOffset(to.PlateX - PlateX, to.PlateZ - PlateZ);
         }
     }
 }

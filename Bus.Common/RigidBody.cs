@@ -17,6 +17,7 @@ namespace Bus.Common
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
         private readonly IPhysicsHost PhysicsHost;
+        private readonly LocatableObject Camera;
 
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
 
@@ -24,16 +25,18 @@ namespace Bus.Common
         public IReadOnlyList<LocatedModel> Models => ModelsKey;
         public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
+        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
         {
             PhysicsHost = physicsHost;
+            Camera = camera;
         }
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.CreateTransform())
+        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, SixDoF position)
+            : this(physicsHost, camera, plateX, plateZ, position.CreateTransform())
         {
         }
 
-        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Matrix4x4.Identity)
+        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera) : this(physicsHost, camera, 0, 0, Matrix4x4.Identity)
         {
         }
 
@@ -104,15 +107,26 @@ namespace Bus.Common
         {
             if (RootModel is null) return;
 
+            PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
             {
-                if (model is DynamicLocatedModel dynamicModel) dynamicModel.SyncLocator();
+                if (model is DynamicLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
             }
 
             PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.InitialLocatorInverse * RootModel.Locator);
-            foreach (LocatedModel model in Models)
+            if (!plateOffset.IsZero)
             {
-                if (!plateOffset.IsZero || model is not DynamicLocatedModel) model.Locator = model.InitialLocator * Locator;
+                foreach (LocatedModel model in Models)
+                {
+                    if (model is DynamicLocatedModel dynamicModel)
+                    {
+                        dynamicModel.Shift(plateOffset);
+                    }
+                    else
+                    {
+                        model.Locator = model.InitialLocator * Locator;
+                    }
+                }
             }
         }
 
