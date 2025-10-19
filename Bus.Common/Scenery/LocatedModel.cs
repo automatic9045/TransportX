@@ -120,6 +120,7 @@ namespace Bus.Common.Scenery
             set
             {
                 base.Locator = value;
+                Simulation.Awakener.AwakenBody(Handle);
                 BodyLocator = Locator;
             }
         }
