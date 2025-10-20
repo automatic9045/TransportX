@@ -70,6 +70,10 @@ namespace Bus.Common.Rendering
         {
         }
 
+        public CollidableModel(ICollider collider) : this([], [], collider)
+        {
+        }
+
         public static CollidableModel Load(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
             string visualModelPath, string collisionModelPath, bool isOpen)
         {
