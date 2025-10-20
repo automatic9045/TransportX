@@ -10,7 +10,9 @@ namespace Bus.Common.Physics
     public readonly struct ColliderGroupHandle
     {
         private static int NextId = 1;
+
         public static readonly ColliderGroupHandle None = default;
+        public static readonly ColliderGroupHandle Skip = new ColliderGroupHandle(-1);
 
 
         public int Id { get; } = 0;

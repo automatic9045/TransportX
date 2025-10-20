@@ -46,10 +46,10 @@ namespace Bus.Common.Physics
             {
                 ColliderGroupHandle aGroup = Groups.Allocate(a);
                 ColliderGroupHandle bGroup = Groups.Allocate(b);
-                if (aGroup != ColliderGroupHandle.None && aGroup == bGroup)
-                {
-                    return false;
-                }
+
+                if (aGroup == ColliderGroupHandle.Skip) return false;
+                if (bGroup == ColliderGroupHandle.Skip) return false;
+                if (aGroup != ColliderGroupHandle.None && aGroup == bGroup) return false;
             }
 
             return a.Mobility == CollidableMobility.Dynamic || b.Mobility == CollidableMobility.Dynamic;
