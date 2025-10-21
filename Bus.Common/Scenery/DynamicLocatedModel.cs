@@ -21,23 +21,23 @@ namespace Bus.Common.Scenery
 
         protected override Matrix4x4 ColliderLocator
         {
-            get => Model.Collider.TransformInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
+            get => Model.Collider.OffsetInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
             set
             {
                 Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Transform * value * FromCamera.Transform).ToRigidPose();
+                Body.Pose = (Model.Collider.Offset * value * FromCamera.Transform).ToRigidPose();
             }
         }
 
-        public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.TransformInverse);
-        public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.TransformInverse);
+        public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
+        public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
         public BodyVelocity Velocity
         {
             get => new BodyVelocity(LinearVelocity, AngularVelocity);
             set
             {
-                Vector3 linear = Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.Transform);
-                Vector3 angular = Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.Transform);
+                Vector3 linear = Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.Offset);
+                Vector3 angular = Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.Offset);
                 Body.Velocity = new BodyVelocity(linear, angular);
             }
         }
@@ -51,7 +51,7 @@ namespace Bus.Common.Scenery
         public static DynamicLocatedModel Create(Simulation simulation,
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 locator)
         {
-            BodyDescription desc = descFactory(model, (locator * model.Collider.Transform).ToRigidPose());
+            BodyDescription desc = descFactory(model, (locator * model.Collider.Offset).ToRigidPose());
             BodyHandle handle = simulation.Bodies.Add(desc);
             return new DynamicLocatedModel(simulation, model, handle, locator);
         }

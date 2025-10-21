@@ -14,8 +14,8 @@ namespace Bus.Common.Physics
     {
         IShape Shape { get; }
         TypedIndex ShapeIndex { get; }
-        Matrix4x4 Transform { get; }
-        Matrix4x4 TransformInverse { get; }
+        Matrix4x4 Offset { get; }
+        Matrix4x4 OffsetInverse { get; }
 
         BodyInertia ComputeInertia(float mass);
     }

@@ -131,8 +131,8 @@ namespace Bus.Common.Rendering
 
             Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
             Vector3 origin = (min + max) / 2;
-            Matrix4x4 colliderTransform = Matrix4x4.CreateTranslation(origin);
-            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, colliderTransform);
+            Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(origin);
+            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
         }

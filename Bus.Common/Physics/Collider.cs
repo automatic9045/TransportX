@@ -17,16 +17,16 @@ namespace Bus.Common.Physics
         public TShape Shape { get; }
         IShape ICollider.Shape => Shape;
         public TypedIndex ShapeIndex { get; }
-        public Matrix4x4 Transform { get; }
-        public Matrix4x4 TransformInverse { get; }
+        public Matrix4x4 Offset { get; }
+        public Matrix4x4 OffsetInverse { get; }
 
-        public Collider(TShape shape, TypedIndex shapeIndex, Matrix4x4 transform, Func<TShape, float, BodyInertia> inertiaFactory)
+        public Collider(TShape shape, TypedIndex shapeIndex, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
             Shape = shape;
             ShapeIndex = shapeIndex;
-            Transform = transform;
-            Matrix4x4.Invert(transform, out Matrix4x4 transformInverse);
-            TransformInverse = transformInverse;
+            Offset = offset;
+            Matrix4x4.Invert(offset, out Matrix4x4 offsetInverse);
+            OffsetInverse = offsetInverse;
             InertiaFactory = inertiaFactory;
         }
 

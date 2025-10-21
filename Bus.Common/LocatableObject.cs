@@ -96,9 +96,9 @@ namespace Bus.Common
             return Locate(attachTo, attachTo.Locator);
         }
 
-        protected PlateOffset Move(Matrix4x4 transform)
+        protected PlateOffset Move(Matrix4x4 offset)
         {
-            Matrix4x4 newLocator = transform * Locator;
+            Matrix4x4 newLocator = offset * Locator;
             return Locate(PlateX, PlateZ, newLocator);
         }
 

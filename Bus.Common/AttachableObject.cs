@@ -10,12 +10,12 @@ namespace Bus.Common
     public sealed class AttachableObject : LocatableObject
     {
         public LocatableObject Parent { get; }
-        public Matrix4x4 Transform { get; set; }
+        public Matrix4x4 Offset { get; set; }
 
-        public AttachableObject(LocatableObject parent, Matrix4x4 transform) : base()
+        public AttachableObject(LocatableObject parent, Matrix4x4 offset) : base()
         {
             Parent = parent;
-            Transform = transform;
+            Offset = offset;
 
             Parent.Moved += (sender, e) => Update();
             Update();
@@ -23,7 +23,7 @@ namespace Bus.Common
 
             void Update()
             {
-                Locate(Parent, Transform * Parent.Locator);
+                Locate(Parent, Offset * Parent.Locator);
             }
         }
 

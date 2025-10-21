@@ -19,11 +19,11 @@ namespace Bus.Common.Scenery
 
         protected override Matrix4x4 ColliderLocator
         {
-            get => Model.Collider.TransformInverse * Static.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
+            get => Model.Collider.OffsetInverse * Static.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
             set
             {
                 Static.GetDescription(out StaticDescription desc);
-                desc.Pose = (Model.Collider.Transform * value * FromCamera.Transform).ToRigidPose();
+                desc.Pose = (Model.Collider.Offset * value * FromCamera.Transform).ToRigidPose();
                 Static.ApplyDescription(desc);
             }
         }
@@ -36,7 +36,7 @@ namespace Bus.Common.Scenery
 
         public static StaticLocatedModel Create(Simulation simulation, ICollidableModel model, Matrix4x4 locator)
         {
-            StaticDescription desc = new StaticDescription((locator * model.Collider.Transform).ToRigidPose(), model.Collider.ShapeIndex);
+            StaticDescription desc = new StaticDescription((locator * model.Collider.Offset).ToRigidPose(), model.Collider.ShapeIndex);
             StaticHandle handle = simulation.Statics.Add(desc);
             return new StaticLocatedModel(simulation, model, handle, locator);
         }
