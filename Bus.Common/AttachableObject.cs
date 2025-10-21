@@ -23,7 +23,7 @@ namespace Bus.Common
 
             void Update()
             {
-                Locate(Parent, Offset * Parent.Locator);
+                Locate(Parent, Offset * Parent.Transform);
             }
         }
 

@@ -17,7 +17,7 @@ namespace Bus.Common.Scenery.Networks
 
         public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
 
-        public NetworkElement(int plateX, int plateZ, Matrix4x4 locator, bool isRoot) : base(plateX, plateZ, locator)
+        public NetworkElement(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform)
         {
             IsRoot = isRoot;
         }

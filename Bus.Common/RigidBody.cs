@@ -28,7 +28,7 @@ namespace Bus.Common
         public Vector3 LinearVelocity => RootModel is null ? Vector3.NaN : RootModel.LinearVelocity;
         public Vector3 AngularVelocity => RootModel is null ? Vector3.NaN : RootModel.AngularVelocity;
 
-        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 locator) : base(plateX, plateZ, locator)
+        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
             PhysicsHost = physicsHost;
             Camera = camera;
@@ -49,7 +49,7 @@ namespace Bus.Common
 
         private DynamicLocatedModel AttachModel(DynamicLocatedModel locatedModel, ColliderGroupHandle group)
         {
-            locatedModel.Locator = locatedModel.InitialLocator * Locator;
+            locatedModel.Transform = locatedModel.BaseTransform * Transform;
             PhysicsHost.AddToGroup(locatedModel.Handle, group);
 
             ModelsKey.Add(locatedModel);
@@ -57,9 +57,9 @@ namespace Bus.Common
         }
 
         public DynamicLocatedModel AttachModel(
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 locator)
+            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 transform)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, descFactory, locator);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, descFactory, transform);
             return AttachModel(locatedModel, group);
         }
 
@@ -69,9 +69,9 @@ namespace Bus.Common
             return AttachModel(model, descFactory, group, position.CreateTransform());
         }
 
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 locator)
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 transform)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, mass, locator);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, mass, transform);
             return AttachModel(locatedModel, group);
         }
 
@@ -80,9 +80,9 @@ namespace Bus.Common
             return AttachModel(model, mass, group, position.CreateTransform());
         }
 
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 locator)
+        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 transform)
         {
-            return AttachModel(model, mass, DefaultGroup, locator);
+            return AttachModel(model, mass, DefaultGroup, transform);
         }
 
         public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, SixDoF position)
@@ -90,12 +90,12 @@ namespace Bus.Common
             return AttachModel(model, mass, DefaultGroup, position.CreateTransform());
         }
 
-        public LocatedModel AttachModel(IModel model, Matrix4x4 locator)
+        public LocatedModel AttachModel(IModel model, Matrix4x4 transform)
         {
             if (RootModel is null) throw new InvalidOperationException("1 つ目のモデル (ルートモデル) は剛体である必要があります。");
 
-            LocatedModel locatedModel = new LocatedModel(model, locator);
-            locatedModel.Locator = locatedModel.InitialLocator * Locator;
+            LocatedModel locatedModel = new LocatedModel(model, transform);
+            locatedModel.Transform = locatedModel.BaseTransform * Transform;
 
             ModelsKey.Add(locatedModel);
             return locatedModel;
@@ -116,7 +116,7 @@ namespace Bus.Common
                 if (model is CollidableLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
             }
 
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.InitialLocatorInverse * RootModel.Locator);
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.BaseTransformInverse * RootModel.Transform);
             if (!plateOffset.IsZero)
             {
                 foreach (LocatedModel model in Models)
@@ -127,7 +127,7 @@ namespace Bus.Common
                     }
                     else
                     {
-                        model.Locator = model.InitialLocator * Locator;
+                        model.Transform = model.BaseTransform * Transform;
                     }
                 }
             }

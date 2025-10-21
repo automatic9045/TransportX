@@ -24,10 +24,10 @@ namespace Bus.Common.Scripting.Commands
             Port = World.Commander.Splines.Ports[portKey];
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 locator, double span, double interval)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double span, double interval)
         {
             LocatedModel[] models = modelKeys.Select(
-                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], locator)).ToArray();
+                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], transform)).ToArray();
             SplineStructure structure = new SplineStructure(models, 0, span, interval, int.MaxValue);
             StructuresKey.Add(structure);
             return structure;
@@ -36,8 +36,8 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double span, double interval)
         {
-            SixDoF locator = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, locator.CreateTransform(), span, interval);
+            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKeys, position.CreateTransform(), span, interval);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double span, double interval)
@@ -45,9 +45,9 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, span, interval);
         }
 
-        internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 locator)
+        internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            SplineFactory factory = new SplineFactory(World.PhysicsHost.Simulation, plateX, plateZ, locator, Port);
+            SplineFactory factory = new SplineFactory(World.PhysicsHost.Simulation, plateX, plateZ, transform, Port);
             return factory;
         }
     }

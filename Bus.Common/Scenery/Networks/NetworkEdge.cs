@@ -12,7 +12,7 @@ namespace Bus.Common.Scenery.Networks
         public override IReadOnlyList<ElementPath> Paths => [Path];
         public abstract ElementPath Path { get; }
 
-        public NetworkEdge(int plateX, int plateZ, Matrix4x4 locator, bool isRoot) : base(plateX, plateZ, locator, isRoot)
+        public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform, isRoot)
         {
         }
 

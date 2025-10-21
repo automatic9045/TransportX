@@ -12,20 +12,20 @@ namespace Bus.Common.Scenery
     public class LocatedModel : IDrawable
     {
         public IModel Model { get; }
-        public Matrix4x4 InitialLocator { get; }
-        public Matrix4x4 InitialLocatorInverse { get; }
-        public virtual Matrix4x4 Locator { get; set; } = Matrix4x4.Identity;
+        public Matrix4x4 BaseTransform { get; }
+        public Matrix4x4 BaseTransformInverse { get; }
+        public virtual Matrix4x4 Transform { get; set; } = Matrix4x4.Identity;
 
-        protected LocatedModel(IModel model, Matrix4x4 locator, bool setLocator)
+        protected LocatedModel(IModel model, Matrix4x4 transform, bool setTransform)
         {
             Model = model;
-            InitialLocator = locator;
-            Matrix4x4.Invert(locator, out Matrix4x4 initialLocatorInverse);
-            InitialLocatorInverse = initialLocatorInverse;
-            if (setLocator) Locator = locator;
+            BaseTransform = transform;
+            Matrix4x4.Invert(transform, out Matrix4x4 baseTransformInverse);
+            BaseTransformInverse = baseTransformInverse;
+            if (setTransform) Transform = transform;
         }
 
-        public LocatedModel(IModel model, Matrix4x4 locator) : this(model, locator, true)
+        public LocatedModel(IModel model, Matrix4x4 transform) : this(model, transform, true)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Bus.Common.Scenery
         {
             ConstantBuffer cb = new ConstantBuffer()
             {
-                World = Matrix4x4.Transpose(Locator * context.PlateOffset.Transform),
+                World = Matrix4x4.Transpose(Transform * context.PlateOffset.Transform),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
             };

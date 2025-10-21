@@ -32,7 +32,7 @@ namespace Bus.Common.Rendering
                 Listener.Position = Position;
                 //Listener.Velocity = Velocity;
 
-                Matrix4x4.Invert(Locator, out View);
+                Matrix4x4.Invert(Transform, out View);
             };
         }
 
@@ -42,7 +42,7 @@ namespace Bus.Common.Rendering
 
             foreach (LocatedModel model in models)
             {
-                model.Locator = Matrix4x4.CreateTranslation(Locator.Translation);
+                model.Transform = Matrix4x4.CreateTranslation(Transform.Translation);
 
                 DrawContext drawContext = new(deviceContext, constantBuffer, PlateOffset.Identity, View, CreateProjection(clientSize));
                 model.Draw(drawContext);
@@ -89,7 +89,7 @@ namespace Bus.Common.Rendering
 
         protected void UpdateLocation()
         {
-            Locate(Viewpoints.Current.Source, Viewpoints.Current.Locator);
+            Locate(Viewpoints.Current.Source, Viewpoints.Current.Transform);
         }
 
         protected Matrix4x4 CreateProjection(GdiSize clientSize)

@@ -27,17 +27,17 @@ namespace Bus.Common.Scripting.Commands
             Target = World.Plates.GetOrAdd(X, Z);
         }
 
-        public LocatedModel PutStructure(string modelKey, Matrix4x4 locator)
+        public LocatedModel PutStructure(string modelKey, Matrix4x4 transform)
         {
-            LocatedModel locatedModel = DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[modelKey], locator);
+            LocatedModel locatedModel = DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[modelKey], transform);
             Target.Models.Add(locatedModel);
             return locatedModel;
         }
 
         public LocatedModel PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF locator = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKey, locator.CreateTransform());
+            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKey, position.CreateTransform());
         }
 
         public LocatedModel PutStructure(string modelKey, double x, double y, double z)
@@ -45,17 +45,17 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineCommand BeginSpline(Matrix4x4 locator, string? templateKey = null)
+        public SplineCommand BeginSpline(Matrix4x4 transform, string? templateKey = null)
         {
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.PhysicsHost.Simulation, X, Z, locator, new LaneConnector());
+                splineFactory = new SplineFactory(World.PhysicsHost.Simulation, X, Z, transform, new LaneConnector());
             }
             else
             {
                 SplineTemplate template = World.Commander.Splines.Templates[templateKey];
-                splineFactory = template.Build(X, Z, locator);
+                splineFactory = template.Build(X, Z, transform);
 
             }
 
@@ -64,8 +64,8 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ, string? templateKey = null)
         {
-            SixDoF locator = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return BeginSpline(locator.CreateTransform(), templateKey);
+            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return BeginSpline(position.CreateTransform(), templateKey);
         }
 
         public SplineCommand BeginSpline(double x, double y, double z, string? templateKey = null)

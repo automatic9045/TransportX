@@ -17,7 +17,7 @@ namespace Bus.Common.Scenery.Networks
         protected readonly List<Spline> CreatedSplinesKey = new List<Spline>();
         public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
 
-        public SplineFactory(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator, LaneConnector basePairedPort) : base(plateX, plateZ, locator)
+        public SplineFactory(Simulation simulation, int plateX, int plateZ, Matrix4x4 transform, LaneConnector basePairedPort) : base(plateX, plateZ, transform)
         {
             Simulation = simulation;
             BasePairedPort = basePairedPort;
@@ -25,7 +25,7 @@ namespace Bus.Common.Scenery.Networks
 
         public Spline ByCurvature(double curvature, double length)
         {
-            Spline spline = new Spline(Simulation, PlateX, PlateZ, Locator, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
+            Spline spline = new Spline(Simulation, PlateX, PlateZ, Transform, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
 
             Move(spline.Path.Transition);
 

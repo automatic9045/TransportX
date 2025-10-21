@@ -48,10 +48,10 @@ namespace Bus.Common.Scripting.Commands
             plate.Network.Add(spline);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 locator, double from, double span, double interval, int count = int.MaxValue)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)
         {
             LocatedModel[] models = modelKeys.Select(
-                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], locator)).ToArray();
+                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], transform)).ToArray();
             SplineStructure structure = new SplineStructure(models, from, span, interval, count);
             SplineFactory.PutStructure(structure);
             return structure;
@@ -60,8 +60,8 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
-            SixDoF locator = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, locator.CreateTransform(), from, span, interval, count);
+            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKeys, position.CreateTransform(), from, span, interval, count);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,

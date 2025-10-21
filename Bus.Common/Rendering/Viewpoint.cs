@@ -10,7 +10,7 @@ namespace Bus.Common.Rendering
     public class Viewpoint
     {
         public LocatableObject Source { get; }
-        public virtual Matrix4x4 Locator => Source.Locator;
+        public virtual Matrix4x4 Transform => Source.Transform;
         public float Perspective { get; protected set; } = 1;
 
         public Viewpoint(LocatableObject source)
@@ -96,7 +96,7 @@ namespace Bus.Common.Rendering
     public class FreeViewpoint : Viewpoint
     {
         private new readonly Rotator Rotator = new Rotator(Vector2.Zero);
-        public override Matrix4x4 Locator => Rotator.Rotation * Source.Locator;
+        public override Matrix4x4 Transform => Rotator.Rotation * Source.Transform;
 
         public FreeViewpoint(LocatableObject source) : base(source)
         {
@@ -123,7 +123,7 @@ namespace Bus.Common.Rendering
     public class DriverViewpoint : Viewpoint
     {
         private new readonly Rotator Rotator = new Rotator(Vector2.Zero);
-        public override Matrix4x4 Locator => Rotator.Rotation * Source.Locator;
+        public override Matrix4x4 Transform => Rotator.Rotation * Source.Transform;
 
         public DriverViewpoint(LocatableObject source) : base(source)
         {
@@ -151,7 +151,7 @@ namespace Bus.Common.Rendering
     {
         private new readonly Translator Translator;
         private new readonly Rotator Rotator;
-        public override Matrix4x4 Locator => Translator.Translation * Rotator.Rotation * Source.Locator;
+        public override Matrix4x4 Transform => Translator.Translation * Rotator.Rotation * Source.Transform;
 
         public BirdViewpoint(LocatableObject source, float initialDistance, Vector2 initialAngle) : base(source)
         {

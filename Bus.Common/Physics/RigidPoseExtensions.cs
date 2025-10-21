@@ -16,9 +16,9 @@ namespace Bus.Common.Physics
             return Matrix4x4.CreateFromQuaternion(pose.Orientation) * Matrix4x4.CreateTranslation(pose.Position);
         }
 
-        public static RigidPose ToRigidPose(this Matrix4x4 locator)
+        public static RigidPose ToRigidPose(this Matrix4x4 transform)
         {
-            Matrix4x4.Decompose(locator, out _, out Quaternion orientation, out Vector3 position);
+            Matrix4x4.Decompose(transform, out _, out Quaternion orientation, out Vector3 position);
             return new RigidPose(position, orientation);
         }
     }

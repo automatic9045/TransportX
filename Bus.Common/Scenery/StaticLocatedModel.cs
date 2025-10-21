@@ -17,7 +17,7 @@ namespace Bus.Common.Scenery
         public StaticHandle Handle { get; }
         public StaticReference Static => Simulation.Statics[Handle];
 
-        protected override Matrix4x4 ColliderLocator
+        protected override Matrix4x4 ColliderTransform
         {
             get => Model.Collider.OffsetInverse * Static.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
             set
@@ -28,23 +28,23 @@ namespace Bus.Common.Scenery
             }
         }
 
-        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 locator)
-            : base(simulation, model, locator)
+        internal protected StaticLocatedModel(Simulation simulation, ICollidableModel model, StaticHandle handle, Matrix4x4 transform)
+            : base(simulation, model, transform)
         {
             Handle = handle;
         }
 
-        public static StaticLocatedModel Create(Simulation simulation, ICollidableModel model, Matrix4x4 locator)
+        public static StaticLocatedModel Create(Simulation simulation, ICollidableModel model, Matrix4x4 transform)
         {
-            StaticDescription desc = new StaticDescription((locator * model.Collider.Offset).ToRigidPose(), model.Collider.ShapeIndex);
+            StaticDescription desc = new StaticDescription((transform * model.Collider.Offset).ToRigidPose(), model.Collider.ShapeIndex);
             StaticHandle handle = simulation.Statics.Add(desc);
-            return new StaticLocatedModel(simulation, model, handle, locator);
+            return new StaticLocatedModel(simulation, model, handle, transform);
         }
 
-        public static LocatedModel CreateStaticOrNonCollision(Simulation simulation, IModel model, Matrix4x4 locator)
+        public static LocatedModel CreateStaticOrNonCollision(Simulation simulation, IModel model, Matrix4x4 transform)
         {
             return model is ICollidableModel collidableModel
-                ? Create(simulation, collidableModel, locator) : new LocatedModel(model, locator);
+                ? Create(simulation, collidableModel, transform) : new LocatedModel(model, transform);
         }
     }
 }

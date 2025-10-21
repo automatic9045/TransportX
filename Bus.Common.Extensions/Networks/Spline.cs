@@ -24,8 +24,8 @@ namespace Bus.Common.Scenery.Networks
         private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
         public override IReadOnlyList<LocatedModel> Models => CompiledModels;
 
-        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 locator, LaneConnector pairedPort, double curvature, double length, bool isRoot)
-            : base(plateX, plateZ, locator, isRoot)
+        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, double curvature, double length, bool isRoot)
+            : base(plateX, plateZ, transform, isRoot)
         {
             Simulation = simulation;
 
@@ -40,13 +40,13 @@ namespace Bus.Common.Scenery.Networks
         {
             Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY((float)(structure.Span * Curvature / 2));
 
-            Matrix4x4 world = GetTransform(structure.From) * Locator;
+            Matrix4x4 world = GetTransform(structure.From) * Transform;
             for (int i = 0; i < structure.Count; i++)
             {
                 LocatedModel source = structure.Models[i % structure.Models.Count];
-                Matrix4x4 locator = source.InitialLocator * span * world;
+                Matrix4x4 transform = source.BaseTransform * span * world;
 
-                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(Simulation, source.Model, locator);
+                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(Simulation, source.Model, transform);
                 CompiledModels.Add(compiled);
 
                 world = GetTransform(structure.Interval) * world;

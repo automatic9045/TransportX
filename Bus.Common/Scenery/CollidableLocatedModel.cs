@@ -18,19 +18,19 @@ namespace Bus.Common.Scenery
         public new ICollidableModel Model { get; }
         public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
 
-        public override Matrix4x4 Locator
+        public override Matrix4x4 Transform
         {
-            get => base.Locator;
+            get => base.Transform;
             set
             {
-                base.Locator = value;
-                ColliderLocator = Locator;
+                base.Transform = value;
+                ColliderTransform = Transform;
             }
         }
 
-        protected abstract Matrix4x4 ColliderLocator { get; set; }
+        protected abstract Matrix4x4 ColliderTransform { get; set; }
 
-        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, Matrix4x4 locator) : base(model, locator, false)
+        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, Matrix4x4 transform) : base(model, transform, false)
         {
             Simulation = simulation;
             Model = model;
@@ -41,12 +41,12 @@ namespace Bus.Common.Scenery
             PlateOffset fromCameraDelta = fromCamera - FromCamera;
             if (!fromCameraDelta.IsZero)
             {
-                Matrix4x4 colliderLocator = ColliderLocator;
+                Matrix4x4 colliderTransform = ColliderTransform;
                 FromCamera = fromCamera;
-                ColliderLocator = colliderLocator;
+                ColliderTransform = colliderTransform;
             }
 
-            base.Locator = ColliderLocator;
+            base.Transform = ColliderTransform;
         }
     }
 }
