@@ -5,9 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
-using BepuPhysics.Collidables;
-
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
@@ -16,22 +13,17 @@ namespace Bus.Common
 {
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
-        private readonly IPhysicsHost PhysicsHost;
         private readonly LocatableObject Camera;
 
-        public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
+        public LocatedModelCollection Models { get; }
 
-        private readonly List<LocatedModel> ModelsKey = new List<LocatedModel>();
-        public IReadOnlyList<LocatedModel> Models => ModelsKey;
-        public DynamicLocatedModel? RootModel => Models.Count == 0 ? null : (DynamicLocatedModel)Models[0];
-
-        public Vector3 LinearVelocity => RootModel is null ? Vector3.NaN : RootModel.LinearVelocity;
-        public Vector3 AngularVelocity => RootModel is null ? Vector3.NaN : RootModel.AngularVelocity;
+        public Vector3 LinearVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.LinearVelocity;
+        public Vector3 AngularVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.AngularVelocity;
 
         public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
-            PhysicsHost = physicsHost;
             Camera = camera;
+            Models = new LocatedModelCollection(physicsHost, () => Transform);
         }
 
         public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, SixDoF position)
@@ -47,68 +39,9 @@ namespace Bus.Common
         {
         }
 
-        private DynamicLocatedModel AttachModel(DynamicLocatedModel locatedModel, ColliderGroupHandle group)
-        {
-            locatedModel.Transform = locatedModel.BaseTransform * Transform;
-            PhysicsHost.AddToGroup(locatedModel.Handle, group);
-
-            ModelsKey.Add(locatedModel);
-            return locatedModel;
-        }
-
-        public DynamicLocatedModel AttachModel(
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 transform)
-        {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, descFactory, transform);
-            return AttachModel(locatedModel, group);
-        }
-
-        public DynamicLocatedModel AttachModel(
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, SixDoF position)
-        {
-            return AttachModel(model, descFactory, group, position.CreateTransform());
-        }
-
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 transform)
-        {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, mass, transform);
-            return AttachModel(locatedModel, group);
-        }
-
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF position)
-        {
-            return AttachModel(model, mass, group, position.CreateTransform());
-        }
-
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, Matrix4x4 transform)
-        {
-            return AttachModel(model, mass, DefaultGroup, transform);
-        }
-
-        public DynamicLocatedModel AttachModel(ICollidableModel model, float mass, SixDoF position)
-        {
-            return AttachModel(model, mass, DefaultGroup, position.CreateTransform());
-        }
-
-        public LocatedModel AttachModel(IModel model, Matrix4x4 transform)
-        {
-            if (RootModel is null) throw new InvalidOperationException("1 つ目のモデル (ルートモデル) は剛体である必要があります。");
-
-            LocatedModel locatedModel = new LocatedModel(model, transform);
-            locatedModel.Transform = locatedModel.BaseTransform * Transform;
-
-            ModelsKey.Add(locatedModel);
-            return locatedModel;
-        }
-
-        public LocatedModel AttachModel(IModel model, SixDoF position)
-        {
-            return AttachModel(model, position.CreateTransform());
-        }
-
         public virtual void ComputeTick(TimeSpan elapsed)
         {
-            if (RootModel is null) return;
+            if (Models.RootModel is null) return;
 
             PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
@@ -116,7 +49,7 @@ namespace Bus.Common
                 if (model is CollidableLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
             }
 
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, RootModel!.BaseTransformInverse * RootModel.Transform);
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, Models.RootModel!.BaseTransformInverse * Models.RootModel.Transform);
             if (!plateOffset.IsZero)
             {
                 foreach (LocatedModel model in Models)
@@ -139,7 +72,7 @@ namespace Bus.Common
 
         public virtual void Draw(DrawContext context)
         {
-            foreach (LocatedModel model in Models) model.Draw(context);
+            Models.Draw(context);
         }
     }
 }
