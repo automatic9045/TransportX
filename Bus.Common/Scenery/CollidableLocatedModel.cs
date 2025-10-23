@@ -36,7 +36,7 @@ namespace Bus.Common.Scenery
             Model = model;
         }
 
-        public void ComputeTick(PlateOffset fromCamera)
+        public void Update(PlateOffset fromCamera)
         {
             PlateOffset fromCameraDelta = fromCamera - FromCamera;
             if (!fromCameraDelta.IsZero)

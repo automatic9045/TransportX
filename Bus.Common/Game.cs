@@ -101,20 +101,20 @@ namespace Bus.Common
             //Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";
 
             TimeSpan elapsed = TimeManager.DeltaTime;
-            int computeTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
-            TimeSpan computeElapsed = elapsed / computeTickCount;
-            for (int i = 0; i < computeTickCount; i++)
+            int subTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
+            TimeSpan computeElapsed = elapsed / subTickCount;
+            for (int i = 0; i < subTickCount; i++)
             {
-                OnComputeTick(computeElapsed);
+                OnSubTick(computeElapsed);
             }
 
             OnTick(elapsed);
             OnDraw(renderTarget, depthStencil, clientSize);
         }
 
-        protected virtual void OnComputeTick(TimeSpan elapsed)
+        protected virtual void OnSubTick(TimeSpan elapsed)
         {
-            World.ComputeTick(elapsed);
+            World.SubTick(elapsed);
 
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
         }

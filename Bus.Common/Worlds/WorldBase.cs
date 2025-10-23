@@ -49,10 +49,10 @@ namespace Bus.Common.Worlds
             Models.Dispose();
         }
 
-        public virtual void ComputeTick(TimeSpan elapsed)
+        public virtual void SubTick(TimeSpan elapsed)
         {
-            Plates.ComputeTick(Camera.PlateX, Camera.PlateZ);
-            foreach (RigidBody body in Bodies) body.ComputeTick(elapsed);
+            Plates.Update(Camera.PlateX, Camera.PlateZ);
+            foreach (RigidBody body in Bodies) body.SubTick(elapsed);
         }
 
         public virtual void Tick(TimeSpan elapsed)

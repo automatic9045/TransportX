@@ -39,14 +39,14 @@ namespace Bus.Common
         {
         }
 
-        public virtual void ComputeTick(TimeSpan elapsed)
+        public virtual void SubTick(TimeSpan elapsed)
         {
             if (Models.RootModel is null) return;
 
             PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
             {
-                if (model is CollidableLocatedModel dynamicModel) dynamicModel.ComputeTick(fromCamera);
+                if (model is CollidableLocatedModel dynamicModel) dynamicModel.Update(fromCamera);
             }
 
             PlateOffset plateOffset = Locate(PlateX, PlateZ, Models.RootModel!.BaseTransformInverse * Models.RootModel.Transform);
