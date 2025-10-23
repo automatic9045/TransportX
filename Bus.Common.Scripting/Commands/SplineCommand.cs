@@ -23,21 +23,21 @@ namespace Bus.Common.Scripting.Commands
 
         public Spline Straight(double length)
         {
-            Spline spline = SplineFactory.Straight(length);
+            Spline spline = SplineFactory.Straight((float)length);
             AddSplineToPlate(spline);
             return spline;
         }
 
         public Spline Curve(double radius, double length)
         {
-            Spline spline = SplineFactory.ByRadius(radius, length);
+            Spline spline = SplineFactory.ByRadius((float)radius, (float)length);
             AddSplineToPlate(spline);
             return spline;
         }
 
         public Spline CurveByCurvature(double curvature, double length)
         {
-            Spline spline = SplineFactory.ByCurvature(curvature, length);
+            Spline spline = SplineFactory.ByCurvature((float)curvature, (float)length);
             AddSplineToPlate(spline);
             return spline;
         }
@@ -52,7 +52,7 @@ namespace Bus.Common.Scripting.Commands
         {
             LocatedModel[] models = modelKeys.Select(
                 key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], transform)).ToArray();
-            SplineStructure structure = new SplineStructure(models, from, span, interval, count);
+            SplineStructure structure = new SplineStructure(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
             return structure;
         }

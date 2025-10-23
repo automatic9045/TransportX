@@ -9,17 +9,17 @@ namespace Bus.Common.Scenery.Networks
     public class SplineStructure
     {
         public IReadOnlyList<LocatedModel> Models { get; }
-        public double From { get; }
-        public double Span { get; }
-        public double Interval { get; }
+        public float From { get; }
+        public float Span { get; }
+        public float Interval { get; }
         public int Count { get; }
 
-        public SplineStructure(IReadOnlyList<LocatedModel> models, double from, double span, double interval, int count)
+        public SplineStructure(IReadOnlyList<LocatedModel> models, float from, float span, float interval, int count)
         {
             Models = models;
             From = from;
             Span = span;
-            Interval = double.Max(0.1, interval);
+            Interval = float.Max(0.1f, interval);
             Count = count;
         }
     }

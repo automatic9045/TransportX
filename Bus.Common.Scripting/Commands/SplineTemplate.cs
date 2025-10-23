@@ -28,7 +28,7 @@ namespace Bus.Common.Scripting.Commands
         {
             LocatedModel[] models = modelKeys.Select(
                 key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], transform)).ToArray();
-            SplineStructure structure = new SplineStructure(models, 0, span, interval, int.MaxValue);
+            SplineStructure structure = new SplineStructure(models, 0, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);
             return structure;
         }

@@ -18,13 +18,13 @@ namespace Bus.Common.Scenery.Networks
         public override LaneConnector Port { get; }
         public override ElementPath Path { get; }
 
-        public double Curvature { get; }
-        public double Length { get; }
+        public float Curvature { get; }
+        public float Length { get; }
 
         private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
         public override IReadOnlyList<LocatedModel> Models => CompiledModels;
 
-        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, double curvature, double length, bool isRoot)
+        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
             : base(plateX, plateZ, transform, isRoot)
         {
             Simulation = simulation;
@@ -38,7 +38,7 @@ namespace Bus.Common.Scenery.Networks
 
         public void AddStructure(SplineStructure structure)
         {
-            Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY((float)(structure.Span * Curvature / 2));
+            Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY(structure.Span * Curvature / 2);
 
             Matrix4x4 world = GetTransform(structure.From) * Transform;
             for (int i = 0; i < structure.Count; i++)
@@ -61,12 +61,12 @@ namespace Bus.Common.Scenery.Networks
             }
         }
 
-        public Matrix4x4 GetTransform(double at)
+        public Matrix4x4 GetTransform(float at)
         {
-            double angle = at * Curvature;
-            double x = Curvature == 0 ? 0 : (1 - double.Cos(angle)) / Curvature;
-            double z = Curvature == 0 ? at : double.Sin(angle) / Curvature;
-            return Matrix4x4.CreateRotationY((float)angle) * Matrix4x4.CreateTranslation((float)x, 0, (float)z);
+            float angle = at * Curvature;
+            float x = Curvature == 0 ? 0 : (1 - float.Cos(angle)) / Curvature;
+            float z = Curvature == 0 ? at : float.Sin(angle) / Curvature;
+            return Matrix4x4.CreateRotationY(angle) * Matrix4x4.CreateTranslation(x, 0, z);
         }
     }
 }

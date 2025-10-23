@@ -57,8 +57,8 @@ namespace Bus.Common.Audio
             x3dAudio.Calculate(listener, Emitter, CalculateFlags.Matrix | CalculateFlags.Doppler | CalculateFlags.LpfDirect | CalculateFlags.Reverb, DspSettings);
 
             SourceVoice.SetOutputMatrix(MasteringVoice, 1, MasteringVoice.VoiceDetails.InputChannels, DspSettings.MatrixCoefficients);
-            SourceVoice.SetFrequencyRatio((float)Pitch * DspSettings.DopplerFactor, XAudio2.CommitNow);
-            SourceVoice.SetVolume((float)Volume);
+            SourceVoice.SetFrequencyRatio(Pitch * DspSettings.DopplerFactor, XAudio2.CommitNow);
+            SourceVoice.SetVolume(Volume);
 
             SourceVoice.SetOutputMatrix(1, 1, [DspSettings.ReverbLevel]);
 
@@ -71,12 +71,12 @@ namespace Bus.Common.Audio
             SourceVoice.SetFilterParameters(filterParameters, XAudio2.CommitNow);
         }
 
-        public override void SetVolume(double volume)
+        public override void SetVolume(float volume)
         {
             Volume = volume;
         }
 
-        public override void SetPitch(double pitch)
+        public override void SetPitch(float pitch)
         {
             Pitch = pitch;
         }

@@ -23,7 +23,7 @@ namespace Bus.Common.Scenery.Networks
             BasePairedPort = basePairedPort;
         }
 
-        public Spline ByCurvature(double curvature, double length)
+        public Spline ByCurvature(float curvature, float length)
         {
             Spline spline = new Spline(Simulation, PlateX, PlateZ, Transform, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
 
@@ -34,19 +34,19 @@ namespace Bus.Common.Scenery.Networks
             return spline;
         }
 
-        public Spline Straight(double length)
+        public Spline Straight(float length)
         {
             return ByCurvature(0, length);
         }
 
-        public Spline ByRadius(double radius, double length)
+        public Spline ByRadius(float radius, float length)
         {
             return ByCurvature(radius == 0 ? 0 : 1 / radius, length);
         }
 
         public void PutStructure(SplineStructure structure)
         {
-            double from = structure.From;
+            float from = structure.From;
             int totalCount = 0;
             foreach (Spline spline in CreatedSplines)
             {

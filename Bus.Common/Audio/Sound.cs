@@ -16,8 +16,8 @@ namespace Bus.Common.Audio
         public AudioBuffer Buffer { get; }
         public bool IsPlaying => 0 < SourceVoice.StateNoSamplesPlayed.BuffersQueued;
 
-        public double Volume { get; protected set; } = 1;
-        public double Pitch { get; protected set; } = 1;
+        public float Volume { get; protected set; } = 1;
+        public float Pitch { get; protected set; } = 1;
 
         public Sound(SoundStream stream, IXAudio2SourceVoice sourceVoice)
         {
@@ -51,16 +51,16 @@ namespace Bus.Common.Audio
             Stream.Dispose();
         }
 
-        public virtual void SetVolume(double volume)
+        public virtual void SetVolume(float volume)
         {
             Volume = volume;
-            SourceVoice.SetVolume((float)volume);
+            SourceVoice.SetVolume(volume);
         }
 
-        public virtual void SetPitch(double pitch)
+        public virtual void SetPitch(float pitch)
         {
             Pitch = pitch;
-            SourceVoice.SetFrequencyRatio((float)pitch, XAudio2.CommitNow);
+            SourceVoice.SetFrequencyRatio(pitch, XAudio2.CommitNow);
         }
 
         public virtual void Play(bool loop)
