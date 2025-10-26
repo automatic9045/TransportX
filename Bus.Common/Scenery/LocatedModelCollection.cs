@@ -39,7 +39,7 @@ namespace Bus.Common.Scenery
         private DynamicLocatedModel Attach(DynamicLocatedModel locatedModel, ColliderGroupHandle group)
         {
             locatedModel.Transform = locatedModel.BaseTransform * Transform;
-            PhysicsHost.AddToGroup(locatedModel.Handle, group);
+            PhysicsHost.SetGroup(locatedModel.Handle, group);
 
             Items.Add(locatedModel);
             return locatedModel;

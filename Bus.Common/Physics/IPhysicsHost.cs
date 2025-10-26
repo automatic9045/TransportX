@@ -12,6 +12,6 @@ namespace Bus.Common.Physics
     {
         Simulation Simulation { get; }
 
-        void AddToGroup(BodyHandle body, ColliderGroupHandle group);
+        void SetGroup(BodyHandle body, ColliderGroupHandle group);
     }
 }

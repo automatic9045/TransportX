@@ -41,7 +41,7 @@ namespace Bus.Common.Physics
             bufferPool.Clear();
         }
 
-        public void AddToGroup(BodyHandle body, ColliderGroupHandle group)
+        public void SetGroup(BodyHandle body, ColliderGroupHandle group)
         {
             Groups.Allocate(body) = group;
         }
