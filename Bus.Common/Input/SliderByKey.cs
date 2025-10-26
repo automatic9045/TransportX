@@ -9,11 +9,11 @@ namespace Bus.Common.Input
     public class SliderByKey : Slider
     {
         public KeyObserver Source { get; set; }
-        public double IncreaseSpeed { get; set; }
-        public double DecreaseSpeed { get; set; }
+        public float IncreaseSpeed { get; set; }
+        public float DecreaseSpeed { get; set; }
         public bool Reverse { get; set; }
 
-        public SliderByKey(KeyObserver source, double increaseSpeed, double decreaseSpeed, double min = 0, double max = 1, bool reverse = false) : base(min, max)
+        public SliderByKey(KeyObserver source, float increaseSpeed, float decreaseSpeed, float min = 0, float max = 1, bool reverse = false) : base(min, max)
         {
             Source = source;
             IncreaseSpeed = increaseSpeed;
@@ -28,8 +28,8 @@ namespace Bus.Common.Input
 
         public override void Tick(TimeSpan elapsed)
         {
-            double rate = Rate + (Reverse ^ Source.IsPressed ? IncreaseSpeed : -DecreaseSpeed) * elapsed.TotalSeconds;
-            Rate = double.Max(Min, double.Min(rate, Max));
+            float rate = Rate + (Reverse ^ Source.IsPressed ? IncreaseSpeed : -DecreaseSpeed) * (float)elapsed.TotalSeconds;
+            Rate = float.Max(Min, float.Min(rate, Max));
         }
     }
 }

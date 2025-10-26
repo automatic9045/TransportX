@@ -8,11 +8,11 @@ namespace Bus.Common.Input
 {
     public abstract class Slider : IDisposable
     {
-        public double Min { get; set; }
-        public double Max { get; set; }
-        public double Rate { get; set; } = 0;
+        public float Min { get; set; }
+        public float Max { get; set; }
+        public float Rate { get; set; } = 0;
 
-        public Slider(double min, double max)
+        public Slider(float min, float max)
         {
             Min = min;
             Max = max;
