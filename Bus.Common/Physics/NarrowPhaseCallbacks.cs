@@ -65,12 +65,24 @@ namespace Bus.Common.Physics
         public bool ConfigureContactManifold<TManifold>(int workerIndex, CollidablePair pair, ref TManifold manifold, out PairMaterialProperties pairMaterial)
             where TManifold : unmanaged, IContactManifold<TManifold>
         {
+            Material a = Materials.Allocate(pair.A);
+            Material b = Materials.Allocate(pair.B);
+
+            if (!a.IsInitialized) a = Material.Default;
+            if (!b.IsInitialized) b = Material.Default;
+
             pairMaterial = new PairMaterialProperties()
             {
-                FrictionCoefficient = 1,
-                MaximumRecoveryVelocity = float.MaxValue,
-                SpringSettings = new SpringSettings(10, 0),
+                FrictionCoefficient = a.FrictionCoefficient * b.FrictionCoefficient,
+                MaximumRecoveryVelocity = MathF.Max(a.MaximumRecoveryVelocity, b.MaximumRecoveryVelocity),
             };
+            pairMaterial.SpringSettings = pairMaterial.MaximumRecoveryVelocity == a.MaximumRecoveryVelocity ? a.SpringSettings : b.SpringSettings;
+
+            if (pairMaterial.SpringSettings.Frequency < 1)
+            {
+                pairMaterial.SpringSettings.Frequency = 1;
+            }
+
             return true;
         }
 

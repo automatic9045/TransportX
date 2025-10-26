@@ -75,24 +75,26 @@ namespace Bus.Common.Rendering
         }
 
         public static CollidableModel Load(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, string collisionModelPath, bool isOpen)
+            string visualModelPath, string collisionModelPath, Material material, bool isOpen)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, collisionModelPath, isOpen);
+            CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, collisionModelPath, material, isOpen);
             return model;
         }
 
-        public static CollidableModel LoadWithBoundingBox(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, string visualModelPath)
+        public static CollidableModel LoadWithBoundingBox(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
+            string visualModelPath, Material material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithBoundingBox(visualModelPath);
+            CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, material);
             return model;
         }
 
-        public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, string visualModelPath)
+        public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
+            string visualModelPath, Material material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithConvexHull(visualModelPath);
+            CollidableModel model = factory.LoadWithConvexHull(visualModelPath, material);
             return model;
         }
     }

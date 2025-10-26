@@ -48,41 +48,42 @@ namespace Bus.Common.Scenery
             Handle = handle;
         }
 
-        public static DynamicLocatedModel Create(Simulation simulation,
+        public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 transform)
         {
             BodyDescription desc = descFactory(model, (transform * model.Collider.Offset).ToRigidPose());
-            BodyHandle handle = simulation.Bodies.Add(desc);
-            return new DynamicLocatedModel(simulation, model, handle, transform);
+            BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
+            physicsHost.SetMaterial(handle, model.Collider.Material);
+            return new DynamicLocatedModel(physicsHost.Simulation, model, handle, transform);
         }
 
-        public static DynamicLocatedModel Create(Simulation simulation,
+        public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
             ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 transform)
         {
             BodyInertia inertia = model.Collider.ComputeInertia(mass);
             BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
                 => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
 
-            return Create(simulation, model, CreateDesc, transform);
+            return Create(physicsHost, model, CreateDesc, transform);
         }
 
-        public static DynamicLocatedModel Create(Simulation simulation, ICollidableModel model, float mass, Matrix4x4 transform)
+        public static DynamicLocatedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Matrix4x4 transform)
         {
-            return Create(simulation, model, mass, model.Collider.ShapeIndex, transform);
+            return Create(physicsHost, model, mass, model.Collider.ShapeIndex, transform);
         }
 
-        public static DynamicLocatedModel CreateKinematic(Simulation simulation, ICollidableModel model, Matrix4x4 transform)
+        public static DynamicLocatedModel CreateKinematic(IPhysicsHost physicsHost, ICollidableModel model, Matrix4x4 transform)
         {
             BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
                 => BodyDescription.CreateKinematic(pose, model.Collider.ShapeIndex, 0.01f);
 
-            return Create(simulation, model, CreateDesc, transform);
+            return Create(physicsHost, model, CreateDesc, transform);
         }
 
-        public static LocatedModel CreateKinematicOrNonCollision(Simulation simulation, IModel model, Matrix4x4 transform)
+        public static LocatedModel CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Matrix4x4 transform)
         {
             return model is ICollidableModel collidableModel
-                ? CreateKinematic(simulation, collidableModel, transform) : new LocatedModel(model, transform);
+                ? CreateKinematic(physicsHost, collidableModel, transform) : new LocatedModel(model, transform);
         }
 
         public void Shift(PlateOffset offset)

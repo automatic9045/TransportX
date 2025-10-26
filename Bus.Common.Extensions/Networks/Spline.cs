@@ -5,15 +5,13 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
-
-using Bus.Common.Rendering;
+using Bus.Common.Physics;
 
 namespace Bus.Common.Scenery.Networks
 {
     public class Spline : NetworkEdge
     {
-        private readonly Simulation Simulation;
+        private readonly IPhysicsHost PhysicsHost;
 
         public override LaneConnector Port { get; }
         public override ElementPath Path { get; }
@@ -24,10 +22,10 @@ namespace Bus.Common.Scenery.Networks
         private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
         public override IReadOnlyList<LocatedModel> Models => CompiledModels;
 
-        public Spline(Simulation simulation, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
+        public Spline(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
             : base(plateX, plateZ, transform, isRoot)
         {
-            Simulation = simulation;
+            PhysicsHost = physicsHost;
 
             Curvature = curvature;
             Length = length;
@@ -46,7 +44,7 @@ namespace Bus.Common.Scenery.Networks
                 LocatedModel source = structure.Models[i % structure.Models.Count];
                 Matrix4x4 transform = source.BaseTransform * span * world;
 
-                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(Simulation, source.Model, transform);
+                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
                 CompiledModels.Add(compiled);
 
                 world = GetTransform(structure.Interval) * world;

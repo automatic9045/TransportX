@@ -105,7 +105,7 @@ namespace Bus.Common.Rendering
             if (!IsCollisionSupported) throw new NotSupportedException($"{nameof(Simulation)} が指定されていないため、衝突判定を読み込むことはできません。");
         }
 
-        public CollidableModel LoadWithBoundingBox(string visualModelPath)
+        public CollidableModel LoadWithBoundingBox(string visualModelPath, Physics.Material material)
         {
             CheckCollisionSupported();
 
@@ -132,12 +132,12 @@ namespace Bus.Common.Rendering
             Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
             Vector3 origin = (min + max) / 2;
             Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(origin);
-            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, colliderOffset);
+            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithConvexHull(string visualModelPath)
+        public CollidableModel LoadWithConvexHull(string visualModelPath, Physics.Material material)
         {
             CheckCollisionSupported();
 
@@ -157,12 +157,12 @@ namespace Bus.Common.Rendering
             }
 
             ConvexHullHelper.CreateShape(pointBuffer, Simulation.BufferPool, out Vector3 center, out ConvexHull convexHull);
-            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, Matrix4x4.CreateTranslation(center));
+            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, Matrix4x4.CreateTranslation(center));
 
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, bool isOpen)
+        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, Physics.Material material, bool isOpen)
         {
             CheckCollisionSupported();
 
@@ -187,7 +187,7 @@ namespace Bus.Common.Rendering
             Vector3 center = isOpen ? collisionMesh.ComputeOpenCenterOfMass() : collisionMesh.ComputeClosedCenterOfMass();
             if (float.IsNaN(center.X + center.Y + center.Z)) throw new InvalidOperationException("モデルの重心を特定できません。");
             collisionMesh.Recenter(center);
-            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, Matrix4x4.CreateTranslation(center), isOpen);
+            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, Matrix4x4.CreateTranslation(center), isOpen);
 
             return new CollidableModel(baseModel, collider);
         }

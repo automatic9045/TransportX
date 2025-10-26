@@ -41,9 +41,24 @@ namespace Bus.Common.Physics
             bufferPool.Clear();
         }
 
-        public void SetGroup(BodyHandle body, ColliderGroupHandle group)
+        public void SetGroup(StaticHandle handle, ColliderGroupHandle group)
         {
-            Groups.Allocate(body) = group;
+            Groups.Allocate(handle) = group;
+        }
+
+        public void SetGroup(BodyHandle handle, ColliderGroupHandle group)
+        {
+            Groups.Allocate(handle) = group;
+        }
+
+        public void SetMaterial(StaticHandle handle, Material material)
+        {
+            Materials.Allocate(handle) = material;
+        }
+
+        public void SetMaterial(BodyHandle handle, Material material)
+        {
+            Materials.Allocate(handle) = material;
         }
     }
 }

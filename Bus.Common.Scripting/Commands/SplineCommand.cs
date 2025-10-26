@@ -51,7 +51,7 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)
         {
             LocatedModel[] models = modelKeys.Select(
-                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[key], transform)).ToArray();
+                key => DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[key], transform)).ToArray();
             SplineStructure structure = new SplineStructure(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
             return structure;

@@ -34,17 +34,18 @@ namespace Bus.Common.Scenery
             Handle = handle;
         }
 
-        public static StaticLocatedModel Create(Simulation simulation, ICollidableModel model, Matrix4x4 transform)
+        public static StaticLocatedModel Create(IPhysicsHost physicsHost, ICollidableModel model, Matrix4x4 transform)
         {
             StaticDescription desc = new StaticDescription((transform * model.Collider.Offset).ToRigidPose(), model.Collider.ShapeIndex);
-            StaticHandle handle = simulation.Statics.Add(desc);
-            return new StaticLocatedModel(simulation, model, handle, transform);
+            StaticHandle handle = physicsHost.Simulation.Statics.Add(desc);
+            physicsHost.SetMaterial(handle, model.Collider.Material);
+            return new StaticLocatedModel(physicsHost.Simulation, model, handle, transform);
         }
 
-        public static LocatedModel CreateStaticOrNonCollision(Simulation simulation, IModel model, Matrix4x4 transform)
+        public static LocatedModel CreateStaticOrNonCollision(IPhysicsHost physicsHost, IModel model, Matrix4x4 transform)
         {
             return model is ICollidableModel collidableModel
-                ? Create(simulation, collidableModel, transform) : new LocatedModel(model, transform);
+                ? Create(physicsHost, collidableModel, transform) : new LocatedModel(model, transform);
         }
     }
 }

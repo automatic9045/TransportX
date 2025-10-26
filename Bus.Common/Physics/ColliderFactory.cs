@@ -12,50 +12,50 @@ namespace Bus.Common.Physics
 {
     public static class ColliderFactory
     {
-        public static Collider<Box> Box(Box shape, TypedIndex shapeIndex, Matrix4x4 offset)
-            => new Collider<Box>(shape, shapeIndex, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static Collider<Box> Box(Box shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+            => new Collider<Box>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
 
-        public static Collider<Box> Box(Simulation simulation, Box shape, Matrix4x4 offset)
+        public static Collider<Box> Box(Simulation simulation, Box shape, Material material, Matrix4x4 offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
-            return Box(shape, shapeIndex, offset);
+            return Box(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Cylinder> Cylinder(Cylinder shape, TypedIndex shapeIndex, Matrix4x4 offset)
-            => new Collider<Cylinder>(shape, shapeIndex, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static Collider<Cylinder> Cylinder(Cylinder shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+            => new Collider<Cylinder>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
 
-        public static Collider<Cylinder> Cylinder(Simulation simulation, Cylinder shape, Matrix4x4 offset)
+        public static Collider<Cylinder> Cylinder(Simulation simulation, Cylinder shape, Material material, Matrix4x4 offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
-            return Cylinder(shape, shapeIndex, offset);
+            return Cylinder(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Sphere> Sphere(Sphere shape, TypedIndex shapeIndex, Matrix4x4 offset)
-            => new Collider<Sphere>(shape, shapeIndex, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static Collider<Sphere> Sphere(Sphere shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+            => new Collider<Sphere>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
 
-        public static Collider<Sphere> Sphere(Simulation simulation, Sphere shape, Matrix4x4 offset)
+        public static Collider<Sphere> Sphere(Simulation simulation, Sphere shape, Material material, Matrix4x4 offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
-            return Sphere(shape, shapeIndex, offset);
+            return Sphere(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<ConvexHull> ConvexHull(ConvexHull shape, TypedIndex shapeIndex, Matrix4x4 offset)
-            => new Collider<ConvexHull>(shape, shapeIndex, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static Collider<ConvexHull> ConvexHull(ConvexHull shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+            => new Collider<ConvexHull>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
 
-        public static Collider<ConvexHull> ConvexHull(Simulation simulation, ConvexHull shape, Matrix4x4 offset)
+        public static Collider<ConvexHull> ConvexHull(Simulation simulation, ConvexHull shape, Material material, Matrix4x4 offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
-            return ConvexHull(shape, shapeIndex, offset);
+            return ConvexHull(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Mesh> Mesh(Mesh shape, TypedIndex shapeIndex, Matrix4x4 offset, bool isOpen)
-            => new Collider<Mesh>(shape, shapeIndex, offset,
+        public static Collider<Mesh> Mesh(Mesh shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, bool isOpen)
+            => new Collider<Mesh>(shape, shapeIndex, material, offset,
                 isOpen ? (shape, mass) => shape.ComputeOpenInertia(mass) : (shape, mass) => shape.ComputeClosedInertia(mass));
 
-        public static Collider<Mesh> Mesh(Simulation simulation, Mesh shape, Matrix4x4 offset, bool isOpen)
+        public static Collider<Mesh> Mesh(Simulation simulation, Mesh shape, Material material, Matrix4x4 offset, bool isOpen)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
-            return Mesh(shape, shapeIndex, offset, isOpen);
+            return Mesh(shape, shapeIndex, material, offset, isOpen);
         }
     }
 }

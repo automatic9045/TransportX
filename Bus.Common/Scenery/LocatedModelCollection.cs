@@ -48,7 +48,7 @@ namespace Bus.Common.Scenery
         public DynamicLocatedModel Attach(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 transform)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, descFactory, transform);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, descFactory, transform);
             return Attach(locatedModel, group);
         }
 
@@ -60,7 +60,7 @@ namespace Bus.Common.Scenery
 
         public DynamicLocatedModel Attach(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 transform)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost.Simulation, model, mass, transform);
+            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, mass, transform);
             return Attach(locatedModel, group);
         }
 

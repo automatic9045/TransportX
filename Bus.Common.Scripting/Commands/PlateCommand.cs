@@ -29,7 +29,7 @@ namespace Bus.Common.Scripting.Commands
 
         public LocatedModel PutStructure(string modelKey, Matrix4x4 transform)
         {
-            LocatedModel locatedModel = DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost.Simulation, World.Models[modelKey], transform);
+            LocatedModel locatedModel = DynamicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[modelKey], transform);
             Target.Models.Add(locatedModel);
             return locatedModel;
         }
@@ -50,7 +50,7 @@ namespace Bus.Common.Scripting.Commands
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.PhysicsHost.Simulation, X, Z, transform, new LaneConnector());
+                splineFactory = new SplineFactory(World.PhysicsHost, X, Z, transform, new LaneConnector());
             }
             else
             {
