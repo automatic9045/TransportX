@@ -40,7 +40,7 @@ namespace Bus.Common.Rendering
             Simulation = simulation;
         }
 
-        private Model Load(Scene visualScene, string baseDirectory)
+        private unsafe Model Load(Scene visualScene, string baseDirectory)
         {
             List<Mesh> visualMeshes = visualScene.Meshes.ConvertAll(assimpMesh =>
             {
@@ -52,6 +52,7 @@ namespace Bus.Common.Rendering
                             X = assimpVertex.X,
                             Y = assimpVertex.Y,
                             Z = assimpVertex.Z,
+                            Color = assimpMesh.HasVertexColors(0) ? assimpMesh.VertexColorChannels[0][i] : Vector4.One,
                         };
 
                         if (assimpMesh.HasTextureCoords(0))
@@ -77,6 +78,18 @@ namespace Bus.Common.Rendering
 
                     List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(material, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory);
                     textures.AddRange(diffuseMaps);
+                }
+
+                if (textures.Count == 0)
+                {
+                    Texture2DDescription desc = new Texture2DDescription(Format.R8G8B8A8_UNorm, 1, 1, usage: ResourceUsage.Immutable);
+
+                    uint whitePixel = 0xffffffff;
+                    SubresourceData initialData = new SubresourceData(&whitePixel, 4);
+
+                    using ID3D11Texture2D texture = Device.CreateTexture2D(desc, initialData);
+                    ID3D11ShaderResourceView whiteTextureResource = Device.CreateShaderResourceView(texture);
+                    textures.Add(whiteTextureResource);
                 }
 
                 return Mesh.Create(Device, vertices, indices.ToArray(), textures);

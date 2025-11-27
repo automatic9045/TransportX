@@ -16,6 +16,6 @@ namespace Bus.Common.Rendering
 
         public float X, Y, Z;
         public Vector2 TextureCoord;
-        //public Vector4 Color;
+        public Vector4 Color;
     }
 }
