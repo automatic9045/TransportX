@@ -78,14 +78,20 @@ namespace Bus.Common.Rendering
             Disposing?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Draw(ID3D11DeviceContext context)
+        public void Draw(DrawContext context)
         {
-            context.IASetVertexBuffer(0, VertexBuffer, (uint)Vertex.Size, 0);
-            context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
+            context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Vertex.Size, 0);
+            context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
 
-            context.PSSetShaderResource(0, 0 < Textures.Count ? Textures[0] : null!);
+            PixelConstantBuffer pixelBuffer = new()
+            {
+                HasTexture = Textures.Count,
+            };
+            context.DeviceContext.UpdateSubresource(pixelBuffer, context.PixelConstantBuffer);
 
-            context.DrawIndexed(IndexBuffer.Description.ByteWidth / sizeof(uint), 0, 0);
+            context.DeviceContext.PSSetShaderResource(0, 0 < Textures.Count ? Textures[0] : null!);
+
+            context.DeviceContext.DrawIndexed(IndexBuffer.Description.ByteWidth / sizeof(uint), 0, 0);
         }
     }
 }

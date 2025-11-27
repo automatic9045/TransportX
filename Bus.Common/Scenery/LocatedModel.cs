@@ -29,17 +29,18 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(LocatedDrawContext context)
         {
-            ConstantBuffer cb = new ConstantBuffer()
+            VertexConstantBuffer vertexBuffer = new()
             {
                 World = Matrix4x4.Transpose(Transform * context.PlateOffset.Transform),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
+                Light = context.Light.AsVector4(),
             };
-            context.DeviceContext.UpdateSubresource(cb, context.ConstantBuffer);
+            context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
-            Model.Draw(context.DeviceContext);
+            Model.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }
     }
 }

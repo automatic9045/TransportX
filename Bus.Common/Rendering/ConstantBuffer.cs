@@ -9,14 +9,25 @@ using System.Threading.Tasks;
 namespace Bus.Common.Rendering
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct ConstantBuffer
+    public struct VertexConstantBuffer
     {
-        internal static readonly int Size = Marshal.SizeOf<ConstantBuffer>();
+        internal static readonly int Size = Marshal.SizeOf<VertexConstantBuffer>();
 
 
         public Matrix4x4 World;
         public Matrix4x4 View;
         public Matrix4x4 Projection;
         public Vector4 Light;
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PixelConstantBuffer
+    {
+        internal static readonly int Size = Marshal.SizeOf<PixelConstantBuffer>();
+
+
+        public int HasTexture;
+        public Vector3 Padding;
     }
 }

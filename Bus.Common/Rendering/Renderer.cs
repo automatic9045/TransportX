@@ -24,7 +24,8 @@ namespace Bus.Common.Rendering
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
         protected readonly ID3D11InputLayout InputLayout;
-        protected readonly ID3D11Buffer ConstantBuffer;
+        protected readonly ID3D11Buffer VertexConstantBuffer;
+        protected readonly ID3D11Buffer PixelConstantBuffer;
         protected readonly ID3D11SamplerState TextureSamplerState;
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
@@ -48,15 +49,23 @@ namespace Bus.Common.Rendering
             Blob psBlob = ShaderFactory.CompileFromResource(DXHost.Device, "PS.hlsl", "main", "PS", "ps_5_0");
             PixelShader = DXHost.Device.CreatePixelShader(psBlob);
 
-            BufferDescription bufferDesc = new BufferDescription()
+            BufferDescription vertexBufferDesc = new BufferDescription()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.ConstantBuffer.Size,
+                ByteWidth = (uint)Rendering.VertexConstantBuffer.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
+            VertexConstantBuffer = DXHost.Device.CreateBuffer(vertexBufferDesc);
 
-            ConstantBuffer = DXHost.Device.CreateBuffer(bufferDesc);
+            BufferDescription pixelBufferDesc = new BufferDescription()
+            {
+                Usage = ResourceUsage.Default,
+                ByteWidth = (uint)Rendering.PixelConstantBuffer.Size,
+                BindFlags = BindFlags.ConstantBuffer,
+                CPUAccessFlags = 0,
+            };
+            PixelConstantBuffer = DXHost.Device.CreateBuffer(pixelBufferDesc);
 
             SamplerDescription samplerDesc = new SamplerDescription()
             {
@@ -112,7 +121,8 @@ namespace Bus.Common.Rendering
             VertexShader.Dispose();
             PixelShader.Dispose();
             InputLayout.Dispose();
-            ConstantBuffer.Dispose();
+            VertexConstantBuffer.Dispose();
+            PixelConstantBuffer.Dispose();
             TextureSamplerState.Dispose();
             RasterizerState.Dispose();
             BlendState.Dispose();
@@ -131,15 +141,16 @@ namespace Bus.Common.Rendering
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);
-            DXHost.Context.VSSetConstantBuffer(0, ConstantBuffer);
+            DXHost.Context.VSSetConstantBuffer(0, VertexConstantBuffer);
             DXHost.Context.PSSetShader(PixelShader);
+            DXHost.Context.PSSetConstantBuffer(0, PixelConstantBuffer);
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
-            CameraDrawContext cameraContext = new(DXHost.Context, ConstantBuffer, size, Vector3.Zero);
+            CameraDrawContext cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Vector3.Zero);
             camera.DrawBackground(cameraContext, world.BackgroundModels);
             DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            cameraContext = new(DXHost.Context, ConstantBuffer, size, Light);
+            cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Light);
             camera.DrawPlates(cameraContext, world.Plates);
             camera.DrawBodies(cameraContext, world.Bodies);
         }

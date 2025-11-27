@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
-using BepuPhysics.Collidables;
 using Vortice.Direct3D11;
 
 using Bus.Common.Physics;
@@ -47,7 +46,7 @@ namespace Bus.Common.Rendering
             }
         }
 
-        public void Draw(ID3D11DeviceContext context)
+        public void Draw(DrawContext context)
         {
             foreach (Mesh mesh in VisualMeshes)
             {

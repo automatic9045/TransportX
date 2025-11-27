@@ -79,18 +79,6 @@ namespace Bus.Common.Rendering
                     textures.AddRange(diffuseMaps);
                 }
 
-                if (textures.Count == 0)
-                {
-                    Texture2DDescription desc = new Texture2DDescription(Format.R8G8B8A8_UNorm, 1, 1, usage: ResourceUsage.Immutable);
-
-                    uint whitePixel = 0xffffffff;
-                    SubresourceData initialData = new SubresourceData(&whitePixel, 4);
-
-                    using ID3D11Texture2D texture = Device.CreateTexture2D(desc, initialData);
-                    ID3D11ShaderResourceView whiteTextureResource = Device.CreateShaderResourceView(texture);
-                    textures.Add(whiteTextureResource);
-                }
-
                 return Mesh.Create(Device, vertices, indices.ToArray(), textures);
             });
 

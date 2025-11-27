@@ -70,7 +70,7 @@ namespace Bus.Common
         {
         }
 
-        public virtual void Draw(DrawContext context)
+        public virtual void Draw(LocatedDrawContext context)
         {
             Models.Draw(context);
         }

@@ -9,6 +9,6 @@ namespace Bus.Common.Rendering
 {
     public interface IDrawable
     {
-        void Draw(DrawContext context);
+        void Draw(LocatedDrawContext context);
     }
 }

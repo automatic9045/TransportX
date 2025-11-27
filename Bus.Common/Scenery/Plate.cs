@@ -46,7 +46,7 @@ namespace Bus.Common.Scenery
             IsFar = isFar;
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(LocatedDrawContext context)
         {
             foreach (LocatedModel model in Models)
             {

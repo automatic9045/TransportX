@@ -95,7 +95,7 @@ namespace Bus.Common.Scenery
             return Attach(model, position.CreateTransform());
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(LocatedDrawContext context)
         {
             foreach (LocatedModel model in this) model.Draw(context);
         }

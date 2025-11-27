@@ -44,8 +44,8 @@ namespace Bus.Common.Rendering
             {
                 model.Transform = Matrix4x4.CreateTranslation(Transform.Translation);
 
-                DrawContext drawContext = new(
-                    context.DeviceContext, context.ConstantBuffer, PlateOffset.Identity, View, CreateProjection(context.ClientSize), context.Light);
+                LocatedDrawContext drawContext = new(context.DeviceContext,
+                    context.VertexConstantBuffer, context.PixelConstantBuffer, PlateOffset.Identity, View, CreateProjection(context.ClientSize), context.Light);
                 model.Draw(drawContext);
             }
         }
@@ -66,8 +66,8 @@ namespace Bus.Common.Rendering
                         if (plates.TryGetValue(x, z, out LocatedPlate? plate))
                         {
                             PlateOffset plateOffset = new PlateOffset(x - PlateX, z - PlateZ);
-                            DrawContext drawContext = new(
-                                context.DeviceContext, context.ConstantBuffer, plateOffset, View, projection, context.Light);
+                            LocatedDrawContext drawContext = new(context.DeviceContext,
+                                context.VertexConstantBuffer, context.PixelConstantBuffer, plateOffset, View, projection, context.Light);
                             plate!.Plate.Draw(drawContext);
                         }
                     }
@@ -84,8 +84,8 @@ namespace Bus.Common.Rendering
             foreach (RigidBody body in bodies)
             {
                 PlateOffset plateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ);
-                DrawContext drawContext = new(
-                    context.DeviceContext, context.ConstantBuffer, plateOffset, View, projection, context.Light);
+                LocatedDrawContext drawContext = new(context.DeviceContext,
+                    context.VertexConstantBuffer, context.PixelConstantBuffer, plateOffset, View, projection, context.Light);
                 body.Draw(drawContext);
             }
         }

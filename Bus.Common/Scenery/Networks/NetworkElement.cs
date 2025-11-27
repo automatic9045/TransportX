@@ -27,7 +27,7 @@ namespace Bus.Common.Scenery.Networks
             Paths[pathIndex].SetChild(element);
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(LocatedDrawContext context)
         {
             foreach (LocatedModel model in Models)
             {
