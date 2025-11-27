@@ -17,5 +17,6 @@ namespace Bus.Common.Rendering
         public Matrix4x4 World;
         public Matrix4x4 View;
         public Matrix4x4 Projection;
+        public Vector4 Light;
     }
 }

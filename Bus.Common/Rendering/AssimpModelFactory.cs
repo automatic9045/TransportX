@@ -47,11 +47,10 @@ namespace Bus.Common.Rendering
                 Vertex[] vertices = assimpMesh.Vertices
                     .Select((assimpVertex, i) =>
                     {
-                        Vertex vertex = new Vertex()
+                        Vertex vertex = new()
                         {
-                            X = assimpVertex.X,
-                            Y = assimpVertex.Y,
-                            Z = assimpVertex.Z,
+                            Position = assimpVertex,
+                            Normal = assimpMesh.Normals[i],
                             Color = assimpMesh.HasVertexColors(0) ? assimpMesh.VertexColorChannels[0][i] : Vector4.One,
                         };
 

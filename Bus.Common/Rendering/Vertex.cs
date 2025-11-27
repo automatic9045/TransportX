@@ -14,8 +14,9 @@ namespace Bus.Common.Rendering
         internal static readonly int Size = Marshal.SizeOf<Vertex>();
 
 
-        public float X, Y, Z;
-        public Vector2 TextureCoord;
+        public Vector3 Position;
+        public Vector3 Normal;
         public Vector4 Color;
+        public Vector2 TextureCoord;
     }
 }

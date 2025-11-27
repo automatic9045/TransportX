@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +16,9 @@ namespace Bus.Common.Rendering
 {
     public class Renderer : IDisposable
     {
+        protected static readonly Vector3 Light = Vector3.Normalize(new Vector3(-1, -6, 2));
+
+
         protected readonly IDXHost DXHost;
 
         protected readonly ID3D11VertexShader VertexShader;
@@ -34,8 +38,9 @@ namespace Bus.Common.Rendering
 
             InputElementDescription[] elements = [
                 new InputElementDescription("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("NORMAL", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
                 new InputElementDescription("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
             ];
 
             InputLayout = DXHost.Device.CreateInputLayout(elements, vsBlob.AsSpan());
@@ -130,10 +135,13 @@ namespace Bus.Common.Rendering
             DXHost.Context.PSSetShader(PixelShader);
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
-            camera.DrawBackground(DXHost.Context, ConstantBuffer, world.BackgroundModels, size);
+            CameraDrawContext cameraContext = new(DXHost.Context, ConstantBuffer, size, Vector3.Zero);
+            camera.DrawBackground(cameraContext, world.BackgroundModels);
             DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
-            camera.DrawPlates(DXHost.Context, ConstantBuffer, world.Plates, size);
-            camera.DrawBodies(DXHost.Context, ConstantBuffer, world.Bodies, size);
+
+            cameraContext = new(DXHost.Context, ConstantBuffer, size, Light);
+            camera.DrawPlates(cameraContext, world.Plates);
+            camera.DrawBodies(cameraContext, world.Bodies);
         }
     }
 }

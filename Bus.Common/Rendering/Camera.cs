@@ -36,7 +36,7 @@ namespace Bus.Common.Rendering
             };
         }
 
-        public void DrawBackground(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, IEnumerable<LocatedModel> models, GdiSize clientSize)
+        public void DrawBackground(CameraDrawContext context, IEnumerable<LocatedModel> models)
         {
             UpdateLocation();
 
@@ -44,16 +44,17 @@ namespace Bus.Common.Rendering
             {
                 model.Transform = Matrix4x4.CreateTranslation(Transform.Translation);
 
-                DrawContext drawContext = new(deviceContext, constantBuffer, PlateOffset.Identity, View, CreateProjection(clientSize));
+                DrawContext drawContext = new(
+                    context.DeviceContext, context.ConstantBuffer, PlateOffset.Identity, View, CreateProjection(context.ClientSize), context.Light);
                 model.Draw(drawContext);
             }
         }
 
-        public void DrawPlates(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, PlateCollection plates, GdiSize clientSize)
+        public void DrawPlates(CameraDrawContext context, PlateCollection plates)
         {
             UpdateLocation();
 
-            Matrix4x4 projection = CreateProjection(clientSize);
+            Matrix4x4 projection = CreateProjection(context.ClientSize);
 
             for (int i = DrawPlateCount - 1; 0 <= i; i--)
             {
@@ -65,7 +66,8 @@ namespace Bus.Common.Rendering
                         if (plates.TryGetValue(x, z, out LocatedPlate? plate))
                         {
                             PlateOffset plateOffset = new PlateOffset(x - PlateX, z - PlateZ);
-                            DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, projection);
+                            DrawContext drawContext = new(
+                                context.DeviceContext, context.ConstantBuffer, plateOffset, View, projection, context.Light);
                             plate!.Plate.Draw(drawContext);
                         }
                     }
@@ -73,16 +75,17 @@ namespace Bus.Common.Rendering
             }
         }
 
-        public void DrawBodies(ID3D11DeviceContext deviceContext, ID3D11Buffer constantBuffer, IEnumerable<RigidBody> bodies, GdiSize clientSize)
+        public void DrawBodies(CameraDrawContext context, IEnumerable<RigidBody> bodies)
         {
             UpdateLocation();
 
-            Matrix4x4 projection = CreateProjection(clientSize);
+            Matrix4x4 projection = CreateProjection(context.ClientSize);
 
             foreach (RigidBody body in bodies)
             {
                 PlateOffset plateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ);
-                DrawContext drawContext = new(deviceContext, constantBuffer, plateOffset, View, projection);
+                DrawContext drawContext = new(
+                    context.DeviceContext, context.ConstantBuffer, plateOffset, View, projection, context.Light);
                 body.Draw(drawContext);
             }
         }
