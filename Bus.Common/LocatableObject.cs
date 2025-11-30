@@ -18,10 +18,12 @@ namespace Bus.Common
         public int PlateZ { get; private set; }
         public Matrix4x4 Transform { get; private set; }
 
-        public Vector3 Position => Transform.Translation;
+        public Vector3 Position { get; private set; }
         public Vector3 PositionInWorld => Position + Origin.GetPlateOffset(this).Position; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
-        public Vector3 Direction { get; private set; }
-        public Vector3 Up { get; private set; }
+        public Quaternion Orientation { get; private set; }
+
+        public Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Orientation);
+        public Vector3 Up => Vector3.Transform(Vector3.UnitY, Orientation);
 
         public event EventHandler? Moved;
 
@@ -61,8 +63,9 @@ namespace Bus.Common
             PlateZ = plateZ;
             Transform = transform;
 
-            Direction = Vector4.Transform(Vector4.UnitZ, Transform).AsVector3();
-            Up = Vector4.Transform(Vector4.UnitY, Transform).AsVector3();
+            Matrix4x4.Decompose(Transform, out _, out Quaternion orientation, out Vector3 position);
+            Position = position;
+            Orientation = orientation;
 
             Moved?.Invoke(this, EventArgs.Empty);
 

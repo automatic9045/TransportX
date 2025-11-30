@@ -16,7 +16,7 @@ namespace Bus.Common
 
         void OnKeyDown(Key key) { }
         void OnKeyUp(Key key) { }
-        void OnMouseDragMove(Vector offset) { }
+        void OnMouseDragMove(Vector offset, MouseButtonState leftButton, MouseButtonState middleButton, MouseButtonState rightButton) { }
         void OnMouseWheel(int delta) { }
     }
 }

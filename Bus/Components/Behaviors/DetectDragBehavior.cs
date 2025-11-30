@@ -12,9 +12,11 @@ namespace Bus.Components.Behaviors
     internal class DetectDragBehavior : Behavior<UIElement>
     {
         public static DependencyProperty OffsetProperty = DependencyProperty.Register(nameof(Offset), typeof(Vector), typeof(DetectDragBehavior));
+        public static DependencyProperty LeftButtonProperty = DependencyProperty.Register(nameof(LeftButton), typeof(MouseButtonState), typeof(DetectDragBehavior));
+        public static DependencyProperty MiddleButtonProperty = DependencyProperty.Register(nameof(MiddleButton), typeof(MouseButtonState), typeof(DetectDragBehavior));
+        public static DependencyProperty RightButtonProperty = DependencyProperty.Register(nameof(RightButton), typeof(MouseButtonState), typeof(DetectDragBehavior));
 
 
-        private bool IsLeftButtonDown = false;
         private Point OldPoisition;
 
         public Vector Offset
@@ -23,6 +25,27 @@ namespace Bus.Components.Behaviors
             set => SetValue(OffsetProperty, value);
         }
 
+        public MouseButtonState LeftButton
+        {
+            get => (MouseButtonState)GetValue(LeftButtonProperty);
+            set => SetValue(LeftButtonProperty, value);
+        }
+
+        public MouseButtonState MiddleButton
+        {
+            get => (MouseButtonState)GetValue(MiddleButtonProperty);
+            set => SetValue(MiddleButtonProperty, value);
+        }
+
+        public MouseButtonState RightButton
+        {
+            get => (MouseButtonState)GetValue(RightButtonProperty);
+            set => SetValue(RightButtonProperty, value);
+        }
+
+        private bool IsAnyButtonPressed
+            => LeftButton == MouseButtonState.Pressed || MiddleButton == MouseButtonState.Pressed || RightButton == MouseButtonState.Pressed;
+
         public DetectDragBehavior()
         {
         }
@@ -30,8 +53,8 @@ namespace Bus.Components.Behaviors
         protected override void OnAttached()
         {
             base.OnAttached();
-            AssociatedObject.MouseLeftButtonDown += OnMouseLeftButtonDown;
-            AssociatedObject.MouseLeftButtonUp += OnMouseLeftButtonUp;
+            AssociatedObject.MouseDown += OnMouseButton;
+            AssociatedObject.MouseUp += OnMouseButton;
             AssociatedObject.MouseMove += OnMouseMove;
             AssociatedObject.MouseLeave += OnMouseLeave;
         }
@@ -39,28 +62,28 @@ namespace Bus.Components.Behaviors
         protected override void OnDetaching()
         {
             base.OnDetaching();
-            AssociatedObject.MouseLeftButtonDown -= OnMouseLeftButtonDown;
-            AssociatedObject.MouseLeftButtonUp -= OnMouseLeftButtonUp;
+            AssociatedObject.MouseDown -= OnMouseButton;
+            AssociatedObject.MouseUp -= OnMouseButton;
             AssociatedObject.MouseMove -= OnMouseMove;
             AssociatedObject.MouseLeave -= OnMouseLeave;
         }
 
-        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void OnMouseButton(object sender, MouseButtonEventArgs e)
         {
-            IsLeftButtonDown = true;
-            OldPoisition = e.GetPosition(AssociatedObject);
-            Offset = new Vector();
-        }
+            if (!IsAnyButtonPressed)
+            {
+                OldPoisition = e.GetPosition(AssociatedObject);
+                Offset = new Vector();
+            }
 
-        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            IsLeftButtonDown = false;
-            Offset = new Vector();
+            LeftButton = e.LeftButton;
+            MiddleButton = e.MiddleButton;
+            RightButton = e.RightButton;
         }
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (!IsLeftButtonDown) return;
+            if (!IsAnyButtonPressed) return;
 
             Point position = e.GetPosition(AssociatedObject);
             Offset = position - OldPoisition;
@@ -69,7 +92,10 @@ namespace Bus.Components.Behaviors
 
         private void OnMouseLeave(object sender, MouseEventArgs e)
         {
-            IsLeftButtonDown = false;
+            LeftButton = MouseButtonState.Released;
+            MiddleButton = MouseButtonState.Released;
+            RightButton = MouseButtonState.Released;
+
             Offset = new Vector();
         }
     }

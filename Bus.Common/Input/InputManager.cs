@@ -52,9 +52,9 @@ namespace Bus.Common.Input
             }
         }
 
-        public void OnMouseDragMove(Vector offset)
+        public void OnMouseDragMove(Vector offset, MouseButtonState leftButton, MouseButtonState middleButton, MouseButtonState rightButton)
         {
-            MouseDragMoved?.Invoke(this, new MouseDragMoveEventArgs(offset));
+            MouseDragMoved?.Invoke(this, new MouseDragMoveEventArgs(offset, leftButton, middleButton, rightButton));
         }
 
         public void OnMouseWheel(int delta)

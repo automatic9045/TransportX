@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,6 +27,9 @@ namespace Bus.ViewModels
 
         public ReactivePropertySlim<DXHost> DXHost { get; }
         public ReactivePropertySlim<Vector> MouseDragOffset { get; }
+        public ReactivePropertySlim<MouseButtonState> MouseLeftButton { get; }
+        public ReactivePropertySlim<MouseButtonState> MouseMiddleButton { get; }
+        public ReactivePropertySlim<MouseButtonState> MouseRightButton { get; }
 
         public ReactiveCommandSlim<KeyEventArgs> KeyDownCommand { get; }
         public ReactiveCommandSlim<KeyEventArgs> KeyUpCommand { get; }
@@ -40,6 +44,9 @@ namespace Bus.ViewModels
 
             DXHost = new ReactivePropertySlim<DXHost>(dx).AddTo(Disposables);
             MouseDragOffset = new ReactivePropertySlim<Vector>(mode: ReactivePropertyMode.None).AddTo(Disposables);
+            MouseLeftButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
+            MouseMiddleButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
+            MouseRightButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
 
             GameLoader loader = new GameLoader(dx);
             Game = loader.Load(worldInfo);
@@ -49,7 +56,9 @@ namespace Bus.ViewModels
             MouseWheelCommand = new ReactiveCommandSlim<MouseWheelEventArgs>().AddTo(Disposables);
             RenderingCommand = new ReactiveCommandSlim<RenderingEventArgs>().AddTo(Disposables);
 
-            MouseDragOffset.Subscribe(Game.OnMouseDragMove);
+            Observable.CombineLatest(MouseDragOffset, MouseLeftButton, MouseMiddleButton, MouseRightButton,
+                (o, l, m, r) => (Offset: o, Left: l, Middle: m, Right: r))
+                .Subscribe(t => game.OnMouseDragMove(t.Offset, t.Left, t.Middle, t.Right));
             KeyDownCommand.Subscribe(args => Game.OnKeyDown(args.Key));
             KeyUpCommand.Subscribe(args => Game.OnKeyUp(args.Key));
             MouseWheelCommand.Subscribe(args => Game.OnMouseWheel(args.Delta));

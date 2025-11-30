@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using Vortice.Direct3D11;
 
@@ -22,7 +23,7 @@ namespace Bus.Common
         protected readonly Renderer Renderer;
 
         protected readonly TimeManager TimeManager;
-        protected readonly InputManager InputManager;
+        protected readonly Input.InputManager InputManager;
         protected readonly Camera Camera;
 
         protected readonly ViewpointInput ViewpointInput;
@@ -38,7 +39,7 @@ namespace Bus.Common
             Renderer = new Renderer(DXHost);
 
             TimeManager = new TimeManager();
-            InputManager = new InputManager();
+            InputManager = new Input.InputManager();
             Camera = new Camera();
 
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
@@ -129,9 +130,10 @@ namespace Bus.Common
             Renderer.Draw(renderTarget, depthStencil, Camera, World, clientSize);
         }
 
-        public void OnKeyDown(System.Windows.Input.Key key) => InputManager.OnKeyDown(key);
-        public void OnKeyUp(System.Windows.Input.Key key) => InputManager.OnKeyUp(key);
-        public void OnMouseDragMove(System.Windows.Vector offset) => InputManager.OnMouseDragMove(offset);
+        public void OnKeyDown(Key key) => InputManager.OnKeyDown(key);
+        public void OnKeyUp(Key key) => InputManager.OnKeyUp(key);
+        public void OnMouseDragMove(System.Windows.Vector offset, MouseButtonState leftButton, MouseButtonState middleButton, MouseButtonState rightButton)
+            => InputManager.OnMouseDragMove(offset, leftButton, middleButton, rightButton);
         public void OnMouseWheel(int delta) => InputManager.OnMouseWheel(delta);
     }
 }

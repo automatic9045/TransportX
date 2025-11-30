@@ -23,7 +23,10 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <i:Interaction.Behaviors>
-        <behaviors:DetectDragBehavior Offset="{Binding MouseDragOffset.Value, Mode=OneWayToSource}"/>
+        <behaviors:DetectDragBehavior Offset="{Binding MouseDragOffset.Value, Mode=OneWayToSource}"
+                                      LeftButton="{Binding MouseLeftButton.Value, Mode=OneWayToSource}"
+                                      MiddleButton="{Binding MouseMiddleButton.Value, Mode=OneWayToSource}"
+                                      RightButton="{Binding MouseRightButton.Value, Mode=OneWayToSource}"/>
     </i:Interaction.Behaviors>
     <Grid>
         <components:D3D11Window DXHost="{Binding DXHost.Value}">

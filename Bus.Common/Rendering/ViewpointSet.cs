@@ -11,7 +11,7 @@ namespace Bus.Common.Rendering
 {
     public class ViewpointSet
     {
-        private readonly Viewpoint Free = new FreeViewpoint(new LocatableObject(0, 0, new SixDoF(0, 10, 0)));
+        private readonly Viewpoint Free = new FreeViewpoint();
 
         public VehicleBase? AttachedTo { get; set; } = null;
         public ViewpointType Type { get; set; } = ViewpointType.Free;

@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
 using Vortice.Mathematics;
 using Vortice.XAudio2;
 

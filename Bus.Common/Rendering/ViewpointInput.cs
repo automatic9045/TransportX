@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Key = System.Windows.Input.Key;
+using MouseButtonState = System.Windows.Input.MouseButtonState;
 
 using Bus.Common.Input;
 using System.Numerics;
@@ -27,7 +28,8 @@ namespace Bus.Common.Rendering
             inputManager.MouseDragMoved += (sender, e) =>
             {
                 Vector2 offset = new Vector2((float)e.Offset.X, (float)e.Offset.Y);
-                viewpoints.Current.Rotate(offset, ClientSize);
+                if (e.MiddleButton == MouseButtonState.Pressed) viewpoints.Current.Move(offset, ClientSize);
+                if (e.RightButton == MouseButtonState.Pressed) viewpoints.Current.Rotate(offset, ClientSize);
             };
 
             inputManager.MouseWheel += (sender, e) => viewpoints.Current.Zoom(e.Delta);
