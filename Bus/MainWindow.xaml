@@ -29,7 +29,7 @@
                                       RightButton="{Binding MouseRightButton.Value, Mode=OneWayToSource}"/>
     </i:Interaction.Behaviors>
     <Grid>
-        <components:D3D11Window DXHost="{Binding DXHost.Value}">
+        <components:D3D11Window DXHost="{Binding DXHost.Value}" DXClient="{Binding DXClient.Value}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="Rendering">
                     <ri:EventToReactiveCommand Command="{Binding RenderingCommand}" />

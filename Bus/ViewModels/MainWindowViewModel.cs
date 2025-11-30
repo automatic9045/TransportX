@@ -26,6 +26,7 @@ namespace Bus.ViewModels
         private readonly IGame Game;
 
         public ReactivePropertySlim<DXHost> DXHost { get; }
+        public ReactivePropertySlim<DXClient> DXClient { get; }
         public ReactivePropertySlim<Vector> MouseDragOffset { get; }
         public ReactivePropertySlim<MouseButtonState> MouseLeftButton { get; }
         public ReactivePropertySlim<MouseButtonState> MouseMiddleButton { get; }
@@ -43,12 +44,13 @@ namespace Bus.ViewModels
             DXHost dx = new DXHost();
 
             DXHost = new ReactivePropertySlim<DXHost>(dx).AddTo(Disposables);
+            DXClient = new ReactivePropertySlim<DXClient>().AddTo(Disposables);
             MouseDragOffset = new ReactivePropertySlim<Vector>(mode: ReactivePropertyMode.None).AddTo(Disposables);
             MouseLeftButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
             MouseMiddleButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
             MouseRightButton = new ReactivePropertySlim<MouseButtonState>(mode: ReactivePropertyMode.None).AddTo(Disposables);
 
-            GameLoader loader = new GameLoader(dx);
+            GameLoader loader = new GameLoader(DXHost.Value, DXClient.Value);
             Game = loader.Load(worldInfo);
 
             KeyDownCommand = new ReactiveCommandSlim<KeyEventArgs>().AddTo(Disposables);

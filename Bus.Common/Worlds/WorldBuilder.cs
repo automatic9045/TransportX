@@ -18,6 +18,7 @@ namespace Bus.Common.Worlds
         public IWorldInfo Info { get; }
 
         public required IDXHost DXHost { get; init; }
+        public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }

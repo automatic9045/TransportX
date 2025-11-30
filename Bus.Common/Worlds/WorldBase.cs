@@ -16,6 +16,7 @@ namespace Bus.Common.Worlds
     {
         public IWorldInfo Info { get; }
         public IDXHost DXHost { get; }
+        public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public TimeManager TimeManager { get; }
         public InputManager InputManager { get; }
@@ -34,6 +35,7 @@ namespace Bus.Common.Worlds
         {
             Info = builder.Info;
             DXHost = builder.DXHost;
+            DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;

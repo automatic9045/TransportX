@@ -17,6 +17,7 @@ namespace Bus.Common.Vehicles
     public class VehicleBuilder
     {
         public required IDXHost DXHost { get; init; }
+        public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required ITimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }

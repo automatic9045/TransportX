@@ -16,10 +16,12 @@ namespace Bus.Models
     internal class GameLoader
     {
         private readonly IDXHost DXHost;
+        private readonly IDXClient DXClient;
 
-        public GameLoader(IDXHost dxHost)
+        public GameLoader(IDXHost dxHost, IDXClient dxClient)
         {
             DXHost = dxHost;
+            DXClient = dxClient;
         }
 
         public IGame Load(IWorldInfo worldInfo)
@@ -48,10 +50,11 @@ namespace Bus.Models
             }
 
             Type type = types[0];
-            ConstructorInfo constructor = type.GetConstructor([typeof(IDXHost), typeof(IWorldInfo)])
-                ?? throw new ArgumentException($"{type.Name} にはパラメータが {nameof(IDXHost)}、{nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
+            ConstructorInfo constructor = type.GetConstructor([typeof(IDXHost), typeof(IDXClient), typeof(IWorldInfo)])
+                ?? throw new ArgumentException($"{type.Name} にはパラメータが " +
+                $"{nameof(IDXHost)}、{nameof(IDXClient)}、{nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
 
-            IGame game = (IGame)constructor.Invoke([DXHost, worldInfo]);
+            IGame game = (IGame)constructor.Invoke([DXHost, DXClient, worldInfo]);
             return game;
         }
     }

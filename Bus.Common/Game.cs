@@ -19,6 +19,7 @@ namespace Bus.Common
     public class Game : IGame
     {
         protected readonly IDXHost DXHost;
+        protected readonly IDXClient DXClient;
         protected readonly PhysicsHost PhysicsHost;
         protected readonly Renderer Renderer;
 
@@ -32,9 +33,10 @@ namespace Bus.Common
 
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
-        public Game(IDXHost dxHost, IWorldInfo worldInfo)
+        public Game(IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
         {
             DXHost = dxHost;
+            DXClient = dxClient;
             PhysicsHost = PhysicsHost.Create();
             Renderer = new Renderer(DXHost);
 
@@ -56,6 +58,7 @@ namespace Bus.Common
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
             {
                 DXHost = DXHost,
+                DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
                 TimeManager = TimeManager,
                 InputManager = InputManager,
@@ -71,6 +74,7 @@ namespace Bus.Common
             VehicleBuilder vehicleBuilder = new VehicleBuilder()
             {
                 DXHost = DXHost,
+                DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
                 TimeManager = TimeManager,
                 InputManager = InputManager,

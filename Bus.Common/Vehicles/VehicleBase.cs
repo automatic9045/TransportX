@@ -18,6 +18,7 @@ namespace Bus.Common.Vehicles
         public abstract string Author { get; }
 
         public IDXHost DXHost { get; }
+        public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public ITimeManager TimeManager { get; }
         public InputManager InputManager { get; }
@@ -30,6 +31,7 @@ namespace Bus.Common.Vehicles
         public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost, builder.Camera)
         {
             DXHost = builder.DXHost;
+            DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
