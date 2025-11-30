@@ -18,6 +18,9 @@ namespace Bus
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+
             WorldInfo? worldInfo = WorldSelector.Select();
             if (worldInfo is null) Environment.Exit(0);
 
@@ -49,8 +52,7 @@ namespace Bus
                 }
             };
 
-            MainWindow mainWindow = new MainWindow(worldInfo!);
-            mainWindow.Show();
+            ((MainWindowViewModel)mainWindow.DataContext).LoadGame(worldInfo);
         }
     }
 }

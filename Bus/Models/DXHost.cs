@@ -13,7 +13,7 @@ using Bus.Common.Rendering;
 
 namespace Bus.Models
 {
-    internal class DXHost : IDXHost, IDisposable
+    public class DXHost : IDXHost, IDisposable
     {
         private static readonly bool Debug = false;
 

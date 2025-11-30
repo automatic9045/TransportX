@@ -10,7 +10,10 @@
         xmlns:behaviors="clr-namespace:Bus.Components.Behaviors"
         xmlns:vm="clr-namespace:Bus.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Bus" Height="450" Width="800">
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="KeyDown">
             <ri:EventToReactiveCommand Command="{Binding KeyDownCommand}" />
@@ -29,7 +32,7 @@
                                       RightButton="{Binding MouseRightButton.Value, Mode=OneWayToSource}"/>
     </i:Interaction.Behaviors>
     <Grid>
-        <components:D3D11Window DXHost="{Binding DXHost.Value}" DXClient="{Binding DXClient.Value}">
+        <components:D3D11Window DXHost="{Binding DXHost.Value}" DXClient="{Binding DXClient.Value, Mode=OneWayToSource}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="Rendering">
                     <ri:EventToReactiveCommand Command="{Binding RenderingCommand}" />

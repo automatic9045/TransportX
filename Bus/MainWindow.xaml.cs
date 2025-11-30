@@ -19,9 +19,8 @@ namespace Bus
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow(IWorldInfo worldInfo)
+        public MainWindow()
         {
-            DataContext = new MainWindowViewModel(worldInfo);
             InitializeComponent();
         }
     }

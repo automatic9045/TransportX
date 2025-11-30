@@ -10,7 +10,7 @@ namespace Bus.Components
 {
     internal delegate void RenderingEventHandler(object sender, RenderingEventArgs e);
 
-    internal class RenderingEventArgs : RoutedEventArgs
+    public class RenderingEventArgs : RoutedEventArgs
     {
         public ID3D11RenderTargetView RenderTarget { get; }
         public ID3D11DepthStencilView DepthStencil { get; }
