@@ -12,7 +12,7 @@ namespace Bus.Common
 {
     public interface IGame : IDisposable
     {
-        void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size clientSize);
+        void Draw(System.Drawing.Size clientSize);
 
         void OnKeyDown(Key key) { }
         void OnKeyUp(Key key) { }

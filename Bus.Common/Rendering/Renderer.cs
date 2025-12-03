@@ -20,6 +20,7 @@ namespace Bus.Common.Rendering
 
 
         protected readonly IDXHost DXHost;
+        protected readonly IDXClient DXClient;
 
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
@@ -30,9 +31,10 @@ namespace Bus.Common.Rendering
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
 
-        public Renderer(IDXHost dxHost)
+        public Renderer(IDXHost dxHost, IDXClient dxClient)
         {
             DXHost = dxHost;
+            DXClient = dxClient;
 
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
@@ -128,14 +130,14 @@ namespace Bus.Common.Rendering
             BlendState.Dispose();
         }
 
-        public void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, Camera camera, WorldBase world, System.Drawing.Size size)
+        public void Draw(Camera camera, WorldBase world, System.Drawing.Size size)
         {
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);
             DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
 
-            DXHost.Context.ClearRenderTargetView(renderTarget, Colors.Gray);
-            DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
+            DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, Colors.Gray);
+            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             DXHost.Context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             DXHost.Context.IASetInputLayout(InputLayout);
@@ -148,7 +150,7 @@ namespace Bus.Common.Rendering
 
             CameraDrawContext cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Vector3.Zero);
             camera.DrawBackground(cameraContext, world.BackgroundModels);
-            DXHost.Context.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
+            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Light);
             camera.DrawPlates(cameraContext, world.Plates);

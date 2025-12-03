@@ -104,7 +104,7 @@ namespace Bus.ViewModels
             KeyDownCommand.Subscribe(args => game.OnKeyDown(args.Key)).AddTo(PerGameDisposables);
             KeyUpCommand.Subscribe(args => game.OnKeyUp(args.Key)).AddTo(PerGameDisposables);
             MouseWheelCommand.Subscribe(args => game.OnMouseWheel(args.Delta)).AddTo(PerGameDisposables);
-            RenderingCommand.Subscribe(args => game.Draw(args.RenderTarget, args.DepthStencil, args.Size)).AddTo(PerGameDisposables);
+            RenderingCommand.Subscribe(args => game.Draw(args.Size)).AddTo(PerGameDisposables);
         }
     }
 }

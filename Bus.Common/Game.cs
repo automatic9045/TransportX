@@ -38,7 +38,7 @@ namespace Bus.Common
             DXHost = dxHost;
             DXClient = dxClient;
             PhysicsHost = PhysicsHost.Create();
-            Renderer = new Renderer(DXHost);
+            Renderer = new Renderer(DXHost, DXClient);
 
             TimeManager = new TimeManager();
             InputManager = new Input.InputManager();
@@ -94,7 +94,7 @@ namespace Bus.Common
             Renderer.Dispose();
         }
 
-        public virtual void Draw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size clientSize)
+        public virtual void Draw(System.Drawing.Size clientSize)
         {
             ViewpointInput.ClientSize = new Vector2(clientSize.Width, clientSize.Height);
 
@@ -114,7 +114,7 @@ namespace Bus.Common
             }
 
             OnTick(elapsed);
-            OnDraw(renderTarget, depthStencil, clientSize);
+            OnDraw(clientSize);
         }
 
         protected virtual void OnSubTick(TimeSpan elapsed)
@@ -129,9 +129,9 @@ namespace Bus.Common
             World.Tick(elapsed);
         }
 
-        protected virtual void OnDraw(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, System.Drawing.Size clientSize)
+        protected virtual void OnDraw(System.Drawing.Size clientSize)
         {
-            Renderer.Draw(renderTarget, depthStencil, Camera, World, clientSize);
+            Renderer.Draw(Camera, World, clientSize);
         }
 
         public void OnKeyDown(Key key) => InputManager.OnKeyDown(key);
