@@ -22,12 +22,17 @@ namespace Bus.Common
 
         public TimeManager()
         {
-            Stopwatch.Start();
         }
 
         public void Tick()
         {
             TimeSpan elapsed = Stopwatch.Elapsed;
+            if (!Stopwatch.IsRunning)
+            {
+                Stopwatch.Start();
+                elapsed = TimeSpan.FromSeconds(1d / 60);
+            }
+
             TimeSpan dt = elapsed - LastElapsed;
             DeltaTime = dt < LimitDeltaTime ? dt : LimitDeltaTime;
             LastElapsed = elapsed;
