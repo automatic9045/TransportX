@@ -30,6 +30,9 @@ namespace Bus.Common.Scenery
 
         protected abstract Matrix4x4 ColliderTransform { get; set; }
 
+        public Matrix4x4 BaseToCollider => BaseTransformInverse * Model.Collider.OffsetInverse;
+        public Matrix4x4 ColliderToBase => Model.Collider.Offset * BaseTransform;
+
         internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, Matrix4x4 transform) : base(model, transform, false)
         {
             Simulation = simulation;

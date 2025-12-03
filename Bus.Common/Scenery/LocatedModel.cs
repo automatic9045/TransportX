@@ -12,16 +12,26 @@ namespace Bus.Common.Scenery
     public class LocatedModel : IDrawable
     {
         public IModel Model { get; }
-        public Matrix4x4 BaseTransform { get; }
-        public Matrix4x4 BaseTransformInverse { get; }
+
+        private Matrix4x4 BaseTransformKey;
+        public Matrix4x4 BaseTransform
+        {
+            get => BaseTransformKey;
+            set
+            {
+                BaseTransformKey = value;
+                Matrix4x4.Invert(value, out Matrix4x4 baseTransformInverse);
+                BaseTransformInverse = baseTransformInverse;
+            }
+        }
+        public Matrix4x4 BaseTransformInverse { get; private set; }
+
         public virtual Matrix4x4 Transform { get; set; } = Matrix4x4.Identity;
 
         protected LocatedModel(IModel model, Matrix4x4 transform, bool setTransform)
         {
             Model = model;
             BaseTransform = transform;
-            Matrix4x4.Invert(transform, out Matrix4x4 baseTransformInverse);
-            BaseTransformInverse = baseTransformInverse;
             if (setTransform) Transform = transform;
         }
 

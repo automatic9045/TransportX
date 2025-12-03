@@ -9,6 +9,9 @@ namespace Bus.Common
 {
     public struct SixDoF
     {
+        public static readonly SixDoF Zero = default;
+
+
         public Vector3 Translation { get; }
         public Vector3 Rotation { get; }
 
