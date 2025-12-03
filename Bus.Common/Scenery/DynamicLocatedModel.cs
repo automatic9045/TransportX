@@ -88,7 +88,7 @@ namespace Bus.Common.Scenery
 
         public void Shift(PlateOffset offset)
         {
-            Transform *= offset.Transform;
+            Transform *= offset.TransformInverse;
         }
     }
 }
