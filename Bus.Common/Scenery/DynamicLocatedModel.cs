@@ -51,7 +51,7 @@ namespace Bus.Common.Scenery
         public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 transform)
         {
-            BodyDescription desc = descFactory(model, (transform * model.Collider.Offset).ToRigidPose());
+            BodyDescription desc = descFactory(model, (model.Collider.Offset * transform).ToRigidPose());
             BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
             physicsHost.SetMaterial(handle, model.Collider.Material);
             return new DynamicLocatedModel(physicsHost.Simulation, model, handle, transform);
