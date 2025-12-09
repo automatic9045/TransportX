@@ -46,7 +46,7 @@ namespace Bus.Common
             PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
             {
-                if (model is CollidableLocatedModel dynamicModel) dynamicModel.Update(fromCamera);
+                if (model is CollidableLocatedModel dynamicModel) dynamicModel.SetFromCamera(fromCamera);
             }
 
             PlateOffset plateOffset = Locate(PlateX, PlateZ, Models.RootModel!.BaseTransformInverse * Models.RootModel.Transform);

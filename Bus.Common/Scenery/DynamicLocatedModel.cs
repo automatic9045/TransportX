@@ -15,20 +15,6 @@ namespace Bus.Common.Scenery
 {
     public class DynamicLocatedModel : CollidableLocatedModel
     {
-        public BodyHandle Handle { get; }
-        public BodyReference Body => Simulation.Bodies[Handle];
-        public bool IsKinematic => Body.Kinematic;
-
-        protected override Matrix4x4 ColliderTransform
-        {
-            get => Model.Collider.OffsetInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
-            set
-            {
-                Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Offset * value * FromCamera.Transform).ToRigidPose();
-            }
-        }
-
         public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
         public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
         public BodyVelocity Velocity
@@ -43,9 +29,8 @@ namespace Bus.Common.Scenery
         }
 
         internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 transform)
-            : base(simulation, model, transform)
+            : base(simulation, model, handle, transform)
         {
-            Handle = handle;
         }
 
         public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
@@ -72,18 +57,18 @@ namespace Bus.Common.Scenery
             return Create(physicsHost, model, mass, model.Collider.ShapeIndex, transform);
         }
 
-        public static DynamicLocatedModel CreateKinematic(IPhysicsHost physicsHost, ICollidableModel model, Matrix4x4 transform)
+        public override bool SetFromCamera(PlateOffset fromCamera)
         {
-            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
-                => BodyDescription.CreateKinematic(pose, model.Collider.ShapeIndex, 0.01f);
+            Matrix4x4 colliderTransform = ColliderTransform;
 
-            return Create(physicsHost, model, CreateDesc, transform);
-        }
+            bool isChanged = base.SetFromCamera(fromCamera);
+            if (isChanged)
+            {
+                ColliderTransform = colliderTransform;
+            }
 
-        public static LocatedModel CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Matrix4x4 transform)
-        {
-            return model is ICollidableModel collidableModel
-                ? CreateKinematic(physicsHost, collidableModel, transform) : new LocatedModel(model, transform);
+            SetTransform(colliderTransform, false);
+            return isChanged;
         }
 
         public void Shift(PlateOffset offset)

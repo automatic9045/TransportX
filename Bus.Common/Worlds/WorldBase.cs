@@ -53,7 +53,7 @@ namespace Bus.Common.Worlds
 
         public virtual void SubTick(TimeSpan elapsed)
         {
-            Plates.Update(Camera.PlateX, Camera.PlateZ);
+            Plates.SetCameraPosition(Camera.PlateX, Camera.PlateZ);
             foreach (RigidBody body in Bodies) body.SubTick(elapsed);
         }
 

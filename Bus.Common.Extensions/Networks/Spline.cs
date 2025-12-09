@@ -38,13 +38,14 @@ namespace Bus.Common.Scenery.Networks
         {
             Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY(structure.Span * Curvature / 2);
 
+            List<KinematicLocatedModel> modelsToMerge = [];
             Matrix4x4 world = GetTransform(structure.From) * Transform;
             for (int i = 0; i < structure.Count; i++)
             {
                 LocatedModel source = structure.Models[i % structure.Models.Count];
                 Matrix4x4 transform = source.BaseTransform * span * world;
 
-                LocatedModel compiled = DynamicLocatedModel.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
+                LocatedModel compiled = KinematicLocatedModel.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
                 CompiledModels.Add(compiled);
 
                 world = GetTransform(structure.Interval) * world;

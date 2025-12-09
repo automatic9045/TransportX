@@ -24,12 +24,12 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public void Update(int cameraX, int cameraZ)
+        public void SetCameraPosition(int cameraX, int cameraZ)
         {
             foreach (LocatedPlate locatedPlate in this)
             {
                 PlateOffset fromCamera = new PlateOffset(locatedPlate.X - cameraX, locatedPlate.Z - cameraZ);
-                locatedPlate.Plate.Update(fromCamera);
+                locatedPlate.Plate.SetFromCamera(fromCamera);
             }
         }
 
