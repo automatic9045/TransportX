@@ -5,12 +5,15 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
 using Bus.Common.Physics;
 
 namespace Bus.Common.Scenery.Networks
 {
     public class Spline : NetworkEdge
     {
+        private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
         public override LaneConnector Port { get; }
@@ -22,9 +25,11 @@ namespace Bus.Common.Scenery.Networks
         private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
         public override IReadOnlyList<LocatedModel> Models => CompiledModels;
 
-        public Spline(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
+        public Spline(ID3D11Device device, IPhysicsHost physicsHost,
+            int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
             : base(plateX, plateZ, transform, isRoot)
         {
+            Device = device;
             PhysicsHost = physicsHost;
 
             Curvature = curvature;
@@ -46,9 +51,25 @@ namespace Bus.Common.Scenery.Networks
                 Matrix4x4 transform = source.BaseTransform * span * world;
 
                 LocatedModel compiled = KinematicLocatedModel.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
-                CompiledModels.Add(compiled);
+                if (compiled is KinematicLocatedModel compiledDynamic)
+                {
+                    modelsToMerge.Add(compiledDynamic);
+                }
+                else
+                {
+                    CompiledModels.Add(compiled);
+                }
 
                 world = GetTransform(structure.Interval) * world;
+            }
+
+            if (0 < modelsToMerge.Count)
+            {
+                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
+                mergedModel.CreateColliderDebugModel(Device, new Vector4(0, 0, 1, 1));
+                CompiledModels.Add(mergedModel);
+
+                foreach (KinematicLocatedModel model in modelsToMerge) model.Dispose();
             }
         }
 

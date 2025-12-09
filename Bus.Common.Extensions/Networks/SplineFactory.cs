@@ -5,27 +5,32 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
 using Bus.Common.Physics;
 
 namespace Bus.Common.Scenery.Networks
 {
     public class SplineFactory : LocatableObject
     {
+        private readonly ID3D11Device Device;
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly LaneConnector BasePairedPort;
 
         protected readonly List<Spline> CreatedSplinesKey = new List<Spline>();
         public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
 
-        public SplineFactory(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneConnector basePairedPort) : base(plateX, plateZ, transform)
+        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneConnector basePairedPort)
+            : base(plateX, plateZ, transform)
         {
+            Device = device;
             PhysicsHost = physicsHost;
             BasePairedPort = basePairedPort;
         }
 
         public Spline ByCurvature(float curvature, float length)
         {
-            Spline spline = new Spline(PhysicsHost, PlateX, PlateZ, Transform, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
+            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
 
             Move(spline.Path.Transition);
 

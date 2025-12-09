@@ -50,7 +50,7 @@ namespace Bus.Common.Scripting.Commands
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.PhysicsHost, X, Z, transform, new LaneConnector());
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector());
             }
             else
             {

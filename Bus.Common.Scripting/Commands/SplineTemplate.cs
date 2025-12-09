@@ -47,7 +47,7 @@ namespace Bus.Common.Scripting.Commands
 
         internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            SplineFactory factory = new SplineFactory(World.PhysicsHost, plateX, plateZ, transform, Port);
+            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, Port);
             return factory;
         }
     }
