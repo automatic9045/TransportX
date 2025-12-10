@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,7 +9,6 @@ using Key = System.Windows.Input.Key;
 using MouseButtonState = System.Windows.Input.MouseButtonState;
 
 using Bus.Common.Input;
-using System.Numerics;
 
 namespace Bus.Common.Rendering
 {

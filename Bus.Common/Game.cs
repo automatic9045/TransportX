@@ -28,6 +28,7 @@ namespace Bus.Common
         protected readonly Camera Camera;
 
         protected readonly ViewpointInput ViewpointInput;
+        protected readonly DebugInput DebugInput;
 
         protected readonly WorldBase World;
 
@@ -45,6 +46,7 @@ namespace Bus.Common
             Camera = new Camera();
 
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
+            DebugInput = new DebugInput(InputManager, Camera);
 
             World = LoadWorld(worldInfo);
 

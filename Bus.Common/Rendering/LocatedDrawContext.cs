@@ -20,7 +20,7 @@ namespace Bus.Common.Rendering
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
         public Vector3 Light { get; init; } = Vector3.Zero;
-        public bool DrawColliderDebugModel { get; init; } = true;
+        public bool DrawColliderDebugModel { get; init; } = false;
 
         public LocatedDrawContext()
         {

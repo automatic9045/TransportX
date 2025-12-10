@@ -23,6 +23,8 @@ namespace Bus.Common.Rendering
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
+        public bool DrawColliderDebugModel { get; set; } = false;
+
         public Camera() : base()
         {
             Moved += (sender, e) =>
@@ -83,6 +85,7 @@ namespace Bus.Common.Rendering
                                 View = View,
                                 Projection = projection,
                                 Light = context.Light,
+                                DrawColliderDebugModel = DrawColliderDebugModel,
                             };
                             plate!.Plate.Draw(drawContext);
                         }
@@ -108,6 +111,7 @@ namespace Bus.Common.Rendering
                     View = View,
                     Projection = projection,
                     Light = context.Light,
+                    DrawColliderDebugModel = DrawColliderDebugModel,
                 };
                 body.Draw(drawContext);
             }
