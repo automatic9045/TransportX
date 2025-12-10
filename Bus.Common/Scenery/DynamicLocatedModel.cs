@@ -59,15 +59,16 @@ namespace Bus.Common.Scenery
 
         public override bool SetFromCamera(PlateOffset fromCamera)
         {
-            Matrix4x4 colliderTransform = ColliderTransform;
+            PlateOffset delta = fromCamera - FromCamera;
 
             bool isChanged = base.SetFromCamera(fromCamera);
             if (isChanged)
             {
-                ColliderTransform = colliderTransform;
+                Simulation.Awakener.AwakenBody(Handle);
+                Body.Pose.Position += delta.Position;
             }
 
-            SetTransform(colliderTransform, false);
+            SetTransform(ColliderTransform, false);
             return isChanged;
         }
 
