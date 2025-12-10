@@ -33,7 +33,7 @@ namespace Bus.Common.Rendering
             return model;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             foreach (ID3D11ShaderResourceView texture in Textures)
             {
@@ -95,6 +95,12 @@ namespace Bus.Common.Rendering
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
             CollidableModel model = factory.LoadWithConvexHull(visualModelPath, material);
             return model;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            Collider.Dispose();
         }
     }
 }

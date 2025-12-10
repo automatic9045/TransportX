@@ -39,12 +39,21 @@ namespace Bus.Common.Rendering
         {
             UpdateLocation();
 
+            LocatedDrawContext drawContext = new()
+            {
+                DeviceContext = context.DeviceContext,
+                VertexConstantBuffer = context.VertexConstantBuffer,
+                PixelConstantBuffer = context.PixelConstantBuffer,
+                PlateOffset = PlateOffset.Identity,
+                View = View,
+                Projection = CreateProjection(context.ClientSize),
+                Light = context.Light,
+            };
+
             foreach (LocatedModel model in models)
             {
                 model.Transform = Matrix4x4.CreateTranslation(Transform.Translation);
 
-                LocatedDrawContext drawContext = new(context.DeviceContext,
-                    context.VertexConstantBuffer, context.PixelConstantBuffer, PlateOffset.Identity, View, CreateProjection(context.ClientSize), context.Light);
                 model.Draw(drawContext);
             }
         }
@@ -64,9 +73,16 @@ namespace Bus.Common.Rendering
                     {
                         if (plates.TryGetValue(x, z, out LocatedPlate? plate))
                         {
-                            PlateOffset plateOffset = new PlateOffset(x - PlateX, z - PlateZ);
-                            LocatedDrawContext drawContext = new(context.DeviceContext,
-                                context.VertexConstantBuffer, context.PixelConstantBuffer, plateOffset, View, projection, context.Light);
+                            LocatedDrawContext drawContext = new()
+                            {
+                                DeviceContext = context.DeviceContext,
+                                VertexConstantBuffer = context.VertexConstantBuffer,
+                                PixelConstantBuffer = context.PixelConstantBuffer,
+                                PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
+                                View = View,
+                                Projection = projection,
+                                Light = context.Light,
+                            };
                             plate!.Plate.Draw(drawContext);
                         }
                     }
@@ -82,9 +98,16 @@ namespace Bus.Common.Rendering
 
             foreach (RigidBody body in bodies)
             {
-                PlateOffset plateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ);
-                LocatedDrawContext drawContext = new(context.DeviceContext,
-                    context.VertexConstantBuffer, context.PixelConstantBuffer, plateOffset, View, projection, context.Light);
+                LocatedDrawContext drawContext = new()
+                {
+                    DeviceContext = context.DeviceContext,
+                    VertexConstantBuffer = context.VertexConstantBuffer,
+                    PixelConstantBuffer = context.PixelConstantBuffer,
+                    PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
+                    View = View,
+                    Projection = projection,
+                    Light = context.Light,
+                };
                 body.Draw(drawContext);
             }
         }

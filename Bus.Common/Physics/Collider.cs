@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 
+using Bus.Common.Rendering;
+using Vortice.Direct3D11;
+
 namespace Bus.Common.Physics
 {
     public class Collider<TShape> : ICollider where TShape : unmanaged, IShape
@@ -20,6 +23,8 @@ namespace Bus.Common.Physics
         public Material Material { get; }
         public Matrix4x4 Offset { get; }
         public Matrix4x4 OffsetInverse { get; }
+
+        public IModel? DebugModel { get; protected set; } = null;
 
         public Collider(TShape shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
@@ -35,6 +40,10 @@ namespace Bus.Common.Physics
         public BodyInertia ComputeInertia(float mass)
         {
             return InertiaFactory(Shape, mass);
+        }
+
+        public virtual void CreateDebugModel(ID3D11Device device, Vector4 color)
+        {
         }
     }
 }

@@ -1,13 +1,11 @@
-﻿using Assimp;
-using SharpGen.Runtime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
+using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
@@ -19,16 +17,21 @@ namespace Bus.Common.Rendering
         private readonly ID3D11Buffer IndexBuffer;
         private readonly IReadOnlyList<ID3D11ShaderResourceView> Textures;
 
+        public PrimitiveTopology Topology { get; }
+
         private event EventHandler? Disposing;
 
-        public Mesh(ID3D11Buffer vertexBuffer, ID3D11Buffer indexBuffer, IReadOnlyList<ID3D11ShaderResourceView> textures)
+        public Mesh(ID3D11Buffer vertexBuffer, ID3D11Buffer indexBuffer, IReadOnlyList<ID3D11ShaderResourceView> textures,
+            PrimitiveTopology topology = PrimitiveTopology.TriangleList)
         {
             VertexBuffer = vertexBuffer;
             IndexBuffer = indexBuffer;
             Textures = textures;
+            Topology = topology;
         }
 
-        public static Mesh Create(ID3D11Device device, Vertex[] vertices, int[] indices, IReadOnlyList<ID3D11ShaderResourceView> textures)
+        public static Mesh Create(ID3D11Device device, Vertex[] vertices, int[] indices, IReadOnlyList<ID3D11ShaderResourceView> textures,
+            PrimitiveTopology topology = PrimitiveTopology.TriangleList)
         {
             BufferDescription vertexBufferDesc = new BufferDescription()
             {
@@ -60,12 +63,9 @@ namespace Bus.Common.Rendering
             SubresourceData indexBufferData = new SubresourceData(pIndices);
             ID3D11Buffer indexBuffer = device.CreateBuffer(indexBufferDesc, indexBufferData);
 
-            Mesh mesh = new Mesh(vertexBuffer, indexBuffer, textures);
-            mesh.Disposing += (sender, e) =>
-            {
-                verticesFixed.Free();
-                indicesFixed.Free();
-            };
+            Mesh mesh = new Mesh(vertexBuffer, indexBuffer, textures, topology);
+            verticesFixed.Free();
+            indicesFixed.Free();
 
             return mesh;
         }
@@ -82,6 +82,7 @@ namespace Bus.Common.Rendering
         {
             context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Vertex.Size, 0);
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
+            context.DeviceContext.IASetPrimitiveTopology(Topology);
 
             PixelConstantBuffer pixelBuffer = new()
             {

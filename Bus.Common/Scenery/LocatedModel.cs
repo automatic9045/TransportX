@@ -39,7 +39,7 @@ namespace Bus.Common.Scenery
         {
         }
 
-        public void Draw(LocatedDrawContext context)
+        public virtual void Draw(LocatedDrawContext context)
         {
             VertexConstantBuffer vertexBuffer = new()
             {

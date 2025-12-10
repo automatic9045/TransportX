@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 
+using Bus.Common.Physics.Colliders;
+
 namespace Bus.Common.Physics
 {
     public static class ColliderFactory
@@ -39,20 +41,19 @@ namespace Bus.Common.Physics
             return Sphere(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<ConvexHull> ConvexHull(ConvexHull shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
-            => new Collider<ConvexHull>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static ConvexHullCollider ConvexHull(ConvexHull shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+            => new ConvexHullCollider(shape, shapeIndex, material, offset);
 
-        public static Collider<ConvexHull> ConvexHull(Simulation simulation, ConvexHull shape, Material material, Matrix4x4 offset)
+        public static ConvexHullCollider ConvexHull(Simulation simulation, ConvexHull shape, Material material, Matrix4x4 offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
             return ConvexHull(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Mesh> Mesh(Mesh shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, bool isOpen)
-            => new Collider<Mesh>(shape, shapeIndex, material, offset,
-                isOpen ? (shape, mass) => shape.ComputeOpenInertia(mass) : (shape, mass) => shape.ComputeClosedInertia(mass));
+        public static MeshCollider Mesh(Mesh shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, bool isOpen)
+            => new MeshCollider(shape, shapeIndex, material, offset, isOpen);
 
-        public static Collider<Mesh> Mesh(Simulation simulation, Mesh shape, Material material, Matrix4x4 offset, bool isOpen)
+        public static MeshCollider Mesh(Simulation simulation, Mesh shape, Material material, Matrix4x4 offset, bool isOpen)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
             return Mesh(shape, shapeIndex, material, offset, isOpen);

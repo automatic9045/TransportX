@@ -13,24 +13,17 @@ namespace Bus.Common.Rendering
 {
     public readonly struct LocatedDrawContext
     {
-        public ID3D11DeviceContext DeviceContext { get; }
-        public ID3D11Buffer VertexConstantBuffer { get; }
-        public ID3D11Buffer PixelConstantBuffer { get; }
-        public PlateOffset PlateOffset { get; }
-        public Matrix4x4 View { get; }
-        public Matrix4x4 Projection { get; }
-        public Vector3 Light { get; }
+        public required ID3D11DeviceContext DeviceContext { get; init; }
+        public required ID3D11Buffer VertexConstantBuffer { get; init; }
+        public required ID3D11Buffer PixelConstantBuffer { get; init; }
+        public required PlateOffset PlateOffset { get; init; }
+        public required Matrix4x4 View { get; init; }
+        public required Matrix4x4 Projection { get; init; }
+        public Vector3 Light { get; init; } = Vector3.Zero;
+        public bool DrawColliderDebugModel { get; init; } = true;
 
-        public LocatedDrawContext(ID3D11DeviceContext deviceContext, ID3D11Buffer vertexConstantBuffer, ID3D11Buffer pixelConstantBuffer,
-            PlateOffset plateOffset, Matrix4x4 view, Matrix4x4 projection, Vector3 light)
+        public LocatedDrawContext()
         {
-            DeviceContext = deviceContext;
-            VertexConstantBuffer = vertexConstantBuffer;
-            PixelConstantBuffer = pixelConstantBuffer;
-            PlateOffset = plateOffset;
-            View = view;
-            Projection = projection;
-            Light = light;
         }
     }
 }

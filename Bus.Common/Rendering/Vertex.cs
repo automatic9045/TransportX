@@ -18,5 +18,17 @@ namespace Bus.Common.Rendering
         public Vector3 Normal;
         public Vector4 Color;
         public Vector2 TextureCoord;
+
+        public Vertex(Vector3 position, Vector3 normal, Vector4 color, Vector2 textureCoord)
+        {
+            Position = position;
+            Normal = normal;
+            Color = color;
+            TextureCoord = textureCoord;
+        }
+
+        public Vertex(Vector3 position, Vector4 color) : this(position, Vector3.UnitY, color, Vector2.Zero)
+        {
+        }
     }
 }

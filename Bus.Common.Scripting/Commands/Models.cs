@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -145,6 +146,12 @@ namespace Bus.Common.Scripting.Commands
                         {
                             model = Model.Load(World.DXHost.Device, World.DXHost.Context, modelPath);
                         }
+
+                        if (model is CollidableModel collidableModel)
+                        {
+                            collidableModel.Collider.CreateDebugModel(World.DXHost.Device, new Vector4(1, 0, 0, 1));
+                        }
+
                         World.Models[key] = model;
                     }
                     catch (Exception ex)

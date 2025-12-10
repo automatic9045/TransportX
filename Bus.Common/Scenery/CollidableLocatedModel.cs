@@ -9,12 +9,16 @@ using BepuPhysics;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Vortice.Direct3D11;
 
 namespace Bus.Common.Scenery
 {
-    public abstract class CollidableLocatedModel : LocatedModel
+    public abstract class CollidableLocatedModel : LocatedModel, IDisposable
     {
         protected readonly Simulation Simulation;
+
+        protected ID3D11DepthStencilState? NoDepthState = null;
+        protected ID3D11RasterizerState? DebugRasterizerState = null;
 
         public new ICollidableModel Model { get; }
 
@@ -60,6 +64,13 @@ namespace Bus.Common.Scenery
             Handle = handle;
         }
 
+        public virtual void Dispose()
+        {
+            Simulation.Bodies.Remove(Handle);
+            NoDepthState?.Dispose();
+            DebugRasterizerState?.Dispose();
+        }
+
         /// <summary>
         /// 視点が位置するプレートと、このモデルが位置するプレートの位置関係を設定します。
         /// </summary>
@@ -87,6 +98,57 @@ namespace Bus.Common.Scenery
         {
             base.Transform = value;
             if (updateColliderTransform) ColliderTransform = value;
+        }
+
+        public override void Draw(LocatedDrawContext context)
+        {
+            base.Draw(context);
+            if (!context.DrawColliderDebugModel || Model.Collider.DebugModel is null) return;
+
+            if (NoDepthState is null)
+            {
+                DepthStencilDescription desc = new()
+                {
+                    DepthEnable = false,
+                    DepthWriteMask = DepthWriteMask.All,
+                    DepthFunc = ComparisonFunction.Always,
+                    StencilEnable = false,
+                };
+                NoDepthState = context.DeviceContext.Device.CreateDepthStencilState(desc);
+            }
+
+            if (DebugRasterizerState is null)
+            {
+                RasterizerDescription desc = new RasterizerDescription()
+                {
+                    CullMode = CullMode.None,
+                    FillMode = FillMode.Wireframe,
+                    DepthClipEnable = true,
+                };
+                DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
+            }
+
+            context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
+            context.DeviceContext.OMSetDepthStencilState(NoDepthState, 0);
+
+            ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
+            context.DeviceContext.RSSetState(DebugRasterizerState);
+
+            VertexConstantBuffer vertexBuffer = new()
+            {
+                World = Matrix4x4.Transpose(Body.Pose.ToMatrix4x4()),
+                View = Matrix4x4.Transpose(context.View),
+                Projection = Matrix4x4.Transpose(context.Projection),
+            };
+            context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+
+            Model.Collider.DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+
+            context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
+            oldDState?.Dispose();
+
+            context.DeviceContext.RSSetState(oldRSState);
+            oldRSState?.Dispose();
         }
     }
 }

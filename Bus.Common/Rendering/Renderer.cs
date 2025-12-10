@@ -139,7 +139,6 @@ namespace Bus.Common.Rendering
             DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, Colors.Gray);
             DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            DXHost.Context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);

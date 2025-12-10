@@ -187,8 +187,8 @@ namespace Bus.Common.Rendering
             Vector3 center = isOpen ? collisionMesh.ComputeOpenCenterOfMass() : collisionMesh.ComputeClosedCenterOfMass();
             if (float.IsNaN(center.X + center.Y + center.Z)) throw new InvalidOperationException("モデルの重心を特定できません。");
             collisionMesh.Recenter(center);
-            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, Matrix4x4.CreateTranslation(center), isOpen);
 
+            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, Matrix4x4.CreateTranslation(center), isOpen);
             return new CollidableModel(baseModel, collider);
         }
 
