@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Bodies;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -28,7 +29,7 @@ namespace Bus.Common.Vehicles
         public abstract Viewpoint DriverViewpoint { get; }
         public abstract Viewpoint BirdViewpoint { get; }
 
-        public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost, builder.Camera)
+        public VehicleBase(VehicleBuilder builder) : base(builder.PhysicsHost)
         {
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;

@@ -9,29 +9,25 @@ using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 
-namespace Bus.Common
+namespace Bus.Common.Bodies
 {
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
-        private readonly LocatableObject Camera;
-
         public LocatedModelCollection Models { get; }
 
         public Vector3 LinearVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.LinearVelocity;
         public Vector3 AngularVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.AngularVelocity;
 
-        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
-            Camera = camera;
             Models = new LocatedModelCollection(physicsHost, () => Transform);
         }
 
-        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera, int plateX, int plateZ, SixDoF position)
-            : this(physicsHost, camera, plateX, plateZ, position.CreateTransform())
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.CreateTransform())
         {
         }
 
-        public RigidBody(IPhysicsHost physicsHost, LocatableObject camera) : this(physicsHost, camera, 0, 0, Matrix4x4.Identity)
+        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Matrix4x4.Identity)
         {
         }
 
@@ -39,15 +35,17 @@ namespace Bus.Common
         {
         }
 
-        public virtual void SubTick(TimeSpan elapsed)
+        public virtual void SetFromCamera(PlateOffset fromCamera)
         {
-            if (Models.RootModel is null) return;
-
-            PlateOffset fromCamera = Camera.GetPlateOffset(this);
             foreach (LocatedModel model in Models)
             {
                 if (model is CollidableLocatedModel dynamicModel) dynamicModel.SetFromCamera(fromCamera);
             }
+        }
+
+        public virtual void SubTick(TimeSpan elapsed)
+        {
+            if (Models.RootModel is null) return;
 
             PlateOffset plateOffset = Locate(PlateX, PlateZ, Models.RootModel!.BaseTransformInverse * Models.RootModel.Transform);
             if (!plateOffset.IsZero)

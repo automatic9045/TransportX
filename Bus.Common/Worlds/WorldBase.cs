@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Bodies;
 using Bus.Common.Input;
 using Bus.Common.Rendering;
 using Bus.Common.Physics;
@@ -29,7 +30,7 @@ namespace Bus.Common.Worlds
 
         public List<LocatedModel> BackgroundModels { get; } = new List<LocatedModel>();
         public PlateCollection Plates { get; } = new PlateCollection();
-        public List<RigidBody> Bodies { get; } = new List<RigidBody>();
+        public BodyCollection Bodies { get; } = new BodyCollection();
 
         public WorldBase(WorldBuilder builder)
         {
@@ -47,13 +48,15 @@ namespace Bus.Common.Worlds
 
         public virtual void Dispose()
         {
-            foreach (RigidBody body in Bodies) body.Dispose();
+            Bodies.Dispose();
             Models.Dispose();
         }
 
         public virtual void SubTick(TimeSpan elapsed)
         {
-            Plates.SetCameraPosition(Camera.PlateX, Camera.PlateZ);
+            Plates.SetCameraPosition(Camera);
+            Bodies.SetCameraPosition(Camera);
+
             foreach (RigidBody body in Bodies) body.SubTick(elapsed);
         }
 
