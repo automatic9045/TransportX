@@ -103,9 +103,23 @@ namespace Bus.Common.Scenery
             }
         }
 
+        public void Detach(LocatedModel model)
+        {
+            Items.Remove(model);
+            if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
+        }
+
+        public void SetFromCamera(PlateOffset fromCamera)
+        {
+            foreach (LocatedModel model in Items)
+            {
+                if (model is CollidableLocatedModel collidableModel) collidableModel.SetFromCamera(fromCamera);
+            }
+        }
+
         public void Draw(LocatedDrawContext context)
         {
-            foreach (LocatedModel model in this) model.Draw(context);
+            foreach (LocatedModel model in Items) model.Draw(context);
         }
     }
 }

@@ -38,10 +38,7 @@ namespace Bus.Common.Bodies
 
         public virtual void SetFromCamera(PlateOffset fromCamera)
         {
-            foreach (LocatedModel model in Models)
-            {
-                if (model is CollidableLocatedModel dynamicModel) dynamicModel.SetFromCamera(fromCamera);
-            }
+            Models.SetFromCamera(fromCamera);
         }
 
         public virtual void SubTick(TimeSpan elapsed)
