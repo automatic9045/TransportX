@@ -47,12 +47,6 @@ namespace Bus.Common.Scenery
             }
         }
 
-        public override Matrix4x4 Transform
-        {
-            get => base.Transform;
-            set => base.Transform = ColliderTransform = value;
-        }
-
         public Matrix4x4 BaseToCollider => BaseTransformInverse * Model.Collider.OffsetInverse;
         public Matrix4x4 ColliderToBase => Model.Collider.Offset * BaseTransform;
 
@@ -92,12 +86,6 @@ namespace Bus.Common.Scenery
             {
                 return false;
             }
-        }
-
-        protected void SetTransform(Matrix4x4 value, bool updateColliderTransform)
-        {
-            base.Transform = value;
-            if (updateColliderTransform) ColliderTransform = value;
         }
 
         public override void Draw(LocatedDrawContext context)

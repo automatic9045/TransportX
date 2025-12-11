@@ -28,6 +28,12 @@ namespace Bus.Common.Scenery
             }
         }
 
+        public override Matrix4x4 Transform
+        {
+            get => ColliderTransform;
+            set => ColliderTransform = value;
+        }
+
         internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 transform)
             : base(simulation, model, handle, transform)
         {
@@ -68,7 +74,6 @@ namespace Bus.Common.Scenery
                 Body.Pose.Position += delta.Position;
             }
 
-            SetTransform(ColliderTransform, false);
             return isChanged;
         }
 
