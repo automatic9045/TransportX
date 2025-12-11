@@ -38,10 +38,13 @@ namespace Bus.Common.Rendering
             };
         }
 
+        public void UpdateLocation()
+        {
+            Locate(Viewpoints.Current.Source, Viewpoints.Current.Transform);
+        }
+
         public void DrawBackground(CameraDrawContext context, IEnumerable<LocatedModel> models)
         {
-            UpdateLocation();
-
             LocatedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
@@ -63,8 +66,6 @@ namespace Bus.Common.Rendering
 
         public void DrawPlates(CameraDrawContext context, PlateCollection plates)
         {
-            UpdateLocation();
-
             Matrix4x4 projection = CreateProjection(context.ClientSize);
 
             for (int i = DrawPlateCount - 1; 0 <= i; i--)
@@ -96,8 +97,6 @@ namespace Bus.Common.Rendering
 
         public void DrawBodies(CameraDrawContext context, IEnumerable<RigidBody> bodies)
         {
-            UpdateLocation();
-
             Matrix4x4 projection = CreateProjection(context.ClientSize);
 
             foreach (RigidBody body in bodies)
@@ -115,11 +114,6 @@ namespace Bus.Common.Rendering
                 };
                 body.Draw(drawContext);
             }
-        }
-
-        protected void UpdateLocation()
-        {
-            Locate(Viewpoints.Current.Source, Viewpoints.Current.Transform);
         }
 
         protected Matrix4x4 CreateProjection(GdiSize clientSize)
