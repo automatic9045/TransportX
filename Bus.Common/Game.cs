@@ -47,7 +47,6 @@ namespace Bus.Common
             DebugInput = new DebugInput(InputManager, Camera);
 
             World = CreateWorld(worldInfo);
-            World.UserVehicle = World.CreateVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
             World.OnStart();
         }
 

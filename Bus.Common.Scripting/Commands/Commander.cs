@@ -17,6 +17,7 @@ namespace Bus.Common.Scripting.Commands
         public Plates Plates { get; }
         public Splines Splines { get; }
         public Triggers Triggers { get; }
+        public Vehicles Vehicles { get; }
 
         internal Commander(ScriptWorld world)
         {
@@ -28,6 +29,7 @@ namespace Bus.Common.Scripting.Commands
             Plates = new Plates(world);
             Splines = new Splines(world);
             Triggers = new Triggers(world);
+            Vehicles = new Vehicles(world);
         }
 
         private protected Commander(Commander parent)
@@ -40,6 +42,7 @@ namespace Bus.Common.Scripting.Commands
             Plates = parent.Plates;
             Splines = parent.Splines;
             Triggers = parent.Triggers;
+            Vehicles = parent.Vehicles;
         }
 
         internal void Dispose()
