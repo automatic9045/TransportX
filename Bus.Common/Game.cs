@@ -80,11 +80,6 @@ namespace Bus.Common
 
             TimeManager.Tick();
 
-            LocatableObject position = Camera;
-            string plateText = $"({position.PlateX}, {position.PlateZ})";
-            string coordText = $"({position.PositionInWorld.X:F1}, {position.PositionInWorld.Y:F1}, {position.PositionInWorld.Z:F1})";
-            //Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";
-
             TimeSpan elapsed = TimeManager.DeltaTime;
             int subTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
             TimeSpan computeElapsed = elapsed / subTickCount;
@@ -106,6 +101,10 @@ namespace Bus.Common
 
         protected virtual void OnTick(TimeSpan elapsed)
         {
+            string plateText = $"({Camera.PlateX}, {Camera.PlateZ})";
+            string coordText = $"({Camera.PositionInWorld.X:F1}, {Camera.PositionInWorld.Y:F1}, {Camera.PositionInWorld.Z:F1})";
+            Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";
+
             World.Tick(elapsed);
         }
 
