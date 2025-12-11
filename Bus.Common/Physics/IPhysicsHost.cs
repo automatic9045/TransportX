@@ -14,7 +14,7 @@ namespace Bus.Common.Physics
 
         void SetGroup(StaticHandle handle, ColliderGroupHandle group);
         void SetGroup(BodyHandle handle, ColliderGroupHandle group);
-        void SetMaterial(StaticHandle handle, Material material);
-        void SetMaterial(BodyHandle handle, Material material);
+        void SetMaterial(StaticHandle handle, ColliderMaterial material);
+        void SetMaterial(BodyHandle handle, ColliderMaterial material);
     }
 }

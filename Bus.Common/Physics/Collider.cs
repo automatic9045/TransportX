@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using Vortice.Direct3D11;
 
 using Bus.Common.Rendering;
-using Vortice.Direct3D11;
 
 namespace Bus.Common.Physics
 {
@@ -20,13 +20,13 @@ namespace Bus.Common.Physics
         public TShape Shape { get; }
         IShape ICollider.Shape => Shape;
         public TypedIndex ShapeIndex { get; }
-        public Material Material { get; }
+        public ColliderMaterial Material { get; }
         public Matrix4x4 Offset { get; }
         public Matrix4x4 OffsetInverse { get; }
 
         public IModel? DebugModel { get; protected set; } = null;
 
-        public Collider(TShape shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
+        public Collider(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
             Shape = shape;
             ShapeIndex = shapeIndex;

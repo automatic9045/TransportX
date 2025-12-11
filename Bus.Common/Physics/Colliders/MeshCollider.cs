@@ -15,7 +15,7 @@ namespace Bus.Common.Physics.Colliders
     {
         public bool IsOpen { get; }
 
-        public MeshCollider(Mesh shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset, bool isOpen)
+        public MeshCollider(Mesh shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, bool isOpen)
             : base(shape, shapeIndex, material, offset, (s, m) => isOpen ? s.ComputeOpenInertia(m) : s.ComputeClosedInertia(m))
         {
             IsOpen = isOpen;

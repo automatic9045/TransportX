@@ -51,7 +51,7 @@ namespace Bus.Common.Scripting.Commands
                             Function function = parser.Parse(collisionCommand.Substring(1));
                             if (function.Signature == ModelListSignatures.BoundingBox1)
                             {
-                                Material material = CreateMaterial(0);
+                                ColliderMaterial material = CreateMaterial(0);
 
                                 model = CollidableModel.LoadWithBoundingBox(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
@@ -61,12 +61,12 @@ namespace Bus.Common.Scripting.Commands
                             {
                                 model = CollidableModel.LoadWithBoundingBox(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, Material.Default);
+                                    modelPath, ColliderMaterial.Default);
                             }
                             else if (function.Signature == ModelListSignatures.ClosedModel1)
                             {
                                 string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-                                Material material = CreateMaterial(1);
+                                ColliderMaterial material = CreateMaterial(1);
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
@@ -78,11 +78,11 @@ namespace Bus.Common.Scripting.Commands
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, Material.Default, false);
+                                    modelPath, collisionModelPath, ColliderMaterial.Default, false);
                             }
                             else if (function.Signature == ModelListSignatures.ClosedModel3)
                             {
-                                Material material = CreateMaterial(0);
+                                ColliderMaterial material = CreateMaterial(0);
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
@@ -92,12 +92,12 @@ namespace Bus.Common.Scripting.Commands
                             {
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, Material.Default, false);
+                                    modelPath, modelPath, ColliderMaterial.Default, false);
                             }
                             else if (function.Signature == ModelListSignatures.OpenModel1)
                             {
                                 string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-                                Material material = CreateMaterial(1);
+                                ColliderMaterial material = CreateMaterial(1);
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
@@ -109,11 +109,11 @@ namespace Bus.Common.Scripting.Commands
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, Material.Default, true);
+                                    modelPath, collisionModelPath, ColliderMaterial.Default, true);
                             }
                             else if (function.Signature == ModelListSignatures.OpenModel3)
                             {
-                                Material material = CreateMaterial(0);
+                                ColliderMaterial material = CreateMaterial(0);
 
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
@@ -123,7 +123,7 @@ namespace Bus.Common.Scripting.Commands
                             {
                                 model = CollidableModel.Load(
                                     World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, Material.Default, true);
+                                    modelPath, modelPath, ColliderMaterial.Default, true);
                             }
                             else if (function.Signature == ModelListSignatures.NonCollision)
                             {
@@ -135,9 +135,9 @@ namespace Bus.Common.Scripting.Commands
                             }
 
 
-                            Material CreateMaterial(int argBeginIndex)
+                            ColliderMaterial CreateMaterial(int argBeginIndex)
                             {
-                                return new Material(
+                                return new ColliderMaterial(
                                     (float)function.Args[argBeginIndex], (float)function.Args[argBeginIndex + 1],
                                     new SpringSettings((float)function.Args[argBeginIndex + 2], (float)function.Args[argBeginIndex + 3]));
                             }

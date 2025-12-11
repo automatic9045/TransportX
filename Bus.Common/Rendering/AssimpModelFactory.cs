@@ -105,7 +105,7 @@ namespace Bus.Common.Rendering
             if (!IsCollisionSupported) throw new NotSupportedException($"{nameof(Simulation)} が指定されていないため、衝突判定を読み込むことはできません。");
         }
 
-        public CollidableModel LoadWithBoundingBox(string visualModelPath, Physics.Material material)
+        public CollidableModel LoadWithBoundingBox(string visualModelPath, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
@@ -137,7 +137,7 @@ namespace Bus.Common.Rendering
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithConvexHull(string visualModelPath, Physics.Material material)
+        public CollidableModel LoadWithConvexHull(string visualModelPath, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
@@ -162,7 +162,7 @@ namespace Bus.Common.Rendering
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, Physics.Material material, bool isOpen)
+        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, ColliderMaterial material, bool isOpen)
         {
             CheckCollisionSupported();
 

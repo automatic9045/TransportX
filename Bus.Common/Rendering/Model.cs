@@ -74,7 +74,7 @@ namespace Bus.Common.Rendering
         }
 
         public static CollidableModel Load(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, string collisionModelPath, Material material, bool isOpen)
+            string visualModelPath, string collisionModelPath, ColliderMaterial material, bool isOpen)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
             CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, collisionModelPath, material, isOpen);
@@ -82,7 +82,7 @@ namespace Bus.Common.Rendering
         }
 
         public static CollidableModel LoadWithBoundingBox(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, Material material)
+            string visualModelPath, ColliderMaterial material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
             CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, material);
@@ -90,7 +90,7 @@ namespace Bus.Common.Rendering
         }
 
         public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, Material material)
+            string visualModelPath, ColliderMaterial material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
             CollidableModel model = factory.LoadWithConvexHull(visualModelPath, material);

@@ -8,9 +8,9 @@ using BepuPhysics.Constraints;
 
 namespace Bus.Common.Physics
 {
-    public readonly struct Material
+    public readonly struct ColliderMaterial
     {
-        public static readonly Material Default = new Material(1, float.MaxValue, new SpringSettings(30, 1));
+        public static readonly ColliderMaterial Default = new ColliderMaterial(1, float.MaxValue, new SpringSettings(30, 1));
 
 
         public bool IsInitialized { get; } = false;
@@ -19,7 +19,7 @@ namespace Bus.Common.Physics
         public float MaximumRecoveryVelocity { get; }
         public SpringSettings SpringSettings { get; }
 
-        public Material(float frictionCoefficient, float maximumRecoveryVelocity, SpringSettings springSettings)
+        public ColliderMaterial(float frictionCoefficient, float maximumRecoveryVelocity, SpringSettings springSettings)
         {
             IsInitialized = true;
 

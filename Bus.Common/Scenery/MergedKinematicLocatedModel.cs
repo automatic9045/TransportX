@@ -63,7 +63,7 @@ namespace Bus.Common.Scenery
             Vector3 center = newMesh.ComputeOpenCenterOfMass();
             newMesh.Recenter(center);
 
-            Material material = sourceList[0].Model.Collider.Material;
+            ColliderMaterial material = sourceList[0].Model.Collider.Material;
             Collider<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, Matrix4x4.CreateTranslation(center), true);
             CollidableModel physicsWrapper = new(newCollider);
 

@@ -17,7 +17,7 @@ namespace Bus.Common.Physics
     {
         IShape Shape { get; }
         TypedIndex ShapeIndex { get; }
-        Material Material { get; }
+        ColliderMaterial Material { get; }
         Matrix4x4 Offset { get; }
         Matrix4x4 OffsetInverse { get; }
 

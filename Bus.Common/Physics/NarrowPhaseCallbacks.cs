@@ -15,9 +15,9 @@ namespace Bus.Common.Physics
     public struct NarrowPhaseCallbacks : INarrowPhaseCallbacks
     {
         private readonly CollidableProperty<ColliderGroupHandle> Groups;
-        private readonly CollidableProperty<Material> Materials;
+        private readonly CollidableProperty<ColliderMaterial> Materials;
 
-        public NarrowPhaseCallbacks(CollidableProperty<ColliderGroupHandle> groups, CollidableProperty<Material> materials)
+        public NarrowPhaseCallbacks(CollidableProperty<ColliderGroupHandle> groups, CollidableProperty<ColliderMaterial> materials)
         {
             Groups = groups;
             Materials = materials;
@@ -65,11 +65,11 @@ namespace Bus.Common.Physics
         public bool ConfigureContactManifold<TManifold>(int workerIndex, CollidablePair pair, ref TManifold manifold, out PairMaterialProperties pairMaterial)
             where TManifold : unmanaged, IContactManifold<TManifold>
         {
-            Material a = Materials.Allocate(pair.A);
-            Material b = Materials.Allocate(pair.B);
+            ColliderMaterial a = Materials.Allocate(pair.A);
+            ColliderMaterial b = Materials.Allocate(pair.B);
 
-            if (!a.IsInitialized) a = Material.Default;
-            if (!b.IsInitialized) b = Material.Default;
+            if (!a.IsInitialized) a = ColliderMaterial.Default;
+            if (!b.IsInitialized) b = ColliderMaterial.Default;
 
             pairMaterial = new PairMaterialProperties()
             {

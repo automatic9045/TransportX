@@ -13,7 +13,7 @@ namespace Bus.Common.Physics
     public class PhysicsHost : IPhysicsHost, IDisposable
     {
         private readonly CollidableProperty<ColliderGroupHandle> Groups = new CollidableProperty<ColliderGroupHandle>();
-        private readonly CollidableProperty<Material> Materials = new CollidableProperty<Material>();
+        private readonly CollidableProperty<ColliderMaterial> Materials = new CollidableProperty<ColliderMaterial>();
 
         public Simulation Simulation { get; }
         public IThreadDispatcher ThreadDispatcher { get; }
@@ -51,12 +51,12 @@ namespace Bus.Common.Physics
             Groups.Allocate(handle) = group;
         }
 
-        public void SetMaterial(StaticHandle handle, Material material)
+        public void SetMaterial(StaticHandle handle, ColliderMaterial material)
         {
             Materials.Allocate(handle) = material;
         }
 
-        public void SetMaterial(BodyHandle handle, Material material)
+        public void SetMaterial(BodyHandle handle, ColliderMaterial material)
         {
             Materials.Allocate(handle) = material;
         }

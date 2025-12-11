@@ -16,7 +16,7 @@ namespace Bus.Common.Physics.Colliders
 {
     public class ConvexHullCollider : Collider<ConvexHull>
     {
-        public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, Material material, Matrix4x4 offset)
+        public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset)
             : base(shape, shapeIndex, material, offset, (s, m) => s.ComputeInertia(m))
         {
         }
