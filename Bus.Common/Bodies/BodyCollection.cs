@@ -27,9 +27,14 @@ namespace Bus.Common.Bodies
             }
         }
 
-        public void SubTick(TimeSpan elapsed)
+        public void SubTick(TimeSpan elapsed, LocatableObject camera)
         {
-            foreach (RigidBody body in this) body.SubTick(elapsed);
+            foreach (RigidBody body in this)
+            {
+                body.SubTick(elapsed);
+                PlateOffset fromCamera = camera.GetPlateOffset(body);
+                body.SetFromCamera(fromCamera);
+            }
         }
 
         public void Tick(TimeSpan elapsed)

@@ -98,12 +98,15 @@ namespace Bus.Common.Worlds
             }
         }
 
-        public virtual void SubTick(TimeSpan elapsed)
+        public virtual void SetCameraPosition()
         {
             Plates.SetCameraPosition(Camera);
             Bodies.SetCameraPosition(Camera);
+        }
 
-            Bodies.SubTick(elapsed);
+        public virtual void SubTick(TimeSpan elapsed)
+        {
+            Bodies.SubTick(elapsed, Camera);
         }
 
         public virtual void Tick(TimeSpan elapsed)

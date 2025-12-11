@@ -94,9 +94,10 @@ namespace Bus.Common
 
         protected virtual void OnSubTick(TimeSpan elapsed)
         {
-            Camera.UpdateLocation();
-            World.SubTick(elapsed);
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
+            World.SubTick(elapsed);
+            Camera.UpdateLocation();
+            World.SetCameraPosition();
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
