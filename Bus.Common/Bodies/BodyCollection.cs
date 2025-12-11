@@ -26,5 +26,15 @@ namespace Bus.Common.Bodies
                 body.SetFromCamera(fromCamera);
             }
         }
+
+        public void SubTick(TimeSpan elapsed)
+        {
+            foreach (RigidBody body in this) body.SubTick(elapsed);
+        }
+
+        public void Tick(TimeSpan elapsed)
+        {
+            foreach (RigidBody body in this) body.Tick(elapsed);
+        }
     }
 }

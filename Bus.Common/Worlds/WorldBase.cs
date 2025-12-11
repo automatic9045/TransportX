@@ -103,12 +103,12 @@ namespace Bus.Common.Worlds
             Plates.SetCameraPosition(Camera);
             Bodies.SetCameraPosition(Camera);
 
-            foreach (RigidBody body in Bodies) body.SubTick(elapsed);
+            Bodies.SubTick(elapsed);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
-            foreach (RigidBody body in Bodies) body.Tick(elapsed);
+            Bodies.Tick(elapsed);
         }
 
         public virtual VehicleBase CreateVehicle(string path, string? identifier)
