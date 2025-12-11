@@ -48,14 +48,11 @@ namespace Bus.Common
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
             DebugInput = new DebugInput(InputManager, Camera);
 
-            World = LoadWorld(worldInfo);
-
-            VehicleBase vehicle = LoadVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
-            World.Bodies.Add(vehicle);
-            Camera.Viewpoints.AttachedTo = vehicle;
+            World = CreateWorld(worldInfo);
+            World.UserVehicle = World.CreateVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
         }
 
-        protected virtual WorldBase LoadWorld(IWorldInfo worldInfo)
+        protected virtual WorldBase CreateWorld(IWorldInfo worldInfo)
         {
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
             {
@@ -69,23 +66,6 @@ namespace Bus.Common
 
             WorldBase world = worldBuilder.Build();
             return world;
-        }
-
-        protected virtual VehicleBase LoadVehicle(string path, string? identifier)
-        {
-            VehicleBuilder vehicleBuilder = new VehicleBuilder()
-            {
-                DXHost = DXHost,
-                DXClient = DXClient,
-                PhysicsHost = PhysicsHost,
-                TimeManager = TimeManager,
-                InputManager = InputManager,
-                Camera = Camera,
-                World = World,
-            };
-
-            VehicleBase vehicle = vehicleBuilder.Build(path, identifier);
-            return vehicle;
         }
 
         public virtual void Dispose()
