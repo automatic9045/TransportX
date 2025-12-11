@@ -54,6 +54,12 @@ namespace Bus.Common.Scripting.Commands
                 key => KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[key], transform)).ToArray();
             SplineStructure structure = new SplineStructure(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
+
+            foreach (LocatedModel model in models)
+            {
+                if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
+            }
+
             return structure;
         }
 

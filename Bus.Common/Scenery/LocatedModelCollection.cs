@@ -13,7 +13,7 @@ using Bus.Common.Rendering;
 
 namespace Bus.Common.Scenery
 {
-    public class LocatedModelCollection : IReadOnlyList<LocatedModel>, IDrawable
+    public class LocatedModelCollection : IReadOnlyList<LocatedModel>, IDisposable, IDrawable
     {
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly Func<Matrix4x4> TransformFactory;
@@ -93,6 +93,14 @@ namespace Bus.Common.Scenery
         public LocatedModel Attach(IModel model, SixDoF position)
         {
             return Attach(model, position.CreateTransform());
+        }
+
+        public void Dispose()
+        {
+            foreach (LocatedModel model in Items)
+            {
+                if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
+            }
         }
 
         public void Draw(LocatedDrawContext context)

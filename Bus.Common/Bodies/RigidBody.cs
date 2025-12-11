@@ -33,6 +33,7 @@ namespace Bus.Common.Bodies
 
         public virtual void Dispose()
         {
+            Models.Dispose();
         }
 
         public virtual void SetFromCamera(PlateOffset fromCamera)
