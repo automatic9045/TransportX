@@ -61,6 +61,43 @@ namespace Bus.Common.Worlds
             Models.Dispose();
         }
 
+        public virtual void OnStart()
+        {
+            Validate();
+        }
+
+        protected virtual void Validate()
+        {
+            List<BodyHandle> validHandles = Enumerable.Range(0, PhysicsHost.Simulation.Bodies.HandleToLocation.Length)
+                .Select(i => new BodyHandle(i))
+                .Where(handle => PhysicsHost.Simulation.Bodies.BodyExists(handle))
+                .ToList();
+
+            foreach (LocatedPlate plate in Plates)
+            {
+                RemoveAttachedHandles(plate.Plate.Models);
+                RemoveAttachedHandles(plate.Plate.Network.SelectMany(e => e.Models));
+            }
+            foreach (RigidBody body in Bodies)
+            {
+                RemoveAttachedHandles(body.Models);
+            }
+
+            if (validHandles.Count != 0)
+            {
+                throw new Exception($"正常に管理されていない物理モデルを {validHandles.Count} 個検出しました。これは不正な衝突判定を生じさせる原因となります。");
+            }
+
+
+            void RemoveAttachedHandles(IEnumerable<LocatedModel> models)
+            {
+                foreach (LocatedModel model in models)
+                {
+                    if (model is CollidableLocatedModel collidable) validHandles.Remove(collidable.Handle);
+                }
+            }
+        }
+
         public virtual void SubTick(TimeSpan elapsed)
         {
             Plates.SetCameraPosition(Camera);

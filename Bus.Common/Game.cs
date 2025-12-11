@@ -4,14 +4,12 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
-
-using Vortice.Direct3D11;
 
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Vehicles;
 using Bus.Common.Worlds;
 
 namespace Bus.Common
@@ -50,6 +48,7 @@ namespace Bus.Common
 
             World = CreateWorld(worldInfo);
             World.UserVehicle = World.CreateVehicle(@"D:\★ソフト\バス\Bus\_out\samples\BasicSample\Bus.Sample.dll", "Sample");
+            World.OnStart();
         }
 
         protected virtual WorldBase CreateWorld(IWorldInfo worldInfo)
