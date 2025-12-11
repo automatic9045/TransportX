@@ -171,10 +171,16 @@ namespace Bus.Common.Rendering
 
     public class DriverViewpoint : Viewpoint
     {
+        private readonly Matrix4x4 Offset;
         private new readonly Rotator Rotator = new Rotator(Vector2.Zero);
-        public override Matrix4x4 Transform => Rotator.Rotation * Source.Transform;
+        public override Matrix4x4 Transform => Rotator.Rotation * Offset * Source.Transform;
 
-        public DriverViewpoint(LocatableObject source) : base(source)
+        public DriverViewpoint(LocatableObject source, Matrix4x4 offset) : base(source)
+        {
+            Offset = offset;
+        }
+
+        public DriverViewpoint(LocatableObject source, SixDoF offset) : this(source, offset.CreateTransform())
         {
         }
 
@@ -198,14 +204,21 @@ namespace Bus.Common.Rendering
 
     public class BirdViewpoint : Viewpoint
     {
+        private readonly Matrix4x4 Offset;
         private new readonly Translator Translator;
         private new readonly Rotator Rotator;
-        public override Matrix4x4 Transform => Translator.Translation * Rotator.Rotation * Source.Transform;
+        public override Matrix4x4 Transform => Translator.Translation * Rotator.Rotation * Offset * Source.Transform;
 
-        public BirdViewpoint(LocatableObject source, float initialDistance, Vector2 initialAngle) : base(source)
+        public BirdViewpoint(LocatableObject source, Matrix4x4 offset, float initialDistance, Vector2 initialAngle) : base(source)
         {
+            Offset = offset;
             Translator = new Translator(initialDistance);
             Rotator = new Rotator(initialAngle);
+        }
+
+        public BirdViewpoint(LocatableObject source, SixDoF offset, float initialDistance, Vector2 initialAngle)
+            : this(source, offset.CreateTransform(), initialDistance, initialAngle)
+        {
         }
 
         public override void Rotate(Vector2 offset, Vector2 clientSize)
