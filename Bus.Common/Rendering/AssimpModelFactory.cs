@@ -70,16 +70,16 @@ namespace Bus.Common.Rendering
                     indices.AddRange(face.Indices);
                 }
 
-                List<ID3D11ShaderResourceView> textures = new List<ID3D11ShaderResourceView>();
+                Material material = Material.Default;
                 if (0 <= assimpMesh.MaterialIndex)
                 {
-                    Assimp.Material material = visualScene.Materials[assimpMesh.MaterialIndex];
+                    Assimp.Material assimpMaterial = visualScene.Materials[assimpMesh.MaterialIndex];
 
-                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(material, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory);
-                    textures.AddRange(diffuseMaps);
+                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(assimpMaterial, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory);
+                    material = new(assimpMaterial.ColorDiffuse, diffuseMaps);
                 }
 
-                return Mesh.Create(Device, vertices, indices.ToArray(), textures);
+                return Mesh.Create(Device, vertices, indices.ToArray(), material);
             });
 
             return new Model(visualMeshes, LoadedTextures.ConvertAll(x => x.Texture));

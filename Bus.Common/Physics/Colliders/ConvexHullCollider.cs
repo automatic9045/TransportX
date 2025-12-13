@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics.Collidables;
+using BepuUtilities;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 
 using Bus.Common.Rendering;
-using BepuUtilities;
 
 namespace Bus.Common.Physics.Colliders
 {
@@ -52,7 +52,7 @@ namespace Bus.Common.Physics.Colliders
                 indices[baseIndex + 1] = i + 1;
             }
 
-            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, [], PrimitiveTopology.LineList);
+            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, Rendering.Material.Default, PrimitiveTopology.LineList);
             DebugModel = new Model([visualMesh], []);
         }
     }

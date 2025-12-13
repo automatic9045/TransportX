@@ -6,16 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics.Collidables;
+using ColliderMesh = BepuPhysics.Collidables.Mesh;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 
+using Bus.Common.Rendering;
+
 namespace Bus.Common.Physics.Colliders
 {
-    public class MeshCollider : Collider<Mesh>
+    public class MeshCollider : Collider<ColliderMesh>
     {
         public bool IsOpen { get; }
 
-        public MeshCollider(Mesh shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, bool isOpen)
+        public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, bool isOpen)
             : base(shape, shapeIndex, material, offset, (s, m) => isOpen ? s.ComputeOpenInertia(m) : s.ComputeClosedInertia(m))
         {
             IsOpen = isOpen;
@@ -26,7 +29,7 @@ namespace Bus.Common.Physics.Colliders
             if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
 
             int triangleCount = Shape.Triangles.Length;
-            Rendering.Vertex[] vertices = new Rendering.Vertex[triangleCount * 3];
+            Vertex[] vertices = new Vertex[triangleCount * 3];
             int[] indices = new int[triangleCount * 6];
 
             for (int i = 0; i < triangleCount; i++)
@@ -50,8 +53,8 @@ namespace Bus.Common.Physics.Colliders
                 indices[indexOffset + 5] = baseIndex;
             }
 
-            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, [], PrimitiveTopology.LineList);
-            DebugModel = new Rendering.Model([visualMesh], []);
+            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, Rendering.Material.Default, PrimitiveTopology.LineList);
+            DebugModel = new Model([visualMesh], []);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Bus.Common.Rendering
         internal static readonly int Size = Marshal.SizeOf<PixelConstantBuffer>();
 
 
+        public Vector4 BaseColor;
         public int HasTexture;
         public Vector3 Padding;
     }
