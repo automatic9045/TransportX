@@ -85,17 +85,25 @@ namespace Bus.Common.Rendering
             return new Model(visualMeshes, LoadedTextures.ConvertAll(x => x.Texture));
         }
 
-        private Scene LoadVisualScene(string visualModelPath)
+        private Scene LoadScene(string visualModelPath, bool isForVisual)
         {
-            Scene visualScene = Importer.ImportFile(visualModelPath,
-                PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.GenerateNormals);
+            PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate;
+            if (isForVisual) steps |= PostProcessSteps.GenerateNormals;
+
+            if (Path.GetExtension(visualModelPath) != ".obj")
+            {
+                steps |= PostProcessSteps.MakeLeftHanded | PostProcessSteps.FlipWindingOrder;
+                if (isForVisual) steps |= PostProcessSteps.FlipUVs;
+            }
+
+            Scene visualScene = Importer.ImportFile(visualModelPath, steps);
             return visualScene;
         }
 
         public Model Load(string visualModelPath)
         {
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadVisualScene(visualModelPath);
+            Scene visualScene = LoadScene(visualModelPath, true);
 
             return Load(visualScene, baseDirectory);
         }
@@ -110,7 +118,7 @@ namespace Bus.Common.Rendering
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadVisualScene(visualModelPath);
+            Scene visualScene = LoadScene(visualModelPath, true);
             Model baseModel = Load(visualScene, baseDirectory);
 
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -142,7 +150,7 @@ namespace Bus.Common.Rendering
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadVisualScene(visualModelPath);
+            Scene visualScene = LoadScene(visualModelPath, true);
             Model baseModel = Load(visualScene, baseDirectory);
 
             Simulation!.BufferPool.Take(visualScene.Meshes.Sum(mesh => mesh.VertexCount), out Buffer<Vector3> pointBuffer);
@@ -168,8 +176,7 @@ namespace Bus.Common.Rendering
 
             Model baseModel = Load(visualModelPath);
 
-            Scene collisionScene = Importer.ImportFile(collisionModelPath,
-                PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate);
+            Scene collisionScene = LoadScene(collisionModelPath, false);
             Simulation!.BufferPool.Take(collisionScene.Meshes.Sum(mesh => mesh.FaceCount), out Buffer<Triangle> triangles);
 
             int i = 0;
