@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Bus.Common.Input;
+using Bus.Sample.Vehicles.Input;
 
 namespace Bus.Sample.Vehicles.Interfaces
 {
-    internal class Pedal
+    internal class SteeringWheel
     {
-        public Slider Source { get; set; }
+        public SteeringWheelInput Source { get; set; }
 
         public float Rate => Source.Rate;
 
-        public Pedal(Slider defaultSource)
+        public SteeringWheel(SteeringWheelInput defaultSource)
         {
             Source = defaultSource;
         }

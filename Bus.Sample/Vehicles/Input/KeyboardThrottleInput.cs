@@ -12,7 +12,7 @@ namespace Bus.Sample.Vehicles.Input
     {
         private readonly KeyObserver BoostKey;
 
-        public KeyboardThrottleInput(KeyObserver key, KeyObserver boostKey) : base(key, 1, 1.2)
+        public KeyboardThrottleInput(KeyObserver key, KeyObserver boostKey) : base(key, 1, 1.2f)
         {
             BoostKey = boostKey;
         }
@@ -25,8 +25,8 @@ namespace Bus.Sample.Vehicles.Input
 
         public override void Tick(TimeSpan elapsed)
         {
-            double rate = Rate + (Source.IsPressed ? IncreaseSpeed : -DecreaseSpeed) * elapsed.TotalSeconds;
-            Rate = double.Max(Min, double.Min(rate, BoostKey.IsPressed ? 1 : 0.5));
+            float rate = Rate + (Source.IsPressed ? IncreaseSpeed : -DecreaseSpeed) * (float)elapsed.TotalSeconds;
+            Rate = float.Max(Min, float.Min(rate, BoostKey.IsPressed ? 1 : 0.75f));
         }
     }
 }

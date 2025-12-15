@@ -5,24 +5,32 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
+
+using BepuPhysics.Constraints;
 
 using Bus.Common;
+using Bus.Common.Input;
+using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Vehicles;
 
-using Bus.Sample.Vehicles.Drives;
 using Bus.Sample.Vehicles.Input;
 using Bus.Sample.Vehicles.Interfaces;
+using Bus.Sample.Vehicles.Powertrain;
 
 namespace Bus.Sample.Vehicles
 {
     [VehicleIdentifier("Sample")]
     public class SampleBus : VehicleBase
     {
+        private readonly ModelSet BusModels;
         private readonly IReadOnlyList<IInput> Inputs;
         private readonly InterfaceSet Interfaces;
-        private readonly DriveSet Drives;
+        private readonly PowertrainSet Powertrain;
+
+        private readonly KeyObserver ResetKey;
 
         public override string Title { get; } = "サンプルバス";
         public override string Description { get; } = "動作確認用のバスです。";
@@ -33,45 +41,97 @@ namespace Bus.Sample.Vehicles
 
         public SampleBus(VehicleBuilder builder) : base(builder)
         {
-            Locate(0, 0, new SixDoF(10, 10, 20, 0.1f, 0, 0));
+            Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
 
-            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation);
-            CollidableModel model = modelFactory.FromFile(@"Bus\Bus.obj");
-            _ = AttachModel(model, (float)Spec.Weight, Matrix4x4.Identity);
+            ResetKey = InputManager.ObserveKey(Key.R);
 
-            SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice);
+            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, new Vector4(0, 1, 0, 1));
+            SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
+            BusModels = ModelSet.Create(PhysicsHost.Simulation, Models, modelFactory);
             Inputs = [new KeyboardInput(InputManager)];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
-            Drives = new DriveSet(Interfaces, soundFactory, this);
+            Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
 
-            DriverViewpoint = new DriverViewpoint(new AttachableObject(this, new SixDoF(0.67f, 2, -1.3f)));
-            BirdViewpoint = new BirdViewpoint(new AttachableObject(this, new SixDoF(0, 2, -3)), 20, new Vector2(0.3f, 0));
+            DriverViewpoint = new DriverViewpoint(this, new SixDoF(0.67f, 2, -1.3f));
+            BirdViewpoint = new BirdViewpoint(this, new SixDoF(0, 2, -3), 20, new Vector2(0.3f, 0));
         }
 
         public override void Dispose()
         {
-            RootModel!.Model.Dispose();
-            Drives.Dispose();
+            base.Dispose();
+            BusModels.Dispose();
+            Powertrain.Dispose();
         }
 
-        public override void ComputeTick(TimeSpan elapsed)
+        public override void SubTick(TimeSpan elapsed)
         {
-            base.ComputeTick(elapsed);
-            Drives.ComputeTick(elapsed);
+            if (ResetKey.IsPressed)
+            {
+                Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
+                foreach (LocatedModel model in Models)
+                {
+                    if (model is DynamicLocatedModel dynamicModel) dynamicModel.Body.Velocity = default;
+                    model.Transform = model.BaseTransform * Transform;
+                }
+            }
+
+            base.SubTick(elapsed);
+
+            Powertrain.Tick(elapsed);
+            Powertrain.UpdateSound(Camera);
+
+
+            float wheelRate = Interfaces.SteeringWheel.Rate / Spec.MaxSteeringWheelAngle;
+            Steer(BusModels.AxleToWheelFL, wheelRate, -1);
+            Steer(BusModels.AxleToWheelFR, wheelRate, 1);
+
+            void Steer(Constraint<Hinge> hinge, float rate, int direction)
+            {
+                float angle = (float.Sign(rate) == direction ? Spec.InnerSteeringAngle : Spec.OuterSteeringAngle) * rate;
+                Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, angle);
+                Vector3 axis = Vector3.Transform(Vector3.UnitX, rotation);
+                hinge.Update(desc =>
+                {
+                    desc.LocalHingeAxisA = Vector3.TransformNormal(axis, BusModels.AxleF.BaseToCollider);
+                    return desc;
+                });
+            }
+
+
+            float brakeTorque = Interfaces.Brake.Rate * 2000 + 285;
+            ApplyBrakeTorque(BusModels.WheelFL, BusModels.BrakeMotorFL, brakeTorque);
+            ApplyBrakeTorque(BusModels.WheelFR, BusModels.BrakeMotorFR, brakeTorque);
+            ApplyBrakeTorque(BusModels.WheelRL, BusModels.BrakeMotorRL, brakeTorque);
+            ApplyBrakeTorque(BusModels.WheelRR, BusModels.BrakeMotorRR, brakeTorque);
+
+            void ApplyBrakeTorque(DynamicLocatedModel wheel, Constraint<AngularAxisMotor> motor, float torque)
+            {
+                motor.Update(desc =>
+                {
+                    desc.Settings.MaximumForce = brakeTorque;
+                    return desc;
+                });
+            }
         }
 
         public override void Tick(TimeSpan elapsed)
         {
             foreach (IInput input in Inputs) input.Tick(elapsed);
-            Interfaces.Tick(Drives.Chassis.AverageAngularVelocity, elapsed);
-            Drives.Tick(elapsed);
+            Interfaces.Tick(BusModels.WheelRL.AngularVelocity.Length(), elapsed);
+            //Drives.Tick(elapsed);
 
-            Drives.UpdateSound(DXHost.X3DAudio, Camera.Listener);
+            //Drives.UpdateSound(DXHost.X3DAudio, Camera.Listener, Camera.PlateX, Camera.PlateZ);
 
             Application.Current.MainWindow.Title =
-                $"{Drives.Engine.Rpm:f0}rpm, r={((AT)Drives.Transmission).TorqueConverter.Throttle:f2}, Te={((Engine)Drives.Engine).Torque:f0}, " +
-                $"Ttc={((AT)Drives.Transmission).TorqueConverter.Torque:f0}, Ttr={Drives.Transmission.Torque:f0}, " +
-                $"r={Locator.Translation:f1}";
+                $"[{TimeManager.Fps:f0} fps] " +
+                $"{Powertrain.Engine.Rpm:f0}rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
+                //$"ω={Drives.LeftWheel.AngularVelocity:f2};{Drives.RightWheel.AngularVelocity:f2}, " +
+                //$"Te={Powertrain.Engine.Torque:f0}, Ttc={Powertrain.Clutch.OutTorque:f0}, Ttr={Powertrain.Transmission.OutTorque:f0}, " +
+                //$"r={Position:f1}, " +
+                //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
+                $"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
+                $"rs={Interfaces.SteeringWheel.Rate:f2}, " +
+                $"v={Vector3.Dot(LinearVelocity, Direction) * 3.6f:f1} km/h";
 
             /*Tire tire = Drives.Chassis.Tires[2];
             Application.Current.MainWindow.Title =
@@ -81,7 +141,7 @@ namespace Bus.Sample.Vehicles
                 $"Mx={tire.RollingResistanceMoment:F1}, My={tire.SelfAligningTorque:F1}";*/
         }
 
-        public override void Draw(DrawContext context)
+        public override void Draw(LocatedDrawContext context)
         {
             base.Draw(context);
         }

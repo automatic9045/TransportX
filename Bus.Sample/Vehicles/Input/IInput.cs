@@ -13,8 +13,9 @@ namespace Bus.Sample.Vehicles.Input
         Slider Clutch { get; }
         Slider Brake { get; }
         Slider Throttle { get; }
-        SteeringInput Steering { get; }
+        SteeringWheelInput Steering { get; }
         IATShifterInput ATShifter { get; }
+        IMTShifterInput MTShifter { get; }
 
         void Tick(TimeSpan elapsed);
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,11 +20,17 @@ namespace Bus.Sample
 
         private readonly IXAudio2 XAudio2;
         private readonly IXAudio2MasteringVoice MasteringVoice;
+        private readonly X3DAudio X3DAudio;
+        private readonly LocatableObject Body;
 
-        public SoundFactory(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice)
+        private readonly ConcurrentDictionary<SixDoF, AttachableObject> Locations = new();
+
+        public SoundFactory(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, LocatableObject body)
         {
             XAudio2 = xaudio2;
             MasteringVoice = masteringVoice;
+            X3DAudio = x3dAudio;
+            Body = body;
         }
 
         public Sound FromFile(string relativePath)
@@ -33,11 +40,11 @@ namespace Bus.Sample
             return sound;
         }
 
-        public Sound3D FromFile3D(string relativePath, LocatableObject? attachTo = null)
+        public Sound3D FromFile3D(string relativePath, SixDoF offset)
         {
             string path = Path.Combine(BaseDirectory, relativePath);
-            Sound3D sound = Sound3D.FromFile(XAudio2, MasteringVoice, path);
-            sound.AttachedTo = attachTo;
+            Sound3D sound = Sound3D.FromFile(XAudio2, MasteringVoice, X3DAudio, path);
+            sound.AttachedTo = Locations.GetOrAdd(offset, new AttachableObject(Body, offset));
             return sound;
         }
     }

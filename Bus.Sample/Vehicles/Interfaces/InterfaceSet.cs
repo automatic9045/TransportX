@@ -21,15 +21,17 @@ namespace Bus.Sample.Vehicles.Interfaces
                 Clutch.Source = SourceKey.Clutch;
                 Brake.Source = SourceKey.Brake;
                 Throttle.Source = SourceKey.Throttle;
-                Steering.Source = SourceKey.Steering;
+                SteeringWheel.Source = SourceKey.Steering;
+                MTShifter.Source = SourceKey.MTShifter;
             }
         }
 
         public Pedal Clutch { get; }
         public Pedal Brake { get; }
         public Pedal Throttle { get; }
-        public Steering Steering { get; }
+        public SteeringWheel SteeringWheel { get; }
         public ATShifter ATShifter { get; }
+        public MTShifter MTShifter { get; }
 
         public InterfaceSet(IEnumerable<IInput> sources, IInput defaultSource)
         {
@@ -38,13 +40,15 @@ namespace Bus.Sample.Vehicles.Interfaces
             Clutch = new Pedal(SourceKey.Clutch);
             Brake = new Pedal(SourceKey.Brake);
             Throttle = new Pedal(SourceKey.Throttle);
-            Steering = new Steering(SourceKey.Steering);
+            SteeringWheel = new SteeringWheel(SourceKey.Steering);
             ATShifter = new ATShifter(sources.Select(source => source.ATShifter));
+            MTShifter = new MTShifter(SourceKey.MTShifter);
         }
 
         public void Tick(double vehicleAngularVelocity, TimeSpan elapsed)
         {
             ATShifter.Tick(vehicleAngularVelocity, elapsed);
+            MTShifter.Tick(elapsed);
         }
     }
 }
