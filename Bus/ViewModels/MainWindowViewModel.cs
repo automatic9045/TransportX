@@ -29,6 +29,7 @@ namespace Bus.ViewModels
         private readonly CompositeDisposable Disposables = new CompositeDisposable();
 
         private IWorldInfo? WorldInfo = null;
+        private IGame? Game = null;
         private CompositeDisposable? PerGameDisposables = null;
 
         public ReactivePropertySlim<DXHost> DXHost { get; }
@@ -100,19 +101,23 @@ namespace Bus.ViewModels
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, Colors.Blue);
             dxClient.SwapChain.Present(0);
 
+            PluginLoadContext? oldGameContext = Game?.Context;
             PerGameDisposables?.Dispose();
+            oldGameContext?.Unload();
+            GC.Collect();
+
             PerGameDisposables = new CompositeDisposable();
 
             GameLoader loader = new GameLoader(dxHost, dxClient);
-            IGame game = loader.Load(worldInfo).AddTo(PerGameDisposables);
+            Game = loader.Load(WorldInfo).AddTo(PerGameDisposables);
 
             Observable.CombineLatest(MouseDragOffset, MouseLeftButton, MouseMiddleButton, MouseRightButton,
                 (o, l, m, r) => (Offset: o, Left: l, Middle: m, Right: r))
-                .Subscribe(t => game.OnMouseDragMove(t.Offset, t.Left, t.Middle, t.Right)).AddTo(PerGameDisposables);
-            KeyDownCommand.Subscribe(args => game.OnKeyDown(args.Key)).AddTo(PerGameDisposables);
-            KeyUpCommand.Subscribe(args => game.OnKeyUp(args.Key)).AddTo(PerGameDisposables);
-            MouseWheelCommand.Subscribe(args => game.OnMouseWheel(args.Delta)).AddTo(PerGameDisposables);
-            RenderingCommand.Subscribe(args => game.Draw(args.Size)).AddTo(PerGameDisposables);
+                .Subscribe(t => Game.OnMouseDragMove(t.Offset, t.Left, t.Middle, t.Right)).AddTo(PerGameDisposables);
+            KeyDownCommand.Subscribe(args => Game.OnKeyDown(args.Key)).AddTo(PerGameDisposables);
+            KeyUpCommand.Subscribe(args => Game.OnKeyUp(args.Key)).AddTo(PerGameDisposables);
+            MouseWheelCommand.Subscribe(args => Game.OnMouseWheel(args.Delta)).AddTo(PerGameDisposables);
+            RenderingCommand.Subscribe(args => Game.Draw(args.Size)).AddTo(PerGameDisposables);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BepuPhysics;
 
 using Bus.Common.Bodies;
+using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Rendering;
 using Bus.Common.Physics;
@@ -22,6 +23,8 @@ namespace Bus.Common.Worlds
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
+        public PluginLoadContext GameContext { get; }
+        public PluginLoadContext WorldContext { get; }
         public TimeManager TimeManager { get; }
         public InputManager InputManager { get; }
         public Camera Camera { get; }
@@ -41,12 +44,14 @@ namespace Bus.Common.Worlds
             set => Camera.Viewpoints.AttachedTo = value;
         }
 
-        public WorldBase(WorldBuilder builder)
+        public WorldBase(PluginLoadContext context, WorldBuilder builder)
         {
             Info = builder.Info;
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
+            GameContext = builder.GameContext;
+            WorldContext = context;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
             Camera = builder.Camera;
@@ -121,6 +126,8 @@ namespace Bus.Common.Worlds
                 DXHost = DXHost,
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
+                GameContext = GameContext,
+                WorldContext = WorldContext,
                 TimeManager = TimeManager,
                 InputManager = InputManager,
                 Camera = Camera,
@@ -131,6 +138,20 @@ namespace Bus.Common.Worlds
             Bodies.Add(vehicle);
 
             return vehicle;
+        }
+
+        public virtual void DeleteVehicle(VehicleBase vehicle)
+        {
+            if (UserVehicle == vehicle) UserVehicle = null;
+            if (!Bodies.Remove(vehicle))
+            {
+                throw new InvalidOperationException("このワールドで初期化された車両ではありません。");
+            }
+
+            PluginLoadContext vehicleContext = vehicle.VehicleContext;
+            vehicle.Dispose();
+            WorldContext.Children.Remove(vehicleContext);
+            vehicleContext.Unload();
         }
     }
 }

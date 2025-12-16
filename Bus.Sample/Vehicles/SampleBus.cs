@@ -10,6 +10,7 @@ using System.Windows.Input;
 using BepuPhysics.Constraints;
 
 using Bus.Common;
+using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -39,7 +40,7 @@ namespace Bus.Sample.Vehicles
         public override Viewpoint DriverViewpoint { get; }
         public override Viewpoint BirdViewpoint { get; }
 
-        public SampleBus(VehicleBuilder builder) : base(builder)
+        public SampleBus(PluginLoadContext context, VehicleBuilder builder) : base(context, builder)
         {
             Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
 

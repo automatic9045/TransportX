@@ -20,9 +20,16 @@ namespace Bus.Common.Dependency
 
         private readonly AssemblyDependencyResolver Resolver;
 
+        public List<AssemblyLoadContext> Children { get; } = [];
+
         public PluginLoadContext(string pluginPath) : base(true)
         {
             Resolver = new AssemblyDependencyResolver(pluginPath);
+
+            Unloading += context =>
+            {
+                foreach (AssemblyLoadContext child in Children) child.Unload();
+            };
         }
 
         public static PluginLoadContext CreateAndLoadPlugin(string pluginPath, out Assembly assembly)

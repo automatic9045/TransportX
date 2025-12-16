@@ -21,6 +21,7 @@ namespace Bus.Common.Worlds
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
+        public required PluginLoadContext GameContext { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }
@@ -33,6 +34,8 @@ namespace Bus.Common.Worlds
         internal protected WorldBase Build()
         {
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
+            GameContext.Children.Add(context);
+
             Type[] worldTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(WorldBase)))
                 .ToArray();
@@ -76,10 +79,11 @@ namespace Bus.Common.Worlds
                 worldType = type;
             }
 
-            ConstructorInfo constructor = worldType.GetConstructor([typeof(WorldBuilder)])
-                ?? throw new ArgumentException($"{worldType.Name} にはパラメータが {nameof(WorldBuilder)} のコンストラクタが定義されていません。", nameof(Info));
+            ConstructorInfo constructor = worldType.GetConstructor([typeof(PluginLoadContext), typeof(WorldBuilder)])
+                ?? throw new ArgumentException($"{worldType.Name} にはパラメータが" +
+                $" {nameof(PluginLoadContext)}, {nameof(WorldBuilder)} のコンストラクタが定義されていません。", nameof(Info));
 
-            WorldBase world = (WorldBase)constructor.Invoke([this]);
+            WorldBase world = (WorldBase)constructor.Invoke([context, this]);
             return world;
         }
     }

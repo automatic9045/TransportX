@@ -10,6 +10,7 @@ using System.Windows;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
+using Bus.Common.Dependency;
 using Bus.Common.Worlds;
 
 using Bus.Common.Scripting.Commands;
@@ -42,7 +43,7 @@ namespace Bus.Common.Scripting
         public string ScriptPath { get; }
         internal Commander Commander { get; }
 
-        public ScriptWorld(WorldBuilder builder) : base(builder)
+        public ScriptWorld(PluginLoadContext context, WorldBuilder builder) : base(context, builder)
         {
             if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
 

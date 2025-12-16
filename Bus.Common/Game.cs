@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
+using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -32,8 +33,12 @@ namespace Bus.Common
 
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
-        public Game(IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
+        public PluginLoadContext Context { get; }
+
+        public Game(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
         {
+            Context = context;
+
             DXHost = dxHost;
             DXClient = dxClient;
             PhysicsHost = PhysicsHost.Create();
@@ -57,6 +62,7 @@ namespace Bus.Common
                 DXHost = DXHost,
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
+                GameContext = Context,
                 TimeManager = TimeManager,
                 InputManager = InputManager,
                 Camera = Camera,

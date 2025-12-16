@@ -20,6 +20,8 @@ namespace Bus.Common.Vehicles
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
+        public required PluginLoadContext GameContext { get; init; }
+        public required PluginLoadContext WorldContext { get; init; }
         public required ITimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }
@@ -32,6 +34,8 @@ namespace Bus.Common.Vehicles
         internal protected VehicleBase Build(string path, string? identifier)
         {
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
+            WorldContext.Children.Add(context);
+
             Type[] vehicleTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(VehicleBase)))
                 .ToArray();
@@ -75,10 +79,11 @@ namespace Bus.Common.Vehicles
                 vehicleType = type;
             }
 
-            ConstructorInfo constructor = vehicleType.GetConstructor([typeof(VehicleBuilder)])
-                ?? throw new ArgumentException($"{vehicleType.Name} にはパラメータが {nameof(VehicleBuilder)} のコンストラクタが定義されていません。", nameof(path));
+            ConstructorInfo constructor = vehicleType.GetConstructor([typeof(PluginLoadContext), typeof(VehicleBuilder)])
+                ?? throw new ArgumentException($"{vehicleType.Name} にはパラメータが " +
+                $"{nameof(PluginLoadContext)}, {nameof(VehicleBuilder)} のコンストラクタが定義されていません。", nameof(path));
 
-            VehicleBase vehicle = (VehicleBase)constructor.Invoke([this]);
+            VehicleBase vehicle = (VehicleBase)constructor.Invoke([context, this]);
             return vehicle;
         }
     }

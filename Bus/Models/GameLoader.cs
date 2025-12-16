@@ -51,11 +51,11 @@ namespace Bus.Models
             }
 
             Type type = types[0];
-            ConstructorInfo constructor = type.GetConstructor([typeof(IDXHost), typeof(IDXClient), typeof(IWorldInfo)])
+            ConstructorInfo constructor = type.GetConstructor([typeof(PluginLoadContext), typeof(IDXHost), typeof(IDXClient), typeof(IWorldInfo)])
                 ?? throw new ArgumentException($"{type.Name} にはパラメータが " +
-                $"{nameof(IDXHost)}、{nameof(IDXClient)}、{nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
+                $"{nameof(PluginLoadContext)}, {nameof(IDXHost)}, {nameof(IDXClient)}, {nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
 
-            IGame game = (IGame)constructor.Invoke([DXHost, DXClient, worldInfo]);
+            IGame game = (IGame)constructor.Invoke([context, DXHost, DXClient, worldInfo]);
             return game;
         }
     }
