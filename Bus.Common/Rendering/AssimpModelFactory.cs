@@ -85,12 +85,12 @@ namespace Bus.Common.Rendering
             return new Model(visualMeshes, LoadedTextures.ConvertAll(x => x.Texture));
         }
 
-        private Scene LoadScene(string visualModelPath, bool isForVisual)
+        private Scene LoadScene(string visualModelPath, bool isForVisual, bool makeLH)
         {
             PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate;
             if (isForVisual) steps |= PostProcessSteps.GenerateNormals;
 
-            if (Path.GetExtension(visualModelPath) != ".obj")
+            if (makeLH)
             {
                 steps |= PostProcessSteps.MakeLeftHanded | PostProcessSteps.FlipWindingOrder;
                 if (isForVisual) steps |= PostProcessSteps.FlipUVs;
@@ -100,10 +100,10 @@ namespace Bus.Common.Rendering
             return visualScene;
         }
 
-        public Model Load(string visualModelPath)
+        public Model Load(string visualModelPath, bool makeLH)
         {
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadScene(visualModelPath, true);
+            Scene visualScene = LoadScene(visualModelPath, true, makeLH);
 
             return Load(visualScene, baseDirectory);
         }
@@ -113,12 +113,12 @@ namespace Bus.Common.Rendering
             if (!IsCollisionSupported) throw new NotSupportedException($"{nameof(Simulation)} が指定されていないため、衝突判定を読み込むことはできません。");
         }
 
-        public CollidableModel LoadWithBoundingBox(string visualModelPath, ColliderMaterial material)
+        public CollidableModel LoadWithBoundingBox(string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadScene(visualModelPath, true);
+            Scene visualScene = LoadScene(visualModelPath, true, makeLH);
             Model baseModel = Load(visualScene, baseDirectory);
 
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -145,12 +145,12 @@ namespace Bus.Common.Rendering
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithConvexHull(string visualModelPath, ColliderMaterial material)
+        public CollidableModel LoadWithConvexHull(string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Scene visualScene = LoadScene(visualModelPath, true);
+            Scene visualScene = LoadScene(visualModelPath, true, makeLH);
             Model baseModel = Load(visualScene, baseDirectory);
 
             Simulation!.BufferPool.Take(visualScene.Meshes.Sum(mesh => mesh.VertexCount), out Buffer<Vector3> pointBuffer);
@@ -170,13 +170,14 @@ namespace Bus.Common.Rendering
             return new CollidableModel(baseModel, collider);
         }
 
-        public CollidableModel LoadWithCollisionModel(string visualModelPath, string collisionModelPath, ColliderMaterial material, bool isOpen)
+        public CollidableModel LoadWithCollisionModel(
+            string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
             CheckCollisionSupported();
 
-            Model baseModel = Load(visualModelPath);
+            Model baseModel = Load(visualModelPath, makeVisualLH);
 
-            Scene collisionScene = LoadScene(collisionModelPath, false);
+            Scene collisionScene = LoadScene(collisionModelPath, false, makeCollisionLH);
             Simulation!.BufferPool.Take(collisionScene.Meshes.Sum(mesh => mesh.FaceCount), out Buffer<Triangle> triangles);
 
             int i = 0;

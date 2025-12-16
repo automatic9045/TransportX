@@ -26,10 +26,10 @@ namespace Bus.Common.Rendering
             Textures = textures;
         }
 
-        public static Model Load(ID3D11Device device, ID3D11DeviceContext context, string visualModelPath)
+        public static Model Load(ID3D11Device device, ID3D11DeviceContext context, string visualModelPath, bool makeLH)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context);
-            Model model = factory.Load(visualModelPath);
+            Model model = factory.Load(visualModelPath, makeLH);
             return model;
         }
 
@@ -74,26 +74,26 @@ namespace Bus.Common.Rendering
         }
 
         public static CollidableModel Load(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, string collisionModelPath, ColliderMaterial material, bool isOpen)
+            string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, collisionModelPath, material, isOpen);
+            CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, makeVisualLH, collisionModelPath, makeCollisionLH, material, isOpen);
             return model;
         }
 
         public static CollidableModel LoadWithBoundingBox(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, ColliderMaterial material)
+            string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, material);
+            CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, makeLH, material);
             return model;
         }
 
         public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation,
-            string visualModelPath, ColliderMaterial material)
+            string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             AssimpModelFactory factory = new AssimpModelFactory(device, context, simulation);
-            CollidableModel model = factory.LoadWithConvexHull(visualModelPath, material);
+            CollidableModel model = factory.LoadWithConvexHull(visualModelPath, makeLH, material);
             return model;
         }
 
