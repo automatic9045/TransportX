@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,13 +13,13 @@ using System.Windows.Input;
 using Reactive.Bindings;
 using Reactive.Bindings.Disposables;
 using Reactive.Bindings.Extensions;
-using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
 using Bus.Components;
 using Bus.Models;
 
 using Bus.Common;
+using Bus.Common.Dependency;
 using Bus.Common.Worlds;
 
 namespace Bus.ViewModels
@@ -61,12 +63,6 @@ namespace Bus.ViewModels
             MouseWheelCommand = new ReactiveCommandSlim<MouseWheelEventArgs>().AddTo(Disposables);
             RenderingCommand = new ReactiveCommandSlim<RenderingEventArgs>().AddTo(Disposables);
 
-            Application.Current.Exit += (sender, e) =>
-            {
-                PerGameDisposables?.Dispose();
-                dx.Dispose();
-            };
-
             KeyDownCommand.Subscribe(e =>
             {
                 if (e.Key == Key.F5)
@@ -74,6 +70,18 @@ namespace Bus.ViewModels
                     if (WorldInfo is not null) LoadGame(WorldInfo);
                 }
             }).AddTo(Disposables);
+
+            Application.Current.Exit += (sender, e) =>
+            {
+                PerGameDisposables?.Dispose();
+                dx.Dispose();
+            };
+
+            AssemblyLoadContext.Default.Resolving += (context, name) =>
+            {
+                HostAssemblyLoader.TryLoad(name, out Assembly? assembly);
+                return assembly;
+            };
         }
 
         public void Dispose()

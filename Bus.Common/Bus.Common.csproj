@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="AssimpNetter" Version="5.4.3.3" />
     <PackageReference Include="BepuPhysics" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.1" />
     <PackageReference Include="Vortice.D3DCompiler" Version="3.6.2" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
     <PackageReference Include="Vortice.XAudio2" Version="3.6.2" />

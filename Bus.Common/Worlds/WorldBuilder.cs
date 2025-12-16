@@ -7,6 +7,7 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -31,7 +32,7 @@ namespace Bus.Common.Worlds
 
         internal protected WorldBase Build()
         {
-            Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Info.Path);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
             Type[] worldTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(WorldBase)))
                 .ToArray();

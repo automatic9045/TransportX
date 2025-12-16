@@ -7,6 +7,7 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -30,7 +31,7 @@ namespace Bus.Common.Vehicles
 
         internal protected VehicleBase Build(string path, string? identifier)
         {
-            Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
             Type[] vehicleTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(VehicleBase)))
                 .ToArray();

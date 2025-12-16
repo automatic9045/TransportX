@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common;
+using Bus.Common.Dependency;
 using Bus.Common.Rendering;
 using Bus.Common.Worlds;
 
@@ -26,7 +27,7 @@ namespace Bus.Models
 
         public IGame Load(IWorldInfo worldInfo)
         {
-            Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(worldInfo.GamePath);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.GamePath, out Assembly assembly);
             Type[] types = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && typeof(IGame).IsAssignableFrom(t))
                 .ToArray();
