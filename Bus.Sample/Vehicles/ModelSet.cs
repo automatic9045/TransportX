@@ -45,9 +45,9 @@ namespace Bus.Sample.Vehicles
 
         public static ModelSet Create(Simulation simulation, LocatedModelCollection models, ModelFactory modelFactory)
         {
-            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", new ColliderMaterial(0.6f, 2, new SpringSettings(30, 1)));
-            Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb");
-            Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb");
+            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, new ColliderMaterial(0.6f, 2, new SpringSettings(30, 1)));
+            Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb", true);
+            Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb", true);
 
             DynamicLocatedModel body = models.Attach(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 

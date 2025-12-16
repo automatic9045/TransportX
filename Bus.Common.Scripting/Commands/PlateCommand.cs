@@ -50,13 +50,12 @@ namespace Bus.Common.Scripting.Commands
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector());
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector()); // aaa
             }
             else
             {
                 SplineTemplate template = World.Commander.Splines.Templates[templateKey];
                 splineFactory = template.Build(X, Z, transform);
-
             }
 
             return new SplineCommand(World, splineFactory);

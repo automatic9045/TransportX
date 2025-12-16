@@ -43,109 +43,21 @@ namespace Bus.Common.Scripting.Commands
 
                         string key = line[0];
                         string modelPath = Path.Combine(listDirectory, line[1]);
+                        ModelListInterpreter interpreter = new(World, parser, listDirectory, key, modelPath);
 
-                        Model model;
-                        string collisionCommand = line.Length < 3 ? string.Empty : line[2].ToLowerInvariant();
-                        if (collisionCommand.StartsWith('$'))
+                        string commandListText = line.Length < 3 ? string.Empty : line[2].ToLowerInvariant();
+                        if (!string.IsNullOrWhiteSpace(commandListText))
                         {
-                            Function function = parser.Parse(collisionCommand.Substring(1));
-                            if (function.Signature == ModelListSignatures.BoundingBox1)
-                            {
-                                ColliderMaterial material = CreateMaterial(0);
+                            if (!commandListText.StartsWith('$')) throw new FormatException($"コマンド '{line[2]}' は無効です。冒頭に '$' がありません。");
 
-                                model = CollidableModel.LoadWithBoundingBox(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, material);
-                            }
-                            else if (function.Signature == ModelListSignatures.BoundingBox2)
+                            IEnumerable<string> commandTexts = commandListText.Split('$').Skip(1);
+                            foreach (string commandText in commandTexts)
                             {
-                                model = CollidableModel.LoadWithBoundingBox(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, ColliderMaterial.Default);
-                            }
-                            else if (function.Signature == ModelListSignatures.ClosedModel1)
-                            {
-                                string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-                                ColliderMaterial material = CreateMaterial(1);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, material, false);
-                            }
-                            else if (function.Signature == ModelListSignatures.ClosedModel2)
-                            {
-                                string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, ColliderMaterial.Default, false);
-                            }
-                            else if (function.Signature == ModelListSignatures.ClosedModel3)
-                            {
-                                ColliderMaterial material = CreateMaterial(0);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, material, false);
-                            }
-                            else if (function.Signature == ModelListSignatures.ClosedModel4)
-                            {
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, ColliderMaterial.Default, false);
-                            }
-                            else if (function.Signature == ModelListSignatures.OpenModel1)
-                            {
-                                string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-                                ColliderMaterial material = CreateMaterial(1);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, material, true);
-                            }
-                            else if (function.Signature == ModelListSignatures.OpenModel2)
-                            {
-                                string collisionModelPath = Path.Combine(listDirectory, (string)function.Args[0]);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, collisionModelPath, ColliderMaterial.Default, true);
-                            }
-                            else if (function.Signature == ModelListSignatures.OpenModel3)
-                            {
-                                ColliderMaterial material = CreateMaterial(0);
-
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, material, true);
-                            }
-                            else if (function.Signature == ModelListSignatures.OpenModel4)
-                            {
-                                model = CollidableModel.Load(
-                                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
-                                    modelPath, modelPath, ColliderMaterial.Default, true);
-                            }
-                            else if (function.Signature == ModelListSignatures.NonCollision)
-                            {
-                                model = Model.Load(World.DXHost.Device, World.DXHost.Context, modelPath);
-                            }
-                            else
-                            {
-                                throw new FormatException($"コマンド '{line[2]}' は無効です。");
-                            }
-
-
-                            ColliderMaterial CreateMaterial(int argBeginIndex)
-                            {
-                                return new ColliderMaterial(
-                                    (float)function.Args[argBeginIndex], (float)function.Args[argBeginIndex + 1],
-                                    new SpringSettings((float)function.Args[argBeginIndex + 2], (float)function.Args[argBeginIndex + 3]));
+                                interpreter.ReadCommand(commandText);
                             }
                         }
-                        else
-                        {
-                            model = Model.Load(World.DXHost.Device, World.DXHost.Context, modelPath);
-                        }
+
+                        Model model = interpreter.Build();
 
                         if (model is CollidableModel collidableModel)
                         {
