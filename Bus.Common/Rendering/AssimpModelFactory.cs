@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Assimp;
+using Assimp.Configs;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuUtilities.Memory;
@@ -38,6 +39,8 @@ namespace Bus.Common.Rendering
             Device = device;
             Context = context;
             Simulation = simulation;
+
+            Importer.SetConfig(new SortByPrimitiveTypeConfig(PrimitiveType.Point | PrimitiveType.Line));
         }
 
         private unsafe Model Load(Scene visualScene, string baseDirectory)
@@ -87,7 +90,7 @@ namespace Bus.Common.Rendering
 
         private Scene LoadScene(string visualModelPath, bool isForVisual, bool makeLH)
         {
-            PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate;
+            PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.SortByPrimitiveType;
             if (isForVisual) steps |= PostProcessSteps.GenerateNormals;
 
             if (makeLH)
