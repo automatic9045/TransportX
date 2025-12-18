@@ -90,7 +90,7 @@ namespace Bus.ViewModels
             Disposables.Dispose();
         }
 
-        internal void LoadGame(IWorldInfo worldInfo)
+        internal bool LoadGame(IWorldInfo worldInfo)
         {
             WorldInfo = worldInfo;
             Application.Current.MainWindow.Title = "Bus - Now loading...";
@@ -104,12 +104,27 @@ namespace Bus.ViewModels
             PluginLoadContext? oldGameContext = Game?.Context;
             PerGameDisposables?.Dispose();
             oldGameContext?.Unload();
+            Game = null;
             GC.Collect();
 
-            PerGameDisposables = new CompositeDisposable();
-
             GameLoader loader = new GameLoader(dxHost, dxClient);
-            Game = loader.Load(WorldInfo).AddTo(PerGameDisposables);
+            IGame game;
+            try
+            {
+                game = loader.Load(WorldInfo);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "読込中にエラーが発生しました", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                Application.Current.MainWindow.Title = "Bus";
+                dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, Colors.Black);
+                dxClient.SwapChain.Present(0);
+                return false;
+            }
+
+            PerGameDisposables = new CompositeDisposable();
+            Game = game.AddTo(PerGameDisposables);
 
             Observable.CombineLatest(MouseDragOffset, MouseLeftButton, MouseMiddleButton, MouseRightButton,
                 (o, l, m, r) => (Offset: o, Left: l, Middle: m, Right: r))
@@ -118,6 +133,8 @@ namespace Bus.ViewModels
             KeyUpCommand.Subscribe(args => Game.OnKeyUp(args.Key)).AddTo(PerGameDisposables);
             MouseWheelCommand.Subscribe(args => Game.OnMouseWheel(args.Delta)).AddTo(PerGameDisposables);
             RenderingCommand.Subscribe(args => Game.Draw(args.Size)).AddTo(PerGameDisposables);
+
+            return true;
         }
     }
 }

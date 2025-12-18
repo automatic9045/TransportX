@@ -46,7 +46,7 @@ namespace Bus.Sample.Vehicles
 
             ResetKey = InputManager.ObserveKey(Key.R);
 
-            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, new Vector4(0, 1, 0, 1));
+            ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
             SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
             BusModels = ModelSet.Create(PhysicsHost.Simulation, Models, modelFactory);
             Inputs = [new KeyboardInput(InputManager)];

@@ -17,6 +17,7 @@ using Vortice.DXGI;
 
 using CollisionMesh = BepuPhysics.Collidables.Mesh;
 
+using Bus.Common.Diagnostics;
 using Bus.Common.Physics;
 
 namespace Bus.Common.Rendering
@@ -28,22 +29,24 @@ namespace Bus.Common.Rendering
         private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation? Simulation;
+        private readonly IErrorCollector ErrorCollector;
 
         private readonly AssimpContext Importer = new AssimpContext();
         private readonly List<TextureInfo> LoadedTextures = new List<TextureInfo>();
 
         public bool IsCollisionSupported => Simulation is not null;
 
-        public AssimpModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation? simulation = null)
+        public AssimpModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation? simulation, IErrorCollector errorCollector)
         {
             Device = device;
             Context = context;
             Simulation = simulation;
+            ErrorCollector = errorCollector;
 
             Importer.SetConfig(new SortByPrimitiveTypeConfig(PrimitiveType.Point | PrimitiveType.Line));
         }
 
-        private unsafe Model Load(Scene visualScene, string baseDirectory)
+        private unsafe Model Load(Scene visualScene, string baseDirectory, string sourceLocation)
         {
             List<Mesh> visualMeshes = visualScene.Meshes.ConvertAll(assimpMesh =>
             {
@@ -78,7 +81,16 @@ namespace Bus.Common.Rendering
                 {
                     Assimp.Material assimpMaterial = visualScene.Materials[assimpMesh.MaterialIndex];
 
-                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(assimpMaterial, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory);
+                    IErrorCollector textureErrorCollector = IErrorCollector.Default();
+                    textureErrorCollector.Reported += (sender, e) =>
+                    {
+                        Error error = e.Error.ChangeSource(sourceLocation);
+                        ErrorCollector.Report(error);
+                    };
+
+                    List<ID3D11ShaderResourceView> diffuseMaps = LoadMaterialTextures(
+                        assimpMaterial, TextureType.Diffuse, "texture_diffuse", visualScene, baseDirectory, textureErrorCollector);
+
                     material = new(assimpMaterial.ColorDiffuse, diffuseMaps);
                 }
 
@@ -88,7 +100,7 @@ namespace Bus.Common.Rendering
             return new Model(visualMeshes, LoadedTextures.ConvertAll(x => x.Texture));
         }
 
-        private Scene LoadScene(string visualModelPath, bool isForVisual, bool makeLH)
+        private Scene LoadScene(string modelPath, bool isForVisual, bool makeLH)
         {
             PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.SortByPrimitiveType;
             if (isForVisual) steps |= PostProcessSteps.GenerateNormals;
@@ -99,8 +111,32 @@ namespace Bus.Common.Rendering
                 if (isForVisual) steps |= PostProcessSteps.FlipUVs;
             }
 
-            Scene visualScene = Importer.ImportFile(visualModelPath, steps);
-            return visualScene;
+            try
+            {
+                Scene scene = Importer.ImportFile(modelPath, steps);
+                return scene;
+            }
+            catch (FileNotFoundException ex)
+            {
+                return ReportError($"3D モデル '{modelPath}' が見つかりませんでした。", ex);
+            }
+            catch (Exception ex)
+            {
+                return ReportError($"3D モデル '{modelPath}' を読み込めませんでした。", ex);
+            }
+
+
+            Scene ReportError(string message, Exception exception)
+            {
+                ModelLoadErrorTypes errorTypes = ModelLoadErrorTypes.Critical | (isForVisual ? ModelLoadErrorTypes.Visual : ModelLoadErrorTypes.Collision);
+                ModelLoadError error = new(errorTypes, ErrorLevel.Error, message, modelPath)
+                {
+                    Exception = exception,
+                };
+                ErrorCollector.Report(error);
+
+                return new Scene();
+            }
         }
 
         public Model Load(string visualModelPath, bool makeLH)
@@ -108,7 +144,7 @@ namespace Bus.Common.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Scene visualScene = LoadScene(visualModelPath, true, makeLH);
 
-            return Load(visualScene, baseDirectory);
+            return Load(visualScene, baseDirectory, visualModelPath);
         }
 
         private void CheckCollisionSupported()
@@ -122,7 +158,7 @@ namespace Bus.Common.Rendering
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Scene visualScene = LoadScene(visualModelPath, true, makeLH);
-            Model baseModel = Load(visualScene, baseDirectory);
+            Model baseModel = Load(visualScene, baseDirectory, visualModelPath);
 
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
@@ -141,8 +177,8 @@ namespace Bus.Common.Rendering
             }
 
             Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
-            Vector3 origin = (min + max) / 2;
-            Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(origin);
+            Vector3 center = (min + max) / 2;
+            Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(center);
             Collider<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
@@ -154,7 +190,7 @@ namespace Bus.Common.Rendering
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Scene visualScene = LoadScene(visualModelPath, true, makeLH);
-            Model baseModel = Load(visualScene, baseDirectory);
+            Model baseModel = Load(visualScene, baseDirectory, visualModelPath);
 
             Simulation!.BufferPool.Take(visualScene.Meshes.Sum(mesh => mesh.VertexCount), out Buffer<Vector3> pointBuffer);
             int i = 0;
@@ -168,7 +204,8 @@ namespace Bus.Common.Rendering
             }
 
             ConvexHullHelper.CreateShape(pointBuffer, Simulation.BufferPool, out Vector3 center, out ConvexHull convexHull);
-            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, Matrix4x4.CreateTranslation(center));
+            Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(center);
+            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
         }
@@ -188,7 +225,6 @@ namespace Bus.Common.Rendering
             {
                 foreach (Face face in mesh.Faces)
                 {
-                    if (face.IndexCount != 3) throw new NotSupportedException("指定されたモデルは衝突判定に利用できません。");
                     triangles[i] = new Triangle(mesh.Vertices[face.Indices[2]], mesh.Vertices[face.Indices[1]], mesh.Vertices[face.Indices[0]]);
                     i++;
                 }
@@ -196,14 +232,23 @@ namespace Bus.Common.Rendering
 
             CollisionMesh collisionMesh = new CollisionMesh(triangles, Vector3.One, Simulation.BufferPool);
             Vector3 center = isOpen ? collisionMesh.ComputeOpenCenterOfMass() : collisionMesh.ComputeClosedCenterOfMass();
-            if (float.IsNaN(center.X + center.Y + center.Z)) throw new InvalidOperationException("モデルの重心を特定できません。");
-            collisionMesh.Recenter(center);
+            if (float.IsNaN(center.X + center.Y + center.Z))
+            {
+                ModelLoadError error = new ModelLoadError(
+                    ModelLoadErrorTypes.Collision | ModelLoadErrorTypes.Skipped, ErrorLevel.Error, "モデルの重心を特定できません。", collisionModelPath);
+                ErrorCollector.Report(error);
+                center = Vector3.Zero;
+            }
 
-            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, Matrix4x4.CreateTranslation(center), isOpen);
+            collisionMesh.Recenter(center);
+            Matrix4x4 colliderOffset = Matrix4x4.CreateTranslation(center);
+            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, colliderOffset, isOpen);
+
             return new CollidableModel(baseModel, collider);
         }
 
-        private List<ID3D11ShaderResourceView> LoadMaterialTextures(Assimp.Material material, TextureType type, string typeName, Scene scene, string baseDirectory)
+        private List<ID3D11ShaderResourceView> LoadMaterialTextures(
+            Assimp.Material material, TextureType type, string typeName, Scene scene, string baseDirectory, IErrorCollector errorCollector)
         {
             List<ID3D11ShaderResourceView> textures = new List<ID3D11ShaderResourceView>();
             for (int i = 0; i < material.GetMaterialTextureCount(type); i++)
@@ -217,11 +262,23 @@ namespace Bus.Common.Rendering
                 }
                 else
                 {
-                    ID3D11ShaderResourceView texture;
+                    ID3D11ShaderResourceView? texture = null;
                     EmbeddedTexture? embeddedTexture = scene.GetEmbeddedTexture(slot.FilePath);
                     if (embeddedTexture is not null)
                     {
-                        texture = LoadEmbeddedTexture(embeddedTexture);
+                        try
+                        {
+                            texture = LoadEmbeddedTexture(embeddedTexture);
+                        }
+                        catch (Exception ex)
+                        {
+                            ModelLoadError error = new(ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped, ErrorLevel.Error,
+                                $"埋め込みテクスチャ '{embeddedTexture.Filename}' を読み込めませんでした。", embeddedTexture.Filename)
+                            {
+                                Exception = ex,
+                            };
+                            errorCollector.Report(error);
+                        }
                     }
                     else
                     {
@@ -230,16 +287,37 @@ namespace Bus.Common.Rendering
                         int hr = NativeMethods.CreateWICTextureFromFile_(Device.NativePointer, Context.NativePointer, filePath, out _, out nint textureView);
                         if (hr != 0)
                         {
-                            Marshal.ThrowExceptionForHR(hr);
+                            Exception? exception = Marshal.GetExceptionForHR(hr);
+                            ModelLoadError error = exception switch
+                            {
+                                FileNotFoundException => new ModelLoadError(
+                                    ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped,
+                                    ErrorLevel.Error, $"テクスチャ '{filePath}' が見つかりません。", filePath)
+                                {
+                                    Exception = exception,
+                                },
+                                _ => new ModelLoadError(
+                                    ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped,
+                                    ErrorLevel.Error, $"テクスチャ '{filePath}' を読み込めませんでした。", filePath)
+                                {
+                                    Exception = exception,
+                                },
+                            };
+                            errorCollector.Report(error);
                         }
-
-                        texture = new ID3D11ShaderResourceView(textureView);
+                        else
+                        {
+                            texture = new ID3D11ShaderResourceView(textureView);
+                        }
                     }
 
-                    TextureInfo textureInfo = new TextureInfo(typeName, slot.FilePath, texture);
+                    if (texture is not null)
+                    {
+                        TextureInfo textureInfo = new TextureInfo(typeName, slot.FilePath, texture);
 
-                    textures.Add(textureInfo.Texture);
-                    LoadedTextures.Add(textureInfo);
+                        textures.Add(textureInfo.Texture);
+                        LoadedTextures.Add(textureInfo);
+                    }
                 }
             }
 
@@ -280,7 +358,8 @@ namespace Bus.Common.Rendering
                 return texture;
             }
 
-            int hr = NativeMethods.CreateWICTextureFromMemory_(Device.NativePointer, Context.NativePointer, embeddedTexture.CompressedData, embeddedTexture.Width, out _, out nint textureView);
+            int hr = NativeMethods.CreateWICTextureFromMemory_(
+                Device.NativePointer, Context.NativePointer, embeddedTexture.CompressedData, embeddedTexture.Width, out _, out nint textureView);
             if (hr != 0)
             {
                 Marshal.ThrowExceptionForHR(hr);

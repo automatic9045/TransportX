@@ -21,7 +21,8 @@ namespace Bus
             WorldInfo? worldInfo = WorldSelector.Select();
             if (worldInfo is null) Environment.Exit(0);
 
-            ((MainWindowViewModel)mainWindow.DataContext).LoadGame(worldInfo);
+            bool isLoaded = ((MainWindowViewModel)mainWindow.DataContext).LoadGame(worldInfo);
+            if (!isLoaded) Environment.Exit(1);
         }
     }
 }

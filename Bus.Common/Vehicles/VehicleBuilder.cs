@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -20,6 +21,7 @@ namespace Bus.Common.Vehicles
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
+        public required IErrorCollector ErrorCollector { get; init; }
         public required PluginLoadContext GameContext { get; init; }
         public required PluginLoadContext WorldContext { get; init; }
         public required ITimeManager TimeManager { get; init; }
@@ -33,6 +35,8 @@ namespace Bus.Common.Vehicles
 
         internal protected VehicleBase Build(string path, string? identifier)
         {
+            if (!File.Exists(path)) throw new FileNotFoundException("車両ファイルが見つかりません。", path);
+
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
             WorldContext.Children.Add(context);
 

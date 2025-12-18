@@ -9,6 +9,7 @@ using BepuPhysics;
 
 using Bus.Common.Bodies;
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Rendering;
 using Bus.Common.Physics;
@@ -23,6 +24,7 @@ namespace Bus.Common.Worlds
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
+        public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext GameContext { get; }
         public PluginLoadContext WorldContext { get; }
         public TimeManager TimeManager { get; }
@@ -50,6 +52,7 @@ namespace Bus.Common.Worlds
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
+            ErrorCollector = builder.ErrorCollector;
             GameContext = builder.GameContext;
             WorldContext = context;
             TimeManager = builder.TimeManager;
@@ -126,6 +129,7 @@ namespace Bus.Common.Worlds
                 DXHost = DXHost,
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
+                ErrorCollector = ErrorCollector,
                 GameContext = GameContext,
                 WorldContext = WorldContext,
                 TimeManager = TimeManager,

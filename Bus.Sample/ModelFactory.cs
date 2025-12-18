@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using BepuPhysics;
 using Vortice.Direct3D11;
 
+using Bus.Common.Diagnostics;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
@@ -23,13 +24,15 @@ namespace Bus.Sample
         private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation Simulation;
+        private readonly IErrorCollector ErrorCollector;
         private readonly Vector4 DebugModelColor;
 
-        public ModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, Vector4 debugModelColor)
+        public ModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector, Vector4 debugModelColor)
         {
             Device = device;
             Context = context;
             Simulation = simulation;
+            ErrorCollector = errorCollector;
             DebugModelColor = debugModelColor;
         }
 
@@ -41,14 +44,14 @@ namespace Bus.Sample
 
         public Model NonCollision(string visualPath, bool makeLH)
         {
-            Model model = Model.Load(Device, Context, GetAbsolutePath(visualPath), makeLH);
+            Model model = Model.Load(Device, Context, ErrorCollector, GetAbsolutePath(visualPath), makeLH);
             return model;
         }
 
         public CollidableModel WithCollisionModel(
             string visualPath, bool makeVisualLH, string collisionPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
-            CollidableModel model = CollidableModel.Load(Device, Context, Simulation,
+            CollidableModel model = CollidableModel.Load(Device, Context, Simulation, ErrorCollector,
                 GetAbsolutePath(visualPath), makeVisualLH, GetAbsolutePath(collisionPath), makeCollisionLH, material, isOpen);
             model.Collider.CreateDebugModel(Device, DebugModelColor);
             return model;
@@ -56,14 +59,14 @@ namespace Bus.Sample
 
         public CollidableModel WithBoundingBox(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithBoundingBox(Device, Context, Simulation, GetAbsolutePath(path), makeLH, material);
+            CollidableModel model = CollidableModel.LoadWithBoundingBox(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
             model.Collider.CreateDebugModel(Device, DebugModelColor);
             return model;
         }
 
         public CollidableModel WithConvexHull(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithConvexHull(Device, Context, Simulation, GetAbsolutePath(path), makeLH, material);
+            CollidableModel model = CollidableModel.LoadWithConvexHull(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
             model.Collider.CreateDebugModel(Device, DebugModelColor);
             return model;
         }

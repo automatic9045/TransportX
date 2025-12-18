@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -51,17 +52,20 @@ namespace Bus.Common
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
             DebugInput = new DebugInput(InputManager, Camera);
 
-            World = CreateWorld(worldInfo);
+            ErrorCollector errorCollector = new();
+
+            World = CreateWorld(worldInfo, errorCollector);
             World.OnStart();
         }
 
-        protected virtual WorldBase CreateWorld(IWorldInfo worldInfo)
+        protected virtual WorldBase CreateWorld(IWorldInfo worldInfo, IErrorCollector errorCollector)
         {
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
             {
                 DXHost = DXHost,
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
+                ErrorCollector = errorCollector,
                 GameContext = Context,
                 TimeManager = TimeManager,
                 InputManager = InputManager,

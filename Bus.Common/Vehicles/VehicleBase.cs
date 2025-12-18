@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Bodies;
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -22,6 +23,7 @@ namespace Bus.Common.Vehicles
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
+        public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext GameContext { get; }
         public PluginLoadContext WorldContext { get; }
         public PluginLoadContext VehicleContext { get; }
@@ -38,6 +40,7 @@ namespace Bus.Common.Vehicles
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
+            ErrorCollector = builder.ErrorCollector;
             GameContext = builder.GameContext;
             WorldContext = builder.WorldContext;
             VehicleContext = context;

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -21,6 +22,7 @@ namespace Bus.Common.Worlds
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
+        public required IErrorCollector ErrorCollector { get; init; }
         public required PluginLoadContext GameContext { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
