@@ -21,6 +21,7 @@ namespace Bus.Common
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
         protected readonly PhysicsHost PhysicsHost;
+
         protected readonly Renderer Renderer;
 
         protected readonly TimeManager TimeManager;
@@ -36,48 +37,33 @@ namespace Bus.Common
 
         public PluginLoadContext Context { get; }
 
-        public Game(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
+        public Game(GameCreationInfo info)
         {
-            Context = context;
+            Context = info.Context;
 
-            DXHost = dxHost;
-            DXClient = dxClient;
-            PhysicsHost = PhysicsHost.Create();
-            Renderer = new Renderer(DXHost, DXClient);
+            DXHost = info.DXHost;
+            DXClient = info.DXClient;
+            PhysicsHost = info.PhysicsHost;
 
-            TimeManager = new TimeManager();
-            InputManager = new Input.InputManager();
-            Camera = new Camera();
+            Renderer = info.Renderer;
+
+            TimeManager = info.TimeManager;
+            InputManager = info.InputManager;
+            Camera = info.Camera;
+
+            World = info.World;
 
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
             DebugInput = new DebugInput(InputManager, Camera);
 
-            ErrorCollector errorCollector = new();
-
-            World = CreateWorld(worldInfo, errorCollector);
             World.OnStart();
-        }
-
-        protected virtual WorldBase CreateWorld(IWorldInfo worldInfo, IErrorCollector errorCollector)
-        {
-            WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
-            {
-                DXHost = DXHost,
-                DXClient = DXClient,
-                PhysicsHost = PhysicsHost,
-                ErrorCollector = errorCollector,
-                GameContext = Context,
-                TimeManager = TimeManager,
-                InputManager = InputManager,
-                Camera = Camera,
-            };
-
-            WorldBase world = worldBuilder.Build();
-            return world;
         }
 
         public virtual void Dispose()
         {
+            ViewpointInput.Dispose();
+            DebugInput.Dispose();
+
             World.Dispose();
 
             PhysicsHost.Dispose();

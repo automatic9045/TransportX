@@ -29,7 +29,7 @@ namespace Bus.Models
         {
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.GamePath, out Assembly assembly);
             Type[] types = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(IGame).IsAssignableFrom(t))
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(IGameFactory).IsAssignableFrom(t))
                 .ToArray();
 
             switch (types.Length)
@@ -37,7 +37,7 @@ namespace Bus.Models
                 case 0:
                 {
                     string fileName = Path.GetFileName(worldInfo.GamePath);
-                    throw new ArgumentException($"{fileName} にはゲームが定義されていません。", nameof(worldInfo));
+                    throw new ArgumentException($"{fileName} にはゲームファクトリーが定義されていません。", nameof(worldInfo));
                 }
 
                 case 1:
@@ -46,16 +46,13 @@ namespace Bus.Models
                 default:
                 {
                     string fileName = Path.GetFileName(worldInfo.GamePath);
-                    throw new ArgumentException($"{fileName} には 2 つ以上のゲームが定義されています。", nameof(worldInfo));
+                    throw new ArgumentException($"{fileName} には 2 つ以上のゲームファクトリーが定義されています。", nameof(worldInfo));
                 }
             }
 
             Type type = types[0];
-            ConstructorInfo constructor = type.GetConstructor([typeof(PluginLoadContext), typeof(IDXHost), typeof(IDXClient), typeof(IWorldInfo)])
-                ?? throw new ArgumentException($"{type.Name} にはパラメータが " +
-                $"{nameof(PluginLoadContext)}, {nameof(IDXHost)}, {nameof(IDXClient)}, {nameof(IWorldInfo)} のコンストラクタが定義されていません。", nameof(worldInfo));
-
-            IGame game = (IGame)constructor.Invoke([context, DXHost, DXClient, worldInfo]);
+            IGameFactory gameFactory = (IGameFactory)Activator.CreateInstance(type)!;
+            IGame game = gameFactory.Create(context, DXHost, DXClient, worldInfo);
             return game;
         }
     }
