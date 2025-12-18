@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using BepuPhysics.Constraints;
 
+using Bus.Common.Diagnostics;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
@@ -19,21 +20,27 @@ namespace Bus.Common.Scripting.Commands
         private readonly ScriptWorld World;
         private readonly Parser Parser;
         private readonly string BaseDirectory;
-        private readonly string Key;
         private readonly string ModelPath;
+
+        private readonly IErrorCollector ErrorCollector = IErrorCollector.Default();
 
         private bool MakeLH = true;
         private Func<Model> ModelFactory;
 
-        public ModelListInterpreter(ScriptWorld world, Parser parser, string baseDirectory, string key, string modelPath)
+        public event EventHandler<Diagnostics.ErrorEventArgs>? ErrorReported
+        {
+            add => ErrorCollector.Reported += value;
+            remove => ErrorCollector.Reported -= value;
+        }
+
+        public ModelListInterpreter(ScriptWorld world, Parser parser, string baseDirectory, string modelPath)
         {
             World = world;
             Parser = parser;
             BaseDirectory = baseDirectory;
-            Key = key;
             ModelPath = modelPath;
 
-            ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ModelPath, MakeLH);
+            ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
         }
 
         public void ReadCommand(string commandText)
@@ -45,19 +52,19 @@ namespace Bus.Common.Scripting.Commands
             }
             else if (function.Signature == ModelListSignatures.NonCollision)
             {
-                ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ModelPath, MakeLH);
+                ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox1)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ModelPath, MakeLH, material);
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox2)
             {
                 ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ModelPath, MakeLH, ColliderMaterial.Default);
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel1)
             {
@@ -65,7 +72,7 @@ namespace Bus.Common.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(1);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, collisionModelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel2)
@@ -73,7 +80,7 @@ namespace Bus.Common.Scripting.Commands
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel3)
@@ -81,13 +88,13 @@ namespace Bus.Common.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, ModelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel4)
             {
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.OpenModel1)
@@ -96,7 +103,7 @@ namespace Bus.Common.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(1);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, collisionModelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel2)
@@ -104,7 +111,7 @@ namespace Bus.Common.Scripting.Commands
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel3)
@@ -112,18 +119,19 @@ namespace Bus.Common.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, ModelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel4)
             {
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation,
+                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
                     ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else
             {
-                throw new FormatException($"コマンド '${commandText}' は無効です。");
+                Error error = new(ErrorLevel.Error, $"コマンド '${function.Signature}' は存在しません。", null);
+                ErrorCollector.Report(error);
             }
 
 

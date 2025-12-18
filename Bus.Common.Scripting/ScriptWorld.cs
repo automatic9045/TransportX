@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -7,10 +10,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
 using Bus.Common.Dependency;
+using Bus.Common.Diagnostics;
 using Bus.Common.Worlds;
 
 using Bus.Common.Scripting.Commands;
@@ -48,13 +54,51 @@ namespace Bus.Common.Scripting
             if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
 
             ScriptPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Args[0]));
+            ScriptError.DefaultLocation = ScriptPath;
             BaseDirectory = Path.GetDirectoryName(ScriptPath)!;
 
             Commander = new Commander(this);
 
-            string code = File.ReadAllText(ScriptPath);
-            ScriptOptions options = ScriptOptions.WithFilePath(ScriptPath);
-            CSharpScript.RunAsync(code, options, Commander).Wait();
+            Script<object> script;
+            using (FileStream file = new(ScriptPath, FileMode.Open))
+            {
+                ScriptOptions options = ScriptOptions.WithFilePath(ScriptPath).WithEmitDebugInformation(true);
+                script = CSharpScript.Create(file, options, typeof(Commander));
+            }
+
+            ImmutableArray<Diagnostic> diagnostics = script.Compile();
+            foreach (Diagnostic diagnostic in diagnostics)
+            {
+                ErrorLevel errorLevel = diagnostic.Severity switch
+                {
+                    DiagnosticSeverity.Warning => ErrorLevel.Warning,
+                    DiagnosticSeverity.Error => ErrorLevel.Fatal,
+                    _ => ErrorLevel.Info,
+                };
+                if (errorLevel == ErrorLevel.Info) continue;
+
+                string message = diagnostic.GetMessage(CultureInfo.CurrentCulture);
+                FileLinePositionSpan lineSpan = diagnostic.Location.GetLineSpan();
+                Error error = new(errorLevel, message, diagnostic.Location.SourceTree?.FilePath)
+                {
+                    Code = diagnostic.Id,
+                    LineNumber = lineSpan.StartLinePosition.Line + 1,
+                    LinePosition = lineSpan.StartLinePosition.Character + 1,
+                };
+
+                ErrorCollector.Report(error);
+            }
+
+            if (ErrorCollector.HasFatalError) return;
+
+            script.RunAsync(Commander, ex =>
+            {
+                StackTrace stackTrace = new(ex, true);
+                ScriptError error = new(ErrorLevel.Error, ex, useExceptionStackTrace: true);
+                ErrorCollector.Report(error);
+
+                return true;
+            }).Wait();
         }
 
         public override void Dispose()

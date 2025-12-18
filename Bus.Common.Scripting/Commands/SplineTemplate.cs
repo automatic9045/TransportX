@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Diagnostics;
+using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
@@ -21,13 +23,31 @@ namespace Bus.Common.Scripting.Commands
         internal SplineTemplate(ScriptWorld world, string portKey)
         {
             World = world;
-            Port = World.Commander.Splines.Ports[portKey];
+
+            if (!World.Commander.Splines.Ports.TryGetValue(portKey, out LaneConnector? port))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"モデル '{portKey}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                port = new LaneConnector();
+            }
+            Port = port;
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double span, double interval)
         {
-            LocatedModel[] models = modelKeys.Select(
-                key => KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[key], transform)).ToArray();
+            LocatedModel[] models = modelKeys.Select(key =>
+            {
+                if (!World.Models.TryGetValue(key, out IModel? model))
+                {
+                    ScriptError error = new(ErrorLevel.Error, $"モデル '{key}' が見つかりません。");
+                    World.ErrorCollector.Report(error);
+
+                    model = Model.Empty();
+                }
+
+                return KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
+            }).ToArray();
             SplineStructure structure = new SplineStructure(models, 0, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);
             return structure;

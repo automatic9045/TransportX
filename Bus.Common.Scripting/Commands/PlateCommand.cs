@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Diagnostics;
+using Bus.Common.Rendering;
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Scenery;
 
@@ -29,7 +31,15 @@ namespace Bus.Common.Scripting.Commands
 
         public LocatedModel PutStructure(string modelKey, Matrix4x4 transform)
         {
-            LocatedModel locatedModel = KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[modelKey], transform);
+            if (!World.Models.TryGetValue(modelKey, out IModel? model))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"モデル '{modelKey}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                model = Model.Empty();
+            }
+
+            LocatedModel locatedModel = KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
             Target.Models.Add(locatedModel);
             return locatedModel;
         }
@@ -50,11 +60,17 @@ namespace Bus.Common.Scripting.Commands
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector()); // aaa
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector());
+            }
+            else if (!World.Commander.Splines.Templates.TryGetValue(templateKey, out SplineTemplate? template))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"スプラインテンプレート '{templateKey}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneConnector());
             }
             else
             {
-                SplineTemplate template = World.Commander.Splines.Templates[templateKey];
                 splineFactory = template.Build(X, Z, transform);
             }
 

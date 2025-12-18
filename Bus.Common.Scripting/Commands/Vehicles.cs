@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Diagnostics;
+
 namespace Bus.Common.Scripting.Commands
 {
     public class Vehicles
@@ -19,7 +21,15 @@ namespace Bus.Common.Scripting.Commands
         public void Load(string path, string? identifier = null)
         {
             string vehiclePath = Path.Combine(World.BaseDirectory, path);
-            World.UserVehicle = World.CreateVehicle(vehiclePath, identifier);
+            try
+            {
+                World.UserVehicle = World.CreateVehicle(vehiclePath, identifier);
+            }
+            catch (Exception ex)
+            {
+                ScriptError error = new(ErrorLevel.Error, ex);
+                World.ErrorCollector.Report(error);
+            }
         }
     }
 }

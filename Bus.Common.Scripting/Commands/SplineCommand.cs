@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Diagnostics;
+using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
@@ -50,8 +52,18 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)
         {
-            LocatedModel[] models = modelKeys.Select(
-                key => KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, World.Models[key], transform)).ToArray();
+            LocatedModel[] models = modelKeys.Select(key =>
+            {
+                if (!World.Models.TryGetValue(key, out IModel? model))
+                {
+                    ScriptError error = new(ErrorLevel.Error, $"モデル '{key}' が見つかりません。");
+                    World.ErrorCollector.Report(error);
+
+                    model = Model.Empty();
+                }
+
+                return KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
+            }).ToArray();
             SplineStructure structure = new SplineStructure(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
 

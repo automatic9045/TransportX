@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Diagnostics;
+using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 
 namespace Bus.Common.Scripting.Commands
@@ -20,8 +22,16 @@ namespace Bus.Common.Scripting.Commands
 
         public void Add(string modelKey)
         {
-            LocatedModel model = new LocatedModel(World.Models[modelKey], Matrix4x4.Identity);
-            World.BackgroundModels.Add(model);
+            if (!World.Models.TryGetValue(modelKey, out IModel? model))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"モデル '{modelKey}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                model = Model.Empty();
+            }
+
+            LocatedModel locatedModel = new LocatedModel(model, Matrix4x4.Identity);
+            World.BackgroundModels.Add(locatedModel);
         }
     }
 }
