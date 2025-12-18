@@ -9,7 +9,8 @@ namespace Bus.Common
 {
     public class TimeManager : ITimeManager
     {
-        private const int FrameSpan = 60;
+        private static readonly int FrameSpan = 60;
+        private static readonly TimeSpan EpsilonTime = TimeSpan.FromTicks(1);
 
 
         private readonly Stopwatch Stopwatch = new Stopwatch();
@@ -18,7 +19,7 @@ namespace Bus.Common
 
         public TimeSpan LimitDeltaTime { get; set; } = TimeSpan.FromSeconds(1d / 6);
         public double Fps { get; private set; } = 0;
-        public TimeSpan DeltaTime { get; private set; } = TimeSpan.FromTicks(1);
+        public TimeSpan DeltaTime { get; private set; } = EpsilonTime;
 
         public TimeManager()
         {
@@ -30,11 +31,11 @@ namespace Bus.Common
             if (!Stopwatch.IsRunning)
             {
                 Stopwatch.Start();
-                elapsed = TimeSpan.FromSeconds(1d / 60);
+                elapsed = TimeSpan.Zero;
             }
 
             TimeSpan dt = elapsed - LastElapsed;
-            DeltaTime = dt < LimitDeltaTime ? dt : LimitDeltaTime;
+            DeltaTime = dt == TimeSpan.Zero ? EpsilonTime : dt < LimitDeltaTime ? dt : LimitDeltaTime;
             LastElapsed = elapsed;
 
             Elapsed.TryPeek(out TimeSpan firstElapsed);
