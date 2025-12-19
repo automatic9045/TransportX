@@ -25,6 +25,7 @@ namespace Bus.Common.Physics
         public Matrix4x4 OffsetInverse { get; }
 
         public IModel? DebugModel { get; protected set; } = null;
+        public virtual Vector4 DebugModelColor { get; set; } = Vector4.One;
 
         public Collider(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
@@ -42,7 +43,7 @@ namespace Bus.Common.Physics
             return InertiaFactory(Shape, mass);
         }
 
-        public virtual void CreateDebugModel(ID3D11Device device, Vector4 color)
+        public virtual void CreateDebugModel(ID3D11Device device)
         {
         }
     }

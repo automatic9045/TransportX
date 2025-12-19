@@ -16,32 +16,39 @@ namespace Bus.Common.Physics.Colliders
 {
     public class ConvexHullCollider : Collider<ConvexHull>
     {
+        protected readonly Material DebugMaterial = new(Vector4.One, []);
+        public override Vector4 DebugModelColor
+        {
+            get => DebugMaterial.BaseColor;
+            set => DebugMaterial.BaseColor = value;
+        }
+
         public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset)
             : base(shape, shapeIndex, material, offset, (s, m) => s.ComputeInertia(m))
         {
         }
 
-        public override void CreateDebugModel(ID3D11Device device, Vector4 color)
+        public override void CreateDebugModel(ID3D11Device device)
         {
             if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
 
-            List<Vector3> extractedPoints = new List<Vector3>();
+            List<Vector3> extractedPoints = [];
             for (int i = 0; i < Shape.Points.Length; i++)
             {
                 Vector3Wide widePoint = Shape.Points[i];
                 for (int j = 0; j < Vector<float>.Count; j++)
                 {
-                    Vector3 p = new Vector3(widePoint.X[j], widePoint.Y[j], widePoint.Z[j]);
+                    Vector3 p = new(widePoint.X[j], widePoint.Y[j], widePoint.Z[j]);
                     extractedPoints.Add(p);
                 }
             }
 
             Vertex[] vertices = new Vertex[extractedPoints.Count + 1];
-            vertices[0] = new Vertex(Vector3.Zero, color);
+            vertices[0] = new Vertex(Vector3.Zero, Vector4.One);
 
             for (int i = 0; i < extractedPoints.Count; i++)
             {
-                vertices[i + 1] = new Vertex(extractedPoints[i], color);
+                vertices[i + 1] = new Vertex(extractedPoints[i], Vector4.One);
             }
 
             int[] indices = new int[Shape.Points.Length * 2];
@@ -52,7 +59,7 @@ namespace Bus.Common.Physics.Colliders
                 indices[baseIndex + 1] = i + 1;
             }
 
-            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, Rendering.Material.Default, PrimitiveTopology.LineList);
+            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, DebugMaterial, PrimitiveTopology.LineList);
             DebugModel = new Model([visualMesh], []);
         }
     }

@@ -66,7 +66,8 @@ namespace Bus.Common.Scenery.Networks
             if (0 < modelsToMerge.Count)
             {
                 MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
-                mergedModel.CreateColliderDebugModel(Device, new Vector4(0, 0, 1, 1));
+                mergedModel.Model.Collider.CreateDebugModel(Device);
+                mergedModel.Model.Collider.DebugModelColor = new Vector4(0, 0, 1, 1);
                 CompiledModels.Add(mergedModel);
 
                 foreach (KinematicLocatedModel model in modelsToMerge) model.Dispose();

@@ -84,10 +84,5 @@ namespace Bus.Common.Scenery
 
             base.Draw(context);
         }
-
-        public void CreateColliderDebugModel(ID3D11Device device, Vector4 color)
-        {
-            Model.Collider.CreateDebugModel(device, color);
-        }
     }
 }

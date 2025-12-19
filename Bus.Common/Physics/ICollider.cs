@@ -22,6 +22,7 @@ namespace Bus.Common.Physics
         Matrix4x4 OffsetInverse { get; }
 
         IModel? DebugModel { get; }
+        Vector4 DebugModelColor { get; set; }
 
         void IDisposable.Dispose()
         {
@@ -29,6 +30,6 @@ namespace Bus.Common.Physics
         }
 
         BodyInertia ComputeInertia(float mass);
-        void CreateDebugModel(ID3D11Device device, Vector4 color);
+        void CreateDebugModel(ID3D11Device device);
     }
 }

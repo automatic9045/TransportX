@@ -14,7 +14,7 @@ namespace Bus.Common.Rendering
         public static readonly Material Default = new(Vector4.One, []);
 
 
-        public Vector4 BaseColor { get; }
+        public Vector4 BaseColor { get; set; }
         public List<ID3D11ShaderResourceView> Textures { get; }
 
         public Material(Vector4 baseColor, List<ID3D11ShaderResourceView> textures)

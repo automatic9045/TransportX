@@ -18,13 +18,20 @@ namespace Bus.Common.Physics.Colliders
     {
         public bool IsOpen { get; }
 
+        protected readonly Material DebugMaterial = new(Vector4.One, []);
+        public override Vector4 DebugModelColor
+        {
+            get => DebugMaterial.BaseColor;
+            set => DebugMaterial.BaseColor = value;
+        }
+
         public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, bool isOpen)
             : base(shape, shapeIndex, material, offset, (s, m) => isOpen ? s.ComputeOpenInertia(m) : s.ComputeClosedInertia(m))
         {
             IsOpen = isOpen;
         }
 
-        public override void CreateDebugModel(ID3D11Device device, Vector4 color)
+        public override void CreateDebugModel(ID3D11Device device)
         {
             if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
 
@@ -37,9 +44,9 @@ namespace Bus.Common.Physics.Colliders
                 Triangle triangle = Shape.Triangles[i];
                 int baseIndex = i * 3;
 
-                vertices[baseIndex] = new(triangle.A, color);
-                vertices[baseIndex + 1] = new(triangle.B, color);
-                vertices[baseIndex + 2] = new(triangle.C, color);
+                vertices[baseIndex] = new(triangle.A, Vector4.One);
+                vertices[baseIndex + 1] = new(triangle.B, Vector4.One);
+                vertices[baseIndex + 2] = new(triangle.C, Vector4.One);
 
                 int indexOffset = i * 6;
 
@@ -53,7 +60,7 @@ namespace Bus.Common.Physics.Colliders
                 indices[indexOffset + 5] = baseIndex;
             }
 
-            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, Rendering.Material.Default, PrimitiveTopology.LineList);
+            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, DebugMaterial, PrimitiveTopology.LineList);
             DebugModel = new Model([visualMesh], []);
         }
     }
