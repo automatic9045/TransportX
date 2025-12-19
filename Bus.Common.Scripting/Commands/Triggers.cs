@@ -28,8 +28,8 @@ namespace Bus.Common.Scripting.Commands
 
         public void OnDispose(string scriptPath)
         {
-            Script script = CreateScript<Commander>(scriptPath);
-            OnDispose(commander => script.RunAsync(commander));
+            UserScript<Commander, object> script = UserScript<Commander, object>.FromFile(scriptPath, World.ErrorCollector, false);
+            OnDispose(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
         }
 
         public void OnTick(Action<TickCommander> action)
@@ -39,17 +39,8 @@ namespace Bus.Common.Scripting.Commands
 
         public void OnTick(string scriptPath)
         {
-            Script script = CreateScript<TickCommander>(scriptPath);
-            OnTick(commander => script.RunAsync(commander));
-        }
-
-        private Script CreateScript<TGlobals>(string scriptPath)
-        {
-            string path = Path.GetFullPath(Path.Combine(World.BaseDirectory, scriptPath));
-            string code = File.ReadAllText(path);
-            ScriptOptions options = ScriptWorld.ScriptOptions.WithFilePath(path);
-            Script script = CSharpScript.Create(code, options, typeof(TGlobals));
-            return script;
+            UserScript<TickCommander, object> script = UserScript<TickCommander, object>.FromFile(scriptPath, World.ErrorCollector, false);
+            OnTick(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
         }
 
         internal void Dispose()

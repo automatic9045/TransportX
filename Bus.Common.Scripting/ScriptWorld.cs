@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -12,11 +9,9 @@ using System.Threading.Tasks;
 using System.Windows;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
 using Bus.Common.Dependency;
-using Bus.Common.Diagnostics;
 using Bus.Common.Worlds;
 
 using Bus.Common.Scripting.Commands;
@@ -33,7 +28,8 @@ namespace Bus.Common.Scripting
             .AddImports("System", "System.Collections.Generic", "System.Linq", "System.Numerics", "System.Text")
             .AddImports(typeof(MessageBox).Namespace!)
             .AddImports(GetAllNamespaces(typeof(WorldBase).Assembly))
-            .AddImports(GetAllNamespaces(typeof(ScriptWorld).Assembly));
+            .AddImports(GetAllNamespaces(typeof(ScriptWorld).Assembly))
+            .WithEmitDebugInformation(true);
 
         private static IEnumerable<string> GetAllNamespaces(Assembly assembly)
         {
@@ -59,46 +55,10 @@ namespace Bus.Common.Scripting
 
             Commander = new Commander(this);
 
-            Script<object> script;
-            using (FileStream file = new(ScriptPath, FileMode.Open))
-            {
-                ScriptOptions options = ScriptOptions.WithFilePath(ScriptPath).WithEmitDebugInformation(true);
-                script = CSharpScript.Create(file, options, typeof(Commander));
-            }
-
-            ImmutableArray<Diagnostic> diagnostics = script.Compile();
-            foreach (Diagnostic diagnostic in diagnostics)
-            {
-                ErrorLevel errorLevel = diagnostic.Severity switch
-                {
-                    DiagnosticSeverity.Warning => ErrorLevel.Warning,
-                    DiagnosticSeverity.Error => ErrorLevel.Fatal,
-                    _ => ErrorLevel.Info,
-                };
-                if (errorLevel == ErrorLevel.Info) continue;
-
-                string message = diagnostic.GetMessage(CultureInfo.CurrentCulture);
-                FileLinePositionSpan lineSpan = diagnostic.Location.GetLineSpan();
-                Error error = new(errorLevel, message, diagnostic.Location.SourceTree?.FilePath)
-                {
-                    Code = diagnostic.Id,
-                    LineNumber = lineSpan.StartLinePosition.Line + 1,
-                    LinePosition = lineSpan.StartLinePosition.Character + 1,
-                };
-
-                ErrorCollector.Report(error);
-            }
-
+            UserScript<Commander, object> script = UserScript<Commander, object>.FromFile(ScriptPath, ErrorCollector, true);
             if (ErrorCollector.HasFatalError) return;
 
-            script.RunAsync(Commander, ex =>
-            {
-                StackTrace stackTrace = new(ex, true);
-                ScriptError error = new(ErrorLevel.Error, ex, useExceptionStackTrace: true);
-                ErrorCollector.Report(error);
-
-                return true;
-            }).Wait();
+            script.RunAsync(Commander, ErrorCollector).Wait();
         }
 
         public override void Dispose()
