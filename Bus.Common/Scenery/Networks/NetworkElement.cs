@@ -12,8 +12,8 @@ namespace Bus.Common.Scenery.Networks
     public abstract class NetworkElement : LocatableObject, IDrawable
     {
         public bool IsRoot { get; }
-        public abstract LaneConnector Port { get; }
-        public abstract IReadOnlyList<ElementPath> Paths { get; }
+        public abstract LaneLayout Layout { get; }
+        public abstract IReadOnlyList<NetworkPort> Ports { get; }
 
         public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
 
@@ -22,9 +22,9 @@ namespace Bus.Common.Scenery.Networks
             IsRoot = isRoot;
         }
 
-        protected void SetChild(int pathIndex, NetworkElement element)
+        protected void SetChild(int portIndex, NetworkElement element)
         {
-            Paths[pathIndex].SetChild(element);
+            Ports[portIndex].SetChild(element);
         }
 
         public void Draw(LocatedDrawContext context)
@@ -36,23 +36,23 @@ namespace Bus.Common.Scenery.Networks
         }
 
 
-        public class ElementPath
+        public class NetworkPort
         {
             public Matrix4x4 Transition { get; }
-            public LaneConnector Port { get; }
+            public LaneLayout Layout { get; }
 
             public NetworkElement? Child { get; private set; } = null;
 
-            public ElementPath(Matrix4x4 transition, LaneConnector port)
+            public NetworkPort(Matrix4x4 transition, LaneLayout layout)
             {
                 Transition = transition;
-                Port = port;
+                Layout = layout;
             }
 
             protected internal void SetChild(NetworkElement child)
             {
                 if (child.IsRoot) throw new ArgumentException($"{nameof(IsRoot)} が true の {nameof(NetworkElement)} を子に設定することはできません。", nameof(child));
-                if (!Port.CanConnectTo(child.Port)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(child));
+                if (!Layout.CanConnectTo(child.Layout)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(child));
 
                 Child = child;
             }

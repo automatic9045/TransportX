@@ -16,8 +16,8 @@ namespace Bus.Common.Scenery.Networks
         private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
-        public override LaneConnector Port { get; }
-        public override ElementPath Path { get; }
+        public override LaneLayout Layout { get; }
+        public override NetworkPort Port { get; }
 
         public float Curvature { get; }
         public float Length { get; }
@@ -26,7 +26,7 @@ namespace Bus.Common.Scenery.Networks
         public override IReadOnlyList<LocatedModel> Models => CompiledModels;
 
         public Spline(ID3D11Device device, IPhysicsHost physicsHost,
-            int plateX, int plateZ, Matrix4x4 transform, LaneConnector pairedPort, float curvature, float length, bool isRoot)
+            int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout, float curvature, float length, bool isRoot)
             : base(plateX, plateZ, transform, isRoot)
         {
             Device = device;
@@ -35,8 +35,8 @@ namespace Bus.Common.Scenery.Networks
             Curvature = curvature;
             Length = length;
 
-            Port = pairedPort.CreateOpposition();
-            Path = new ElementPath(GetTransform(Length), Port.CreateOpposition());
+            Layout = connectionLayout.CreateOpposition();
+            Port = new NetworkPort(GetTransform(Length), Layout.CreateOpposition());
         }
 
         public void AddStructure(SplineStructure structure)

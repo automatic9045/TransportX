@@ -9,8 +9,8 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class NetworkEdge : NetworkElement
     {
-        public override IReadOnlyList<ElementPath> Paths => [Path];
-        public abstract ElementPath Path { get; }
+        public override IReadOnlyList<NetworkPort> Ports => [Port];
+        public abstract NetworkPort Port { get; }
 
         public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform, isRoot)
         {
@@ -18,7 +18,7 @@ namespace Bus.Common.Scenery.Networks
 
         public virtual void SetChild(NetworkElement child)
         {
-            if (Path.Child is not null) throw new InvalidOperationException("子は既に設定済です。");
+            if (Port.Child is not null) throw new InvalidOperationException("子は既に設定済です。");
             SetChild(0, child);
         }
     }

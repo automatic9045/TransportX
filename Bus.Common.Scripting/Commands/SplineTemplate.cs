@@ -15,23 +15,15 @@ namespace Bus.Common.Scripting.Commands
     public class SplineTemplate
     {
         private readonly ScriptWorld World;
-        private readonly LaneConnector Port;
+        private readonly LaneLayout Layout;
 
         private readonly List<SplineStructure> StructuresKey = new();
         public IReadOnlyList<SplineStructure> Structures => StructuresKey;
 
-        internal SplineTemplate(ScriptWorld world, string portKey)
+        internal SplineTemplate(ScriptWorld world, LaneLayout layout)
         {
             World = world;
-
-            if (!World.Commander.Splines.Ports.TryGetValue(portKey, out LaneConnector? port))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"モデル '{portKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                port = new LaneConnector();
-            }
-            Port = port;
+            Layout = layout;
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double span, double interval)
@@ -67,7 +59,7 @@ namespace Bus.Common.Scripting.Commands
 
         internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, Port);
+            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, Layout);
             return factory;
         }
     }

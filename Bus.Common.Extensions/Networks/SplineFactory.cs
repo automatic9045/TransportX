@@ -15,24 +15,24 @@ namespace Bus.Common.Scenery.Networks
     {
         private readonly ID3D11Device Device;
         protected readonly IPhysicsHost PhysicsHost;
-        protected readonly LaneConnector BasePairedPort;
+        protected readonly LaneLayout BaseConnectionLayout;
 
-        protected readonly List<Spline> CreatedSplinesKey = new List<Spline>();
+        protected readonly List<Spline> CreatedSplinesKey = [];
         public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
 
-        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneConnector basePairedPort)
+        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneLayout baseConnectionLayout)
             : base(plateX, plateZ, transform)
         {
             Device = device;
             PhysicsHost = physicsHost;
-            BasePairedPort = basePairedPort;
+            BaseConnectionLayout = baseConnectionLayout;
         }
 
         public Spline ByCurvature(float curvature, float length)
         {
-            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BasePairedPort, curvature, length, CreatedSplines.Count == 0);
+            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BaseConnectionLayout, curvature, length, CreatedSplines.Count == 0);
 
-            Move(spline.Path.Transition);
+            Move(spline.Port.Transition);
 
             if (0 < CreatedSplines.Count) CreatedSplines[CreatedSplines.Count - 1].SetChild(spline);
             CreatedSplinesKey.Add(spline);

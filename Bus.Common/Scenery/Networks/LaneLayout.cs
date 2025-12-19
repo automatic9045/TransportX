@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public class LaneConnector
+    public class LaneLayout
     {
         public IReadOnlyList<LanePin> Pins { get; }
 
-        public LaneConnector(IReadOnlyList<LanePin> pins)
+        public LaneLayout(IReadOnlyList<LanePin> pins)
         {
             Pins = pins;
         }
 
-        public LaneConnector(params LanePin[] pins) : this((IReadOnlyList<LanePin>)pins)
+        public LaneLayout(params LanePin[] pins) : this((IReadOnlyList<LanePin>)pins)
         {
         }
 
-        public bool CanConnectTo(LaneConnector other)
+        public bool CanConnectTo(LaneLayout other)
         {
             if (Pins.Count != other.Pins.Count) return false;
 
@@ -35,23 +35,23 @@ namespace Bus.Common.Scenery.Networks
             return true;
         }
 
-        public LaneConnector CreateCopy()
+        public LaneLayout CreateCopy()
         {
             LanePin[] newPins = Pins
                 .Select(pin => pin.CreateCopy())
                 .ToArray();
 
-            return new LaneConnector(newPins);
+            return new LaneLayout(newPins);
         }
 
-        public LaneConnector CreateOpposition()
+        public LaneLayout CreateOpposition()
         {
             LanePin[] newPins = Pins
                 .Reverse()
                 .Select(pin => pin.CreateOpposite())
                 .ToArray();
 
-            return new LaneConnector(newPins);
+            return new LaneLayout(newPins);
         }
     }
 }
