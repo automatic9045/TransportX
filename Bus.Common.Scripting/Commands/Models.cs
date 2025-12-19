@@ -54,6 +54,7 @@ namespace Bus.Common.Scripting.Commands
                                     LineNumber = i + 1,
                                 };
                                 World.ErrorCollector.Report(error);
+                                continue;
                             }
 
                             string key = line[0];
@@ -78,11 +79,13 @@ namespace Bus.Common.Scripting.Commands
                                     };
                                     World.ErrorCollector.Report(error);
                                 }
-
-                                IEnumerable<string> commandTexts = commandListText.Split('$').Skip(1);
-                                foreach (string commandText in commandTexts)
+                                else
                                 {
-                                    interpreter.ReadCommand(commandText);
+                                    IEnumerable<string> commandTexts = commandListText.Split('$').Skip(1);
+                                    foreach (string commandText in commandTexts)
+                                    {
+                                        interpreter.ReadCommand(commandText);
+                                    }
                                 }
                             }
 
