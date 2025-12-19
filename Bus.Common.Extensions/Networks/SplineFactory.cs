@@ -82,7 +82,7 @@ namespace Bus.Common.Scenery.Networks
 
         public void AddSplinesToPlates(PlateCollection plates, Func<int, int, Plate>? plateFactory = null)
         {
-            plateFactory ??= (x, z) => new Plate();
+            plateFactory ??= (x, z) => new Plate(x, z);
 
             foreach (Spline spline in CreatedSplines)
             {

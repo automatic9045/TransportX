@@ -10,13 +10,13 @@ using BepuPhysics;
 
 namespace Bus.Common.Scenery
 {
-    public class PlateCollection : IEnumerable<LocatedPlate>
+    public class PlateCollection : IEnumerable<Plate>
     {
-        private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, LocatedPlate>> Items = new();
+        private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, Plate>> Items = new();
 
-        public LocatedPlate this[int x, int z]
+        public Plate this[int x, int z]
         {
-            get => TryGetValue(x, z, out LocatedPlate? result) ? result! : throw new KeyNotFoundException();
+            get => TryGetValue(x, z, out Plate? result) ? result! : throw new KeyNotFoundException();
             set => Add(value, true);
         }
 
@@ -26,22 +26,22 @@ namespace Bus.Common.Scenery
 
         public void SetCameraPosition(LocatableObject camera)
         {
-            foreach (LocatedPlate locatedPlate in this)
+            foreach (Plate plate in this)
             {
-                PlateOffset fromCamera = new PlateOffset(locatedPlate.X - camera.PlateX, locatedPlate.Z - camera.PlateZ);
-                locatedPlate.Plate.SetFromCamera(fromCamera);
+                PlateOffset fromCamera = new PlateOffset(plate.X - camera.PlateX, plate.Z - camera.PlateZ);
+                plate.SetFromCamera(fromCamera);
             }
         }
 
-        public bool TryGetValue(int x, int z, out LocatedPlate? result)
+        public bool TryGetValue(int x, int z, out Plate? result)
         {
-            ConcurrentDictionary<int, LocatedPlate> xDictionary = FilterByX(x);
+            ConcurrentDictionary<int, Plate> xDictionary = FilterByX(x);
             return xDictionary.TryGetValue(z, out result);
         }
 
-        public void Add(LocatedPlate item, bool allowOverwrite)
+        public void Add(Plate item, bool allowOverwrite)
         {
-            ConcurrentDictionary<int, LocatedPlate> xDictionary = FilterByX(item.X);
+            ConcurrentDictionary<int, Plate> xDictionary = FilterByX(item.X);
             if (allowOverwrite)
             {
                 xDictionary.AddOrUpdate(item.Z, item, (_, _) => item);
@@ -52,32 +52,30 @@ namespace Bus.Common.Scenery
             }
         }
 
-        public void Add(LocatedPlate item) => Add(item, false);
-        public void Add(int x, int z, Plate item, bool allowOverwrite) => Add(new LocatedPlate(x, z, item), allowOverwrite);
-        public void Add(int x, int z, Plate item) => Add(x, z, item, false);
+        public void Add(Plate item) => Add(item, false);
 
         public Plate GetOrAdd(int x, int z, Func<int, int, Plate>? itemFactory = null)
         {
-            if (TryGetValue(x, z, out LocatedPlate? result))
+            if (TryGetValue(x, z, out Plate? result))
             {
-                return result!.Plate;
+                return result!;
             }
             else
             {
-                itemFactory ??= (x, z) => new Plate();
+                itemFactory ??= (x, z) => new Plate(x, z);
                 Plate item = itemFactory(x, z);
-                Add(x, z, item);
+                Add(item);
                 return item;
             }
         }
 
-        private ConcurrentDictionary<int, LocatedPlate> FilterByX(int x)
+        private ConcurrentDictionary<int, Plate> FilterByX(int x)
         {
-            ConcurrentDictionary<int, LocatedPlate> result = Items.GetOrAdd(x, new ConcurrentDictionary<int, LocatedPlate>());
+            ConcurrentDictionary<int, Plate> result = Items.GetOrAdd(x, new ConcurrentDictionary<int, Plate>());
             return result;
         }
 
-        public IEnumerator<LocatedPlate> GetEnumerator() => Items.Values.Select(x => x.Values).SelectMany(x => x).GetEnumerator();
+        public IEnumerator<Plate> GetEnumerator() => Items.Values.Select(x => x.Values).SelectMany(x => x).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

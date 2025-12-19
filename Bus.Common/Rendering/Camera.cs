@@ -75,7 +75,7 @@ namespace Bus.Common.Rendering
                     int dz = int.Abs(x - PlateX) == i ? 1 : i * 2;
                     for (int z = PlateZ - i; z <= PlateZ + i; z += dz)
                     {
-                        if (plates.TryGetValue(x, z, out LocatedPlate? plate))
+                        if (plates.TryGetValue(x, z, out Plate? plate))
                         {
                             LocatedDrawContext drawContext = new()
                             {
@@ -88,7 +88,7 @@ namespace Bus.Common.Rendering
                                 Light = context.Light,
                                 DrawColliderDebugModel = DrawColliderDebugModel,
                             };
-                            plate!.Plate.Draw(drawContext);
+                            plate!.Draw(drawContext);
                         }
                     }
                 }

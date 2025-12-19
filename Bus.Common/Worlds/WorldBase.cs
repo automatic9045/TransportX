@@ -78,13 +78,13 @@ namespace Bus.Common.Worlds
         {
             List<BodyHandle> validHandles = Enumerable.Range(0, PhysicsHost.Simulation.Bodies.HandleToLocation.Length)
                 .Select(i => new BodyHandle(i))
-                .Where(handle => PhysicsHost.Simulation.Bodies.BodyExists(handle))
+                .Where(PhysicsHost.Simulation.Bodies.BodyExists)
                 .ToList();
 
-            foreach (LocatedPlate plate in Plates)
+            foreach (Plate plate in Plates)
             {
-                RemoveAttachedHandles(plate.Plate.Models);
-                RemoveAttachedHandles(plate.Plate.Network.SelectMany(e => e.Models));
+                RemoveAttachedHandles(plate.Models);
+                RemoveAttachedHandles(plate.Network.SelectMany(e => e.Models));
             }
             foreach (RigidBody body in Bodies)
             {

@@ -18,11 +18,15 @@ namespace Bus.Common.Scenery
 
         private bool IsFar = false;
 
+        public int X { get; }
+        public int Z { get; }
         public List<LocatedModel> Models { get; } = new List<LocatedModel>();
         public List<NetworkElement> Network { get; } = new List<NetworkElement>();
 
-        public Plate()
+        public Plate(int x, int z)
         {
+            X = x;
+            Z = z;
         }
 
         public void SetFromCamera(PlateOffset fromCamera)
