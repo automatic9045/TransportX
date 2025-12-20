@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
-using BepuPhysics.Collidables;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;

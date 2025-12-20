@@ -53,7 +53,7 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)
         {
-            LocatedModel[] models = modelKeys.Select(key =>
+            LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
                 if (!World.Models.TryGetValue(key, out IModel? model))
                 {
@@ -63,15 +63,10 @@ namespace Bus.Common.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
+                return new LocatedModelTemplate(model, transform);
             }).ToArray();
-            SplineStructure structure = new SplineStructure(models, (float)from, (float)span, (float)interval, count);
+            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
-
-            foreach (LocatedModel model in models)
-            {
-                if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
-            }
 
             return structure;
         }

@@ -66,13 +66,13 @@ namespace Bus.Common.Extensions.Networks
                 int count = (int)((spline.Length - from) / structure.Interval);
                 if (structure.Count < totalCount + count) count = structure.Count - totalCount;
 
-                LocatedModel[] models = new LocatedModel[structure.Models.Count];
+                LocatedModelTemplate[] models = new LocatedModelTemplate[structure.Models.Count];
                 for (int i = 0; i < models.Length; i++)
                 {
                     models[i] = structure.Models[(i + totalCount) % models.Length];
                 }
 
-                SplineStructure splittedStructure = new SplineStructure(models, from, structure.Span, structure.Interval, count);
+                SplineStructure splittedStructure = new(models, from, structure.Span, structure.Interval, count);
                 spline.AddStructure(splittedStructure);
 
                 totalCount += count;

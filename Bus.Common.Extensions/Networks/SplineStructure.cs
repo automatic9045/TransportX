@@ -10,13 +10,13 @@ namespace Bus.Common.Extensions.Networks
 {
     public class SplineStructure
     {
-        public IReadOnlyList<LocatedModel> Models { get; }
+        public IReadOnlyList<LocatedModelTemplate> Models { get; }
         public float From { get; }
         public float Span { get; }
         public float Interval { get; }
         public int Count { get; }
 
-        public SplineStructure(IReadOnlyList<LocatedModel> models, float from, float span, float interval, int count)
+        public SplineStructure(IReadOnlyList<LocatedModelTemplate> models, float from, float span, float interval, int count)
         {
             Models = models;
             From = from;

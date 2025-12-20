@@ -30,7 +30,7 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double span, double interval)
         {
-            LocatedModel[] models = modelKeys.Select(key =>
+            LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
                 if (!World.Models.TryGetValue(key, out IModel? model))
                 {
@@ -40,7 +40,7 @@ namespace Bus.Common.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
+                return new LocatedModelTemplate(model, transform);
             }).ToArray();
             SplineStructure structure = new SplineStructure(models, 0, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);

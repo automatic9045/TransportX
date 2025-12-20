@@ -9,7 +9,6 @@ using BepuPhysics;
 using BepuPhysics.Collidables;
 using ColliderMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
-using Vortice.Direct3D11;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -26,9 +25,9 @@ namespace Bus.Common.Scenery
             Children = children;
         }
 
-        public static MergedKinematicLocatedModel Create(IPhysicsHost physicsHost, IEnumerable<KinematicLocatedModel> sources)
+        public static MergedKinematicLocatedModel Create(IPhysicsHost physicsHost, IEnumerable<KinematicLocatedModelTemplate> sources)
         {
-            List<KinematicLocatedModel> sourceList = sources.ToList();
+            List<KinematicLocatedModelTemplate> sourceList = sources.ToList();
             if (sourceList.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
             int totalTriangles = sourceList.Sum(m => ((Collider<ColliderMesh>)m.Model.Collider).Shape.Triangles.Length);
@@ -36,7 +35,7 @@ namespace Bus.Common.Scenery
 
             List<LocatedModel> children = [];
             int writeIndex = 0;
-            foreach (KinematicLocatedModel model in sourceList)
+            foreach (KinematicLocatedModelTemplate model in sourceList)
             {
                 Matrix4x4 transform = model.ColliderToBase;
 
@@ -55,7 +54,7 @@ namespace Bus.Common.Scenery
                     }
                 }
 
-                LocatedModel visualChild = new(model.Model, model.BaseTransform);
+                LocatedModel visualChild = new(model.Model, model.Transform);
                 children.Add(visualChild);
             }
 

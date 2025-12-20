@@ -45,21 +45,22 @@ namespace Bus.Common.Extensions.Networks
         {
             Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY(structure.Span * Curvature / 2);
 
-            List<KinematicLocatedModel> modelsToMerge = [];
+            List<KinematicLocatedModelTemplate> modelsToMerge = [];
             Matrix4x4 world = GetTransform(structure.From) * Transform;
             for (int i = 0; i < structure.Count; i++)
             {
-                LocatedModel source = structure.Models[i % structure.Models.Count];
-                Matrix4x4 transform = source.BaseTransform * span * world;
+                LocatedModelTemplate source = structure.Models[i % structure.Models.Count];
+                Matrix4x4 transform = source.Transform * span * world;
 
-                LocatedModel compiled = KinematicLocatedModel.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
-                if (compiled is KinematicLocatedModel compiledDynamic)
+                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
+                if (compiled is KinematicLocatedModelTemplate compiledDynamic)
                 {
                     modelsToMerge.Add(compiledDynamic);
                 }
                 else
                 {
-                    CompiledModels.Add(compiled);
+                    LocatedModel model = compiled.Build();
+                    CompiledModels.Add(model);
                 }
 
                 world = GetTransform(structure.Interval) * world;
@@ -71,8 +72,6 @@ namespace Bus.Common.Extensions.Networks
                 mergedModel.Model.Collider.CreateDebugModel(Device);
                 mergedModel.Model.Collider.DebugModelColor = new Vector4(0, 0, 1, 1);
                 CompiledModels.Add(mergedModel);
-
-                foreach (KinematicLocatedModel model in modelsToMerge) model.Dispose();
             }
         }
 
