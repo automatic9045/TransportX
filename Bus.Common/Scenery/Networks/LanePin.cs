@@ -26,6 +26,8 @@ namespace Bus.Common.Scenery.Networks
             Position = position;
         }
 
+        public override string ToString() => $"{Position}: {Kind.Name}, {Direction}";
+
         public bool IsOpposite(LanePin other)
         {
             return Kind == other.Kind && (int)Direction + (int)other.Direction == 0 && Position.Y == other.Position.Y && Position.X == -other.Position.X;

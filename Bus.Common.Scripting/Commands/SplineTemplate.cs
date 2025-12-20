@@ -28,7 +28,7 @@ namespace Bus.Common.Scripting.Commands
             Layout = layout;
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double span, double interval)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval)
         {
             LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -42,26 +42,27 @@ namespace Bus.Common.Scripting.Commands
 
                 return new LocatedModelTemplate(model, transform);
             }).ToArray();
-            SplineStructure structure = new SplineStructure(models, 0, (float)span, (float)interval, int.MaxValue);
+            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);
             return structure;
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
-            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double span, double interval)
+            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval)
         {
             SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.CreateTransform(), span, interval);
+            return PutStructure(modelKeys, position.CreateTransform(), from, span, interval);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double span, double interval)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
         {
-            return PutStructure(modelKeys, x, y, z, 0, 0, 0, span, interval);
+            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
         internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform)
         {
             SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, Layout);
+            factory.PutStructures(Structures);
             return factory;
         }
     }
