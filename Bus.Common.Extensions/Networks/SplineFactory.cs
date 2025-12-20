@@ -15,9 +15,11 @@ namespace Bus.Common.Extensions.Networks
 {
     public class SplineFactory : LocatableObject
     {
-        private readonly ID3D11Device Device;
+        protected readonly ID3D11Device Device;
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly LaneLayout BaseConnectionLayout;
+
+        protected readonly List<SplineStructure> Structures = [];
 
         protected readonly List<Spline> CreatedSplinesKey = [];
         public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
@@ -30,9 +32,40 @@ namespace Bus.Common.Extensions.Networks
             BaseConnectionLayout = baseConnectionLayout;
         }
 
+        protected void ApplyStructureToSpline(int structureIndex, Spline spline)
+        {
+            SplineStructure structure = Structures[structureIndex];
+            int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
+
+            SplineStructure splittedStructure = new(structure.Models, structure.From, structure.Span, structure.Interval, count);
+            spline.AddStructure(splittedStructure);
+
+            if (count == structure.Count)
+            {
+                Structures.RemoveAt(structureIndex);
+            }
+            else
+            {
+                LocatedModelTemplate[] nextModels = new LocatedModelTemplate[structure.Models.Count];
+                for (int i = 0; i < nextModels.Length; i++)
+                {
+                    nextModels[i] = structure.Models[(i + count) % nextModels.Length];
+                }
+
+                float nextFrom = structure.From + structure.Interval * count - spline.Length;
+                int nextCount = structure.Count - count;
+
+                Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
+            }
+        }
+
         public Spline ByCurvature(float curvature, float length)
         {
             Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BaseConnectionLayout, curvature, length, CreatedSplines.Count == 0);
+            for (int i = 0; i < Structures.Count; i++)
+            {
+                ApplyStructureToSpline(i, spline);
+            }
 
             Move(spline.Port.Transition);
 
@@ -53,32 +86,19 @@ namespace Bus.Common.Extensions.Networks
 
         public void PutStructure(SplineStructure structure)
         {
-            float from = structure.From;
-            int totalCount = 0;
+            int index = Structures.Count;
+            Structures.Add(structure);
             foreach (Spline spline in CreatedSplines)
             {
-                if (spline.Length <= from)
-                {
-                    from -= spline.Length;
-                    continue;
-                }
+                ApplyStructureToSpline(index, spline);
+            }
+        }
 
-                int count = (int)((spline.Length - from) / structure.Interval);
-                if (structure.Count < totalCount + count) count = structure.Count - totalCount;
-
-                LocatedModelTemplate[] models = new LocatedModelTemplate[structure.Models.Count];
-                for (int i = 0; i < models.Length; i++)
-                {
-                    models[i] = structure.Models[(i + totalCount) % models.Length];
-                }
-
-                SplineStructure splittedStructure = new(models, from, structure.Span, structure.Interval, count);
-                spline.AddStructure(splittedStructure);
-
-                totalCount += count;
-                if (structure.Count <= totalCount) break;
-
-                from += structure.Interval * count - spline.Length;
+        public void PutStructures(IEnumerable<SplineStructure> structures)
+        {
+            foreach (SplineStructure structure in structures)
+            {
+                PutStructure(structure);
             }
         }
 
