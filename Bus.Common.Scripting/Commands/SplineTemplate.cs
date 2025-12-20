@@ -10,6 +10,8 @@ using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
+using Bus.Common.Extensions.Networks;
+
 namespace Bus.Common.Scripting.Commands
 {
     public class SplineTemplate

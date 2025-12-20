@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Scenery.Networks
+using Bus.Common.Scenery;
+
+namespace Bus.Common.Extensions.Networks
 {
     public class SplineStructure
     {
