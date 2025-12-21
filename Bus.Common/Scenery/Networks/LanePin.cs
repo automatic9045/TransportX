@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public sealed class LanePin
+    public class LanePin
     {
-        public LaneKind Kind { get; }
-        public FlowDirection Direction { get; }
-        public Vector2 Position { get; }
+        public NetworkElement Parent { get; }
+        public Lane Definition { get; }
 
         private readonly List<LanePath> SourcePathsKey = new List<LanePath>();
         public IReadOnlyList<LanePath> SourcePaths => SourcePathsKey;
@@ -19,28 +17,12 @@ namespace Bus.Common.Scenery.Networks
         private readonly List<LanePath> DestPathsKey = new List<LanePath>();
         public IReadOnlyList<LanePath> DestPaths => DestPathsKey;
 
-        public LanePin(LaneKind kind, FlowDirection direction, Vector2 position)
-        {
-            Kind = kind;
-            Direction = direction;
-            Position = position;
-        }
+        public LanePin? ConnectedPin { get; private set; } = null;
 
-        public override string ToString() => $"{Position}: {Kind.Name}, {Direction}";
-
-        public bool IsOpposite(LanePin other)
+        public LanePin(NetworkElement parent, Lane definition)
         {
-            return Kind == other.Kind && (int)Direction + (int)other.Direction == 0 && Position.Y == other.Position.Y && Position.X == -other.Position.X;
-        }
-
-        public LanePin CreateCopy()
-        {
-            return new LanePin(Kind, Direction, Position);
-        }
-
-        public LanePin CreateOpposite()
-        {
-            return new LanePin(Kind, (FlowDirection)(-(int)Direction), new Vector2(-Position.X, Position.Y));
+            Parent = parent;
+            Definition = definition;
         }
 
         public void Wire(LanePath path)
@@ -62,12 +44,20 @@ namespace Bus.Common.Scenery.Networks
             if (!isWired) throw new ArgumentException("開始点、終了点のどちらもこの端子ではありません。");
         }
 
-
-        public enum FlowDirection
+        public void ConnectTo(LanePin pin)
         {
-            Out = -1,
-            InOut = 0,
-            In = 1,
+            if (!Definition.IsOpposite(pin.Definition)) throw new NotSupportedException("ピンの形状が一致しません。");
+
+            ConnectedPin = pin;
+            pin.ConnectedPin = this;
+        }
+
+        public void Disconnect()
+        {
+            if (ConnectedPin is null) return;
+
+            ConnectedPin.ConnectedPin = null;
+            ConnectedPin = null;
         }
     }
 }

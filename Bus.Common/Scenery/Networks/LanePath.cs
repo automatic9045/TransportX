@@ -9,17 +9,24 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class LanePath
     {
+        public NetworkElement Parent => From.Parent;
+        public LaneKind Kind => From.Definition.Kind;
+        public FlowDirections Directions => From.Definition.Directions;
         public LanePin From { get; }
         public LanePin To { get; }
-        public double Length { get; }
+        public abstract float Length { get; }
 
-        protected LanePath(LanePin from, LanePin to, double length)
+        protected LanePath(LanePin from, LanePin to)
         {
             From = from;
             To = to;
-            Length = length;
         }
 
-        public abstract Matrix4x4 GetTransform(double at);
+        public abstract Matrix4x4 GetTransform(float at);
+
+        public Matrix4x4 GetWorldTransform(float at)
+        {
+            return GetTransform(at) * Parent.Transform;
+        }
     }
 }

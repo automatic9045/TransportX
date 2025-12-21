@@ -18,7 +18,8 @@ namespace Bus.Common.Extensions.Networks
         private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
-        public override LaneLayout Layout { get; }
+        public override LaneLayout InletLayout { get; }
+        public override IReadOnlyList<LanePin> InletPins { get; }
         public override NetworkOutlet Outlet { get; }
 
         public float Curvature { get; }
@@ -37,8 +38,9 @@ namespace Bus.Common.Extensions.Networks
             Curvature = curvature;
             Length = length;
 
-            Layout = connectionLayout.CreateOpposition();
-            Outlet = new NetworkOutlet(GetTransform(Length), Layout.CreateOpposition());
+            InletLayout = connectionLayout.CreateOpposition();
+            InletPins = InletLayout.CreatePins(this);
+            Outlet = new NetworkOutlet(this, GetTransform(Length), InletLayout.CreateOpposition());
         }
 
         public void AddStructure(SplineStructure structure)

@@ -9,25 +9,25 @@ namespace Bus.Common.Scenery.Networks
 {
     public class LaneLayout
     {
-        public IReadOnlyList<LanePin> Pins { get; }
+        public IReadOnlyList<Lane> Lanes { get; }
 
-        public LaneLayout(IReadOnlyList<LanePin> pins)
+        public LaneLayout(IReadOnlyList<Lane> lanes)
         {
-            Pins = pins;
+            Lanes = lanes;
         }
 
-        public LaneLayout(params LanePin[] pins) : this((IReadOnlyList<LanePin>)pins)
+        public LaneLayout(params Lane[] lanes) : this((IReadOnlyList<Lane>)lanes)
         {
         }
 
         public bool CanConnectTo(LaneLayout other)
         {
-            if (Pins.Count != other.Pins.Count) return false;
+            if (Lanes.Count != other.Lanes.Count) return false;
 
-            for (int i = 0; i < Pins.Count; i++)
+            for (int i = 0; i < Lanes.Count; i++)
             {
-                LanePin from = Pins[i];
-                LanePin to = other.Pins[Pins.Count - 1 - i];
+                Lane from = Lanes[i];
+                Lane to = other.Lanes[Lanes.Count - 1 - i];
 
                 if (!from.IsOpposite(to)) return false;
             }
@@ -37,21 +37,26 @@ namespace Bus.Common.Scenery.Networks
 
         public LaneLayout CreateCopy()
         {
-            LanePin[] newPins = Pins
-                .Select(pin => pin.CreateCopy())
+            Lane[] newLanes = Lanes
+                .Select(lane => lane.CreateCopy())
                 .ToArray();
 
-            return new LaneLayout(newPins);
+            return new LaneLayout(newLanes);
         }
 
         public LaneLayout CreateOpposition()
         {
-            LanePin[] newPins = Pins
+            Lane[] newLanes = Lanes
                 .Reverse()
-                .Select(pin => pin.CreateOpposite())
+                .Select(lane => lane.CreateOpposite())
                 .ToArray();
 
-            return new LaneLayout(newPins);
+            return new LaneLayout(newLanes);
+        }
+
+        public LanePin[] CreatePins(NetworkElement parent)
+        {
+            return Lanes.Select(lane => new LanePin(parent, lane)).ToArray();
         }
     }
 }

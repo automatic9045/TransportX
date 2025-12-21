@@ -36,7 +36,7 @@ namespace Bus.Common.Scripting.Commands
                 return new LaneLayout();
             }
 
-            List<LanePin> pins = [];
+            List<Lane> lanes = [];
             try
             {
                 using StreamReader sr = new StreamReader(fullPath);
@@ -62,12 +62,12 @@ namespace Bus.Common.Scripting.Commands
                             continue;
                         }
 
-                        if (!Enum.TryParse(line[1], out LanePin.FlowDirection direction)) ReportError($"進行方向 '{lineText}' は無効です。");
+                        if (!Enum.TryParse(line[1], out FlowDirections directions)) ReportError($"進行方向 '{lineText}' は無効です。");
                         if (!float.TryParse(line[2], out float x)) ReportError($"X 座標 '{lineText}' は無効です。");
                         if (!float.TryParse(line[3], out float y)) ReportError($"Y 座標 '{lineText}' は無効です。");
 
-                        LanePin pin = new(kind, direction, new Vector2(x, y));
-                        pins.Add(pin);
+                        Lane lane = new(kind, directions, new Vector2(x, y));
+                        lanes.Add(lane);
                     }
                     catch (Exception ex)
                     {
@@ -92,7 +92,7 @@ namespace Bus.Common.Scripting.Commands
                 World.ErrorCollector.Report(error);
             }
 
-            LaneLayout layout = new(pins);
+            LaneLayout layout = new(lanes);
             LaneLayoutsKey.Add(key, layout);
             return layout;
         }
