@@ -13,7 +13,7 @@ namespace Bus.Common.Scenery.Networks
     {
         public bool IsRoot { get; }
         public abstract LaneLayout Layout { get; }
-        public abstract IReadOnlyList<NetworkPort> Ports { get; }
+        public abstract IReadOnlyList<NetworkOutlet> Outlets { get; }
 
         public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
 
@@ -22,9 +22,9 @@ namespace Bus.Common.Scenery.Networks
             IsRoot = isRoot;
         }
 
-        protected void SetChild(int portIndex, NetworkElement element)
+        protected void SetChild(int outletIndex, NetworkElement element)
         {
-            Ports[portIndex].SetChild(element);
+            Outlets[outletIndex].SetChild(element);
         }
 
         public void Draw(LocatedDrawContext context)
@@ -36,14 +36,14 @@ namespace Bus.Common.Scenery.Networks
         }
 
 
-        public class NetworkPort
+        public class NetworkOutlet
         {
             public Matrix4x4 Transition { get; }
             public LaneLayout Layout { get; }
 
             public NetworkElement? Child { get; private set; } = null;
 
-            public NetworkPort(Matrix4x4 transition, LaneLayout layout)
+            public NetworkOutlet(Matrix4x4 transition, LaneLayout layout)
             {
                 Transition = transition;
                 Layout = layout;

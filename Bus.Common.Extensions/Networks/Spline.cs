@@ -19,7 +19,7 @@ namespace Bus.Common.Extensions.Networks
         private readonly IPhysicsHost PhysicsHost;
 
         public override LaneLayout Layout { get; }
-        public override NetworkPort Port { get; }
+        public override NetworkOutlet Outlet { get; }
 
         public float Curvature { get; }
         public float Length { get; }
@@ -38,7 +38,7 @@ namespace Bus.Common.Extensions.Networks
             Length = length;
 
             Layout = connectionLayout.CreateOpposition();
-            Port = new NetworkPort(GetTransform(Length), Layout.CreateOpposition());
+            Outlet = new NetworkOutlet(GetTransform(Length), Layout.CreateOpposition());
         }
 
         public void AddStructure(SplineStructure structure)

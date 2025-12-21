@@ -11,15 +11,15 @@ namespace Bus.Common.Extensions.Networks
 {
     public class Interpolator : NetworkEdge
     {
-        private NetworkPort PortKey;
+        private NetworkOutlet OutletKey;
 
         public override LaneLayout Layout { get; }
-        public override NetworkPort Port => PortKey;
+        public override NetworkOutlet Outlet => OutletKey;
 
         public Interpolator(int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout) : base(plateX, plateZ, transform, false)
         {
             Layout = connectionLayout.CreateOpposition();
-            PortKey = new NetworkPort(Matrix4x4.Identity, Layout.CreateOpposition());
+            OutletKey = new NetworkOutlet(Matrix4x4.Identity, Layout.CreateOpposition());
         }
 
         public override void SetChild(NetworkElement child)
@@ -30,7 +30,7 @@ namespace Bus.Common.Extensions.Networks
             Matrix4x4 betweenPlates = GetPlateOffset(child).Transform;
             
             Matrix4x4 transition = transformInverse * betweenPlates * child.Transform;
-            PortKey = new NetworkPort(transition, Layout.CreateOpposition());
+            OutletKey = new NetworkOutlet(transition, Layout.CreateOpposition());
         }
     }
 }

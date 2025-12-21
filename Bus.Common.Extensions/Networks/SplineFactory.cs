@@ -71,7 +71,7 @@ namespace Bus.Common.Extensions.Networks
             }
             foreach (int i in indicesToRemove) Structures.RemoveAt(i);
 
-            Move(spline.Port.Transition);
+            Move(spline.Outlet.Transition);
 
             if (0 < CreatedSplines.Count) CreatedSplines[CreatedSplines.Count - 1].SetChild(spline);
             CreatedSplinesKey.Add(spline);
