@@ -48,7 +48,7 @@ namespace Bus.Sample.Vehicles
 
             ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
             SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
-            BusModels = ModelSet.Create(PhysicsHost.Simulation, Models, modelFactory);
+            BusModels = ModelSet.Create(PhysicsHost.Simulation, Structure, modelFactory);
             Inputs = [new KeyboardInput(InputManager)];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
@@ -69,7 +69,7 @@ namespace Bus.Sample.Vehicles
             if (ResetKey.IsPressed)
             {
                 Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
-                foreach (LocatedModel model in Models)
+                foreach (LocatedModel model in Structure)
                 {
                     if (model is DynamicLocatedModel dynamicModel) dynamicModel.Body.Velocity = default;
                     model.Transform = model.BaseTransform * Transform;

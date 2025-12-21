@@ -10,6 +10,7 @@ using BepuPhysics.Collidables;
 using BepuPhysics.Constraints;
 
 using Bus.Common;
+using Bus.Common.Bodies;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
@@ -43,13 +44,13 @@ namespace Bus.Sample.Vehicles
         {
         }
 
-        public static ModelSet Create(Simulation simulation, LocatedModelCollection models, ModelFactory modelFactory)
+        public static ModelSet Create(Simulation simulation, BodyStructure structure, ModelFactory modelFactory)
         {
             CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, new ColliderMaterial(0.6f, 2, new SpringSettings(30, 1)));
             Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb", true);
             Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb", true);
 
-            DynamicLocatedModel body = models.Attach(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
+            DynamicLocatedModel body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 
             Matrix4x4 wheelRotation = Matrix4x4.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
 
@@ -62,8 +63,8 @@ namespace Bus.Sample.Vehicles
             Collider<Cylinder> axleRCollider = ColliderFactory.Cylinder(simulation, axleRShape, default, wheelRotation);
             CollidableModel axleRModel = new CollidableModel(axleRCollider);
 
-            DynamicLocatedModel axleF = models.Attach(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));
-            DynamicLocatedModel axleR = models.Attach(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
+            DynamicLocatedModel axleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));
+            DynamicLocatedModel axleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
 
 
             ColliderMaterial wheelMaterial = new ColliderMaterial(1, 0.5f, new SpringSettings(30, 1));
@@ -76,10 +77,10 @@ namespace Bus.Sample.Vehicles
             Collider<Cylinder> wheelRCollider = ColliderFactory.Cylinder(simulation, wheelRShape, wheelMaterial, wheelRotation);
             CollidableModel wheelRLModel = new CollidableModel(wheelRLModelBase, wheelRCollider);
 
-            DynamicLocatedModel wheelFL = models.Attach(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
-            DynamicLocatedModel wheelFR = models.Attach(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));
-            DynamicLocatedModel wheelRL = models.Attach(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -7.226f));
-            DynamicLocatedModel wheelRR = models.Attach(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -7.226f, 0, float.Pi, 0));
+            DynamicLocatedModel wheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
+            DynamicLocatedModel wheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));
+            DynamicLocatedModel wheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -7.226f));
+            DynamicLocatedModel wheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -7.226f, 0, float.Pi, 0));
 
 
             Constraint<Hinge> axleToWheelFL = ConnectAxleToWheel(axleF, wheelFL);

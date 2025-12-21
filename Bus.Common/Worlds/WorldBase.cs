@@ -88,7 +88,7 @@ namespace Bus.Common.Worlds
             }
             foreach (RigidBody body in Bodies)
             {
-                RemoveAttachedHandles(body.Models);
+                RemoveAttachedHandles(body.Structure);
             }
 
             if (validHandles.Count != 0)

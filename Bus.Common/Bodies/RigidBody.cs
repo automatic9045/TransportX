@@ -13,14 +13,22 @@ namespace Bus.Common.Bodies
 {
     public class RigidBody : LocatableObject, IDisposable, IDrawable
     {
-        public LocatedModelCollection Models { get; }
+        public BodyStructure Structure { get; }
 
-        public Vector3 LinearVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.LinearVelocity;
-        public Vector3 AngularVelocity => Models.RootModel is null ? Vector3.NaN : Models.RootModel.AngularVelocity;
+        public Vector3 LinearVelocity => Structure.RootModel is null ? Vector3.NaN
+            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.LinearVelocity : Vector3.Zero;
+        public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
+            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
 
         public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
-            Models = new LocatedModelCollection(physicsHost, () => Transform);
+            Structure = new BodyStructure(physicsHost, () => Transform);
+
+            Moved += (sender, e) =>
+            {
+                LocatedModel? rootModel = Structure.RootModel;
+                if (rootModel is not null && rootModel is not DynamicLocatedModel) rootModel.Transform = Transform;
+            };
         }
 
         public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.CreateTransform())
@@ -33,22 +41,22 @@ namespace Bus.Common.Bodies
 
         public virtual void Dispose()
         {
-            Models.Dispose();
+            Structure.Dispose();
         }
 
         public virtual void SetFromCamera(PlateOffset fromCamera)
         {
-            Models.SetFromCamera(fromCamera);
+            Structure.SetFromCamera(fromCamera);
         }
 
         public virtual void SubTick(TimeSpan elapsed)
         {
-            if (Models.RootModel is null) return;
+            if (Structure.RootModel is null) return;
 
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, Models.RootModel!.BaseTransformInverse * Models.RootModel.Transform);
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, Structure.RootModel!.BaseTransformInverse * Structure.RootModel.Transform);
             if (!plateOffset.IsZero)
             {
-                foreach (LocatedModel model in Models)
+                foreach (LocatedModel model in Structure)
                 {
                     if (model is DynamicLocatedModel dynamicModel)
                     {
@@ -68,7 +76,7 @@ namespace Bus.Common.Bodies
 
         public virtual void Draw(LocatedDrawContext context)
         {
-            Models.Draw(context);
+            Structure.Draw(context);
         }
     }
 }

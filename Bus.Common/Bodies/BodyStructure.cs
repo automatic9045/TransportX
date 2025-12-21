@@ -10,10 +10,11 @@ using BepuPhysics;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Bus.Common.Scenery;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Bodies
 {
-    public class LocatedModelCollection : IReadOnlyList<LocatedModel>, IDisposable, IDrawable
+    public class BodyStructure : IReadOnlyList<LocatedModel>, IDisposable, IDrawable
     {
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly Func<Matrix4x4> TransformFactory;
@@ -28,15 +29,15 @@ namespace Bus.Common.Scenery
         public Matrix4x4 Transform => TransformFactory();
 
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
-        public DynamicLocatedModel? RootModel => Count == 0 ? null : (DynamicLocatedModel)this[0];
+        public LocatedModel? RootModel => Count == 0 ? null : this[0];
 
-        public LocatedModelCollection(IPhysicsHost physicsHost, Func<Matrix4x4> transformFactory)
+        public BodyStructure(IPhysicsHost physicsHost, Func<Matrix4x4> transformFactory)
         {
             PhysicsHost = physicsHost;
             TransformFactory = transformFactory;
         }
 
-        private DynamicLocatedModel Attach(DynamicLocatedModel locatedModel, ColliderGroupHandle group)
+        private T AttachCollidable<T>(T locatedModel, ColliderGroupHandle group) where T : CollidableLocatedModel
         {
             locatedModel.Transform = locatedModel.BaseTransform * Transform;
             PhysicsHost.SetGroup(locatedModel.Handle, group);
@@ -45,44 +46,63 @@ namespace Bus.Common.Scenery
             return locatedModel;
         }
 
-        public DynamicLocatedModel Attach(
+        public DynamicLocatedModel AttachDynamic(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Matrix4x4 transform)
         {
             DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, descFactory, transform);
-            return Attach(locatedModel, group);
+            return AttachCollidable(locatedModel, group);
         }
 
-        public DynamicLocatedModel Attach(
+        public DynamicLocatedModel AttachDynamic(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, SixDoF position)
         {
-            return Attach(model, descFactory, group, position.CreateTransform());
+            return AttachDynamic(model, descFactory, group, position.CreateTransform());
         }
 
-        public DynamicLocatedModel Attach(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 transform)
+        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, Matrix4x4 transform)
         {
             DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, mass, transform);
-            return Attach(locatedModel, group);
+            return AttachCollidable(locatedModel, group);
         }
 
-        public DynamicLocatedModel Attach(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF position)
+        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF position)
         {
-            return Attach(model, mass, group, position.CreateTransform());
+            return AttachDynamic(model, mass, group, position.CreateTransform());
         }
 
-        public DynamicLocatedModel Attach(ICollidableModel model, float mass, Matrix4x4 transform)
+        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, Matrix4x4 transform)
         {
-            return Attach(model, mass, DefaultGroup, transform);
+            return AttachDynamic(model, mass, DefaultGroup, transform);
         }
 
-        public DynamicLocatedModel Attach(ICollidableModel model, float mass, SixDoF position)
+        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, SixDoF position)
         {
-            return Attach(model, mass, DefaultGroup, position.CreateTransform());
+            return AttachDynamic(model, mass, DefaultGroup, position.CreateTransform());
+        }
+
+        public KinematicLocatedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, Matrix4x4 transform)
+        {
+            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, model, transform);
+            return AttachCollidable(locatedModel, group);
+        }
+
+        public KinematicLocatedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, SixDoF position)
+        {
+            return AttachKinematic(model, group, position.CreateTransform());
+        }
+
+        public KinematicLocatedModel AttachKinematic(ICollidableModel model, Matrix4x4 transform)
+        {
+            return AttachKinematic(model, DefaultGroup, transform);
+        }
+
+        public KinematicLocatedModel AttachKinematic(ICollidableModel model, SixDoF position)
+        {
+            return AttachKinematic(model, DefaultGroup, position.CreateTransform());
         }
 
         public LocatedModel Attach(IModel model, Matrix4x4 transform)
         {
-            if (RootModel is null) throw new InvalidOperationException("1 つ目のモデル (ルートモデル) は剛体である必要があります。");
-
             LocatedModel locatedModel = new LocatedModel(model, transform);
             locatedModel.Transform = locatedModel.BaseTransform * Transform;
 
