@@ -32,7 +32,7 @@ namespace Bus.Common.Extensions.Networks
             BaseConnectionLayout = baseConnectionLayout;
         }
 
-        protected void ApplyStructureToSpline(int structureIndex, Spline spline)
+        protected bool ApplyStructureToSpline(int structureIndex, Spline spline)
         {
             SplineStructure structure = Structures[structureIndex];
             int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
@@ -42,7 +42,7 @@ namespace Bus.Common.Extensions.Networks
 
             if (count == structure.Count)
             {
-                Structures.RemoveAt(structureIndex);
+                return false;
             }
             else
             {
@@ -56,16 +56,20 @@ namespace Bus.Common.Extensions.Networks
                 int nextCount = structure.Count - count;
 
                 Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
+                return true;
             }
         }
 
         public Spline ByCurvature(float curvature, float length)
         {
             Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BaseConnectionLayout, curvature, length, CreatedSplines.Count == 0);
-            for (int i = 0; i < Structures.Count; i++)
+
+            List<int> indicesToRemove = [];
+            for (int i = 0; i < Structures.Count; i++) // 登録済のストラクチャーをこのスプラインに設置
             {
-                ApplyStructureToSpline(i, spline);
+                if (!ApplyStructureToSpline(i, spline)) indicesToRemove.Add(i);
             }
+            foreach (int i in indicesToRemove) Structures.RemoveAt(i);
 
             Move(spline.Port.Transition);
 
@@ -88,9 +92,13 @@ namespace Bus.Common.Extensions.Networks
         {
             int index = Structures.Count;
             Structures.Add(structure);
-            foreach (Spline spline in CreatedSplines)
+            foreach (Spline spline in CreatedSplines) // このストラクチャーを敷設済のスプラインに設置
             {
-                ApplyStructureToSpline(index, spline);
+                if (!ApplyStructureToSpline(index, spline))
+                {
+                    Structures.RemoveAt(index);
+                    break;
+                }
             }
         }
 
