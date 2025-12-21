@@ -15,19 +15,6 @@ namespace Bus.Common.Scenery
 {
     public class DynamicLocatedModel : CollidableLocatedModel
     {
-        public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
-        public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
-        public BodyVelocity Velocity
-        {
-            get => new BodyVelocity(LinearVelocity, AngularVelocity);
-            set
-            {
-                Vector3 linear = Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.Offset);
-                Vector3 angular = Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.Offset);
-                Body.Velocity = new BodyVelocity(linear, angular);
-            }
-        }
-
         public override Matrix4x4 Transform
         {
             get => ColliderTransform;
