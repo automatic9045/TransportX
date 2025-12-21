@@ -41,6 +41,15 @@ namespace Bus.Common.Extensions.Networks
             InletLayout = connectionLayout.CreateOpposition();
             InletPins = InletLayout.CreatePins(this);
             Outlet = new NetworkOutlet(this, GetTransform(Length), InletLayout.CreateOpposition());
+
+            for (int i = 0; i < InletLayout.Lanes.Count; i++)
+            {
+                LanePin inlet = InletPins[i];
+                LanePin outlet = Outlet.Pins[InletLayout.Lanes.Count - 1 - i];
+                SplineLanePath path = new(inlet, outlet);
+                inlet.Wire(path);
+                outlet.Wire(path);
+            }
         }
 
         public void AddStructure(SplineStructure structure)
