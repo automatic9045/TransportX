@@ -77,6 +77,8 @@ namespace Bus.Common
             TimeManager.Tick();
 
             TimeSpan elapsed = TimeManager.DeltaTime;
+            OnTick(elapsed);
+
             int subTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
             TimeSpan computeElapsed = elapsed / subTickCount;
             for (int i = 0; i < subTickCount; i++)
@@ -84,7 +86,6 @@ namespace Bus.Common
                 OnSubTick(computeElapsed);
             }
 
-            OnTick(elapsed);
             OnDraw(clientSize);
         }
 
