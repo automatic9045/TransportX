@@ -14,6 +14,12 @@ namespace Bus.Common.Scenery
 {
     public class KinematicLocatedModel : CollidableLocatedModel
     {
+        public override Matrix4x4 Transform
+        {
+            get => base.Transform;
+            set => ColliderTransform = base.Transform = value;
+        }
+
         internal protected KinematicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 transform)
             : base(simulation, model, handle, transform)
         {
