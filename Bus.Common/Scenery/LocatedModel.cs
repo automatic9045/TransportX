@@ -13,13 +13,12 @@ namespace Bus.Common.Scenery
     {
         public IModel Model { get; }
 
-        private Matrix4x4 BaseTransformKey;
         public Matrix4x4 BaseTransform
         {
-            get => BaseTransformKey;
+            get => field;
             set
             {
-                BaseTransformKey = value;
+                field = value;
                 Matrix4x4.Invert(value, out Matrix4x4 baseTransformInverse);
                 BaseTransformInverse = baseTransformInverse;
             }

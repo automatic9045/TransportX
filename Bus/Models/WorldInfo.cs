@@ -19,21 +19,19 @@ namespace Bus.Models
         public string Description { get; set; } = "(説明がありません)";
         public string Author { get; set; } = string.Empty;
 
-        private string PathKey = string.Empty;
         public string Path
         {
-            get => PathKey;
-            set => PathKey = ExpandMacros(value);
-        }
+            get => field;
+            set => field = ExpandMacros(value);
+        } = string.Empty;
 
         public string? Identifier { get; set; } = null;
 
-        private string GamePathKey = typeof(IWorldInfo).Assembly.Location;
         public string GamePath
         {
-            get => GamePathKey;
-            set => GamePathKey = ExpandMacros(value);
-        }
+            get => field;
+            set => field = ExpandMacros(value);
+        } = typeof(IWorldInfo).Assembly.Location;
 
         [XmlArrayItem("Arg")]
         public string[] Args { get; set; } = [];
