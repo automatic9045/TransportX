@@ -18,9 +18,8 @@ namespace Bus.Common.Extensions.Networks
         private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
-        public override LaneLayout InletLayout { get; }
-        public override IReadOnlyList<LanePin> InletPins { get; }
-        public override NetworkOutlet Outlet { get; }
+        public override NetworkPort Inlet { get; }
+        public override NetworkPort Outlet { get; }
 
         public float Curvature { get; }
         public float Length { get; }
@@ -38,14 +37,13 @@ namespace Bus.Common.Extensions.Networks
             Curvature = curvature;
             Length = length;
 
-            InletLayout = connectionLayout.CreateOpposition();
-            InletPins = InletLayout.CreatePins(this);
-            Outlet = new NetworkOutlet(this, GetTransform(Length), InletLayout.CreateOpposition());
+            Inlet = new NetworkPort(this, Matrix4x4.Identity, connectionLayout.CreateOpposition());
+            Outlet = new NetworkPort(this, GetTransform(Length), Inlet.Layout.CreateOpposition());
 
-            for (int i = 0; i < InletLayout.Lanes.Count; i++)
+            for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)
             {
-                LanePin inlet = InletPins[i];
-                LanePin outlet = Outlet.Pins[InletLayout.Lanes.Count - 1 - i];
+                LanePin inlet = Inlet.Pins[i];
+                LanePin outlet = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
                 SplineLanePath path = new(inlet, outlet);
                 inlet.Wire(path);
                 outlet.Wire(path);

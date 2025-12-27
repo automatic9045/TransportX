@@ -12,9 +12,10 @@ namespace Bus.Common.Scenery.Networks
     public abstract class NetworkElement : LocatableObject, IDrawable
     {
         public bool IsRoot { get; }
-        public abstract LaneLayout InletLayout { get; }
-        public abstract IReadOnlyList<LanePin> InletPins { get; }
-        public abstract IReadOnlyList<NetworkOutlet> Outlets { get; }
+
+        public abstract NetworkPort Inlet { get; }
+        public abstract IReadOnlyList<NetworkPort> Outlets { get; }
+        public IReadOnlyList<NetworkPort> Ports => [Inlet, ..Outlets];
 
         public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
 
@@ -37,7 +38,7 @@ namespace Bus.Common.Scenery.Networks
         }
 
 
-        public class NetworkOutlet
+        public class NetworkPort
         {
             public Matrix4x4 Transition { get; }
             public LaneLayout Layout { get; }
@@ -45,7 +46,7 @@ namespace Bus.Common.Scenery.Networks
 
             public NetworkElement? Child { get; private set; } = null;
 
-            public NetworkOutlet(NetworkElement parent, Matrix4x4 transition, LaneLayout layout)
+            public NetworkPort(NetworkElement parent, Matrix4x4 transition, LaneLayout layout)
             {
                 Transition = transition;
                 Layout = layout;
@@ -55,13 +56,13 @@ namespace Bus.Common.Scenery.Networks
             protected internal void SetChild(NetworkElement child)
             {
                 if (child.IsRoot) throw new ArgumentException($"{nameof(IsRoot)} が true の {nameof(NetworkElement)} を子に設定することはできません。", nameof(child));
-                if (!Layout.CanConnectTo(child.InletLayout)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(child));
+                if (!Layout.CanConnectTo(child.Inlet.Layout)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(child));
 
                 Child = child;
 
                 for (int i = 0; i < Pins.Count; i++)
                 {
-                    LanePin connectedPin = Child.InletPins[Pins.Count - 1 - i];
+                    LanePin connectedPin = Child.Inlet.Pins[Pins.Count - 1 - i];
                     Pins[i].ConnectTo(connectedPin);
                 }
             }

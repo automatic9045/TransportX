@@ -9,8 +9,8 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class NetworkEdge : NetworkElement
     {
-        public override IReadOnlyList<NetworkOutlet> Outlets => [Outlet];
-        public abstract NetworkOutlet Outlet { get; }
+        public override IReadOnlyList<NetworkPort> Outlets => [Outlet];
+        public abstract NetworkPort Outlet { get; }
 
         public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform, isRoot)
         {
