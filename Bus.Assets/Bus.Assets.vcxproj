@@ -115,7 +115,7 @@
       </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>copy /y "$(TargetPath)" "$(SolutionDir)Bus\bin\$(Configuration)\net9.0-windows\"</Command>
+      <Command>copy /y "$(TargetPath)" "$(SolutionDir)Bus\bin\$(Configuration)\net10.0-windows7.0\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
