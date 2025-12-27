@@ -8,7 +8,7 @@ namespace Bus.Common.Scenery.Networks
 {
     public class LanePin
     {
-        public NetworkElement Parent { get; }
+        public NetworkPort Port { get; }
         public Lane Definition { get; }
 
         private readonly List<LanePath> SourcePathsKey = new List<LanePath>();
@@ -19,9 +19,9 @@ namespace Bus.Common.Scenery.Networks
 
         public LanePin? ConnectedPin { get; private set; } = null;
 
-        public LanePin(NetworkElement parent, Lane definition)
+        public LanePin(NetworkPort port, Lane definition)
         {
-            Parent = parent;
+            Port = port;
             Definition = definition;
         }
 

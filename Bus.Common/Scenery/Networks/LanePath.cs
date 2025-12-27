@@ -11,7 +11,7 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class LanePath
     {
-        public NetworkElement Parent => From.Parent;
+        public NetworkElement Owner => From.Port.Owner;
         public LaneKind Kind => From.Definition.Kind;
         public FlowDirections Directions => From.Definition.Directions;
 
@@ -33,7 +33,7 @@ namespace Bus.Common.Scenery.Networks
 
         public Matrix4x4 GetWorldTransform(float at)
         {
-            return GetTransform(at) * Parent.Transform;
+            return GetTransform(at) * Owner.Transform;
         }
 
         public virtual void Enter(ITrafficParticipant participant)

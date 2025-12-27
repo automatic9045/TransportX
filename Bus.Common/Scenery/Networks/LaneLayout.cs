@@ -54,9 +54,9 @@ namespace Bus.Common.Scenery.Networks
             return new LaneLayout(newLanes);
         }
 
-        public LanePin[] CreatePins(NetworkElement parent)
+        public LanePin[] CreatePins(NetworkPort port)
         {
-            return Lanes.Select(lane => new LanePin(parent, lane)).ToArray();
+            return Lanes.Select(lane => new LanePin(port, lane)).ToArray();
         }
     }
 }
