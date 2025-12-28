@@ -23,8 +23,7 @@ namespace Bus.Common.Extensions.Networks
 
         public override Matrix4x4 GetTransform(float at)
         {
-            Matrix4x4 offset = Matrix4x4.CreateTranslation(new Vector3(From.Definition.Position, 0));
-            return offset * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
+            return From.LocalTransform * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
         }
     }
 }

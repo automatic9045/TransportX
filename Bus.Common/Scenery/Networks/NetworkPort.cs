@@ -8,16 +8,16 @@ namespace Bus.Common.Scenery.Networks
     public class NetworkPort
     {
         public NetworkElement Owner { get; }
-        public Matrix4x4 Transition { get; }
+        public Matrix4x4 Offset { get; }
         public LaneLayout Layout { get; }
         public IReadOnlyList<LanePin> Pins { get; }
 
         public NetworkElement? Child { get; private set; } = null;
 
-        public NetworkPort(NetworkElement owner, Matrix4x4 transition, LaneLayout layout)
+        public NetworkPort(NetworkElement owner, Matrix4x4 offset, LaneLayout layout)
         {
             Owner = owner;
-            Transition = transition;
+            Offset = offset;
             Layout = layout;
             Pins = Layout.CreatePins(this);
         }

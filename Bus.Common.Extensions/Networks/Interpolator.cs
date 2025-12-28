@@ -29,8 +29,8 @@ namespace Bus.Common.Extensions.Networks
             Matrix4x4.Invert(Transform, out Matrix4x4 transformInverse);
             Matrix4x4 betweenPlates = GetPlateOffset(child).Transform;
             
-            Matrix4x4 transition = transformInverse * betweenPlates * child.Transform;
-            OutletKey = new NetworkPort(this, transition, Inlet.Layout.CreateOpposition());
+            Matrix4x4 offset = transformInverse * betweenPlates * child.Transform;
+            OutletKey = new NetworkPort(this, offset, Inlet.Layout.CreateOpposition());
         }
     }
 }
