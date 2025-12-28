@@ -31,17 +31,17 @@ namespace Bus.Common.Scenery.Networks
         {
         }
 
-        public float ConvertS(float s)
+        public float ToViewS(float s)
         {
             return Reverse ? Source.Length - s : s;
         }
 
-        public float InvertS(float convertedS)
+        public float FromViewS(float viewS)
         {
-            return Reverse ? Source.Length - convertedS : convertedS;
+            return Reverse ? Source.Length - viewS : viewS;
         }
 
-        public Matrix4x4 GetTransform(float convertedS) => DirectionMatrix * Source.GetTransform(InvertS(convertedS));
-        public Matrix4x4 GetWorldTransform(float convertedS) => DirectionMatrix * Source.GetWorldTransform(InvertS(convertedS));
+        public Matrix4x4 GetTransform(float viewS) => DirectionMatrix * Source.GetTransform(FromViewS(viewS));
+        public Matrix4x4 GetWorldTransform(float viewS) => DirectionMatrix * Source.GetWorldTransform(FromViewS(viewS));
     }
 }
