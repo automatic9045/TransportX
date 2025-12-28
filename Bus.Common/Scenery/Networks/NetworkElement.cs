@@ -13,7 +13,7 @@ namespace Bus.Common.Scenery.Networks
     {
         public bool IsRoot { get; }
 
-        public abstract NetworkPort Inlet { get; }
+        public abstract NetworkPort.Inlet Inlet { get; }
         public abstract IReadOnlyList<NetworkPort> Outlets { get; }
         public IReadOnlyList<NetworkPort> Ports => [Inlet, ..Outlets];
 

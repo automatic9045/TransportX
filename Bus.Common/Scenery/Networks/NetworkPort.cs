@@ -35,5 +35,13 @@ namespace Bus.Common.Scenery.Networks
                 Pins[i].ConnectTo(connectedPin);
             }
         }
+
+
+        public class Inlet : NetworkPort
+        {
+            public Inlet(NetworkElement owner, LaneLayout layout) : base(owner, Matrix4x4.Identity, layout)
+            {
+            }
+        }
     }
 }

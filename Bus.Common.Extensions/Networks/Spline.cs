@@ -18,7 +18,7 @@ namespace Bus.Common.Extensions.Networks
         private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
-        public override NetworkPort Inlet { get; }
+        public override NetworkPort.Inlet Inlet { get; }
         public override NetworkPort Outlet { get; }
 
         public float Curvature { get; }
@@ -37,7 +37,7 @@ namespace Bus.Common.Extensions.Networks
             Curvature = curvature;
             Length = length;
 
-            Inlet = new NetworkPort(this, Matrix4x4.Identity, connectionLayout.CreateOpposition());
+            Inlet = new NetworkPort.Inlet(this, connectionLayout.CreateOpposition());
             Outlet = new NetworkPort(this, GetTransform(Length), Inlet.Layout.CreateOpposition());
 
             for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)

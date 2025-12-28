@@ -13,12 +13,12 @@ namespace Bus.Common.Extensions.Networks
     {
         private NetworkPort OutletKey;
 
-        public override NetworkPort Inlet { get; }
+        public override NetworkPort.Inlet Inlet { get; }
         public override NetworkPort Outlet => OutletKey;
 
         public Interpolator(int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout) : base(plateX, plateZ, transform, false)
         {
-            Inlet = new NetworkPort(this, Matrix4x4.Identity, connectionLayout.CreateOpposition());
+            Inlet = new NetworkPort.Inlet(this, connectionLayout.CreateOpposition());
             OutletKey = new NetworkPort(this, Matrix4x4.Identity, Inlet.Layout.CreateOpposition());
         }
 
