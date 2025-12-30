@@ -18,8 +18,7 @@ namespace Bus.Common.Scenery.Networks
 
         public virtual void SetChild(NetworkElement child)
         {
-            if (Outlet.Child is not null) throw new InvalidOperationException("子は既に設定済です。");
-            SetChild(0, child);
+            Outlet.ConnectTo(child.Inlet);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Bus.Common.Scenery.Networks
         public LaneLayout Layout { get; }
         public IReadOnlyList<LanePin> Pins { get; }
 
-        public NetworkElement? Child { get; private set; } = null;
+        public NetworkPort? ConnectedPort { get; private set; } = null;
 
         public NetworkPort(NetworkElement owner, Matrix4x4 offset, LaneLayout layout)
         {
@@ -22,18 +22,12 @@ namespace Bus.Common.Scenery.Networks
             Pins = Layout.CreatePins(this);
         }
 
-        protected internal void SetChild(NetworkElement child)
+        public void ConnectTo(NetworkPort port)
         {
-            if (child.IsRoot) throw new ArgumentException($"{nameof(NetworkElement.IsRoot)} が true の {nameof(NetworkElement)} を子に設定することはできません。", nameof(child));
-            if (!Layout.CanConnectTo(child.Inlet.Layout)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(child));
+            if (!Layout.CanConnectTo(port.Layout)) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(port));
 
-            Child = child;
-
-            for (int i = 0; i < Pins.Count; i++)
-            {
-                LanePin connectedPin = Child.Inlet.Pins[Pins.Count - 1 - i];
-                Pins[i].ConnectTo(connectedPin);
-            }
+            ConnectedPort = port;
+            port.ConnectedPort = this;
         }
 
 

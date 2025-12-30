@@ -56,7 +56,13 @@ namespace Bus.Common.Scenery.Networks
 
         public LanePin[] CreatePins(NetworkPort port)
         {
-            return Lanes.Select(lane => new LanePin(port, lane)).ToArray();
+            LanePin[] pins = new LanePin[Lanes.Count];
+            for (int i = 0; i < pins.Length; i++)
+            {
+                pins[i] = new LanePin(port, i);
+            }
+
+            return pins;
         }
     }
 }

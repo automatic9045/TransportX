@@ -24,11 +24,6 @@ namespace Bus.Common.Scenery.Networks
             IsRoot = isRoot;
         }
 
-        protected void SetChild(int outletIndex, NetworkElement element)
-        {
-            Outlets[outletIndex].SetChild(element);
-        }
-
         public void Draw(LocatedDrawContext context)
         {
             foreach (LocatedModel model in Models)

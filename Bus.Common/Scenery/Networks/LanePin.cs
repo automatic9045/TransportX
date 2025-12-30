@@ -10,8 +10,11 @@ namespace Bus.Common.Scenery.Networks
     public class LanePin
     {
         public NetworkPort Port { get; }
-        public Lane Definition { get; }
+        public int Index { get; }
         public Matrix4x4 LocalTransform { get; }
+
+        public Lane Definition => Port.Layout.Lanes[Index];
+        public LanePin? ConnectedPin => Port.ConnectedPort is null ? null : Port.ConnectedPort.Pins[Port.Pins.Count - 1 - Index];
 
         private readonly List<LanePath> SourcePathsKey = new List<LanePath>();
         public IReadOnlyList<LanePath> SourcePaths => SourcePathsKey;
@@ -19,12 +22,10 @@ namespace Bus.Common.Scenery.Networks
         private readonly List<LanePath> DestPathsKey = new List<LanePath>();
         public IReadOnlyList<LanePath> DestPaths => DestPathsKey;
 
-        public LanePin? ConnectedPin { get; private set; } = null;
-
-        public LanePin(NetworkPort port, Lane definition)
+        public LanePin(NetworkPort port, int index)
         {
             Port = port;
-            Definition = definition;
+            Index = index;
             LocalTransform = Matrix4x4.CreateTranslation(new Vector3(Definition.Position, 0)) * Port.Offset;
         }
 
@@ -45,22 +46,6 @@ namespace Bus.Common.Scenery.Networks
             }
 
             if (!isWired) throw new ArgumentException("開始点、終了点のどちらもこの端子ではありません。");
-        }
-
-        public void ConnectTo(LanePin pin)
-        {
-            if (!Definition.IsOpposite(pin.Definition)) throw new NotSupportedException("ピンの形状が一致しません。");
-
-            ConnectedPin = pin;
-            pin.ConnectedPin = this;
-        }
-
-        public void Disconnect()
-        {
-            if (ConnectedPin is null) return;
-
-            ConnectedPin.ConnectedPin = null;
-            ConnectedPin = null;
         }
     }
 }
