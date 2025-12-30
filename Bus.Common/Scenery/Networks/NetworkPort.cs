@@ -39,7 +39,7 @@ namespace Bus.Common.Scenery.Networks
 
         public class Inlet : NetworkPort
         {
-            public Inlet(NetworkElement owner, LaneLayout layout) : base(owner, Matrix4x4.Identity, layout)
+            public Inlet(NetworkElement owner, LaneLayout layout) : base(owner, Matrix4x4.CreateRotationY(float.Pi), layout)
             {
             }
         }

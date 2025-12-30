@@ -13,7 +13,7 @@ namespace Bus.Common.Scenery.Networks
     {
         public NetworkElement Owner => From.Port.Owner;
         public LaneKind Kind => From.Definition.Kind;
-        public FlowDirections Directions => From.Definition.Directions;
+        public FlowDirections Directions => From.Definition.Directions.GetOpposition();
 
         public LanePin From { get; }
         public LanePin To { get; }
@@ -25,6 +25,8 @@ namespace Bus.Common.Scenery.Networks
 
         protected LanePath(LanePin from, LanePin to)
         {
+            if (from.Port.Owner != to.Port.Owner) throw new ArgumentException(nameof(to), $"同一 {nameof(NetworkElement)} 内のピンを指定する必要があります。");
+
             From = from;
             To = to;
         }

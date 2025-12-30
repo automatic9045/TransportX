@@ -41,6 +41,16 @@ namespace Bus.Common.Scenery.Networks
             return Reverse ? Source.Length - viewS : viewS;
         }
 
+        public float ToViewVelocity(float velocity)
+        {
+            return Reverse ? -velocity : velocity;
+        }
+
+        public float FromViewVelocity(float viewVelocity)
+        {
+            return Reverse ? -viewVelocity : viewVelocity;
+        }
+
         public Matrix4x4 GetTransform(float viewS) => DirectionMatrix * Source.GetTransform(FromViewS(viewS));
         public Matrix4x4 GetWorldTransform(float viewS) => DirectionMatrix * Source.GetWorldTransform(FromViewS(viewS));
     }

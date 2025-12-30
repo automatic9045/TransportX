@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ namespace Bus.Common.Scenery.Networks
     {
         public NetworkPort Port { get; }
         public Lane Definition { get; }
+        public Matrix4x4 LocalTransform { get; }
 
         private readonly List<LanePath> SourcePathsKey = new List<LanePath>();
         public IReadOnlyList<LanePath> SourcePaths => SourcePathsKey;
@@ -23,6 +25,7 @@ namespace Bus.Common.Scenery.Networks
         {
             Port = port;
             Definition = definition;
+            LocalTransform = Matrix4x4.CreateTranslation(new Vector3(Definition.Position, 0)) * Port.Offset;
         }
 
         public void Wire(LanePath path)

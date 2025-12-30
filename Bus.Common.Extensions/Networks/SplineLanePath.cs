@@ -23,7 +23,7 @@ namespace Bus.Common.Extensions.Networks
 
         public override Matrix4x4 GetTransform(float at)
         {
-            return From.LocalTransform * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
+            return Matrix4x4.CreateRotationY(float.Pi) * From.LocalTransform * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
         }
     }
 }
