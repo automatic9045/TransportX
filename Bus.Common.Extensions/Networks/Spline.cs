@@ -24,9 +24,6 @@ namespace Bus.Common.Extensions.Networks
         public float Curvature { get; }
         public float Length { get; }
 
-        private readonly List<LocatedModel> CompiledModels = new List<LocatedModel>();
-        public override IReadOnlyList<LocatedModel> Models => CompiledModels;
-
         public Spline(ID3D11Device device, IPhysicsHost physicsHost,
             int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout, float curvature, float length, bool isRoot)
             : base(plateX, plateZ, transform, isRoot)
@@ -69,7 +66,7 @@ namespace Bus.Common.Extensions.Networks
                 else
                 {
                     LocatedModel model = compiled.Build();
-                    CompiledModels.Add(model);
+                    ModelsKey.Add(model);
                 }
 
                 world = GetTransform(structure.Interval) * world;
@@ -80,7 +77,7 @@ namespace Bus.Common.Extensions.Networks
                 MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
                 mergedModel.Model.Collider.CreateDebugModel(Device);
                 mergedModel.Model.Collider.DebugModelColor = new Vector4(0, 0, 1, 1);
-                CompiledModels.Add(mergedModel);
+                ModelsKey.Add(mergedModel);
             }
         }
 

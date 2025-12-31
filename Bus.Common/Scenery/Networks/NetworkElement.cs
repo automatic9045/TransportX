@@ -17,7 +17,8 @@ namespace Bus.Common.Scenery.Networks
         public abstract IReadOnlyList<NetworkPort> Outlets { get; }
         public IReadOnlyList<NetworkPort> Ports => [Inlet, ..Outlets];
 
-        public virtual IReadOnlyList<LocatedModel> Models { get; } = [];
+        protected readonly List<LocatedModel> ModelsKey = [];
+        public virtual IReadOnlyList<LocatedModel> Models => ModelsKey;
 
         public NetworkElement(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform)
         {
