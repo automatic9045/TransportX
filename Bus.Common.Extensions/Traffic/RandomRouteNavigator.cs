@@ -44,8 +44,12 @@ namespace Bus.Common.Extensions.Traffic
                 if (nextPin is null) break;
 
                 IReadOnlyList<LanePathView> candidates = Enumerable.Concat(
-                    nextPin.SourcePaths.Select(p => new LanePathView(p, false)),
-                    nextPin.DestPaths.Select(p => new LanePathView(p, true))
+                    nextPin.SourcePaths
+                        .Where(p => p.Directions.HasFlag(FlowDirections.Out))
+                        .Select(p => new LanePathView(p, false)),
+                    nextPin.DestPaths
+                        .Where(p => p.Directions.HasFlag(FlowDirections.In))
+                        .Select(p => new LanePathView(p, true))
                 ).ToArray();
                 if (candidates.Count == 0) break;
 
