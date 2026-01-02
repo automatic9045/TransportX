@@ -18,6 +18,11 @@ namespace Bus.Common.Diagnostics
 
         void Report(Error error);
 
+        void ReportRange(IEnumerable<Error> errors)
+        {
+            foreach (Error error in errors) Report(error);
+        }
+
 
         private sealed class DefaultErrorCollector : IErrorCollector
         {

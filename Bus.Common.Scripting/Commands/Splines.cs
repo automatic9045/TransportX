@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Bus.Common.Diagnostics;
 using Bus.Common.Scenery.Networks;
 
+using Bus.Common.Scripting.Data;
+
 namespace Bus.Common.Scripting.Commands
 {
     public class Splines
@@ -33,55 +35,34 @@ namespace Bus.Common.Scripting.Commands
             {
                 ScriptError error = new(ErrorLevel.Error, $"進路レイアウトファイル '{fullPath}' が見つかりませんでした。");
                 World.ErrorCollector.Report(error);
-                return new LaneLayout();
+                return CreateEmptyLayout();
             }
+
+            Data.Networks.LaneLayout? layoutData = XmlSerializer<Data.Networks.LaneLayout>.FromXml(fullPath, World.ErrorCollector);
+            if (layoutData is null) return CreateEmptyLayout();
 
             List<Lane> lanes = [];
             try
             {
-                using StreamReader sr = new StreamReader(fullPath);
-                for (int i = 0; !sr.EndOfStream; i++)
+                for (int i = 0; i < layoutData.Lanes.Count; i++)
                 {
-                    string lineText = sr.ReadLine()!;
-                    string[] line = lineText.Split('\t', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    if (line.Length == 0) continue;
-                    if (line[0].StartsWith('#')) continue;
+                    Data.Networks.Lane laneData = layoutData.Lanes[i];
+                    World.ErrorCollector.ReportRange(laneData.Errors);
 
-                    try
+                    if (laneData.Kind.Value is null) continue;
+                    if (!World.Commander.LaneKinds.TryGetValue(laneData.Kind.Value, out LaneKind? kind))
                     {
-                        if (line.Length < 4)
-                        {
-                            ReportError($"行 '{lineText}' は無効です。引数が不足しています。");
-                            continue;
-                        }
-
-                        string kindKey = line[0];
-                        if (!World.Commander.LaneKinds.TryGetValue(kindKey, out LaneKind? kind))
-                        {
-                            ReportError($"進路種別 '{kindKey}' が見つかりません。");
-                            continue;
-                        }
-
-                        if (!Enum.TryParse(line[1], out FlowDirections directions)) ReportError($"進行方向 '{lineText}' は無効です。");
-                        if (!float.TryParse(line[2], out float x)) ReportError($"X 座標 '{lineText}' は無効です。");
-                        if (!float.TryParse(line[3], out float y)) ReportError($"Y 座標 '{lineText}' は無効です。");
-
-                        Lane lane = new(kind, directions, new Vector2(x, y));
-                        lanes.Add(lane);
-                    }
-                    catch (Exception ex)
-                    {
-                        ReportError($"行 '{lineText}' は無効です。", ex);
+                        ReportError(laneData.Kind, $"進路種別 '{laneData.Kind.Value}' が見つかりません。");
+                        continue;
                     }
 
+                    Lane lane = new(kind, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value));
+                    lanes.Add(lane);
 
-                    void ReportError(string message, Exception? exception = null)
+
+                    void ReportError<T>(XmlValue<T> source, string message)
                     {
-                        Error error = new(ErrorLevel.Error, message, fullPath)
-                        {
-                            LineNumber = i + 1,
-                            Exception = exception,
-                        };
+                        Error error = source.CreateError(message);
                         World.ErrorCollector.Report(error);
                     }
                 }
@@ -95,6 +76,14 @@ namespace Bus.Common.Scripting.Commands
             LaneLayout layout = new(lanes);
             LaneLayoutsKey.Add(key, layout);
             return layout;
+
+
+            LaneLayout CreateEmptyLayout()
+            {
+                LaneLayout layout = new();
+                LaneLayoutsKey.Add(key, layout);
+                return layout;
+            }
         }
 
         public SplineTemplate CreateTemplate(string key, string layoutKey)
