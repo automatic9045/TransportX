@@ -41,9 +41,11 @@ namespace Bus.Common.Extensions.Networks
             {
                 LanePin inlet = Inlet.Pins[i];
                 LanePin outlet = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
+
                 SplineLanePath path = new(inlet, outlet);
                 inlet.Wire(path);
                 outlet.Wire(path);
+                PathsKey.Add(path);
             }
         }
 

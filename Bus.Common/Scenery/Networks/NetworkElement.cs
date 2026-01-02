@@ -17,6 +17,9 @@ namespace Bus.Common.Scenery.Networks
         public abstract IReadOnlyList<NetworkPort> Outlets { get; }
         public IReadOnlyList<NetworkPort> Ports => [Inlet, ..Outlets];
 
+        protected readonly List<LanePath> PathsKey = [];
+        public IReadOnlyList<LanePath> Paths => PathsKey;
+
         protected readonly List<LocatedModel> ModelsKey = [];
         public virtual IReadOnlyList<LocatedModel> Models => ModelsKey;
 
