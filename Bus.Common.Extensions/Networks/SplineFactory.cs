@@ -62,7 +62,7 @@ namespace Bus.Common.Extensions.Networks
 
         public Spline ByCurvature(float curvature, float length)
         {
-            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BaseConnectionLayout, curvature, length, CreatedSplines.Count == 0);
+            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, BaseConnectionLayout, curvature, length);
 
             List<int> indicesToRemove = [];
             for (int i = 0; i < Structures.Count; i++) // 登録済のストラクチャーをこのスプラインに設置

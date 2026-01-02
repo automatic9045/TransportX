@@ -12,7 +12,7 @@ namespace Bus.Common.Scenery.Networks
         public override IReadOnlyList<NetworkPort> Outlets => [Outlet];
         public abstract NetworkPort Outlet { get; }
 
-        public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform, bool isRoot) : base(plateX, plateZ, transform, isRoot)
+        public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
         }
 

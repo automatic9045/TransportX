@@ -16,7 +16,7 @@ namespace Bus.Common.Extensions.Networks
         public override NetworkPort.Inlet Inlet { get; }
         public override NetworkPort Outlet => OutletKey;
 
-        public Interpolator(int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout) : base(plateX, plateZ, transform, false)
+        public Interpolator(int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout) : base(plateX, plateZ, transform)
         {
             Inlet = new NetworkPort.Inlet(this, connectionLayout.CreateOpposition());
             OutletKey = new NetworkPort(this, Matrix4x4.Identity, Inlet.Layout.CreateOpposition());

@@ -15,8 +15,8 @@ namespace Bus.Common.Extensions.Networks
         public override NetworkPort.Inlet Inlet { get; }
         public override IReadOnlyList<NetworkPort> Outlets { get; }
 
-        public Intersection(int plateX, int plateZ, Matrix4x4 transform, LaneLayout inlet, IEnumerable<OutletDefinition> outlets, bool isRoot)
-            : base(plateX, plateZ, transform, isRoot)
+        public Intersection(int plateX, int plateZ, Matrix4x4 transform, LaneLayout inlet, IEnumerable<OutletDefinition> outlets)
+            : base(plateX, plateZ, transform)
         {
             Inlet = new NetworkPort.Inlet(this, inlet);
             Outlets = outlets.Select(def => new NetworkPort(this, def.Offset, def.Layout)).ToArray();

@@ -25,8 +25,8 @@ namespace Bus.Common.Extensions.Networks
         public float Length { get; }
 
         public Spline(ID3D11Device device, IPhysicsHost physicsHost,
-            int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout, float curvature, float length, bool isRoot)
-            : base(plateX, plateZ, transform, isRoot)
+            int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout, float curvature, float length)
+            : base(plateX, plateZ, transform)
         {
             Device = device;
             PhysicsHost = physicsHost;
