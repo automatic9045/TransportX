@@ -12,7 +12,6 @@ namespace Bus.Common.Scripting.Commands
 
         public Background Background { get; }
         public Debug Debug { get; }
-        public LaneKinds LaneKinds { get; }
         public Models Models { get; }
         public Plates Plates { get; }
         public Network Network { get; }
@@ -25,7 +24,6 @@ namespace Bus.Common.Scripting.Commands
 
             Background = new Background(world);
             Debug = new Debug(world);
-            LaneKinds = new LaneKinds(world);
             Models = new Models(world);
             Plates = new Plates(world);
             Network = new Network(world);
@@ -39,7 +37,6 @@ namespace Bus.Common.Scripting.Commands
 
             Background = parent.Background;
             Debug = parent.Debug;
-            LaneKinds = parent.LaneKinds;
             Models = parent.Models;
             Plates = parent.Plates;
             Network = parent.Network;

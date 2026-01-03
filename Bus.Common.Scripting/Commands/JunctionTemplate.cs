@@ -32,12 +32,12 @@ namespace Bus.Common.Scripting.Commands
         internal JunctionTemplate(ScriptWorld world, string inletKey, string inletLayoutKey)
         {
             World = world;
-            Inlet = new(inletKey, World.Commander.Network.GetLaneLayout(inletLayoutKey));
+            Inlet = new(inletKey, World.Commander.Network.LaneLayouts.Get(inletLayoutKey));
         }
 
         public void AddOutlet(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            LaneLayout layout = World.Commander.Network.GetLaneLayout(layoutKey);
+            LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
             SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             OutletDefinition outlet = new(layout, offset.CreateTransform());
             OutletsKey.Add(new(key, outlet));

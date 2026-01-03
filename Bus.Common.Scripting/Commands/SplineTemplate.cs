@@ -25,7 +25,7 @@ namespace Bus.Common.Scripting.Commands
         internal SplineTemplate(ScriptWorld world, string layoutKey)
         {
             World = world;
-            Layout = World.Commander.Network.GetLaneLayout(layoutKey);
+            Layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval)
