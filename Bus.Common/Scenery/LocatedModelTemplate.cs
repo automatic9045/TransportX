@@ -20,9 +20,12 @@ namespace Bus.Common.Scenery
             Transform = transform;
         }
 
-        public virtual LocatedModel Build()
+        public virtual LocatedModel Build(Converter<Matrix4x4, Matrix4x4> transformConverter)
         {
-            return new LocatedModel(Model, Transform);
+            Matrix4x4 transform = transformConverter(Transform);
+            return new LocatedModel(Model, transform);
         }
+
+        public LocatedModel Build() => Build(transform => transform);
     }
 }

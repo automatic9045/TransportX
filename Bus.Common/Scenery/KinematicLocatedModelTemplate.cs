@@ -29,11 +29,12 @@ namespace Bus.Common.Scenery
                 ? new KinematicLocatedModelTemplate(physicsHost, collidableModel, transform) : new LocatedModelTemplate(model, transform);
         }
 
-        public KinematicLocatedModel BuildKinematic()
+        public KinematicLocatedModel BuildKinematic(Converter<Matrix4x4, Matrix4x4> transformConverter)
         {
-            return KinematicLocatedModel.Create(PhysicsHost, Model, Transform);
+            Matrix4x4 transform = transformConverter(Transform);
+            return KinematicLocatedModel.Create(PhysicsHost, Model, transform);
         }
 
-        public override LocatedModel Build() => BuildKinematic();
+        public override LocatedModel Build(Converter<Matrix4x4, Matrix4x4> transformConverter) => BuildKinematic(transformConverter);
     }
 }

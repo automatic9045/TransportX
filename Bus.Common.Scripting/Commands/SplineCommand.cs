@@ -10,6 +10,7 @@ using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 
 using Bus.Common.Extensions.Networks;
+using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Scripting.Commands
 {
@@ -17,6 +18,9 @@ namespace Bus.Common.Scripting.Commands
     {
         private readonly ScriptWorld World;
         private readonly SplineFactory SplineFactory;
+
+        public NetworkPort Inlet => SplineFactory.CreatedSplines[0].Inlet;
+        public NetworkPort Outlet => SplineFactory.CreatedSplines.Last().Outlet;
 
         internal SplineCommand(ScriptWorld world, SplineFactory splineFactory)
         {

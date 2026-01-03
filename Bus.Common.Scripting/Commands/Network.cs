@@ -98,5 +98,18 @@ namespace Bus.Common.Scripting.Commands
 
             return layout;
         }
+
+        public void Connect(NetworkPort a, NetworkPort b)
+        {
+            try
+            {
+                a.ConnectTo(b);
+            }
+            catch (Exception ex)
+            {
+                ScriptError error = new(ErrorLevel.Error, ex);
+                World.ErrorCollector.Report(error);
+            }
+        }
     }
 }
