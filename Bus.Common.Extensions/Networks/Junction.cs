@@ -27,7 +27,7 @@ namespace Bus.Common.Extensions.Networks
             if (!Ports.Contains(from.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(from));
             if (!Ports.Contains(to.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(to));
 
-            StraightLanePath path = new(from, to);
+            BezierLanePath path = new(from, to);
             from.Wire(path);
             to.Wire(path);
             PathsKey.Add(path);
