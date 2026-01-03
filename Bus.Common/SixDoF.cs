@@ -9,6 +9,8 @@ namespace Bus.Common
 {
     public struct SixDoF
     {
+        private const float RadPerDeg = float.Pi / 180;
+
         public static readonly SixDoF Zero = default;
 
 
@@ -24,6 +26,11 @@ namespace Bus.Common
         public SixDoF(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
             : this(new Vector3(x, y, z), new Vector3(rotationX, rotationY, rotationZ))
         {
+        }
+
+        public static SixDoF Deg(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
+        {
+            return new SixDoF(x, y, z, rotationX * RadPerDeg, rotationY * RadPerDeg, rotationZ * RadPerDeg);
         }
 
         public SixDoF(Vector3 translation) : this(translation, Vector3.Zero)

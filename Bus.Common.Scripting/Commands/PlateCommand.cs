@@ -48,7 +48,7 @@ namespace Bus.Common.Scripting.Commands
 
         public LocatedModel PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKey, position.CreateTransform());
         }
 
@@ -86,7 +86,7 @@ namespace Bus.Common.Scripting.Commands
 
         public SplineCommand BeginSpline(string? templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return BeginSpline(templateKey, position.CreateTransform());
         }
 
@@ -126,7 +126,7 @@ namespace Bus.Common.Scripting.Commands
 
         public Junction PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutJunction(templateKey, position.CreateTransform());
         }
 

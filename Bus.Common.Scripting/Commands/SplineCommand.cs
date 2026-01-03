@@ -78,7 +78,7 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
-            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKeys, position.CreateTransform(), from, span, interval, count);
         }
 

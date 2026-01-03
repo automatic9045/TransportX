@@ -38,7 +38,7 @@ namespace Bus.Common.Scripting.Commands
         public void AddOutlet(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             LaneLayout layout = World.Commander.Network.GetLaneLayout(layoutKey);
-            SixDoF offset = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             OutletDefinition outlet = new(layout, offset.CreateTransform());
             OutletsKey.Add(new(key, outlet));
         }
@@ -108,7 +108,7 @@ namespace Bus.Common.Scripting.Commands
 
         public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF transform = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF transform = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKey, transform.CreateTransform());
         }
 
