@@ -13,19 +13,19 @@ using Bus.Common.Scripting.Data;
 
 namespace Bus.Common.Scripting.Commands
 {
-    public class Splines
+    public class Network
     {
         private readonly ScriptWorld World;
+
+        public Templates Templates { get; }
 
         private readonly Dictionary<string, LaneLayout> LaneLayoutsKey = [];
         public IReadOnlyDictionary<string, LaneLayout> LaneLayouts => LaneLayoutsKey;
 
-        private readonly Dictionary<string, SplineTemplate> TemplatesKey = [];
-        public IReadOnlyDictionary<string, SplineTemplate> Templates => TemplatesKey;
-
-        internal Splines(ScriptWorld world)
+        internal Network(ScriptWorld world)
         {
             World = world;
+            Templates = new Templates(World);
         }
 
         public LaneLayout LoadLaneLayout(string key, string path)
@@ -86,19 +86,17 @@ namespace Bus.Common.Scripting.Commands
             }
         }
 
-        public SplineTemplate CreateTemplate(string key, string layoutKey)
+        internal LaneLayout GetLaneLayout(string key)
         {
-            if (!LaneLayouts.TryGetValue(layoutKey, out LaneLayout? layout))
+            if (!LaneLayouts.TryGetValue(key, out LaneLayout? layout))
             {
-                ScriptError error = new(ErrorLevel.Error, $"モデル '{layoutKey}' が見つかりません。");
+                ScriptError error = new(ErrorLevel.Error, $"進路レイアウト '{key}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
                 layout = new LaneLayout();
             }
 
-            SplineTemplate template = new SplineTemplate(World, layout);
-            TemplatesKey.Add(key, template);
-            return template;
+            return layout;
         }
     }
 }

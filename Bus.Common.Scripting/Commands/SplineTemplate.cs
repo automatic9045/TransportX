@@ -22,10 +22,10 @@ namespace Bus.Common.Scripting.Commands
         private readonly List<SplineStructure> StructuresKey = new();
         public IReadOnlyList<SplineStructure> Structures => StructuresKey;
 
-        internal SplineTemplate(ScriptWorld world, LaneLayout layout)
+        internal SplineTemplate(ScriptWorld world, string layoutKey)
         {
             World = world;
-            Layout = layout;
+            Layout = World.Commander.Network.GetLaneLayout(layoutKey);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval)

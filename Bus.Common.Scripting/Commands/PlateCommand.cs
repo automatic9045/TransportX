@@ -57,14 +57,14 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineCommand BeginSpline(Matrix4x4 transform, string? templateKey = null)
+        public SplineCommand BeginSpline(string? templateKey, Matrix4x4 transform)
         {
             SplineFactory splineFactory;
             if (templateKey is null)
             {
                 splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout());
             }
-            else if (!World.Commander.Splines.Templates.TryGetValue(templateKey, out SplineTemplate? template))
+            else if (!World.Commander.Network.Templates.Splines.TryGetValue(templateKey, out SplineTemplate? template))
             {
                 ScriptError error = new(ErrorLevel.Error, $"スプラインテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
@@ -79,15 +79,30 @@ namespace Bus.Common.Scripting.Commands
             return new SplineCommand(World, splineFactory);
         }
 
-        public SplineCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ, string? templateKey = null)
+        public SplineCommand BeginSpline(Matrix4x4 transform)
         {
-            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return BeginSpline(position.CreateTransform(), templateKey);
+            return BeginSpline(null, transform);
         }
 
-        public SplineCommand BeginSpline(double x, double y, double z, string? templateKey = null)
+        public SplineCommand BeginSpline(string? templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            return BeginSpline(x, y, z, 0, 0, 0, templateKey);
+            SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return BeginSpline(templateKey, position.CreateTransform());
+        }
+
+        public SplineCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        {
+            return BeginSpline(null, x, y, z, rotationX, rotationY, rotationZ);
+        }
+
+        public SplineCommand BeginSpline(string? templateKey, double x, double y, double z)
+        {
+            return BeginSpline(templateKey, x, y, z, 0, 0, 0);
+        }
+
+        public SplineCommand BeginSpline(double x, double y, double z)
+        {
+            return BeginSpline(null, x, y, z);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Bus.Common.Scripting.Commands
         public LaneKinds LaneKinds { get; }
         public Models Models { get; }
         public Plates Plates { get; }
-        public Splines Splines { get; }
+        public Network Network { get; }
         public Triggers Triggers { get; }
         public Vehicles Vehicles { get; }
 
@@ -28,7 +28,7 @@ namespace Bus.Common.Scripting.Commands
             LaneKinds = new LaneKinds(world);
             Models = new Models(world);
             Plates = new Plates(world);
-            Splines = new Splines(world);
+            Network = new Network(world);
             Triggers = new Triggers(world);
             Vehicles = new Vehicles(world);
         }
@@ -42,7 +42,7 @@ namespace Bus.Common.Scripting.Commands
             LaneKinds = parent.LaneKinds;
             Models = parent.Models;
             Plates = parent.Plates;
-            Splines = parent.Splines;
+            Network = parent.Network;
             Triggers = parent.Triggers;
             Vehicles = parent.Vehicles;
         }
