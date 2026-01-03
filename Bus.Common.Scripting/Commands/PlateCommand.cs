@@ -105,34 +105,34 @@ namespace Bus.Common.Scripting.Commands
             return BeginSpline(null, x, y, z);
         }
 
-        public Intersection PutIntersection(string templateKey, Matrix4x4 transform)
+        public Junction PutJunction(string templateKey, Matrix4x4 transform)
         {
-            Intersection intersection;
-            if (World.Commander.Network.Templates.Intersections.TryGetValue(templateKey, out IntersectionTemplate? template))
+            Junction junction;
+            if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
             {
-                intersection = template.Build(X, Z, transform);
+                junction = template.Build(X, Z, transform);
             }
             else
             {
                 ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                intersection = new Intersection(X, Z, transform, new LaneLayout(), []);
+                junction = new Junction(X, Z, transform, new LaneLayout(), []);
             }
 
-            Target.Network.Add(intersection);
-            return intersection;
+            Target.Network.Add(junction);
+            return junction;
         }
 
-        public Intersection PutIntersection(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public Junction PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = new SixDoF((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutIntersection(templateKey, position.CreateTransform());
+            return PutJunction(templateKey, position.CreateTransform());
         }
 
-        public Intersection PutIntersection(string templateKey, double x, double y, double z)
+        public Junction PutJunction(string templateKey, double x, double y, double z)
         {
-            return PutIntersection(templateKey, x, y, z, 0, 0, 0);
+            return PutJunction(templateKey, x, y, z, 0, 0, 0);
         }
     }
 }

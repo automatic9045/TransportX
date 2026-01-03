@@ -18,8 +18,8 @@ namespace Bus.Common.Scripting.Commands
         private readonly Dictionary<string, SplineTemplate> SplinesKey = [];
         public IReadOnlyDictionary<string, SplineTemplate> Splines => SplinesKey;
 
-        private readonly Dictionary<string, IntersectionTemplate> IntersectionsKey = [];
-        public IReadOnlyDictionary<string, IntersectionTemplate> Intersections => IntersectionsKey;
+        private readonly Dictionary<string, JunctionTemplate> JunctionsKey = [];
+        public IReadOnlyDictionary<string, JunctionTemplate> Junctions => JunctionsKey;
 
         internal Templates(ScriptWorld world)
         {
@@ -33,10 +33,10 @@ namespace Bus.Common.Scripting.Commands
             return template;
         }
 
-        public IntersectionTemplate CreateIntersection(string key, string inletKey, string inletLayoutKey)
+        public JunctionTemplate CreateJunction(string key, string inletKey, string inletLayoutKey)
         {
-            IntersectionTemplate template = new(World, inletKey, inletLayoutKey);
-            IntersectionsKey.Add(key, template);
+            JunctionTemplate template = new(World, inletKey, inletLayoutKey);
+            JunctionsKey.Add(key, template);
             return template;
         }
     }

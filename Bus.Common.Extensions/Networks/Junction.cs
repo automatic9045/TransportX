@@ -10,12 +10,12 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Extensions.Networks
 {
-    public class Intersection : NetworkNode
+    public class Junction : NetworkNode
     {
         public override NetworkPort.Inlet Inlet { get; }
         public override IReadOnlyList<NetworkPort> Outlets { get; }
 
-        public Intersection(int plateX, int plateZ, Matrix4x4 transform, LaneLayout inlet, IEnumerable<OutletDefinition> outlets)
+        public Junction(int plateX, int plateZ, Matrix4x4 transform, LaneLayout inlet, IEnumerable<OutletDefinition> outlets)
             : base(plateX, plateZ, transform)
         {
             Inlet = new NetworkPort.Inlet(this, inlet);

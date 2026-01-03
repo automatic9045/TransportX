@@ -14,7 +14,7 @@ using Bus.Common.Extensions.Networks;
 
 namespace Bus.Common.Scripting.Commands
 {
-    public class IntersectionTemplate
+    public class JunctionTemplate
     {
         private readonly ScriptWorld World;
 
@@ -29,7 +29,7 @@ namespace Bus.Common.Scripting.Commands
         private readonly List<LocatedModelTemplate> StructuresKey = [];
         public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
 
-        internal IntersectionTemplate(ScriptWorld world, string inletKey, string inletLayoutKey)
+        internal JunctionTemplate(ScriptWorld world, string inletKey, string inletLayoutKey)
         {
             World = world;
             Inlet = new(inletKey, World.Commander.Network.GetLaneLayout(inletLayoutKey));
@@ -117,24 +117,24 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        internal Intersection Build(int plateX, int plateZ, Matrix4x4 transform)
+        internal Junction Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            Intersection intersection = new(plateX, plateZ, transform, Inlet.Value, Outlets.Select(o => o.Value));
+            Junction junction = new(plateX, plateZ, transform, Inlet.Value, Outlets.Select(o => o.Value));
 
             foreach (PathDefinition path in PathsKey)
             {
-                LanePin from = intersection.Ports[path.FromPortIndex].Pins[path.FromPinIndex];
-                LanePin to = intersection.Ports[path.ToPortIndex].Pins[path.ToPinIndex];
-                intersection.Wire(from, to);
+                LanePin from = junction.Ports[path.FromPortIndex].Pins[path.FromPinIndex];
+                LanePin to = junction.Ports[path.ToPortIndex].Pins[path.ToPinIndex];
+                junction.Wire(from, to);
             }
 
             foreach (LocatedModelTemplate model in Structures)
             {
-                LocatedModel structure = model.Build(localTransform => localTransform * intersection.Transform);
-                intersection.AddStructure(structure);
+                LocatedModel structure = model.Build(localTransform => localTransform * junction.Transform);
+                junction.AddStructure(structure);
             }
 
-            return intersection;
+            return junction;
         }
 
 
