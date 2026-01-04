@@ -18,10 +18,8 @@ namespace Bus.Common.Scripting.Commands
     {
         private readonly ScriptWorld World;
 
-        public KeyValuePair<string, LaneLayout> Inlet { get; }
-
-        private readonly List<KeyValuePair<string, OutletDefinition>> OutletsKey = [];
-        public IReadOnlyList<KeyValuePair<string, OutletDefinition>> Outlets => OutletsKey;
+        private readonly List<KeyValuePair<string, PortDefinition>> PortsKey = [];
+        public IReadOnlyList<KeyValuePair<string, PortDefinition>> Ports => PortsKey;
 
         private readonly List<PathDefinition> PathsKey = [];
         public IReadOnlyList<PathDefinition> Paths => PathsKey;
@@ -29,18 +27,17 @@ namespace Bus.Common.Scripting.Commands
         private readonly List<LocatedModelTemplate> StructuresKey = [];
         public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
 
-        internal JunctionTemplate(ScriptWorld world, string inletKey, string inletLayoutKey)
+        internal JunctionTemplate(ScriptWorld world)
         {
             World = world;
-            Inlet = new(inletKey, World.Commander.Network.LaneLayouts.Get(inletLayoutKey));
         }
 
-        public void AddOutlet(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
             SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            OutletDefinition outlet = new(layout, offset.CreateTransform());
-            OutletsKey.Add(new(key, outlet));
+            PortDefinition port = new(layout, offset.CreateTransform());
+            PortsKey.Add(new(key, port));
         }
 
         public void Wire(string fromKey, int fromPin, string toKey, int toPin)
@@ -54,23 +51,15 @@ namespace Bus.Common.Scripting.Commands
 
             bool CheckPin(string portKey, int pinIndex, out int portIndex)
             {
-                if (portKey == Inlet.Key)
-                {
-                    portIndex = 0;
-                    return CheckPinIndex(Inlet.Value, pinIndex);
-                }
-
-                (int outletIndex, _, OutletDefinition? outlet) = Outlets.Select((o, i) => (Index: i, o.Key, o.Value)).FirstOrDefault(x => x.Key == portKey);
+                (portIndex, _, PortDefinition? outlet) = Ports.Select((o, i) => (Index: i, o.Key, o.Value)).FirstOrDefault(x => x.Key == portKey);
                 if (outlet is not null)
                 {
-                    portIndex = outletIndex + 1;
                     return CheckPinIndex(outlet.Layout, pinIndex);
                 }
 
                 ScriptError error = new(ErrorLevel.Error, $"進路端子 '{portKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                portIndex = 0;
                 return false;
 
 
@@ -119,7 +108,7 @@ namespace Bus.Common.Scripting.Commands
 
         internal Junction Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            Junction junction = new(plateX, plateZ, transform, Inlet.Value, Outlets.Select(o => o.Value));
+            Junction junction = new(plateX, plateZ, transform, Ports.Select(o => o.Value));
 
             foreach (PathDefinition path in PathsKey)
             {

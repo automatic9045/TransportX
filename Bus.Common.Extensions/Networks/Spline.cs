@@ -18,14 +18,20 @@ namespace Bus.Common.Extensions.Networks
         private readonly ID3D11Device Device;
         private readonly IPhysicsHost PhysicsHost;
 
-        public override NetworkPort.Inlet Inlet { get; }
+        public override NetworkPort Inlet { get; }
         public override NetworkPort Outlet { get; }
+
+        private readonly List<LanePath> PathsKey = [];
+        public override IReadOnlyList<LanePath> Paths => PathsKey;
+
+        private readonly List<LocatedModel> ModelsKey = [];
+        public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
         public float Curvature { get; }
         public float Length { get; }
 
         public Spline(ID3D11Device device, IPhysicsHost physicsHost,
-            int plateX, int plateZ, Matrix4x4 transform, LaneLayout connectionLayout, float curvature, float length)
+            int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, float curvature, float length)
             : base(plateX, plateZ, transform)
         {
             Device = device;
@@ -34,8 +40,8 @@ namespace Bus.Common.Extensions.Networks
             Curvature = curvature;
             Length = length;
 
-            Inlet = new NetworkPort.Inlet(this, connectionLayout.CreateOpposition());
-            Outlet = new NetworkPort(this, GetTransform(Length), Inlet.Layout.CreateOpposition());
+            Inlet = new NetworkPort(this, Matrix4x4.CreateRotationY(float.Pi), outletLayout.Opposition);
+            Outlet = new NetworkPort(this, GetTransform(Length), outletLayout);
 
             for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)
             {

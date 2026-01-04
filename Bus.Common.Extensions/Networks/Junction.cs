@@ -12,14 +12,18 @@ namespace Bus.Common.Extensions.Networks
 {
     public class Junction : NetworkNode
     {
-        public override NetworkPort.Inlet Inlet { get; }
-        public override IReadOnlyList<NetworkPort> Outlets { get; }
+        public override IReadOnlyList<NetworkPort> Ports { get; }
 
-        public Junction(int plateX, int plateZ, Matrix4x4 transform, LaneLayout inlet, IEnumerable<OutletDefinition> outlets)
+        private readonly List<LanePath> PathsKey = [];
+        public override IReadOnlyList<LanePath> Paths => PathsKey;
+
+        private readonly List<LocatedModel> ModelsKey = [];
+        public override IReadOnlyList<LocatedModel> Models => ModelsKey;
+
+        public Junction(int plateX, int plateZ, Matrix4x4 transform, IEnumerable<PortDefinition> ports)
             : base(plateX, plateZ, transform)
         {
-            Inlet = new NetworkPort.Inlet(this, inlet);
-            Outlets = outlets.Select(def => new NetworkPort(this, def.Offset, def.Layout)).ToArray();
+            Ports = ports.Select(def => new NetworkPort(this, def.Offset, def.Layout)).ToArray();
         }
 
         public LanePath Wire(LanePin from, LanePin to)

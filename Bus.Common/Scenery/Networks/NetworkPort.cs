@@ -29,13 +29,5 @@ namespace Bus.Common.Scenery.Networks
             ConnectedPort = port;
             port.ConnectedPort = this;
         }
-
-
-        public class Inlet : NetworkPort
-        {
-            public Inlet(NetworkElement owner, LaneLayout layout) : base(owner, Matrix4x4.CreateRotationY(float.Pi), layout)
-            {
-            }
-        }
     }
 }

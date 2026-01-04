@@ -117,7 +117,7 @@ namespace Bus.Common.Scripting.Commands
                 ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                junction = new Junction(X, Z, transform, new LaneLayout(), []);
+                junction = new Junction(X, Z, transform, []);
             }
 
             Target.Network.Add(junction);

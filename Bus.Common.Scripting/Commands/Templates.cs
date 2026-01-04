@@ -33,9 +33,9 @@ namespace Bus.Common.Scripting.Commands
             return template;
         }
 
-        public JunctionTemplate CreateJunction(string key, string inletKey, string inletLayoutKey)
+        public JunctionTemplate CreateJunction(string key)
         {
-            JunctionTemplate template = new(World, inletKey, inletLayoutKey);
+            JunctionTemplate template = new(World);
             JunctionsKey.Add(key, template);
             return template;
         }

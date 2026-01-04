@@ -9,14 +9,15 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class NetworkEdge : NetworkElement
     {
-        public override IReadOnlyList<NetworkPort> Outlets => [Outlet];
+        public abstract NetworkPort Inlet { get; }
         public abstract NetworkPort Outlet { get; }
+        public override IReadOnlyList<NetworkPort> Ports => [Inlet, Outlet];
 
         public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
         }
 
-        public virtual void SetChild(NetworkElement child)
+        public virtual void SetChild(NetworkEdge child)
         {
             Outlet.ConnectTo(child.Inlet);
         }

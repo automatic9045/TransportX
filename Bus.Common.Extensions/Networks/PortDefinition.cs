@@ -9,12 +9,12 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Extensions.Networks
 {
-    public class OutletDefinition
+    public class PortDefinition
     {
         public LaneLayout Layout { get; }
         public Matrix4x4 Offset { get; }
 
-        public OutletDefinition(LaneLayout layout, Matrix4x4 offset)
+        public PortDefinition(LaneLayout layout, Matrix4x4 offset)
         {
             Layout = layout;
             Offset = offset;
