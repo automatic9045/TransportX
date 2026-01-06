@@ -7,6 +7,7 @@ namespace Bus.Common.Scenery.Networks
 {
     public class NetworkPort
     {
+        public string Name { get; }
         public NetworkElement Owner { get; }
         public Matrix4x4 Offset { get; }
         public LaneLayout Layout { get; }
@@ -14,8 +15,9 @@ namespace Bus.Common.Scenery.Networks
 
         public NetworkPort? ConnectedPort { get; private set; } = null;
 
-        public NetworkPort(NetworkElement owner, Matrix4x4 offset, LaneLayout layout)
+        public NetworkPort(string name, NetworkElement owner, Matrix4x4 offset, LaneLayout layout)
         {
+            Name = name;
             Owner = owner;
             Offset = offset;
             Layout = layout;

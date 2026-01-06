@@ -5,13 +5,14 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Collections;
 using Bus.Common.Rendering;
 
 namespace Bus.Common.Scenery.Networks
 {
     public abstract class NetworkElement : LocatableObject, IDrawable
     {
-        public abstract IReadOnlyList<NetworkPort> Ports { get; }
+        public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<LanePath> Paths { get; }
         public abstract IReadOnlyList<LocatedModel> Models { get; }
 

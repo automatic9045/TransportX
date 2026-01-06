@@ -11,11 +11,13 @@ namespace Bus.Common.Extensions.Networks
 {
     public class PortDefinition
     {
+        public string Name { get; }
         public LaneLayout Layout { get; }
         public Matrix4x4 Offset { get; }
 
-        public PortDefinition(LaneLayout layout, Matrix4x4 offset)
+        public PortDefinition(string name, LaneLayout layout, Matrix4x4 offset)
         {
+            Name = name;
             Layout = layout;
             Offset = offset;
         }

@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Collections;
 using Bus.Common.Diagnostics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
@@ -18,8 +19,8 @@ namespace Bus.Common.Scripting.Commands
     {
         private readonly ScriptWorld World;
 
-        private readonly List<KeyValuePair<string, PortDefinition>> PortsKey = [];
-        public IReadOnlyList<KeyValuePair<string, PortDefinition>> Ports => PortsKey;
+        private readonly KeyedList<string, PortDefinition> PortsKey = new KeyedList<string, PortDefinition>(item => item.Name);
+        public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
         private readonly List<PathDefinition> PathsKey = [];
         public IReadOnlyList<PathDefinition> Paths => PathsKey;
@@ -36,47 +37,44 @@ namespace Bus.Common.Scripting.Commands
         {
             LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
             SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            PortDefinition port = new(layout, offset.CreateTransform());
-            PortsKey.Add(new(key, port));
+            PortDefinition port = new(key, layout, offset.CreateTransform());
+            PortsKey.Add(port);
+        }
+
+        public PortDefinition? GetPort(string portKey)
+        {
+            if (Ports.TryGetValue(portKey, out PortDefinition? port)) return port;
+
+            ScriptError error = new(ErrorLevel.Error, $"進路端子 '{portKey}' が見つかりません。");
+            World.ErrorCollector.Report(error);
+
+            return null;
         }
 
         public void Wire(string fromKey, int fromPin, string toKey, int toPin)
         {
-            if (!CheckPin(fromKey, fromPin, out int fromPort)) return;
-            if (!CheckPin(toKey, toPin, out int toPort)) return;
+            if (!CheckPin(fromKey, fromPin)) return;
+            if (!CheckPin(toKey, toPin)) return;
 
-            PathDefinition path = new(fromPort, fromPin, toPort, toPin);
+            PathDefinition path = new(fromKey, fromPin, toKey, toPin);
             PathsKey.Add(path);
 
 
-            bool CheckPin(string portKey, int pinIndex, out int portIndex)
+            bool CheckPin(string portKey, int pinIndex)
             {
-                (portIndex, _, PortDefinition? outlet) = Ports.Select((o, i) => (Index: i, o.Key, o.Value)).FirstOrDefault(x => x.Key == portKey);
-                if (outlet is not null)
+                PortDefinition? port = GetPort(portKey);
+                if (port is null) return false;
+
+                if (pinIndex < 0 || port.Layout.Lanes.Count <= pinIndex)
                 {
-                    return CheckPinIndex(outlet.Layout, pinIndex);
+                    ScriptError error = new(ErrorLevel.Error,
+                        $"進路端子 '{portKey}' にピン {pinIndex} は存在しません。有効なピン番号は 0 以上 {port.Layout.Lanes.Count} 未満です。");
+                    World.ErrorCollector.Report(error);
+
+                    return false;
                 }
 
-                ScriptError error = new(ErrorLevel.Error, $"進路端子 '{portKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                return false;
-
-
-                bool CheckPinIndex(LaneLayout layout, int pinIndex)
-                {
-                    if (pinIndex < 0 || layout.Lanes.Count <= pinIndex)
-                    {
-                        ScriptError error = new(ErrorLevel.Error, $"進路端子 '{portKey}' にピン {pinIndex} は存在しません。有効なピン番号は 0 以上 {layout.Lanes.Count} 未満です。");
-                        World.ErrorCollector.Report(error);
-
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
         }
 
@@ -108,12 +106,12 @@ namespace Bus.Common.Scripting.Commands
 
         internal Junction Build(int plateX, int plateZ, Matrix4x4 transform)
         {
-            Junction junction = new(plateX, plateZ, transform, Ports.Select(o => o.Value));
+            Junction junction = new(plateX, plateZ, transform, Ports);
 
             foreach (PathDefinition path in PathsKey)
             {
-                LanePin from = junction.Ports[path.FromPortIndex].Pins[path.FromPinIndex];
-                LanePin to = junction.Ports[path.ToPortIndex].Pins[path.ToPinIndex];
+                LanePin from = junction.Ports[path.FromPortKey].Pins[path.FromPinIndex];
+                LanePin to = junction.Ports[path.ToPortKey].Pins[path.ToPinIndex];
                 junction.Wire(from, to);
             }
 
@@ -129,16 +127,16 @@ namespace Bus.Common.Scripting.Commands
 
         public struct PathDefinition
         {
-            public int FromPortIndex { get; }
+            public string FromPortKey { get; }
             public int FromPinIndex { get; }
-            public int ToPortIndex { get; }
+            public string ToPortKey { get; }
             public int ToPinIndex { get; }
 
-            public PathDefinition(int fromPortIndex, int fromPinIndex, int toPortIndex, int toPinIndex)
+            public PathDefinition(string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
             {
-                FromPortIndex = fromPortIndex;
+                FromPortKey = fromPortKey;
                 FromPinIndex = fromPinIndex;
-                ToPortIndex = toPortIndex;
+                ToPortKey = toPortKey;
                 ToPinIndex = toPinIndex;
             }
         }

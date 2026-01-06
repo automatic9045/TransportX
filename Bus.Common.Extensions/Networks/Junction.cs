@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Collections;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
@@ -12,7 +13,7 @@ namespace Bus.Common.Extensions.Networks
 {
     public class Junction : NetworkNode
     {
-        public override IReadOnlyList<NetworkPort> Ports { get; }
+        public override IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
 
         private readonly List<LanePath> PathsKey = [];
         public override IReadOnlyList<LanePath> Paths => PathsKey;
@@ -23,7 +24,7 @@ namespace Bus.Common.Extensions.Networks
         public Junction(int plateX, int plateZ, Matrix4x4 transform, IEnumerable<PortDefinition> ports)
             : base(plateX, plateZ, transform)
         {
-            Ports = ports.Select(def => new NetworkPort(this, def.Offset, def.Layout)).ToArray();
+            Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
 
         public LanePath Wire(LanePin from, LanePin to)

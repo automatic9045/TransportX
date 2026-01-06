@@ -40,8 +40,8 @@ namespace Bus.Common.Extensions.Networks
             Curvature = curvature;
             Length = length;
 
-            Inlet = new NetworkPort(this, Matrix4x4.CreateRotationY(float.Pi), outletLayout.Opposition);
-            Outlet = new NetworkPort(this, GetTransform(Length), outletLayout);
+            Inlet = new NetworkPort(nameof(Inlet), this, Matrix4x4.CreateRotationY(float.Pi), outletLayout.Opposition);
+            Outlet = new NetworkPort(nameof(Outlet), this, GetTransform(Length), outletLayout);
 
             for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)
             {
