@@ -21,6 +21,7 @@ namespace Bus.Common.Physics
         Matrix4x4 Offset { get; }
         Matrix4x4 OffsetInverse { get; }
 
+        string? DebugName { get; set; }
         IModel? DebugModel { get; }
         Vector4 DebugModelColor { get; set; }
 

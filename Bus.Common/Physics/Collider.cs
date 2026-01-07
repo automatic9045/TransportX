@@ -24,6 +24,16 @@ namespace Bus.Common.Physics
         public Matrix4x4 Offset { get; }
         public Matrix4x4 OffsetInverse { get; }
 
+        public string? DebugName
+        {
+            get => field;
+            set
+            {
+                field = value;
+                DebugModel?.DebugName = value is null ? null : $"{value}_Collider";
+            }
+        } = null;
+
         public IModel? DebugModel { get; protected set; } = null;
         public virtual Vector4 DebugModelColor { get; set; } = Vector4.One;
 

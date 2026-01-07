@@ -64,7 +64,10 @@ namespace Bus.Common.Scenery
 
             ColliderMaterial material = sourceList[0].Model.Collider.Material;
             Collider<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, Matrix4x4.CreateTranslation(center), true);
-            CollidableModel physicsWrapper = new(newCollider);
+            CollidableModel physicsWrapper = new(newCollider)
+            {
+                DebugName = $"Merged{{{sourceList[0].Model.DebugName}, others: {sourceList.Count - 1}}}",
+            };
 
             BodyDescription desc = BodyDescription.CreateKinematic(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex, 0.01f);
             BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);

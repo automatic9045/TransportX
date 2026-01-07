@@ -90,6 +90,7 @@ namespace Bus.Common.Scripting.Commands
                             }
 
                             Model model = interpreter.Build();
+                            model.DebugName = key;
 
                             if (model is CollidableModel collidableModel)
                             {

@@ -61,6 +61,7 @@ namespace Bus.Common.Physics.Colliders
 
             Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, DebugMaterial, PrimitiveTopology.LineList);
             DebugModel = new Model([visualMesh], []);
+            DebugName = DebugName;
         }
     }
 }

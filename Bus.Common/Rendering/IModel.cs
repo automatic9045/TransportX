@@ -10,6 +10,8 @@ namespace Bus.Common.Rendering
 {
     public interface IModel : IDisposable
     {
+        public string? DebugName { get; set; }
+
         void Draw(DrawContext context);
     }
 

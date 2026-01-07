@@ -15,11 +15,34 @@ namespace Bus.Common.Rendering
 {
     public class Model : IModel
     {
-        public static Model Empty() => new Model([], []);
+        public static Model Empty() => new([], [])
+        {
+            DebugName = "Empty",
+        };
 
 
         public IEnumerable<Mesh> VisualMeshes { get; }
         public IEnumerable<ID3D11ShaderResourceView> Textures { get; }
+
+        public virtual string? DebugName
+        {
+            get => field;
+            set
+            {
+                field = value;
+                foreach (Mesh mesh in VisualMeshes) mesh.DebugName = value;
+
+                if (value is null)
+                {
+                    foreach (ID3D11ShaderResourceView texture in Textures) texture.DebugName = null;
+                }
+                else
+                {
+
+                    foreach (ID3D11ShaderResourceView texture in Textures) texture.DebugName = $"{value}_ShaderResourceView";
+                }
+            }
+        } = null;
 
         public Model(IEnumerable<Mesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures)
         {
@@ -61,6 +84,12 @@ namespace Bus.Common.Rendering
     {
         public ICollider Collider { get; }
 
+        public override string? DebugName
+        {
+            get => base.DebugName;
+            set => base.DebugName = Collider.DebugName = value;
+        }
+
         public CollidableModel(IEnumerable<Mesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
         {
             Collider = collider;
@@ -68,6 +97,7 @@ namespace Bus.Common.Rendering
 
         public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.VisualMeshes, baseModel.Textures, collider)
         {
+            DebugName = baseModel.DebugName;
         }
 
         public CollidableModel(ICollider collider) : this([], [], collider)

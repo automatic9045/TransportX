@@ -19,7 +19,24 @@ namespace Bus.Common.Rendering
 
         public PrimitiveTopology Topology { get; }
 
-        private event EventHandler? Disposing;
+        public string? DebugName
+        {
+            get => field;
+            set
+            {
+                field = value;
+
+                if (value is null)
+                {
+                    VertexBuffer.DebugName = IndexBuffer.DebugName = null;
+                }
+                else
+                {
+                    VertexBuffer.DebugName = $"{value}_VertexBuffer";
+                    IndexBuffer.DebugName = $"{value}_IndexBuffer";
+                }
+            }
+        } = null;
 
         public Mesh(ID3D11Buffer vertexBuffer, ID3D11Buffer indexBuffer, Material material, PrimitiveTopology topology = PrimitiveTopology.TriangleList)
         {
@@ -73,8 +90,6 @@ namespace Bus.Common.Rendering
         {
             VertexBuffer.Dispose();
             IndexBuffer.Dispose();
-
-            Disposing?.Invoke(this, EventArgs.Empty);
         }
 
         public void Draw(DrawContext context)
