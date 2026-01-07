@@ -11,7 +11,7 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Scenery
 {
-    public class Plate : IDrawable
+    public class Plate : IDrawable, IDisposable
     {
         public static readonly int Size = 250;
 
@@ -27,6 +27,12 @@ namespace Bus.Common.Scenery
         {
             X = x;
             Z = z;
+        }
+
+        public void Dispose()
+        {
+            foreach (LocatedModel model in Models) (model as CollidableLocatedModel)?.Dispose();
+            foreach (NetworkElement element in Network) element.Dispose();
         }
 
         public void SetFromCamera(PlateOffset fromCamera)

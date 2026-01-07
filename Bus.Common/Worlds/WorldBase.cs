@@ -65,6 +65,8 @@ namespace Bus.Common.Worlds
 
         public virtual void Dispose()
         {
+            foreach (LocatedModel model in BackgroundModels) (model as CollidableLocatedModel)?.Dispose();
+            Plates.Dispose();
             Bodies.Dispose();
             Models.Dispose();
         }

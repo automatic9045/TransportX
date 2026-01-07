@@ -10,7 +10,7 @@ using BepuPhysics;
 
 namespace Bus.Common.Scenery
 {
-    public class PlateCollection : IEnumerable<Plate>
+    public class PlateCollection : IEnumerable<Plate>, IDisposable
     {
         private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, Plate>> Items = new();
 
@@ -22,6 +22,11 @@ namespace Bus.Common.Scenery
 
         public PlateCollection()
         {
+        }
+
+        public void Dispose()
+        {
+            foreach (Plate plate in this) plate.Dispose();
         }
 
         public void SetCameraPosition(LocatableObject camera)

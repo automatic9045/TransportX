@@ -76,6 +76,12 @@ namespace Bus.Common.Scenery
             return new MergedKinematicLocatedModel(physicsHost.Simulation, physicsWrapper, handle, children);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            Model.Dispose();
+        }
+
         public override void Draw(LocatedDrawContext context)
         {
             foreach (LocatedModel child in Children)

@@ -10,7 +10,7 @@ using Bus.Common.Rendering;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public abstract class NetworkElement : LocatableObject, IDrawable
+    public abstract class NetworkElement : LocatableObject, IDrawable, IDisposable
     {
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<LanePath> Paths { get; }
@@ -18,6 +18,11 @@ namespace Bus.Common.Scenery.Networks
 
         public NetworkElement(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
         {
+        }
+
+        public void Dispose()
+        {
+            foreach (LocatedModel model in Models) (model as CollidableLocatedModel)?.Dispose();
         }
 
         public void Draw(LocatedDrawContext context)
