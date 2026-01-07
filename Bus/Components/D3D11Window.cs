@@ -59,8 +59,6 @@ namespace Bus.Components
 
             Size = new System.Drawing.Size(1, 1);
 
-            ID3D11Debug? debug = DXHost.Device.CreationFlags.HasFlag(DeviceCreationFlags.Debug) ? DXHost.Device.QueryInterface<ID3D11Debug>() : null;
-
             User32.SafeHWND hwnd = User32.CreateWindowEx(
                 lpClassName: "STATIC",
                 dwStyle: User32.WindowStyles.WS_CHILD | User32.WindowStyles.WS_VISIBLE,
@@ -86,7 +84,12 @@ namespace Bus.Components
             };
             IDXGISwapChain1 swapChain = DXHost.DXGIFactory.CreateSwapChainForHwnd(DXHost.Device, hwnd.DangerousGetHandle(), swapChainDesc, fullscreenDesc);
 
-            DXClient = new DXClient(hwnd.DangerousGetHandle(), swapChain, debug);
+            DXClient = new DXClient(hwnd.DangerousGetHandle(), swapChain);
+            DXHost.Disposing += (sender, e) =>
+            {
+                DXClient?.Dispose();
+                DXClient = null;
+            };
 
             System.Windows.Media.CompositionTarget.Rendering += OnCompositionTargetRendering;
             IsVisibleChanged += OnIsVisibleChanged;
@@ -113,13 +116,20 @@ namespace Bus.Components
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            System.Windows.Media.CompositionTarget.Rendering -= OnCompositionTargetRendering;
-            IsVisibleChanged -= OnIsVisibleChanged;
+            if ((bool)e.NewValue)
+            {
+                System.Windows.Media.CompositionTarget.Rendering += OnCompositionTargetRendering;
+            }
+            else
+            {
+                System.Windows.Media.CompositionTarget.Rendering -= OnCompositionTargetRendering;
+            }
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
             DXClient?.Dispose();
+            DXClient = null;
         }
     }
 }

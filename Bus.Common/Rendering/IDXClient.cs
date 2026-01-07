@@ -14,7 +14,6 @@ namespace Bus.Common.Rendering
     {
         nint Hwnd { get; }
         IDXGISwapChain1 SwapChain { get; }
-        ID3D11Debug? D3DDebug { get; }
 
         ID3D11RenderTargetView? RenderTarget { get; }
         ID3D11DepthStencilView? DepthStencil { get; }

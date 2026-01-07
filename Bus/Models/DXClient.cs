@@ -17,16 +17,14 @@ namespace Bus.Models
     {
         public nint Hwnd { get; }
         public IDXGISwapChain1 SwapChain { get; }
-        public ID3D11Debug? D3DDebug { get; }
 
         public ID3D11RenderTargetView? RenderTarget { get; private set; }
         public ID3D11DepthStencilView? DepthStencil { get; private set; }
 
-        public DXClient(nint hwnd, IDXGISwapChain1 swapChain, ID3D11Debug? d3DDebug)
+        public DXClient(nint hwnd, IDXGISwapChain1 swapChain)
         {
             Hwnd = hwnd;
             SwapChain = swapChain;
-            D3DDebug = d3DDebug;
         }
 
         public void Dispose()
@@ -35,12 +33,6 @@ namespace Bus.Models
             DepthStencil?.Dispose();
             SwapChain.Dispose();
             User32.DestroyWindow(Hwnd);
-
-            if (D3DDebug is not null)
-            {
-                D3DDebug.ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
-                D3DDebug.Dispose();
-            }
         }
 
         internal void Resize(ID3D11Device device, int width, int height)

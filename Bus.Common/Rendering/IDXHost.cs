@@ -17,5 +17,7 @@ namespace Bus.Common.Rendering
         IXAudio2 XAudio2 { get; }
         IXAudio2MasteringVoice MasteringVoice { get; }
         X3DAudio X3DAudio { get; }
+
+        event EventHandler? Disposing;
     }
 }

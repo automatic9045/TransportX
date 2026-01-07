@@ -19,10 +19,18 @@ namespace Bus
             mainWindow.Show();
 
             WorldInfo? worldInfo = WorldSelector.Select();
-            if (worldInfo is null) Environment.Exit(0);
+            if (worldInfo is null)
+            {
+                Shutdown();
+                return;
+            }
 
             bool isLoaded = ((MainWindowViewModel)mainWindow.DataContext).LoadGame(worldInfo);
-            if (!isLoaded) Environment.Exit(1);
+            if (!isLoaded)
+            {
+                Shutdown(1);
+                return;
+            }
         }
     }
 }

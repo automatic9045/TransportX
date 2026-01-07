@@ -15,33 +15,37 @@ namespace Bus.Models
 {
     public class DXHost : IDXHost, IDisposable
     {
-        private static readonly bool Debug = false;
+        private static readonly bool IsDebug = false;
 
         static DXHost()
         {
 #if DEBUG
-            Debug = true;
+            IsDebug = true;
 #endif
         }
 
 
         public ID3D11Device Device { get; } 
         public ID3D11DeviceContext Context { get; }
+        public ID3D11Debug? Debug { get; }
         public IDXGIFactory2 DXGIFactory { get; }
         public IXAudio2 XAudio2 { get; }
         public IXAudio2MasteringVoice MasteringVoice { get; }
         public X3DAudio X3DAudio { get; }
 
+        public event EventHandler? Disposing;
+
         public DXHost()
         {
             DeviceCreationFlags creationFlags = DeviceCreationFlags.BgraSupport;
-            if (Debug) creationFlags |= DeviceCreationFlags.Debug;
+            if (IsDebug) creationFlags |= DeviceCreationFlags.Debug;
 
             D3D11.D3D11CreateDevice(null, DriverType.Hardware, creationFlags, [ FeatureLevel.Level_11_1 ], out ID3D11Device device, out FeatureLevel featureLevel, out ID3D11DeviceContext context);
             Device = device;
             Context = context;
+            Debug = IsDebug ? Device.QueryInterface<ID3D11Debug>() : null;
 
-            DXGIFactory = DXGI.CreateDXGIFactory2<IDXGIFactory2>(Debug);
+            DXGIFactory = DXGI.CreateDXGIFactory2<IDXGIFactory2>(IsDebug);
 
             XAudio2 = Vortice.XAudio2.XAudio2.XAudio2Create();
             MasteringVoice = XAudio2.CreateMasteringVoice();
@@ -50,16 +54,25 @@ namespace Bus.Models
 
         public void Dispose()
         {
-            ID3D11Debug? d3dDebug = Debug ? Device.QueryInterface<ID3D11Debug>() : null;
+            Disposing?.Invoke(this, EventArgs.Empty);
 
-            Device.Dispose();
-            Context.Dispose();
             DXGIFactory.Dispose();
+
             MasteringVoice.Dispose();
             XAudio2.Dispose();
 
-            d3dDebug?.ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail | ReportLiveDeviceObjectFlags.IgnoreInternal);
-            d3dDebug?.Dispose();
+            Context.ClearState();
+            Context.Flush();
+            Context.Dispose();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Device.Dispose();
+
+            Debug?.ReportLiveDeviceObjects(ReportLiveDeviceObjectFlags.Detail);
+            Debug?.Dispose();
         }
     }
 }
