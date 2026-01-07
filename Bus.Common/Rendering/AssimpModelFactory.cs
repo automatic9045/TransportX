@@ -11,11 +11,10 @@ using Assimp;
 using Assimp.Configs;
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using CollisionMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
-
-using CollisionMesh = BepuPhysics.Collidables.Mesh;
 
 using Bus.Common.Diagnostics;
 using Bus.Common.Physics;
@@ -118,7 +117,12 @@ namespace Bus.Common.Rendering
 
             try
             {
-                Scene scene = Importer.ImportFile(modelPath, steps);
+                byte[] data = File.ReadAllBytes(modelPath);
+                using MemoryStream stream = new(data);
+
+                string extension = Path.GetExtension(modelPath).TrimStart('.');
+
+                Scene scene = Importer.ImportFileFromStream(stream, steps, extension);
                 return scene;
             }
             catch (FileNotFoundException ex)
