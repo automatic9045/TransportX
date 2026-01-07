@@ -50,6 +50,13 @@ namespace Bus.Common.Scripting.Commands
             return spline;
         }
 
+        public BezierSpline ConnectBezier(NetworkPort targetPort, double handleScale = 0.5)
+        {
+            BezierSpline spline = SplineFactory.InterpolateByBezier(targetPort, (float)handleScale);
+            AddElementToPlate(spline);
+            return spline;
+        }
+
         public SplineCommand IntoSpline(string? templateKey)
         {
             PlateCommand plate = World.Commander.Plates[Outlet.Owner.PlateX, Outlet.Owner.PlateZ];

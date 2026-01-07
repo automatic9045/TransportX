@@ -17,7 +17,7 @@ namespace Bus.Common.Extensions.Networks
         private readonly Vector3 FromUp;
         private readonly Vector3 ToUp;
 
-        public override float Length => Curve.TotalLength;
+        public override float Length => Curve.Length;
 
         public BezierLanePath(LanePin from, LanePin to, float? controlScale = null) : base(from, to)
         {

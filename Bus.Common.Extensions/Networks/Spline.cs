@@ -13,30 +13,21 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Extensions.Networks
 {
-    public class Spline : NetworkEdge
+    public class Spline : SplineBase
     {
-        private readonly ID3D11Device Device;
-        private readonly IPhysicsHost PhysicsHost;
-
         public override NetworkPort Inlet { get; }
         public override NetworkPort Outlet { get; }
 
         private readonly List<LanePath> PathsKey = [];
         public override IReadOnlyList<LanePath> Paths => PathsKey;
 
-        private readonly List<LocatedModel> ModelsKey = [];
-        public override IReadOnlyList<LocatedModel> Models => ModelsKey;
-
         public float Curvature { get; }
-        public float Length { get; }
+        public override float Length { get; }
 
         public Spline(ID3D11Device device, IPhysicsHost physicsHost,
             int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, float curvature, float length)
-            : base(plateX, plateZ, transform)
+            : base(device, physicsHost, plateX, plateZ, transform)
         {
-            Device = device;
-            PhysicsHost = physicsHost;
-
             Curvature = curvature;
             Length = length;
 
@@ -45,64 +36,36 @@ namespace Bus.Common.Extensions.Networks
 
             for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)
             {
-                LanePin inlet = Inlet.Pins[i];
-                LanePin outlet = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
+                LanePin inletPin = Inlet.Pins[i];
+                LanePin outletPin = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
 
-                SplineLanePath path = new(inlet, outlet);
-                inlet.Wire(path);
-                outlet.Wire(path);
+                SplineLanePath path = new(inletPin, outletPin);
+                inletPin.Wire(path);
+                outletPin.Wire(path);
                 PathsKey.Add(path);
             }
         }
 
-        public void AddStructure(SplineStructure structure)
+        public override Vector3 GetPoint(float s)
         {
-            Matrix4x4 span = Curvature == 0 || structure.Span == 0 ? Matrix4x4.Identity : Matrix4x4.CreateRotationY(structure.Span * Curvature / 2);
-
-            List<KinematicLocatedModelTemplate> modelsToMerge = [];
-            Matrix4x4 world = GetTransform(structure.From) * Transform;
-            for (int i = 0; i < structure.Count; i++)
-            {
-                LocatedModelTemplate source = structure.Models[i % structure.Models.Count];
-                Matrix4x4 transform = source.Transform * span * world;
-
-                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
-                if (compiled is KinematicLocatedModelTemplate compiledDynamic)
-                {
-                    modelsToMerge.Add(compiledDynamic);
-                }
-                else
-                {
-                    LocatedModel model = compiled.Build();
-                    ModelsKey.Add(model);
-                }
-
-                world = GetTransform(structure.Interval) * world;
-            }
-
-            if (0 < modelsToMerge.Count)
-            {
-                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
-                mergedModel.Model.Collider.CreateDebugModel(Device);
-                mergedModel.Model.Collider.DebugModelColor = new Vector4(0, 0, 1, 1);
-                ModelsKey.Add(mergedModel);
-            }
-        }
-
-        public void AddStructures(IEnumerable<SplineStructure> structures)
-        {
-            foreach (SplineStructure structure in structures)
-            {
-                AddStructure(structure);
-            }
-        }
-
-        public Matrix4x4 GetTransform(float at)
-        {
-            float angle = at * Curvature;
+            float angle = s * Curvature;
             float x = Curvature == 0 ? 0 : (1 - float.Cos(angle)) / Curvature;
-            float z = Curvature == 0 ? at : float.Sin(angle) / Curvature;
-            return Matrix4x4.CreateRotationY(angle) * Matrix4x4.CreateTranslation(x, 0, z);
+            float z = Curvature == 0 ? s : float.Sin(angle) / Curvature;
+
+            return new Vector3(x, 0, z);
+        }
+
+        public override Vector3 GetUp(float s)
+        {
+            return Vector3.UnitY;
+        }
+
+        public override Matrix4x4 GetTransform(float s)
+        {
+            Matrix4x4 transform = Matrix4x4.CreateRotationY(s * Curvature);
+            transform.Translation = GetPoint(s);
+
+            return transform;
         }
     }
 }

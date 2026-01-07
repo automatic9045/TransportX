@@ -17,13 +17,14 @@ namespace Bus.Common.Extensions.Networks
     {
         protected readonly ID3D11Device Device;
         protected readonly IPhysicsHost PhysicsHost;
-        protected readonly LaneLayout OutletLayout;
-        protected readonly NetworkPort? SourcePort;
 
         protected readonly List<SplineStructure> Structures = [];
 
-        protected readonly List<Spline> CreatedSplinesKey = [];
-        public IReadOnlyList<Spline> CreatedSplines => CreatedSplinesKey;
+        public LaneLayout OutletLayout { get; }
+        public NetworkPort? SourcePort { get; }
+
+        protected readonly List<SplineBase> CreatedSplinesKey = [];
+        public IReadOnlyList<SplineBase> CreatedSplines => CreatedSplinesKey;
 
         public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, NetworkPort? sourcePort)
             : base(plateX, plateZ, transform)
@@ -36,7 +37,7 @@ namespace Bus.Common.Extensions.Networks
             SourcePort = sourcePort;
         }
 
-        protected bool ApplyStructureToSpline(int structureIndex, Spline spline)
+        protected bool ApplyStructureToSpline(int structureIndex, SplineBase spline)
         {
             SplineStructure structure = Structures[structureIndex];
             int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
@@ -64,10 +65,8 @@ namespace Bus.Common.Extensions.Networks
             }
         }
 
-        public Spline ByCurvature(float curvature, float length)
+        internal void SetNext(SplineBase spline)
         {
-            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, OutletLayout, curvature, length);
-
             List<int> indicesToRemove = [];
             for (int i = 0; i < Structures.Count; i++) // 登録済のストラクチャーをこのスプラインに設置
             {
@@ -79,7 +78,7 @@ namespace Bus.Common.Extensions.Networks
 
             if (CreatedSplines.Count == 0)
             {
-                if (SourcePort is not null) SourcePort.ConnectTo(spline.Inlet);
+                SourcePort?.ConnectTo(spline.Inlet);
             }
             else
             {
@@ -87,6 +86,12 @@ namespace Bus.Common.Extensions.Networks
             }
 
             CreatedSplinesKey.Add(spline);
+        }
+
+        public Spline ByCurvature(float curvature, float length)
+        {
+            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, OutletLayout, curvature, length);
+            SetNext(spline);
             return spline;
         }
 
@@ -98,6 +103,18 @@ namespace Bus.Common.Extensions.Networks
         public Spline ByRadius(float radius, float length)
         {
             return ByCurvature(radius == 0 ? 0 : 1 / radius, length);
+        }
+
+        public BezierSpline InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
+        {
+            Matrix4x4 from = Transform;
+            PlateOffset plateOffset = GetPlateOffset(targetPort.Owner);
+            Matrix4x4 to = targetPort.Offset * targetPort.Owner.Transform * plateOffset.Transform;
+
+            BezierSpline spline = new(Device, PhysicsHost, PlateX, PlateZ, from, to, OutletLayout, handleScale);
+            SetNext(spline);
+            spline.Outlet.ConnectTo(targetPort);
+            return spline;
         }
 
         public void PutStructure(SplineStructure structure)

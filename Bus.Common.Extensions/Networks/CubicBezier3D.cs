@@ -15,7 +15,7 @@ namespace Bus.Common.Extensions.Networks
         private readonly Vector3 P0, P1, P2, P3;
         private readonly float[] CumulativeLengths;
 
-        public float TotalLength { get; }
+        public float Length { get; }
 
         public CubicBezier3D(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
         {
@@ -25,7 +25,7 @@ namespace Bus.Common.Extensions.Networks
             P3 = p3;
 
             CumulativeLengths = new float[ArcLengthSamples + 1];
-            TotalLength = 0;
+            Length = 0;
             CumulativeLengths[0] = 0;
 
             Vector3 prevPosition = P0;
@@ -33,8 +33,8 @@ namespace Bus.Common.Extensions.Networks
             {
                 float t = (float)i / ArcLengthSamples;
                 Vector3 position = GetPoint(t);
-                TotalLength += Vector3.Distance(prevPosition, position);
-                CumulativeLengths[i] = TotalLength;
+                Length += Vector3.Distance(prevPosition, position);
+                CumulativeLengths[i] = Length;
                 prevPosition = position;
             }
         }
@@ -59,7 +59,7 @@ namespace Bus.Common.Extensions.Networks
         public float GetT(float s)
         {
             if (s <= 0) return 0;
-            if (TotalLength <= s) return 1;
+            if (Length <= s) return 1;
 
             int index = 0;
             for (int i = 1; i < CumulativeLengths.Length; i++)
