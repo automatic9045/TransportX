@@ -22,7 +22,7 @@ using Bus.Common.Physics;
 
 namespace Bus.Common.Rendering
 {
-    internal class AssimpModelFactory
+    internal class AssimpModelFactory : IDisposable
     {
         // 参考: https://github.com/assimp/assimp/blob/master/samples/SimpleTexturedDirectx11/SimpleTexturedDirectx11/ModelLoader.cpp 
 
@@ -31,8 +31,8 @@ namespace Bus.Common.Rendering
         private readonly Simulation? Simulation;
         private readonly IErrorCollector ErrorCollector;
 
-        private readonly AssimpContext Importer = new AssimpContext();
-        private readonly List<TextureInfo> LoadedTextures = new List<TextureInfo>();
+        private readonly AssimpContext Importer = new();
+        private readonly List<TextureInfo> LoadedTextures = [];
 
         public bool IsCollisionSupported => Simulation is not null;
 
@@ -44,6 +44,11 @@ namespace Bus.Common.Rendering
             ErrorCollector = errorCollector;
 
             Importer.SetConfig(new SortByPrimitiveTypeConfig(PrimitiveType.Point | PrimitiveType.Line));
+        }
+
+        public void Dispose()
+        {
+            Importer.Dispose();
         }
 
         private unsafe Model Load(Scene visualScene, string baseDirectory, string sourceLocation)
