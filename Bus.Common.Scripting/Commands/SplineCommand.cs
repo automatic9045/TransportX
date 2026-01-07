@@ -17,10 +17,11 @@ namespace Bus.Common.Scripting.Commands
     public class SplineCommand
     {
         private readonly ScriptWorld World;
-        private readonly SplineFactory SplineFactory;
+
+        public SplineFactory SplineFactory { get; }
 
         public NetworkPort Inlet => SplineFactory.CreatedSplines[0].Inlet;
-        public NetworkPort Outlet => SplineFactory.CreatedSplines.Last().Outlet;
+        public NetworkPort Outlet => SplineFactory.CreatedSplines[SplineFactory.CreatedSplines.Count - 1].Outlet;
 
         internal SplineCommand(ScriptWorld world, SplineFactory splineFactory)
         {
@@ -31,28 +32,49 @@ namespace Bus.Common.Scripting.Commands
         public Spline Straight(double length)
         {
             Spline spline = SplineFactory.Straight((float)length);
-            AddSplineToPlate(spline);
+            AddElementToPlate(spline);
             return spline;
         }
 
         public Spline Curve(double radius, double length)
         {
             Spline spline = SplineFactory.ByRadius((float)radius, (float)length);
-            AddSplineToPlate(spline);
+            AddElementToPlate(spline);
             return spline;
         }
 
         public Spline CurveByCurvature(double curvature, double length)
         {
             Spline spline = SplineFactory.ByCurvature((float)curvature, (float)length);
-            AddSplineToPlate(spline);
+            AddElementToPlate(spline);
             return spline;
         }
 
-        private void AddSplineToPlate(Spline spline)
+        public SplineCommand IntoSpline(string? templateKey)
         {
-            Plate plate = World.Plates.GetOrAdd(spline.PlateX, spline.PlateZ);
-            plate.Network.Add(spline);
+            PlateCommand plate = World.Commander.Plates[Outlet.Owner.PlateX, Outlet.Owner.PlateZ];
+            SplineCommand spline = plate.BeginSpline(templateKey, SplineFactory.Transform, Outlet);
+
+            return spline;
+        }
+
+        public JunctionCommand IntoJunction(string templateKey, string targetPortKey)
+        {
+            JunctionTemplate? template = World.Commander.Network.Templates.GetJunction(templateKey);
+            PortDefinition? targetPort = template?.GetPort(targetPortKey);
+
+            Junction junction = template is null || targetPort is null
+                ? new Junction(SplineFactory.PlateX, SplineFactory.PlateZ, SplineFactory.Transform, [])
+                : SplineFactory.ConnectNew(targetPort, template.Build);
+
+            AddElementToPlate(junction);
+            return new JunctionCommand(World, junction);
+        }
+
+        private void AddElementToPlate(NetworkElement element)
+        {
+            Plate plate = World.Plates.GetOrAdd(element.PlateX, element.PlateZ);
+            plate.Network.Add(element);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)

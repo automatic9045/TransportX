@@ -17,15 +17,16 @@ namespace Bus.Common.Scripting.Commands
     public class SplineTemplate
     {
         private readonly ScriptWorld World;
-        private readonly LaneLayout Layout;
+
+        public LaneLayout OutletLayout { get; }
 
         private readonly List<SplineStructure> StructuresKey = new();
         public IReadOnlyList<SplineStructure> Structures => StructuresKey;
 
-        internal SplineTemplate(ScriptWorld world, string layoutKey)
+        internal SplineTemplate(ScriptWorld world, string outletLayoutKey)
         {
             World = world;
-            Layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
+            OutletLayout = World.Commander.Network.LaneLayouts.Get(outletLayoutKey);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval)
@@ -59,9 +60,9 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
-        internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform)
+        internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform, NetworkPort? sourcePort)
         {
-            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, Layout);
+            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, OutletLayout, sourcePort);
             factory.PutStructures(Structures);
             return factory;
         }

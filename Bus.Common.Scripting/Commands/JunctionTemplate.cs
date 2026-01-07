@@ -41,7 +41,7 @@ namespace Bus.Common.Scripting.Commands
             PortsKey.Add(port);
         }
 
-        public PortDefinition? GetPort(string portKey)
+        internal PortDefinition? GetPort(string portKey)
         {
             if (Ports.TryGetValue(portKey, out PortDefinition? port)) return port;
 

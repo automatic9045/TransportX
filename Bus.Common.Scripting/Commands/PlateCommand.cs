@@ -57,23 +57,19 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineCommand BeginSpline(string? templateKey, Matrix4x4 transform)
+        public SplineCommand BeginSpline(string? templateKey, Matrix4x4 transform, NetworkPort? sourcePort = null)
         {
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout());
-            }
-            else if (!World.Commander.Network.Templates.Splines.TryGetValue(templateKey, out SplineTemplate? template))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"スプラインテンプレート '{templateKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout());
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout(), null);
             }
             else
             {
-                splineFactory = template.Build(X, Z, transform);
+                SplineTemplate? template = World.Commander.Network.Templates.GetSpline(templateKey);
+                splineFactory = template is null
+                    ? new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout(), null)
+                    : template.Build(X, Z, transform, sourcePort);
             }
 
             return new SplineCommand(World, splineFactory);

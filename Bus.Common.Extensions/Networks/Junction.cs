@@ -43,5 +43,22 @@ namespace Bus.Common.Extensions.Networks
         {
             ModelsKey.Add(model);
         }
+
+        public Matrix4x4 GetConnectionTransform(NetworkPort port, Matrix4x4 targetPortOffset)
+        {
+            Matrix4x4.Invert(targetPortOffset, out Matrix4x4 offsetInv);
+            Matrix4x4 transform = offsetInv * Matrix4x4.CreateRotationY(-float.Pi) * port.Offset * Transform;
+            return transform;
+        }
+
+        public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<int, int, Matrix4x4, T> elementFactory) where T : NetworkElement
+        {
+            Matrix4x4 transform = GetConnectionTransform(port, targetPort.Offset);
+
+            T element = elementFactory(PlateX, PlateZ, transform);
+            port.ConnectTo(element.Ports[targetPort.Name]);
+
+            return element;
+        }
     }
 }

@@ -39,5 +39,31 @@ namespace Bus.Common.Scripting.Commands
             JunctionsKey.Add(key, template);
             return template;
         }
+
+        internal SplineTemplate? GetSpline(string key)
+        {
+            if (!Splines.TryGetValue(key, out SplineTemplate? template))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"スプラインテンプレート '{key}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                return null;
+            }
+
+            return template;
+        }
+
+        internal JunctionTemplate? GetJunction(string key)
+        {
+            if (!Junctions.TryGetValue(key, out JunctionTemplate? template))
+            {
+                ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{key}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+
+                return null;
+            }
+
+            return template;
+        }
     }
 }
