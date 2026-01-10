@@ -36,7 +36,7 @@ namespace Bus.Common.Scripting.Commands
             return port;
         }
 
-        public SplineCommand IntoSpline(string portKey, string? templateKey)
+        public SplineFactoryCommand IntoSpline(string portKey, string? templateKey)
         {
             NetworkPort? port = GetPort(portKey);
             Matrix4x4 transform = port is null
@@ -44,7 +44,7 @@ namespace Bus.Common.Scripting.Commands
                 : Junction.GetConnectionTransform(port, Matrix4x4.CreateRotationY(float.Pi));
 
             PlateCommand plate = World.Commander.Plates[Junction.PlateX, Junction.PlateZ];
-            SplineCommand spline = plate.BeginSpline(templateKey, transform, port);
+            SplineFactoryCommand spline = plate.BeginSpline(templateKey, transform, port);
 
             return spline;
         }

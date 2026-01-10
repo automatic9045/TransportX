@@ -15,16 +15,19 @@ namespace Bus.Common.Extensions.Networks
 {
     public class SplineFactory : LocatableObject
     {
-        protected readonly ID3D11Device Device;
-        protected readonly IPhysicsHost PhysicsHost;
+        private readonly ID3D11Device Device;
+        private readonly IPhysicsHost PhysicsHost;
 
-        protected readonly List<SplineStructure> Structures = [];
+        private readonly List<SplineStructure> Structures = [];
+
+        private Func<NetworkEdge, SplineBase>? Finalizer = null;
 
         public LaneLayout OutletLayout { get; }
         public NetworkPort? SourcePort { get; }
 
-        protected readonly List<SplineBase> CreatedSplinesKey = [];
-        public IReadOnlyList<SplineBase> CreatedSplines => CreatedSplinesKey;
+        public CurveList Curves { get; } = new();
+        public GradientList Gradients { get; } = new();
+        public CantList Cants { get; } = new();
 
         public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, NetworkPort? sourcePort)
             : base(plateX, plateZ, transform)
@@ -37,98 +40,9 @@ namespace Bus.Common.Extensions.Networks
             SourcePort = sourcePort;
         }
 
-        protected bool ApplyStructureToSpline(int structureIndex, SplineBase spline)
-        {
-            SplineStructure structure = Structures[structureIndex];
-            int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
-
-            SplineStructure splittedStructure = new(structure.Models, structure.From, structure.Span, structure.Interval, count);
-            spline.AddStructure(splittedStructure);
-
-            if (count == structure.Count)
-            {
-                return false;
-            }
-            else
-            {
-                LocatedModelTemplate[] nextModels = new LocatedModelTemplate[structure.Models.Count];
-                for (int i = 0; i < nextModels.Length; i++)
-                {
-                    nextModels[i] = structure.Models[(i + count) % nextModels.Length];
-                }
-
-                float nextFrom = structure.From + structure.Interval * count - spline.Length;
-                int nextCount = structure.Count - count;
-
-                Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
-                return true;
-            }
-        }
-
-        internal void SetNext(SplineBase spline)
-        {
-            List<int> indicesToRemove = [];
-            for (int i = 0; i < Structures.Count; i++) // 登録済のストラクチャーをこのスプラインに設置
-            {
-                if (!ApplyStructureToSpline(i, spline)) indicesToRemove.Add(i);
-            }
-            foreach (int i in indicesToRemove) Structures.RemoveAt(i);
-
-            Move(spline.Outlet.Offset);
-
-            if (CreatedSplines.Count == 0)
-            {
-                SourcePort?.ConnectTo(spline.Inlet);
-            }
-            else
-            {
-                CreatedSplines[CreatedSplines.Count - 1].SetChild(spline);
-            }
-
-            CreatedSplinesKey.Add(spline);
-        }
-
-        public Spline ByCurvature(float curvature, float length)
-        {
-            Spline spline = new Spline(Device, PhysicsHost, PlateX, PlateZ, Transform, OutletLayout, curvature, length);
-            SetNext(spline);
-            return spline;
-        }
-
-        public Spline Straight(float length)
-        {
-            return ByCurvature(0, length);
-        }
-
-        public Spline ByRadius(float radius, float length)
-        {
-            return ByCurvature(radius == 0 ? 0 : 1 / radius, length);
-        }
-
-        public BezierSpline InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
-        {
-            Matrix4x4 from = Transform;
-            PlateOffset plateOffset = GetPlateOffset(targetPort.Owner);
-            Matrix4x4 to = targetPort.Offset * targetPort.Owner.Transform * plateOffset.Transform;
-
-            BezierSpline spline = new(Device, PhysicsHost, PlateX, PlateZ, from, to, OutletLayout, handleScale);
-            SetNext(spline);
-            spline.Outlet.ConnectTo(targetPort);
-            return spline;
-        }
-
         public void PutStructure(SplineStructure structure)
         {
-            int index = Structures.Count;
             Structures.Add(structure);
-            foreach (Spline spline in CreatedSplines) // このストラクチャーを敷設済のスプラインに設置
-            {
-                if (!ApplyStructureToSpline(index, spline))
-                {
-                    Structures.RemoveAt(index);
-                    break;
-                }
-            }
         }
 
         public void PutStructures(IEnumerable<SplineStructure> structures)
@@ -139,26 +53,249 @@ namespace Bus.Common.Extensions.Networks
             }
         }
 
-        public void AddSplinesToPlates(PlateCollection plates, Func<int, int, Plate>? plateFactory = null)
+        public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
         {
-            plateFactory ??= (x, z) => new Plate(x, z);
-
-            foreach (Spline spline in CreatedSplines)
+            Finalizer = last =>
             {
-                Plate plate = plates.GetOrAdd(spline.PlateX, spline.PlateZ, plateFactory);
-                plate.Network.Add(spline);
+                Matrix4x4 from = last.Outlet.Offset * last.Transform;
+
+                NetworkElement targetElement = targetPort.Owner;
+                PlateOffset offset = new PlateOffset(
+                    targetElement.PlateX - last.PlateX,
+                    targetElement.PlateZ - last.PlateZ
+                );
+                Matrix4x4 to = targetPort.Offset * targetElement.Transform * offset.Transform;
+
+                BezierSpline spline = new(Device, PhysicsHost, last.PlateX, last.PlateZ, from, to, last.Outlet.Layout, handleScale);
+                last.Outlet.ConnectTo(spline.Inlet);
+                spline.Outlet.ConnectTo(targetPort);
+
+                return spline;
+            };
+        }
+
+        public List<SplineBase> Build()
+        {
+            List<SplineBase> splines = [];
+
+            int splineX = PlateX;
+            int splineZ = PlateZ;
+            Matrix4x4 splineTransform = Transform;
+            Matrix4x4.Invert(splineTransform, out Matrix4x4 splineTransformInv);
+
+            Queue<Span> curves = new(Curves.Spans);
+            Queue<Span> gradients = new(Gradients.Spans);
+            Queue<Span> cants = new(Cants.Spans);
+
+            float s = 0;
+            List<SplineSegment> segments = [];
+            while (0 < curves.Count)
+            {
+                Span curve = 0 < curves.Count ? curves.Peek() : new Span(0, 0, s, float.MaxValue);
+                Span gradient = 0 < gradients.Count ? gradients.Peek() : new Span(0, 0, s, float.MaxValue);
+                Span cant = 0 < cants.Count ? cants.Peek() : new Span(0, 0, s, float.MaxValue);
+
+                float nextS = float.Min(float.Min(curve.ToS, gradient.ToS), cant.ToS);
+                float length = nextS - s;
+
+                Span slicedCurve = curve.Slice(s, length);
+                Span slicedGradient = gradient.Slice(s, length);
+                Span slicedCant = cant.Slice(s, length);
+
+                Matrix4x4 segmentTransform = Transform * splineTransformInv;
+                SplineSegment segment = new()
+                {
+                    FromS = s,
+                    ToS = nextS,
+                    Length = nextS - s,
+
+                    Position = segmentTransform.Translation,
+                    Orientation = Quaternion.CreateFromRotationMatrix(segmentTransform),
+
+                    Curvature = slicedCurve.FromValue,
+                    GradientDelta = slicedGradient.ValueDelta,
+                    Cant = slicedCant.FromValue,
+                    CantDelta = slicedCant.ValueDelta,
+                };
+                segments.Add(segment);
+
+                (Vector3 translation, Quaternion rotation) = segment.GetRelativeTransform(slicedCurve.Length);
+                PlateOffset plateOffset = Move(translation, rotation);
+
+                if (!plateOffset.IsZero)
+                {
+                    AddSpline();
+
+                    splineX = PlateX;
+                    splineZ = PlateZ;
+                    splineTransform = Transform;
+                    Matrix4x4.Invert(splineTransform, out splineTransformInv);
+
+                    segments = [];
+                }
+
+                s = nextS;
+
+                if (0 < curves.Count && curves.Peek().ToS == nextS) curves.Dequeue();
+                if (0 < gradients.Count && gradients.Peek().ToS == nextS) gradients.Dequeue();
+                if (0 < cants.Count && cants.Peek().ToS == nextS) cants.Dequeue();
+            }
+
+            if (0 < segments.Count)
+            {
+                AddSpline();
+            }
+
+            if (Finalizer is not null)
+            {
+                SplineBase lastSpline = Finalizer(splines[^1]);
+                ApplyStructures(lastSpline);
+                splines.Add(lastSpline);
+            }
+
+            return splines;
+
+
+            void AddSpline()
+            {
+                float offset = segments[0].FromS;
+                SplineSegment[] normalizedSegments = segments.Select(segment => new SplineSegment()
+                {
+                    FromS = segment.FromS - offset,
+                    ToS = segment.ToS - offset,
+                    Length = segment.Length,
+
+                    Position = segment.Position,
+                    Orientation = segment.Orientation,
+
+                    Curvature = segment.Curvature,
+                    GradientDelta = segment.GradientDelta,
+                    Cant = segment.Cant,
+                    CantDelta = segment.CantDelta,
+                }).ToArray();
+
+                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splineTransform, OutletLayout, normalizedSegments);
+                ApplyStructures(spline);
+                splines.Add(spline);
+            }
+
+            void ApplyStructures(SplineBase spline)
+            {
+                for (int structureIndex = 0; structureIndex < Structures.Count; structureIndex++)
+                {
+                    SplineStructure structure = Structures[structureIndex];
+                    if (structure.Count <= 0) continue;
+
+                    int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
+
+                    SplineStructure splittedStructure = new(structure.Models, structure.From, structure.Span, structure.Interval, count);
+                    spline.AddStructure(splittedStructure);
+
+                    if (count == structure.Count)
+                    {
+                        Structures[structureIndex] = new SplineStructure(structure.Models, 0, structure.Span, structure.Interval, 0);
+                        continue;
+                    }
+
+                    LocatedModelTemplate[] nextModels = new LocatedModelTemplate[structure.Models.Count];
+                    for (int i = 0; i < nextModels.Length; i++)
+                    {
+                        nextModels[i] = structure.Models[(i + count) % nextModels.Length];
+                    }
+
+                    float nextFrom = structure.From + structure.Interval * count - spline.Length;
+                    int nextCount = structure.Count - count;
+
+                    Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
+                }
             }
         }
 
-        public T ConnectNew<T>(PortDefinition targetPort, Func<int, int, Matrix4x4, T> elementFactory) where T : NetworkElement
+
+        public readonly struct Span
         {
-            Matrix4x4.Invert(targetPort.Offset, out Matrix4x4 offsetInv);
-            Matrix4x4 transform = offsetInv * Matrix4x4.CreateRotationY(-float.Pi) * Transform;
+            public readonly float FromValue { get; }
+            public readonly float ValueDelta { get; }
+            public readonly float ToValue => FromValue + ValueDelta;
 
-            T element = elementFactory(PlateX, PlateZ, transform);
-            CreatedSplines[CreatedSplines.Count - 1].Outlet.ConnectTo(element.Ports[targetPort.Name]);
+            public readonly float FromS { get; }
+            public readonly float Length { get; }
+            public readonly float ToS => FromS + Length;
 
-            return element;
+            public Span(float fromValue, float valueDelta, float fromS, float length)
+            {
+                FromValue = fromValue;
+                ValueDelta = valueDelta;
+
+                FromS = fromS;
+                Length = length;
+            }
+
+            public readonly float GetValueAt(float s)
+            {
+                if (s < FromS || ToS < s) throw new ArgumentOutOfRangeException(nameof(s));
+                return FromValue + ValueDelta * (s - FromS) / Length;
+            }
+
+            public readonly Span Slice(float startS, float length)
+            {
+                float fromValue = FromValue + ValueDelta * (startS - FromS) / Length;
+                float valueDelta = ValueDelta * (length / Length);
+                return new Span(fromValue, valueDelta, startS, length);
+            }
+        }
+
+        public abstract class SpanList
+        {
+            private readonly List<Span> SpansKey = [];
+            public IReadOnlyList<Span> Spans => SpansKey;
+
+            public float Value { get; private set; } = 0;
+            public float S { get; private set; } = 0;
+
+            protected SpanList()
+            {
+            }
+
+            protected void Add(float value, float valueDelta, float length)
+            {
+                Span span = new(value, valueDelta, S, length);
+                SpansKey.Add(span);
+
+                Value = span.ToValue;
+                S = span.ToS;
+            }
+        }
+
+        public class CurveList : SpanList
+        {
+            internal protected CurveList()
+            {
+            }
+
+            public void ByCurvature(float curvature, float length) => Add(curvature, 0, length);
+            public void Straight(float length) => ByCurvature(0, length);
+            public void ByRadius(float radius, float length) => ByCurvature(1 / radius, length);
+        }
+
+        public class GradientList : SpanList
+        {
+            internal protected GradientList()
+            {
+            }
+
+            public void Constant(float length) => Add(0, 0, length);
+            public void TransitionBy(float angle, float length) => Add(0, angle, length);
+        }
+
+        public class CantList : SpanList
+        {
+            internal protected CantList()
+            {
+            }
+
+            public void Constant(float length) => Add(Value, 0, length);
+            public void TransitionTo(float angle, float length) => Add(Value, angle - Value, length);
         }
     }
 }

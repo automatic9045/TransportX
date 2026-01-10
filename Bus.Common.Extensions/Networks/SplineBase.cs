@@ -15,8 +15,8 @@ namespace Bus.Common.Extensions.Networks
 {
     public abstract class SplineBase : NetworkEdge
     {
-        private readonly ID3D11Device Device;
-        private readonly IPhysicsHost PhysicsHost;
+        protected readonly ID3D11Device Device;
+        protected readonly IPhysicsHost PhysicsHost;
 
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;

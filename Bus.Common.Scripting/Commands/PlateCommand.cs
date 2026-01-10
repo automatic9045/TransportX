@@ -57,7 +57,7 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineCommand BeginSpline(string? templateKey, Matrix4x4 transform, NetworkPort? sourcePort = null)
+        public SplineFactoryCommand BeginSpline(string? templateKey, Matrix4x4 transform, NetworkPort? sourcePort = null)
         {
             SplineFactory splineFactory;
             if (templateKey is null)
@@ -72,31 +72,31 @@ namespace Bus.Common.Scripting.Commands
                     : template.Build(X, Z, transform, sourcePort);
             }
 
-            return new SplineCommand(World, splineFactory);
+            return new SplineFactoryCommand(World, splineFactory);
         }
 
-        public SplineCommand BeginSpline(Matrix4x4 transform)
+        public SplineFactoryCommand BeginSpline(Matrix4x4 transform)
         {
             return BeginSpline(null, transform);
         }
 
-        public SplineCommand BeginSpline(string? templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public SplineFactoryCommand BeginSpline(string? templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return BeginSpline(templateKey, position.CreateTransform());
         }
 
-        public SplineCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public SplineFactoryCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             return BeginSpline(null, x, y, z, rotationX, rotationY, rotationZ);
         }
 
-        public SplineCommand BeginSpline(string? templateKey, double x, double y, double z)
+        public SplineFactoryCommand BeginSpline(string? templateKey, double x, double y, double z)
         {
             return BeginSpline(templateKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineCommand BeginSpline(double x, double y, double z)
+        public SplineFactoryCommand BeginSpline(double x, double y, double z)
         {
             return BeginSpline(null, x, y, z);
         }

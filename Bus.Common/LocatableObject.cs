@@ -105,6 +105,12 @@ namespace Bus.Common
             return Locate(PlateX, PlateZ, newTransform);
         }
 
+        protected PlateOffset Move(Vector3 translation, Quaternion rotation)
+        {
+            Matrix4x4 offset = Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(translation);
+            return Move(offset);
+        }
+
         public PlateOffset GetPlateOffset(LocatableObject to)
         {
             return new PlateOffset(to.PlateX - PlateX, to.PlateZ - PlateZ);
