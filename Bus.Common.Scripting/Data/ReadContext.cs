@@ -1,5 +1,4 @@
-﻿using Bus.Common.Diagnostics;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+
+using Bus.Common.Diagnostics;
 
 namespace Bus.Common.Scripting.Data
 {

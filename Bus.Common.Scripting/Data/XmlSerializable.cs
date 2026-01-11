@@ -1,19 +1,17 @@
-﻿using Bus.Common.Diagnostics;
-using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using Vortice;
+
+using Microsoft.CodeAnalysis;
+
+using Bus.Common.Diagnostics;
 
 namespace Bus.Common.Scripting.Data
 {

@@ -1,8 +1,4 @@
-﻿using Bus.Common.Diagnostics;
-using Bus.Common.Scenery.Networks;
-using Bus.Common.Scripting.Commands;
-using Bus.Common.Scripting.Data;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -12,7 +8,11 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Scripting
+using Bus.Common.Diagnostics;
+using Bus.Common.Scenery.Networks;
+using Bus.Common.Scripting.Data;
+
+namespace Bus.Common.Scripting.Commands
 {
     public class LaneLayouts : IReadOnlyDictionary<string, LaneLayout>
     {

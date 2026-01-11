@@ -1,9 +1,10 @@
-﻿using Bus.Common.Scenery;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using Bus.Common.Scenery;
 
 namespace Bus.Common.Bodies
 {
