@@ -77,6 +77,7 @@ namespace Bus.Common.Extensions.Networks
         public List<SplineBase> Build()
         {
             List<SplineBase> splines = [];
+            NetworkPort? sourcePort = SourcePort;
 
             int splineX = PlateX;
             int splineZ = PlateZ;
@@ -175,6 +176,8 @@ namespace Bus.Common.Extensions.Networks
                 }).ToArray();
 
                 Spline spline = new(Device, PhysicsHost, splineX, splineZ, splineTransform, OutletLayout, normalizedSegments);
+                sourcePort?.ConnectTo(spline.Inlet);
+                sourcePort = spline.Outlet;
                 ApplyStructures(spline);
                 splines.Add(spline);
             }
