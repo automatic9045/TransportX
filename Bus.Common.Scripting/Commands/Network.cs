@@ -17,7 +17,7 @@ namespace Bus.Common.Scripting.Commands
     {
         private readonly ScriptWorld World;
 
-        public LaneKinds LaneKinds { get; }
+        public LaneTraffic LaneTraffic { get; }
         public LaneLayouts LaneLayouts { get; }
         public Templates Templates { get; }
 
@@ -25,7 +25,7 @@ namespace Bus.Common.Scripting.Commands
         {
             World = world;
 
-            LaneKinds = new LaneKinds(World);
+            LaneTraffic = new LaneTraffic(World);
             LaneLayouts = new LaneLayouts(World);
             Templates = new Templates(World);
         }

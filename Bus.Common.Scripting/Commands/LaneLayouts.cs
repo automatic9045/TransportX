@@ -50,14 +50,14 @@ namespace Bus.Common.Scripting.Commands
                     Data.Networks.Lane laneData = layoutData.Lanes[i];
                     World.ErrorCollector.ReportRange(laneData.Errors);
 
-                    if (laneData.Kind.Value is null) continue;
-                    if (!World.Commander.Network.LaneKinds.TryGetValue(laneData.Kind.Value, out LaneKind? kind))
+                    if (laneData.AllowedTraffic.Value is null) continue;
+                    if (!World.Commander.Network.LaneTraffic.Groups.TryGetValue(laneData.AllowedTraffic.Value, out LaneTrafficGroup? group))
                     {
-                        ReportError(laneData.Kind, $"進路種別 '{laneData.Kind.Value}' が見つかりません。");
+                        ReportError(laneData.AllowedTraffic, $"進路種別 '{laneData.AllowedTraffic.Value}' が見つかりません。");
                         continue;
                     }
 
-                    Lane lane = new(kind, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value));
+                    Lane lane = new(group, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value));
                     lanes.Add(lane);
 
 

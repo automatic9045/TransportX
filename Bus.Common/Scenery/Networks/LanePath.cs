@@ -12,7 +12,7 @@ namespace Bus.Common.Scenery.Networks
     public abstract class LanePath
     {
         public NetworkElement Owner => From.Port.Owner;
-        public LaneKind Kind => From.Definition.Kind;
+        public LaneTrafficGroup AllowedTraffic => From.Definition.AllowedTraffic;
         public FlowDirections Directions => From.Definition.Directions.GetOpposition();
 
         public LanePin From { get; }
