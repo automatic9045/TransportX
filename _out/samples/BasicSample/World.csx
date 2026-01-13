@@ -3,10 +3,10 @@ Vehicles.Load("Bus.Sample.dll");
 Models.LoadList("Models.txt");
 //Debug.ShowDialog("hello");
 
-Network.LaneKinds.Create("Pedestrians", "歩行者");
-Network.LaneKinds.Create("Buses", "バス");
-Network.LaneKinds.Create("OtherCars", "その他自動車");
-Network.LaneKinds.Add("Cars", "Buses+OtherCars");
+Network.LaneTraffic.AddType("Pedestrians", "歩行者");
+Network.LaneTraffic.AddType("Buses", "バス");
+Network.LaneTraffic.AddType("OtherCars", "その他自動車");
+Network.LaneTraffic.AddGroup("Cars", "Buses|OtherCars");
 
 Network.LaneLayouts.Load("Layout1", "LaneLayout1.xml");
 

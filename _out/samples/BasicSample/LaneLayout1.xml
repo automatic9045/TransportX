@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <LaneLayout>
     <Lanes>
-        <Lane Kind="Pedestrians" Directions="InOut" X="-6.3" Y="0.15" />
-        <Lane Kind="Cars"        Directions="Out"   X="-2"   Y="0" />
-        <Lane Kind="Cars"        Directions="In"    X="2"    Y="0" />
-        <Lane Kind="Pedestrians" Directions="InOut" X="6.3"  Y="0.15" />
+        <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="-6.3" Y="0.15" />
+        <Lane AllowedTraffic="Cars"        Directions="Out"   X="-2"   Y="0" />
+        <Lane AllowedTraffic="Cars"        Directions="In"    X="2"    Y="0" />
+        <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="6.3"  Y="0.15" />
     </Lanes>
 </LaneLayout>
