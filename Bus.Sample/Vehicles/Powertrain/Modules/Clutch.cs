@@ -50,7 +50,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
             else
             {
                 Constraint.IsEnabled = false;
-                
+
                 float delta = Input.AngularVelocity - Output.AngularVelocity;
                 float torque = float.Sign(delta) * FrictionCoefficient * Engagement;
                 Input.ApplyTorque(-torque, elapsed);

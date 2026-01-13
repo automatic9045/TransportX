@@ -25,7 +25,7 @@ namespace Bus.Models
         }
 
 
-        public ID3D11Device Device { get; } 
+        public ID3D11Device Device { get; }
         public ID3D11DeviceContext Context { get; }
         public ID3D11Debug? Debug { get; }
         public IDXGIFactory2 DXGIFactory { get; }

@@ -23,7 +23,7 @@ namespace Bus.Common.Rendering
 {
     internal class AssimpModelFactory : IDisposable
     {
-        // 参考: https://github.com/assimp/assimp/blob/master/samples/SimpleTexturedDirectx11/SimpleTexturedDirectx11/ModelLoader.cpp 
+        // 参考: https://github.com/assimp/assimp/blob/master/samples/SimpleTexturedDirectx11/SimpleTexturedDirectx11/ModelLoader.cpp
 
         private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
@@ -363,7 +363,7 @@ namespace Bus.Common.Rendering
 
                 ID3D11Texture2D texture2D = Device.CreateTexture2D(desc, subresourceData);
                 ID3D11ShaderResourceView texture = Device.CreateShaderResourceView(texture2D);
-                
+
                 return texture;
             }
 
