@@ -13,6 +13,7 @@ namespace Bus.Common.Extensions.Traffic
         IReadOnlyCollection<LanePathView> PlannedRoute { get; }
         float PlannedLength { get; }
 
+        void Reset();
         bool TryPop(out LanePathView pathView);
         void Update(LanePathView currentPath, float planLength);
     }

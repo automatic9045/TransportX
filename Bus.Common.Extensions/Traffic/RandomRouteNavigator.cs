@@ -19,6 +19,11 @@ namespace Bus.Common.Extensions.Traffic
         {
         }
 
+        public void Reset()
+        {
+            PlannedRouteKey.Clear();
+        }
+
         public bool TryPop(out LanePathView pathView)
         {
             if (PlannedRoute.Count == 0)
