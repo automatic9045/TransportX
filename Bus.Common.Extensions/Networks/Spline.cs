@@ -75,6 +75,9 @@ namespace Bus.Common.Extensions.Networks
 
         private ref readonly SplineSegment FindSegment(float s)
         {
+            if (s < Segments[0].FromS) return ref Segments[0];
+            if (Segments[^1].ToS <= s) return ref Segments[^1];
+
             int min = 0;
             int max = Segments.Length - 1;
 
