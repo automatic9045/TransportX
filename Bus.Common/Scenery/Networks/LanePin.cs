@@ -11,7 +11,7 @@ namespace Bus.Common.Scenery.Networks
     {
         public NetworkPort Port { get; }
         public int Index { get; }
-        public Matrix4x4 LocalTransform { get; }
+        public Pose LocalPose { get; }
 
         public Lane Definition => Port.Layout.Lanes[Index];
         public LanePin? ConnectedPin => Port.ConnectedPort is null ? null : Port.ConnectedPort.Pins[Port.Pins.Count - 1 - Index];
@@ -26,7 +26,7 @@ namespace Bus.Common.Scenery.Networks
         {
             Port = port;
             Index = index;
-            LocalTransform = Matrix4x4.CreateTranslation(new Vector3(Definition.Position, 0)) * Port.Offset;
+            LocalPose = new Pose(new Vector3(Definition.Position, 0)) * Port.Offset;
         }
 
         public void Wire(LanePath path)

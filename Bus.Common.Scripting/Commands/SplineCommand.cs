@@ -32,7 +32,7 @@ namespace Bus.Common.Scripting.Commands
         public SplineFactoryCommand IntoSpline(string? templateKey)
         {
             PlateCommand plate = World.Commander.Plates[Outlet.Owner.PlateX, Outlet.Owner.PlateZ];
-            SplineFactoryCommand spline = plate.BeginSpline(templateKey, Outlet.Offset * Splines[^1].Transform, Outlet);
+            SplineFactoryCommand spline = plate.BeginSpline(templateKey, Outlet.Offset * Splines[^1].Pose, Outlet);
             return spline;
         }
 
@@ -42,7 +42,7 @@ namespace Bus.Common.Scripting.Commands
             PortDefinition? targetPort = template?.GetPort(targetPortKey);
 
             Junction junction = template is null || targetPort is null
-                ? new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Transform, [])
+                ? new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Pose, [])
                 : ((Spline)Splines[^1]).ConnectNew(targetPort, template.Build);
 
             AddElementToPlate(junction);

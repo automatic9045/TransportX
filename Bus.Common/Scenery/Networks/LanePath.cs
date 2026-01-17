@@ -31,11 +31,11 @@ namespace Bus.Common.Scenery.Networks
             To = to;
         }
 
-        public abstract Matrix4x4 GetTransform(float at);
+        public abstract Pose GetLocalPose(float at);
 
-        public Matrix4x4 GetWorldTransform(float at)
+        public Pose GetPose(float at)
         {
-            return GetTransform(at) * Owner.Transform;
+            return GetLocalPose(at) * Owner.Pose;
         }
 
         public virtual void Enter(ITrafficParticipant participant)

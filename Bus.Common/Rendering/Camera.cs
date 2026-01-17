@@ -31,7 +31,7 @@ namespace Bus.Common.Rendering
             {
                 Listener.OrientFront = Direction;
                 Listener.OrientTop = Up;
-                Listener.Position = Position;
+                Listener.Position = Pose.Position;
                 //Listener.Velocity = Velocity;
 
                 Matrix4x4.Invert(Transform, out View);
@@ -40,7 +40,7 @@ namespace Bus.Common.Rendering
 
         public void UpdateLocation()
         {
-            Locate(Viewpoints.Current.Source, Viewpoints.Current.Transform);
+            Locate(Viewpoints.Current.Source, Viewpoints.Current.Pose);
         }
 
         public void DrawBackground(CameraDrawContext context, IEnumerable<LocatedModel> models)

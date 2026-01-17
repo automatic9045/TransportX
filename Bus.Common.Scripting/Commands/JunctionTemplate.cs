@@ -37,7 +37,7 @@ namespace Bus.Common.Scripting.Commands
         {
             LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
             SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            PortDefinition port = new(key, layout, offset.CreateTransform());
+            PortDefinition port = new(key, layout, offset.ToPose());
             PortsKey.Add(port);
         }
 
@@ -104,9 +104,9 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        internal Junction Build(int plateX, int plateZ, Matrix4x4 transform)
+        internal Junction Build(int plateX, int plateZ, Pose pose)
         {
-            Junction junction = new(plateX, plateZ, transform, Ports);
+            Junction junction = new(plateX, plateZ, pose, Ports);
 
             foreach (PathDefinition path in PathsKey)
             {

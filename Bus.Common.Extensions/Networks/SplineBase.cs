@@ -23,8 +23,8 @@ namespace Bus.Common.Extensions.Networks
 
         public abstract float Length { get; }
 
-        public SplineBase(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform)
-            : base(plateX, plateZ, transform)
+        public SplineBase(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose)
+            : base(plateX, plateZ, pose)
         {
             Device = device;
             PhysicsHost = physicsHost;
@@ -32,7 +32,7 @@ namespace Bus.Common.Extensions.Networks
 
         public abstract Vector3 GetPoint(float s);
         public abstract Vector3 GetUp(float s);
-        public abstract Matrix4x4 GetTransform(float s);
+        public abstract Pose GetPose(float s);
 
         public void AddStructure(SplineStructure structure)
         {
@@ -43,8 +43,8 @@ namespace Bus.Common.Extensions.Networks
                 if (Length < s) break;
 
                 LocatedModelTemplate source = structure.Models[i % structure.Models.Count];
-                Matrix4x4 curveTransform = GetSpanTransform(s, structure.Span);
-                Matrix4x4 transform = source.Transform * curveTransform * Transform;
+                Pose curvePose = GetSpanPose(s, structure.Span);
+                Matrix4x4 transform = source.Transform * (curvePose * Pose).ToMatrix4x4();
 
                 LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
                 if (compiled is KinematicLocatedModelTemplate compiledKinematic)
@@ -75,19 +75,19 @@ namespace Bus.Common.Extensions.Networks
             }
         }
 
-        protected Matrix4x4 GetSpanTransform(float s, float span)
+        protected Pose GetSpanPose(float s, float span)
         {
             Vector3 front = GetPoint(s + span);
             Vector3 back = GetPoint(s);
             Vector3 forward = front - back;
-            if (forward.LengthSquared() < 1e-6f) return GetTransform(s);
+            if (forward.LengthSquared() < 1e-6f) return GetPose(s);
 
             Vector3 upFront = GetUp(s + span);
             Vector3 upBack = GetUp(s);
             Vector3 up = Vector3.Normalize(Vector3.Lerp(upFront, upBack, 0.5f));
 
             Vector3 tangent = Vector3.Normalize(forward);
-            return Matrix4x4.CreateWorld(back, -tangent, up);
+            return Pose.CreateWorldLH(back, tangent, up);
         }
     }
 }

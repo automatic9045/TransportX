@@ -60,9 +60,9 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
-        internal SplineFactory Build(int plateX, int plateZ, Matrix4x4 transform, NetworkPort? sourcePort)
+        internal SplineFactory Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
         {
-            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, transform, OutletLayout, sourcePort);
+            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, pose, OutletLayout, sourcePort);
             factory.PutStructures(Structures);
             return factory;
         }

@@ -13,15 +13,14 @@ namespace Bus.Common.Extensions.Networks
         public required readonly float ToS { get; init; }
         public required readonly float Length { get; init; }
 
-        public required readonly Vector3 Position { get; init; }
-        public required readonly Quaternion Orientation { get; init; }
+        public required readonly Pose Pose { get; init; }
 
         public required readonly float Curvature { get; init; }
         public required readonly float GradientDelta { get; init; }
         public required readonly float Cant { get; init; }
         public required readonly float CantDelta { get; init; }
 
-        public readonly (Vector3 Translation, Quaternion Rotation) GetRelativeTransform(float ds)
+        public readonly Pose GetLocalPose(float ds)
         {
             float gradientRate = 1e-6f < Length ? GradientDelta / Length : 0;
             float gradient = gradientRate * ds;
@@ -67,7 +66,7 @@ namespace Bus.Common.Extensions.Networks
 
             Quaternion rotation = unbank * turn * rebank;
 
-            return (position, rotation);
+            return new Pose(position, rotation);
         }
     }
 }

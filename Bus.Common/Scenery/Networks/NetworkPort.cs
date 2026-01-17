@@ -9,14 +9,14 @@ namespace Bus.Common.Scenery.Networks
     {
         public string Name { get; }
         public NetworkElement Owner { get; }
-        public Matrix4x4 Offset { get; }
+        public Pose Offset { get; }
         public LaneLayout Layout { get; }
         public IReadOnlyList<LanePin> Pins { get; }
 
         public NetworkPort? ConnectedPort { get; private set; } = null;
         public bool IsConnected => ConnectedPort is not null;
 
-        public NetworkPort(string name, NetworkElement owner, Matrix4x4 offset, LaneLayout layout)
+        public NetworkPort(string name, NetworkElement owner, Pose offset, LaneLayout layout)
         {
             Name = name;
             Owner = owner;

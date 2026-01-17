@@ -15,12 +15,12 @@ namespace Bus.Common.Bodies
     {
         public BodyStructure Structure { get; }
 
-        public Vector3 LinearVelocity => Structure.RootModel is null ? Vector3.NaN
-            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.LinearVelocity : Vector3.Zero;
+        public Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
+            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.Velocity : Vector3.Zero;
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is CollidableLocatedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
             Structure = new BodyStructure(physicsHost, () => Transform);
 
@@ -31,11 +31,11 @@ namespace Bus.Common.Bodies
             };
         }
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.CreateTransform())
+        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.ToPose())
         {
         }
 
-        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Matrix4x4.Identity)
+        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Pose.Identity)
         {
         }
 

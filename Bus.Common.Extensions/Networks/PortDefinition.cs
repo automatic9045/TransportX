@@ -13,9 +13,9 @@ namespace Bus.Common.Extensions.Networks
     {
         public string Name { get; }
         public LaneLayout Layout { get; }
-        public Matrix4x4 Offset { get; }
+        public Pose Offset { get; }
 
-        public PortDefinition(string name, LaneLayout layout, Matrix4x4 offset)
+        public PortDefinition(string name, LaneLayout layout, Pose offset)
         {
             Name = name;
             Layout = layout;

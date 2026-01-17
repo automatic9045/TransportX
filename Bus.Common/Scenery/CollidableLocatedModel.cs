@@ -30,18 +30,8 @@ namespace Bus.Common.Scenery
         public BodyHandle Handle { get; }
         public BodyReference Body => Simulation.Bodies[Handle];
 
-        public Vector3 LinearVelocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
+        public Vector3 Velocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
         public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
-        public BodyVelocity Velocity
-        {
-            get => new BodyVelocity(LinearVelocity, AngularVelocity);
-            set
-            {
-                Vector3 linear = Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.Offset);
-                Vector3 angular = Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.Offset);
-                Body.Velocity = new BodyVelocity(linear, angular);
-            }
-        }
 
         /// <summary>
         /// 物理モデルの姿勢を、LocatedModel 座標系に変換した形で取得・設定します。
@@ -52,11 +42,11 @@ namespace Bus.Common.Scenery
         /// </remarks>
         protected Matrix4x4 ColliderTransform
         {
-            get => Model.Collider.OffsetInverse * Body.Pose.ToMatrix4x4() * FromCamera.TransformInverse;
+            get => Model.Collider.OffsetInverse * Body.Pose.ToMatrix4x4() * FromCamera.PoseInverse.ToMatrix4x4();
             set
             {
                 Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Offset * value * FromCamera.Transform).ToRigidPose();
+                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose.ToMatrix4x4()).ToRigidPose();
             }
         }
 

@@ -17,14 +17,14 @@ namespace Bus.Common.Scenery.Networks
         public LanePin From => Reverse ? Source.To : Source.From;
         public LanePin To => Reverse ? Source.From : Source.To;
 
-        private Matrix4x4 DirectionMatrix { get; }
+        private Pose DirectionPose { get; }
 
         public LanePathView(LanePath source, bool reverse)
         {
             Source = source;
             Reverse = reverse;
 
-            DirectionMatrix = Reverse ? Matrix4x4.CreateRotationY(float.Pi) : Matrix4x4.Identity;
+            DirectionPose = Reverse ? Pose.CreateRotationY(float.Pi) : Pose.Identity;
         }
 
         public LanePathView(LanePath source, ParticipantDirection heading) : this(source, heading == ParticipantDirection.Backward)
@@ -51,7 +51,7 @@ namespace Bus.Common.Scenery.Networks
             return Reverse ? -viewVelocity : viewVelocity;
         }
 
-        public Matrix4x4 GetTransform(float viewS) => DirectionMatrix * Source.GetTransform(FromViewS(viewS));
-        public Matrix4x4 GetWorldTransform(float viewS) => DirectionMatrix * Source.GetWorldTransform(FromViewS(viewS));
+        public Pose GetLocalPose(float viewS) => DirectionPose * Source.GetLocalPose(FromViewS(viewS));
+        public Pose GetPose(float viewS) => DirectionPose * Source.GetPose(FromViewS(viewS));
     }
 }

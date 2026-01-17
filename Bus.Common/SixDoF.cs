@@ -45,8 +45,13 @@ namespace Bus.Common
         {
             Matrix4x4 translation = Matrix4x4.CreateTranslation(Translation);
             Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
-
             return rotation * translation;
+        }
+
+        public Pose ToPose()
+        {
+            Quaternion rotation = Quaternion.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+            return new Pose(Translation, rotation);
         }
     }
 }

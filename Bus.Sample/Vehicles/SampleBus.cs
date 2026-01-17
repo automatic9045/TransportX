@@ -132,7 +132,7 @@ namespace Bus.Sample.Vehicles
                 //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
                 $"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
                 $"rs={Interfaces.SteeringWheel.Rate:f2}, " +
-                $"v={Vector3.Dot(LinearVelocity, Direction) * 3.6f:f1} km/h";
+                $"v={Vector3.Dot(Velocity, Direction) * 3.6f:f1} km/h";
 
             /*Tire tire = Drives.Chassis.Tires[2];
             Application.Current.MainWindow.Title =

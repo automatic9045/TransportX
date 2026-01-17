@@ -52,7 +52,7 @@ namespace Bus.Common.Audio
             {
                 Emitter.OrientFront = AttachedTo.Direction;
                 Emitter.OrientTop = AttachedTo.Up;
-                Emitter.Position = AttachedTo.Position + new PlateOffset(AttachedTo.PlateX - cameraX, AttachedTo.PlateZ - cameraZ).Position;
+                Emitter.Position = AttachedTo.Pose.Position + new PlateOffset(AttachedTo.PlateX - cameraX, AttachedTo.PlateZ - cameraZ).Position;
                 //Emitter.Velocity = AttachedTo.Velocity;
             }
 

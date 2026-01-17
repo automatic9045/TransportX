@@ -39,12 +39,12 @@ namespace Bus.Common.Scripting.Commands
         public SplineFactoryCommand IntoSpline(string portKey, string? templateKey)
         {
             NetworkPort? port = GetPort(portKey);
-            Matrix4x4 transform = port is null
-                ? Matrix4x4.Identity
-                : Junction.GetConnectionTransform(port, Matrix4x4.CreateRotationY(float.Pi));
+            Pose pose = port is null
+                ? Pose.Identity
+                : Junction.GetConnectionPose(port, Pose.CreateRotationY(float.Pi));
 
             PlateCommand plate = World.Commander.Plates[Junction.PlateX, Junction.PlateZ];
-            SplineFactoryCommand spline = plate.BeginSpline(templateKey, transform, port);
+            SplineFactoryCommand spline = plate.BeginSpline(templateKey, pose, port);
 
             return spline;
         }
@@ -56,7 +56,7 @@ namespace Bus.Common.Scripting.Commands
             PortDefinition? targetPort = template?.GetPort(targetPortKey);
 
             Junction junction = port is null || template is null || targetPort is null
-                ? new Junction(Junction.PlateX, Junction.PlateZ, Junction.Transform, [])
+                ? new Junction(Junction.PlateX, Junction.PlateZ, Junction.Pose, [])
                 : Junction.ConnectNew(port, targetPort, template.Build);
 
             Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);

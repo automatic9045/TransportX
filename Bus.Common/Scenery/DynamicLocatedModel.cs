@@ -66,7 +66,7 @@ namespace Bus.Common.Scenery
 
         public void Shift(PlateOffset offset)
         {
-            Transform *= offset.TransformInverse;
+            Transform *= offset.PoseInverse.ToMatrix4x4();
         }
     }
 }

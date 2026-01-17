@@ -16,23 +16,22 @@ namespace Bus.Common
 
         public int PlateX { get; private set; }
         public int PlateZ { get; private set; }
-        public Matrix4x4 Transform { get; private set; }
 
-        public Vector3 Position { get; private set; }
-        public Vector3 PositionInWorld => Position + Origin.GetPlateOffset(this).Position; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
-        public Quaternion Orientation { get; private set; }
+        public Pose Pose { get; private set; }
+        public Vector3 PositionInWorld => Pose.Position + Origin.GetPlateOffset(this).Position; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
+        public Matrix4x4 Transform => Pose.ToMatrix4x4();
 
-        public Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Orientation);
-        public Vector3 Up => Vector3.Transform(Vector3.UnitY, Orientation);
+        public Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Pose.Orientation);
+        public Vector3 Up => Vector3.Transform(Vector3.UnitY, Pose.Orientation);
 
         public event EventHandler? Moved;
 
-        public LocatableObject(int plateX, int plateZ, Matrix4x4 transform)
+        public LocatableObject(int plateX, int plateZ, Pose pose)
         {
-            Locate(plateX, plateZ, transform);
+            Locate(plateX, plateZ, pose);
         }
 
-        public LocatableObject() : this(0, 0, Matrix4x4.Identity)
+        public LocatableObject() : this(0, 0, Pose.Identity)
         {
         }
 
@@ -41,17 +40,15 @@ namespace Bus.Common
             Locate(plateX, plateZ, position);
         }
 
-        protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 transform, bool normalize)
+        protected PlateOffset Locate(int plateX, int plateZ, Pose pose, bool normalize)
         {
             PlateOffset plateOffset = PlateOffset.Identity;
             if (normalize)
             {
-                Vector3 translation = transform.Translation;
-                int dx = GetPlateDelta(translation.X);
-                int dz = GetPlateDelta(translation.Z);
+                int dx = GetPlateDelta(pose.Position.X);
+                int dz = GetPlateDelta(pose.Position.Z);
 
-                transform.M41 -= dx * Plate.Size;
-                transform.M43 -= dz * Plate.Size;
+                pose = new(pose.Position - new Vector3(dx, 0, dz) * Plate.Size, pose.Orientation);
 
                 plateX += dx;
                 plateZ += dz;
@@ -61,11 +58,7 @@ namespace Bus.Common
 
             PlateX = plateX;
             PlateZ = plateZ;
-            Transform = transform;
-
-            Matrix4x4.Decompose(Transform, out _, out Quaternion orientation, out Vector3 position);
-            Position = position;
-            Orientation = orientation;
+            Pose = pose;
 
             Moved?.Invoke(this, EventArgs.Empty);
 
@@ -74,41 +67,42 @@ namespace Bus.Common
 
             static int GetPlateDelta(float delta)
             {
-                return (int)Math.Floor(delta / Plate.Size);
+                return (int)float.Floor(delta / Plate.Size);
             }
+        }
+
+        protected PlateOffset Locate(int plateX, int plateZ, Pose pose)
+        {
+            return Locate(plateX, plateZ, pose, true);
         }
 
         protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 transform)
         {
-            return Locate(plateX, plateZ, transform, true);
+            Pose pose = Pose.FromMatrix4x4(transform);
+            return Locate(plateX, plateZ, pose);
         }
 
         protected PlateOffset Locate(int plateX, int plateZ, SixDoF position)
         {
-            Matrix4x4 transform = position.CreateTransform();
-            return Locate(plateX, plateZ, transform);
+            Pose pose = position.ToPose();
+            return Locate(plateX, plateZ, pose);
         }
 
-        protected PlateOffset Locate(LocatableObject attachTo, Matrix4x4 transform)
+        protected PlateOffset Locate(LocatableObject attachTo, Pose pose)
         {
-            return Locate(attachTo.PlateX, attachTo.PlateZ, transform);
+            return Locate(attachTo.PlateX, attachTo.PlateZ, pose);
         }
 
-        protected PlateOffset Locate(LocatableObject attachTo)
+        protected PlateOffset Move(Pose delta)
         {
-            return Locate(attachTo, attachTo.Transform);
+            Pose pose = delta * Pose;
+            return Locate(PlateX, PlateZ, pose);
         }
 
         protected PlateOffset Move(Matrix4x4 offset)
         {
-            Matrix4x4 newTransform = offset * Transform;
-            return Locate(PlateX, PlateZ, newTransform);
-        }
-
-        protected PlateOffset Move(Vector3 translation, Quaternion rotation)
-        {
-            Matrix4x4 offset = Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(translation);
-            return Move(offset);
+            Pose pose = Pose.FromMatrix4x4(offset);
+            return Move(pose);
         }
 
         public PlateOffset GetPlateOffset(LocatableObject to)

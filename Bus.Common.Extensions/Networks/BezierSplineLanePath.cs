@@ -21,9 +21,9 @@ namespace Bus.Common.Extensions.Networks
             Length = ParentSpline.Length; // TODO: 正確に計算するようにする
         }
 
-        public override Matrix4x4 GetTransform(float at)
+        public override Pose GetLocalPose(float at)
         {
-            return Matrix4x4.CreateRotationY(float.Pi) * From.LocalTransform * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
+            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
         }
     }
 }

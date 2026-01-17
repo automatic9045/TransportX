@@ -42,7 +42,7 @@ namespace Bus.Common.Scenery
         {
             VertexConstantBuffer vertexBuffer = new()
             {
-                World = Matrix4x4.Transpose(Transform * context.PlateOffset.Transform),
+                World = Matrix4x4.Transpose(Transform * context.PlateOffset.Pose.ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
                 Light = context.Light.AsVector4(),

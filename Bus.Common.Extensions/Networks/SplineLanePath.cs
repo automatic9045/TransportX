@@ -20,9 +20,9 @@ namespace Bus.Common.Extensions.Networks
             ParentSpline = from.Port.Owner as Spline ?? throw new ArgumentException($"親が {nameof(Spline)} の進路端子である必要があります。", nameof(from));
         }
 
-        public override Matrix4x4 GetTransform(float at)
+        public override Pose GetLocalPose(float at)
         {
-            return Matrix4x4.CreateRotationY(float.Pi) * From.LocalTransform * ParentSpline.GetTransform(at / Length * ParentSpline.Length);
+            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
         }
     }
 }

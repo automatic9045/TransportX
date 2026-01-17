@@ -25,16 +25,16 @@ namespace Bus.Common.Extensions.Networks
         private readonly List<LanePath> PathsKey = [];
         public override IReadOnlyList<LanePath> Paths => PathsKey;
 
-        public Spline(ID3D11Device device,IPhysicsHost physicsHost,int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, SplineSegment[] segments)
-            : base(device, physicsHost, plateX, plateZ, transform)
+        public Spline(ID3D11Device device,IPhysicsHost physicsHost,int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments)
+            : base(device, physicsHost, plateX, plateZ, pose)
         {
             if (segments.Length == 0) throw new ArgumentException("セグメント列が空です。", nameof(segments));
 
             Segments = segments;
             Length = segments[segments.Length - 1].ToS;
 
-            Matrix4x4 transition = GetTransform(Length);
-            Inlet = new NetworkPort(nameof(Inlet), this, Matrix4x4.CreateRotationY(float.Pi), outletLayout.Opposition);
+            Pose transition = GetPose(Length);
+            Inlet = new NetworkPort(nameof(Inlet), this, Pose.CreateRotationY(float.Pi), outletLayout.Opposition);
             Outlet = new NetworkPort(nameof(Outlet), this, transition, outletLayout);
 
             for (int i = 0; i < Inlet.Layout.Lanes.Count; i++)
@@ -49,28 +49,24 @@ namespace Bus.Common.Extensions.Networks
             }
         }
 
-        public override Matrix4x4 GetTransform(float s)
+        public override Pose GetPose(float s)
         {
-            ref readonly SplineSegment seg = ref FindSegment(s);
-            float ds = s - seg.FromS;
+            ref readonly SplineSegment segment = ref FindSegment(s);
+            float ds = s - segment.FromS;
 
-            (Vector3 localPosition, Quaternion localRotation) = seg.GetRelativeTransform(ds);
-
-            Vector3 position = seg.Position + Vector3.Transform(localPosition, seg.Orientation);
-            Quaternion rotation = seg.Orientation * localRotation;
-
-            return Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(position);
+            Pose localPose = segment.GetLocalPose(ds);
+            return localPose * segment.Pose;
         }
 
         public override Vector3 GetPoint(float s)
         {
-            return GetTransform(s).Translation;
+            return GetPose(s).Position;
         }
 
         public override Vector3 GetUp(float s)
         {
-            Matrix4x4 transform = GetTransform(s);
-            return Vector3.Normalize(new Vector3(transform.M21, transform.M22, transform.M23));
+            Pose pose = GetPose(s);
+            return Pose.TransformNormal(Vector3.UnitY, pose);
         }
 
         private ref readonly SplineSegment FindSegment(float s)
@@ -94,13 +90,12 @@ namespace Bus.Common.Extensions.Networks
             return ref Segments[^1];
         }
 
-        public T ConnectNew<T>(PortDefinition targetPortDef, Func<int, int, Matrix4x4, T> elementFactory) where T : NetworkElement
+        public T ConnectNew<T>(PortDefinition targetPortDef, Func<int, int, Pose, T> elementFactory) where T : NetworkElement
         {
-            Matrix4x4.Invert(targetPortDef.Offset, out Matrix4x4 offsetInv);
-            Matrix4x4 currentTrans = Outlet.Offset * Transform;
-            Matrix4x4 transform = offsetInv * Matrix4x4.CreateRotationY(-float.Pi) * currentTrans;
+            Pose offsetInv = targetPortDef.Offset.Inverse();
+            Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * Outlet.Offset * Pose;
 
-            T element = elementFactory(PlateX, PlateZ, transform);
+            T element = elementFactory(PlateX, PlateZ, pose);
             Outlet.ConnectTo(element.Ports[targetPortDef.Name]);
             return element;
         }

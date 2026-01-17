@@ -29,8 +29,8 @@ namespace Bus.Common.Extensions.Networks
         public GradientList Gradients { get; } = new();
         public CantList Cants { get; } = new();
 
-        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Matrix4x4 transform, LaneLayout outletLayout, NetworkPort? sourcePort)
-            : base(plateX, plateZ, transform)
+        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose, LaneLayout outletLayout, NetworkPort? sourcePort)
+            : base(plateX, plateZ, pose)
         {
             Device = device;
             PhysicsHost = physicsHost;
@@ -57,14 +57,14 @@ namespace Bus.Common.Extensions.Networks
         {
             Finalizer = last =>
             {
-                Matrix4x4 from = last.Outlet.Offset * last.Transform;
+                Pose from = last.Outlet.Offset * last.Pose;
 
                 NetworkElement targetElement = targetPort.Owner;
                 PlateOffset offset = new PlateOffset(
                     targetElement.PlateX - last.PlateX,
                     targetElement.PlateZ - last.PlateZ
                 );
-                Matrix4x4 to = targetPort.Offset * targetElement.Transform * offset.Transform;
+                Pose to = targetPort.Offset * targetElement.Pose * offset.Pose;
 
                 BezierSpline spline = new(Device, PhysicsHost, last.PlateX, last.PlateZ, from, to, last.Outlet.Layout, handleScale);
                 last.Outlet.ConnectTo(spline.Inlet);
@@ -81,8 +81,8 @@ namespace Bus.Common.Extensions.Networks
 
             int splineX = PlateX;
             int splineZ = PlateZ;
-            Matrix4x4 splineTransform = Transform;
-            Matrix4x4.Invert(splineTransform, out Matrix4x4 splineTransformInv);
+            Pose splinePose = Pose;
+            Pose splinePoseInv = splinePose.Inverse();
 
             Queue<Span> curves = new(Curves.Spans);
             Queue<Span> gradients = new(Gradients.Spans);
@@ -103,15 +103,14 @@ namespace Bus.Common.Extensions.Networks
                 Span slicedGradient = gradient.Slice(s, length);
                 Span slicedCant = cant.Slice(s, length);
 
-                Matrix4x4 segmentTransform = Transform * splineTransformInv;
+                Pose segmentPose = Pose * splinePoseInv;
                 SplineSegment segment = new()
                 {
                     FromS = s,
                     ToS = nextS,
                     Length = nextS - s,
 
-                    Position = segmentTransform.Translation,
-                    Orientation = Quaternion.CreateFromRotationMatrix(segmentTransform),
+                    Pose = segmentPose,
 
                     Curvature = slicedCurve.FromValue,
                     GradientDelta = slicedGradient.ValueDelta,
@@ -120,8 +119,8 @@ namespace Bus.Common.Extensions.Networks
                 };
                 segments.Add(segment);
 
-                (Vector3 translation, Quaternion rotation) = segment.GetRelativeTransform(slicedCurve.Length);
-                PlateOffset plateOffset = Move(translation, rotation);
+                Pose pose = segment.GetLocalPose(slicedCurve.Length);
+                PlateOffset plateOffset = Move(pose);
 
                 if (!plateOffset.IsZero)
                 {
@@ -129,8 +128,8 @@ namespace Bus.Common.Extensions.Networks
 
                     splineX = PlateX;
                     splineZ = PlateZ;
-                    splineTransform = Transform;
-                    Matrix4x4.Invert(splineTransform, out splineTransformInv);
+                    splinePose = Pose;
+                    splinePoseInv = splinePose.Inverse();
 
                     segments = [];
                 }
@@ -166,8 +165,7 @@ namespace Bus.Common.Extensions.Networks
                     ToS = segment.ToS - offset,
                     Length = segment.Length,
 
-                    Position = segment.Position,
-                    Orientation = segment.Orientation,
+                    Pose = segment.Pose,
 
                     Curvature = segment.Curvature,
                     GradientDelta = segment.GradientDelta,
@@ -175,7 +173,7 @@ namespace Bus.Common.Extensions.Networks
                     CantDelta = segment.CantDelta,
                 }).ToArray();
 
-                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splineTransform, OutletLayout, normalizedSegments);
+                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splinePose, OutletLayout, normalizedSegments);
                 sourcePort?.ConnectTo(spline.Inlet);
                 sourcePort = spline.Outlet;
                 ApplyStructures(spline);

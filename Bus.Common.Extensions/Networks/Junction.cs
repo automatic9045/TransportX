@@ -21,8 +21,7 @@ namespace Bus.Common.Extensions.Networks
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
-        public Junction(int plateX, int plateZ, Matrix4x4 transform, IEnumerable<PortDefinition> ports)
-            : base(plateX, plateZ, transform)
+        public Junction(int plateX, int plateZ, Pose pose, IEnumerable<PortDefinition> ports) : base(plateX, plateZ, pose)
         {
             Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
@@ -44,18 +43,18 @@ namespace Bus.Common.Extensions.Networks
             ModelsKey.Add(model);
         }
 
-        public Matrix4x4 GetConnectionTransform(NetworkPort port, Matrix4x4 targetPortOffset)
+        public Pose GetConnectionPose(NetworkPort port, Pose targetPortOffset)
         {
-            Matrix4x4.Invert(targetPortOffset, out Matrix4x4 offsetInv);
-            Matrix4x4 transform = offsetInv * Matrix4x4.CreateRotationY(-float.Pi) * port.Offset * Transform;
+            Pose offsetInv = targetPortOffset.Inverse();
+            Pose transform = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * Pose;
             return transform;
         }
 
-        public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<int, int, Matrix4x4, T> elementFactory) where T : NetworkElement
+        public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<int, int, Pose, T> elementFactory) where T : NetworkElement
         {
-            Matrix4x4 transform = GetConnectionTransform(port, targetPort.Offset);
+            Pose pose = GetConnectionPose(port, targetPort.Offset);
 
-            T element = elementFactory(PlateX, PlateZ, transform);
+            T element = elementFactory(PlateX, PlateZ, pose);
             port.ConnectTo(element.Ports[targetPort.Name]);
 
             return element;

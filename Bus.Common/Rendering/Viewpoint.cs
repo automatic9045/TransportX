@@ -10,7 +10,7 @@ namespace Bus.Common.Rendering
     public class Viewpoint
     {
         public LocatableObject Source { get; }
-        public virtual Matrix4x4 Transform => Source.Transform;
+        public virtual Pose Pose => Source.Pose;
         public float Perspective { get; protected set; } = 1;
 
         public Viewpoint(LocatableObject source)
@@ -39,7 +39,8 @@ namespace Bus.Common.Rendering
         {
             public float InitialDistance { get; }
             public float Distance { get; private set; }
-            public Matrix4x4 Translation { get; private set; }
+            public Vector3 Translation { get; private set; }
+            public Pose TranslationPose => new(Translation);
             public float ZoomRatio => InitialDistance / Distance;
 
             public Translator(float initialDistance)
@@ -61,7 +62,7 @@ namespace Bus.Common.Rendering
             private void Update(float distance)
             {
                 Distance = float.Max(1f, float.Min(distance, 100));
-                Translation = Matrix4x4.CreateTranslation(0, 0, -Distance);
+                Translation = new Vector3(0, 0, -Distance);
             }
         }
 
@@ -69,7 +70,8 @@ namespace Bus.Common.Rendering
         {
             public Vector2 InitialAngle { get; }
             public Vector2 Angle { get; private set; }
-            public Matrix4x4 Rotation { get; private set; }
+            public Quaternion Rotation { get; private set; }
+            public Pose RotationPose => new Pose(Vector3.Zero, Rotation);
 
             public Rotator(Vector2 initialAngle)
             {
@@ -91,7 +93,7 @@ namespace Bus.Common.Rendering
             private void Update(Vector2 angle)
             {
                 Angle = new Vector2(float.Max(-float.Pi / 2 + 0.001f, float.Min(angle.X, float.Pi / 2 - 0.001f)), angle.Y % float.Tau);
-                Rotation = Matrix4x4.CreateRotationX(Angle.X) * Matrix4x4.CreateRotationY(Angle.Y);
+                Rotation = Quaternion.CreateFromYawPitchRoll(Angle.Y, Angle.X, 0);
             }
         }
     }
@@ -100,7 +102,6 @@ namespace Bus.Common.Rendering
     public class FreeViewpoint : Viewpoint
     {
         private new readonly SourceObject Source;
-        public override Matrix4x4 Transform => Source.Transform;
 
         public FreeViewpoint() : base(new SourceObject())
         {
@@ -138,32 +139,35 @@ namespace Bus.Common.Rendering
 
             public void Move(Vector2 amount)
             {
-                Vector3 right = Vector3.Transform(Vector3.UnitX, Orientation);
-                Vector3 forward = Vector3.Transform(Vector3.UnitZ, Orientation);
+                Vector3 right = Vector3.Transform(Vector3.UnitX, Pose.Orientation);
+                Vector3 forward = Vector3.Transform(Vector3.UnitZ, Pose.Orientation);
                 right.Y = forward.Y = 0;
 
                 right = Vector3.Normalize(right);
                 forward = Vector3.Normalize(forward);
 
                 Vector3 r = right * amount.X + forward * amount.Y;
-                Locate(PlateX, PlateZ, Transform * Matrix4x4.CreateTranslation(r));
+                Locate(PlateX, PlateZ, Pose * new Pose(r));
             }
 
             public void Rotate(Vector2 offset, Vector2 clientSize)
             {
                 Rotator.Rotate(offset, clientSize);
-                Locate(PlateX, PlateZ, Rotator.Rotation * Matrix4x4.CreateTranslation(Position));
+                Locate(PlateX, PlateZ, new Pose(Pose.Position, Rotator.Rotation));
             }
 
             public void Zoom(float amount)
             {
-                Move(Matrix4x4.CreateTranslation(0, 0, amount));
+                Move(new Pose(0, 0, amount));
             }
 
             public void Reset()
             {
                 Rotator.Reset();
-                Locate(PlateX, PlateZ, Rotator.Rotation * Matrix4x4.CreateTranslation(Position.X, 10, Position.Z));
+
+                Vector3 position = Pose.Position;
+                position.Y = 10;
+                Locate(PlateX, PlateZ, new Pose(position, Rotator.Rotation));
             }
         }
     }
@@ -171,16 +175,16 @@ namespace Bus.Common.Rendering
 
     public class DriverViewpoint : Viewpoint
     {
-        private readonly Matrix4x4 Offset;
+        private readonly Pose Offset;
         private new readonly Rotator Rotator = new Rotator(Vector2.Zero);
-        public override Matrix4x4 Transform => Rotator.Rotation * Offset * Source.Transform;
+        public override Pose Pose => Rotator.RotationPose * Offset * Source.Pose;
 
-        public DriverViewpoint(LocatableObject source, Matrix4x4 offset) : base(source)
+        public DriverViewpoint(LocatableObject source, Pose offset) : base(source)
         {
             Offset = offset;
         }
 
-        public DriverViewpoint(LocatableObject source, SixDoF offset) : this(source, offset.CreateTransform())
+        public DriverViewpoint(LocatableObject source, SixDoF offset) : this(source, offset.ToPose())
         {
         }
 
@@ -204,12 +208,12 @@ namespace Bus.Common.Rendering
 
     public class BirdViewpoint : Viewpoint
     {
-        private readonly Matrix4x4 Offset;
+        private readonly Pose Offset;
         private new readonly Translator Translator;
         private new readonly Rotator Rotator;
-        public override Matrix4x4 Transform => Translator.Translation * Rotator.Rotation * Offset * Source.Transform;
+        public override Pose Pose => Translator.TranslationPose * Rotator.RotationPose * Offset * Source.Pose;
 
-        public BirdViewpoint(LocatableObject source, Matrix4x4 offset, float initialDistance, Vector2 initialAngle) : base(source)
+        public BirdViewpoint(LocatableObject source, Pose offset, float initialDistance, Vector2 initialAngle) : base(source)
         {
             Offset = offset;
             Translator = new Translator(initialDistance);
@@ -217,7 +221,7 @@ namespace Bus.Common.Rendering
         }
 
         public BirdViewpoint(LocatableObject source, SixDoF offset, float initialDistance, Vector2 initialAngle)
-            : this(source, offset.CreateTransform(), initialDistance, initialAngle)
+            : this(source, offset.ToPose(), initialDistance, initialAngle)
         {
         }
 

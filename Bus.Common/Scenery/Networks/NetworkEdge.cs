@@ -17,7 +17,7 @@ namespace Bus.Common.Scenery.Networks
         public abstract NetworkPort Outlet { get; }
         public override IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
 
-        public NetworkEdge(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
+        public NetworkEdge(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
             Ports = new PortSet(this);
         }

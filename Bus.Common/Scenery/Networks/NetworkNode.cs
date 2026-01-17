@@ -9,7 +9,7 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class NetworkNode : NetworkElement
     {
-        public NetworkNode(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
+        public NetworkNode(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
         }
     }

@@ -16,7 +16,7 @@ namespace Bus.Common.Scenery.Networks
         public abstract IReadOnlyList<LanePath> Paths { get; }
         public abstract IReadOnlyList<LocatedModel> Models { get; }
 
-        public NetworkElement(int plateX, int plateZ, Matrix4x4 transform) : base(plateX, plateZ, transform)
+        public NetworkElement(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
         }
 

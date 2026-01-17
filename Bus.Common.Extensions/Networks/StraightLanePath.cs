@@ -11,7 +11,7 @@ namespace Bus.Common.Extensions.Networks
 {
     public class StraightLanePath : LanePath
     {
-        protected readonly Matrix4x4 FromTransform;
+        protected readonly Pose FromPose;
         protected readonly Vector3 ToUp;
         protected readonly Vector3 Direction;
 
@@ -19,21 +19,21 @@ namespace Bus.Common.Extensions.Networks
 
         public StraightLanePath(LanePin from, LanePin to) : base(from, to)
         {
-            FromTransform = Matrix4x4.CreateRotationY(float.Pi) * from.LocalTransform;
-            Matrix4x4.Invert(FromTransform, out Matrix4x4 fromTransformInv);
-            Matrix4x4 transition = to.LocalTransform * fromTransformInv;
-            ToUp = Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, transition));
-            Length = transition.Translation.Length();
-            Direction = transition.Translation / Length;
+            FromPose = Pose.CreateRotationY(float.Pi) * from.LocalPose;
+            Pose fromPoseInv = FromPose.Inverse();
+            Pose transition = to.LocalPose * fromPoseInv;
+            ToUp = Vector3.Normalize(Pose.TransformNormal(Vector3.UnitY, transition));
+            Length = transition.Position.Length();
+            Direction = transition.Position / Length;
         }
 
-        public override Matrix4x4 GetTransform(float at)
+        public override Pose GetLocalPose(float at)
         {
-            if (Length < 1e-3f) return FromTransform;
+            if (Length < 1e-3f) return FromPose;
 
             Vector3 up = Vector3.Lerp(Vector3.UnitY, ToUp, float.Clamp(at / Length, 0, 1));
-            Matrix4x4 transition = Matrix4x4.CreateWorld(Direction * at, -Direction, up);
-            return transition * FromTransform;
+            Pose transition = Pose.CreateWorldLH(Direction * at, Direction, up);
+            return transition * FromPose;
         }
     }
 }

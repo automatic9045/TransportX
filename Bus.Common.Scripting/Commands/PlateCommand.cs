@@ -57,33 +57,33 @@ namespace Bus.Common.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineFactoryCommand BeginSpline(string? templateKey, Matrix4x4 transform, NetworkPort? sourcePort = null)
+        public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)
         {
             SplineFactory splineFactory;
             if (templateKey is null)
             {
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout(), sourcePort);
+                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort);
             }
             else
             {
                 SplineTemplate? template = World.Commander.Network.Templates.GetSpline(templateKey);
                 splineFactory = template is null
-                    ? new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, transform, new LaneLayout(), sourcePort)
-                    : template.Build(X, Z, transform, sourcePort);
+                    ? new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort)
+                    : template.Build(X, Z, pose, sourcePort);
             }
 
             return new SplineFactoryCommand(World, splineFactory);
         }
 
-        public SplineFactoryCommand BeginSpline(Matrix4x4 transform)
+        public SplineFactoryCommand BeginSpline(Pose pose)
         {
-            return BeginSpline(null, transform);
+            return BeginSpline(null, pose);
         }
 
         public SplineFactoryCommand BeginSpline(string? templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return BeginSpline(templateKey, position.CreateTransform());
+            return BeginSpline(templateKey, position.ToPose());
         }
 
         public SplineFactoryCommand BeginSpline(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
@@ -101,19 +101,19 @@ namespace Bus.Common.Scripting.Commands
             return BeginSpline(null, x, y, z);
         }
 
-        public Junction PutJunction(string templateKey, Matrix4x4 transform)
+        public Junction PutJunction(string templateKey, Pose pose)
         {
             Junction junction;
             if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
             {
-                junction = template.Build(X, Z, transform);
+                junction = template.Build(X, Z, pose);
             }
             else
             {
                 ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                junction = new Junction(X, Z, transform, []);
+                junction = new Junction(X, Z, pose, []);
             }
 
             Target.Network.Add(junction);
@@ -123,7 +123,7 @@ namespace Bus.Common.Scripting.Commands
         public Junction PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutJunction(templateKey, position.CreateTransform());
+            return PutJunction(templateKey, position.ToPose());
         }
 
         public Junction PutJunction(string templateKey, double x, double y, double z)
