@@ -11,21 +11,14 @@ namespace Bus.Common.Physics
 {
     public static class RigidPoseExtensions
     {
-        public static Matrix4x4 ToMatrix4x4(this RigidPose pose)
+        public static Pose ToPose(this RigidPose rigidPose)
         {
-            Matrix4x4 result = Matrix4x4.CreateFromQuaternion(pose.Orientation);
-            result.Translation = pose.Position;
-            return result;
+            return new Pose(rigidPose.Position, rigidPose.Orientation);
         }
 
-        public static RigidPose ToRigidPose(this Matrix4x4 transform)
+        public static RigidPose ToRigidPose(this Pose pose)
         {
-            if (!Matrix4x4.Decompose(transform, out _, out Quaternion orientation, out Vector3 position))
-            {
-                throw new ArgumentException("指定された行列は剛体変換ではありません。", nameof(transform));
-            }
-
-            return new RigidPose(position, orientation);
+            return new RigidPose(pose.Position, pose.Orientation);
         }
     }
 }

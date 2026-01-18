@@ -20,7 +20,7 @@ namespace Bus.Common.Scenery
         private readonly List<LocatedModel> Children;
 
         protected MergedKinematicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, List<LocatedModel> children)
-            : base(simulation, model, handle, Matrix4x4.Identity)
+            : base(simulation, model, handle, Pose.Identity)
         {
             Children = children;
         }
@@ -37,7 +37,7 @@ namespace Bus.Common.Scenery
             int writeIndex = 0;
             foreach (KinematicLocatedModelTemplate model in sourceList)
             {
-                Matrix4x4 transform = model.ColliderToBase;
+                Pose pose = model.ColliderToBase;
 
                 if (model.Model.Collider is Collider<ColliderMesh> meshCollider)
                 {
@@ -45,16 +45,16 @@ namespace Bus.Common.Scenery
                     {
                         Triangle triangle = meshCollider.Shape.Triangles[i];
                         combinedTriangles[writeIndex] = new Triangle(
-                            Vector3.Transform(triangle.A, transform),
-                            Vector3.Transform(triangle.B, transform),
-                            Vector3.Transform(triangle.C, transform)
+                            Pose.Transform(triangle.A, pose),
+                            Pose.Transform(triangle.B, pose),
+                            Pose.Transform(triangle.C, pose)
                         );
 
                         writeIndex++;
                     }
                 }
 
-                LocatedModel visualChild = new(model.Model, model.Transform);
+                LocatedModel visualChild = new(model.Model, model.Pose);
                 children.Add(visualChild);
             }
 
@@ -63,7 +63,7 @@ namespace Bus.Common.Scenery
             newMesh.Recenter(center);
 
             ColliderMaterial material = sourceList[0].Model.Collider.Material;
-            Collider<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, Matrix4x4.CreateTranslation(center), true);
+            Collider<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
             CollidableModel physicsWrapper = new(newCollider)
             {
                 DebugName = $"Merged{{{sourceList[0].Model.DebugName}, others: {sourceList.Count - 1}}}",
@@ -86,7 +86,7 @@ namespace Bus.Common.Scenery
         {
             foreach (LocatedModel child in Children)
             {
-                child.Transform = child.BaseTransform * Transform;
+                child.Pose = child.BasePose * Pose;
                 child.Draw(context);
             }
 

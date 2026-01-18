@@ -30,8 +30,8 @@ namespace Bus.Common.Scenery
         public BodyHandle Handle { get; }
         public BodyReference Body => Simulation.Bodies[Handle];
 
-        public Vector3 Velocity => Vector3.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
-        public Vector3 AngularVelocity => Vector3.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
+        public Vector3 Velocity => Pose.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
+        public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
 
         /// <summary>
         /// 物理モデルの姿勢を、LocatedModel 座標系に変換した形で取得・設定します。
@@ -40,21 +40,21 @@ namespace Bus.Common.Scenery
         /// LocatedModel 座標系はモデルが位置するプレートを基準とする一方、物理モデル座標系は視点が位置するプレートを基準とするため、
         /// <see cref="ICollider.Offset"/> と <see cref="FromCamera"/> プロパティの値を参照して変換されます。
         /// </remarks>
-        protected Matrix4x4 ColliderTransform
+        protected Pose ColliderPose
         {
-            get => Model.Collider.OffsetInverse * Body.Pose.ToMatrix4x4() * FromCamera.PoseInverse.ToMatrix4x4();
+            get => Model.Collider.OffsetInverse * Body.Pose.ToPose() * FromCamera.PoseInverse;
             set
             {
                 Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose.ToMatrix4x4()).ToRigidPose();
+                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose).ToRigidPose();
             }
         }
 
-        public Matrix4x4 BaseToCollider => BaseTransformInverse * Model.Collider.OffsetInverse;
-        public Matrix4x4 ColliderToBase => Model.Collider.Offset * BaseTransform;
+        public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
+        public Pose ColliderToBase => Model.Collider.Offset * BasePose;
 
-        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 transform)
-            : base(model, transform, false)
+        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Pose basePose)
+            : base(model, basePose, false)
         {
             Simulation = simulation;
             Model = model;
@@ -74,7 +74,7 @@ namespace Bus.Common.Scenery
         /// <remarks>
         /// ここで設定した値は、LocatedModel 座標系と物理モデル座標系の差を計算するために使用されます。
         /// <paramref name="fromCamera"/> パラメータの値が <see cref="FromCamera"/> プロパティと異なっている場合は、同プロパティの値を更新します。
-        /// 派生クラスによっては <see cref="ColliderTransform"/> プロパティの値もあわせて更新されます。
+        /// 派生クラスによっては <see cref="ColliderPose"/> プロパティの値もあわせて更新されます。
         /// </remarks>
         /// <param name="fromCamera">視点が位置するプレートから、このモデルが位置するプレートまでの距離。</param>
         /// <returns><see cref="FromCamera"/> プロパティの値が更新されたかどうか。</returns>
@@ -127,7 +127,7 @@ namespace Bus.Common.Scenery
 
             VertexConstantBuffer vertexBuffer = new()
             {
-                World = Matrix4x4.Transpose(Body.Pose.ToMatrix4x4()),
+                World = Matrix4x4.Transpose(Body.Pose.ToPose().ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
             };

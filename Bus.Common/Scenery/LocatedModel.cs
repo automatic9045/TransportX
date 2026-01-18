@@ -13,28 +13,28 @@ namespace Bus.Common.Scenery
     {
         public IModel Model { get; }
 
-        public Matrix4x4 BaseTransform
+        public Pose BasePose
         {
             get => field;
             set
             {
                 field = value;
-                Matrix4x4.Invert(value, out Matrix4x4 baseTransformInverse);
-                BaseTransformInverse = baseTransformInverse;
+                Pose basePoseInv = value.Inverse();
+                BasePoseInverse = basePoseInv;
             }
         }
-        public Matrix4x4 BaseTransformInverse { get; private set; }
+        public Pose BasePoseInverse { get; private set; }
 
-        public virtual Matrix4x4 Transform { get; set; } = Matrix4x4.Identity;
+        public virtual Pose Pose { get; set; } = Pose.Identity;
 
-        protected LocatedModel(IModel model, Matrix4x4 transform, bool setTransform)
+        protected LocatedModel(IModel model, Pose basePose, bool setPose)
         {
             Model = model;
-            BaseTransform = transform;
-            if (setTransform) Transform = transform;
+            BasePose = basePose;
+            if (setPose) Pose = basePose;
         }
 
-        public LocatedModel(IModel model, Matrix4x4 transform) : this(model, transform, true)
+        public LocatedModel(IModel model, Pose basePose) : this(model, basePose, true)
         {
         }
 
@@ -42,7 +42,7 @@ namespace Bus.Common.Scenery
         {
             VertexConstantBuffer vertexBuffer = new()
             {
-                World = Matrix4x4.Transpose(Transform * context.PlateOffset.Pose.ToMatrix4x4()),
+                World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
                 Light = context.Light.AsVector4(),

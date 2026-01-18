@@ -23,7 +23,7 @@ namespace Bus.Common.Physics.Colliders
             set => DebugMaterial.BaseColor = value;
         }
 
-        public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset)
+        public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
             : base(shape, shapeIndex, material, offset, (s, m) => s.ComputeInertia(m))
         {
         }

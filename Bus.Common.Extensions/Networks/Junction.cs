@@ -46,8 +46,8 @@ namespace Bus.Common.Extensions.Networks
         public Pose GetConnectionPose(NetworkPort port, Pose targetPortOffset)
         {
             Pose offsetInv = targetPortOffset.Inverse();
-            Pose transform = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * Pose;
-            return transform;
+            Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * Pose;
+            return pose;
         }
 
         public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<int, int, Pose, T> elementFactory) where T : NetworkElement

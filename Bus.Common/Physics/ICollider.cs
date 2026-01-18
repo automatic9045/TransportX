@@ -18,8 +18,8 @@ namespace Bus.Common.Physics
         IShape Shape { get; }
         TypedIndex ShapeIndex { get; }
         ColliderMaterial Material { get; }
-        Matrix4x4 Offset { get; }
-        Matrix4x4 OffsetInverse { get; }
+        Pose Offset { get; }
+        Pose OffsetInverse { get; }
 
         string? DebugName { get; set; }
         IModel? DebugModel { get; }

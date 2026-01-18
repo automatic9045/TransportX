@@ -15,26 +15,26 @@ namespace Bus.Common.Scenery
         private readonly IPhysicsHost PhysicsHost;
 
         public new ICollidableModel Model { get; }
-        public Matrix4x4 ColliderToBase => Model.Collider.Offset * Transform;
+        public Pose ColliderToBase => Model.Collider.Offset * Pose;
 
-        public KinematicLocatedModelTemplate(IPhysicsHost physicsHost, ICollidableModel model, Matrix4x4 transform) : base(model, transform)
+        public KinematicLocatedModelTemplate(IPhysicsHost physicsHost, ICollidableModel model, Pose pose) : base(model, pose)
         {
             PhysicsHost = physicsHost;
             Model = model;
         }
 
-        public static LocatedModelTemplate CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Matrix4x4 transform)
+        public static LocatedModelTemplate CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Pose pose)
         {
             return model is ICollidableModel collidableModel
-                ? new KinematicLocatedModelTemplate(physicsHost, collidableModel, transform) : new LocatedModelTemplate(model, transform);
+                ? new KinematicLocatedModelTemplate(physicsHost, collidableModel, pose) : new LocatedModelTemplate(model, pose);
         }
 
-        public KinematicLocatedModel BuildKinematic(Converter<Matrix4x4, Matrix4x4> transformConverter)
+        public KinematicLocatedModel BuildKinematic(Converter<Pose, Pose> poseConverter)
         {
-            Matrix4x4 transform = transformConverter(Transform);
-            return KinematicLocatedModel.Create(PhysicsHost, Model, transform);
+            Pose pose = poseConverter(Pose);
+            return KinematicLocatedModel.Create(PhysicsHost, Model, pose);
         }
 
-        public override LocatedModel Build(Converter<Matrix4x4, Matrix4x4> transformConverter) => BuildKinematic(transformConverter);
+        public override LocatedModel Build(Converter<Pose, Pose> poseConverter) => BuildKinematic(poseConverter);
     }
 }

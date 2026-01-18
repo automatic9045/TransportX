@@ -42,6 +42,7 @@ namespace Bus.Common
             return new Pose(position, orientation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Pose FromMatrix4x4(Matrix4x4 matrix)
         {
             if (!Matrix4x4.Decompose(matrix, out _, out Quaternion orientation, out Vector3 position))
@@ -90,6 +91,7 @@ namespace Bus.Common
             return Vector3.Transform(normal, pose.Orientation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Matrix4x4 ToMatrix4x4()
         {
             Matrix4x4 result = Matrix4x4.CreateFromQuaternion(Orientation);
@@ -97,6 +99,7 @@ namespace Bus.Common
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Pose Inverse()
         {
             Quaternion orientationInv = Quaternion.Inverse(Orientation);

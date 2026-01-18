@@ -44,9 +44,9 @@ namespace Bus.Common.Extensions.Networks
 
                 LocatedModelTemplate source = structure.Models[i % structure.Models.Count];
                 Pose curvePose = GetSpanPose(s, structure.Span);
-                Matrix4x4 transform = source.Transform * (curvePose * Pose).ToMatrix4x4();
+                Pose pose = source.Pose * curvePose * Pose;
 
-                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, transform);
+                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, pose);
                 if (compiled is KinematicLocatedModelTemplate compiledKinematic)
                 {
                     modelsToMerge.Add(compiledKinematic);

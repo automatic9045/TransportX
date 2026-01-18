@@ -36,7 +36,7 @@ namespace Bus.Common.Scripting.Commands
         public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
-            SixDoF offset = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             PortDefinition port = new(key, layout, offset.ToPose());
             PortsKey.Add(port);
         }
@@ -78,7 +78,7 @@ namespace Bus.Common.Scripting.Commands
             }
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, Matrix4x4 transform)
+        public LocatedModelTemplate PutStructure(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -88,15 +88,15 @@ namespace Bus.Common.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModelTemplate structure = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, transform);
+            LocatedModelTemplate structure = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             StructuresKey.Add(structure);
             return structure;
         }
 
         public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            SixDoF transform = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKey, transform.CreateTransform());
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKey, position.ToPose());
         }
 
         public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z)
@@ -117,7 +117,7 @@ namespace Bus.Common.Scripting.Commands
 
             foreach (LocatedModelTemplate model in Structures)
             {
-                LocatedModel structure = model.Build(localTransform => localTransform * junction.Transform);
+                LocatedModel structure = model.Build(localPose => localPose * junction.Pose);
                 junction.AddStructure(structure);
             }
 

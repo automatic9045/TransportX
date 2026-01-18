@@ -21,8 +21,8 @@ namespace Bus.Common.Physics
         IShape ICollider.Shape => Shape;
         public TypedIndex ShapeIndex { get; }
         public ColliderMaterial Material { get; }
-        public Matrix4x4 Offset { get; }
-        public Matrix4x4 OffsetInverse { get; }
+        public Pose Offset { get; }
+        public Pose OffsetInverse { get; }
 
         public string? DebugName
         {
@@ -37,14 +37,13 @@ namespace Bus.Common.Physics
         public IModel? DebugModel { get; protected set; } = null;
         public virtual Vector4 DebugModelColor { get; set; } = Vector4.One;
 
-        public Collider(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, Func<TShape, float, BodyInertia> inertiaFactory)
+        public Collider(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
             Shape = shape;
             ShapeIndex = shapeIndex;
             Material = material;
             Offset = offset;
-            Matrix4x4.Invert(offset, out Matrix4x4 offsetInverse);
-            OffsetInverse = offsetInverse;
+            OffsetInverse = Offset.Inverse();
             InertiaFactory = inertiaFactory;
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,39 +14,39 @@ namespace Bus.Common.Scenery
 {
     public class DynamicLocatedModel : CollidableLocatedModel
     {
-        public override Matrix4x4 Transform
+        public override Pose Pose
         {
-            get => ColliderTransform;
-            set => ColliderTransform = value;
+            get => ColliderPose;
+            set => ColliderPose = value;
         }
 
-        internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Matrix4x4 transform)
-            : base(simulation, model, handle, transform)
+        internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Pose basePose)
+            : base(simulation, model, handle, basePose)
         {
         }
 
         public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Matrix4x4 transform)
+            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Pose basePose)
         {
-            BodyDescription desc = descFactory(model, (model.Collider.Offset * transform).ToRigidPose());
+            BodyDescription desc = descFactory(model, (model.Collider.Offset * basePose).ToRigidPose());
             BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
             physicsHost.SetMaterial(handle, model.Collider.Material);
-            return new DynamicLocatedModel(physicsHost.Simulation, model, handle, transform);
+            return new DynamicLocatedModel(physicsHost.Simulation, model, handle, basePose);
         }
 
         public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
-            ICollidableModel model, float mass, CollidableDescription collidableDescription, Matrix4x4 transform)
+            ICollidableModel model, float mass, CollidableDescription collidableDescription, Pose basePose)
         {
             BodyInertia inertia = model.Collider.ComputeInertia(mass);
             BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
                 => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
 
-            return Create(physicsHost, model, CreateDesc, transform);
+            return Create(physicsHost, model, CreateDesc, basePose);
         }
 
-        public static DynamicLocatedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Matrix4x4 transform)
+        public static DynamicLocatedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Pose basePose)
         {
-            return Create(physicsHost, model, mass, model.Collider.ShapeIndex, transform);
+            return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
         }
 
         public override bool SetFromCamera(PlateOffset fromCamera)
@@ -66,7 +65,7 @@ namespace Bus.Common.Scenery
 
         public void Shift(PlateOffset offset)
         {
-            Transform *= offset.PoseInverse.ToMatrix4x4();
+            Pose *= offset.PoseInverse;
         }
     }
 }

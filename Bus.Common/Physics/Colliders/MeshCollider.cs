@@ -25,7 +25,7 @@ namespace Bus.Common.Physics.Colliders
             set => DebugMaterial.BaseColor = value;
         }
 
-        public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Matrix4x4 offset, bool isOpen)
+        public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset, bool isOpen)
             : base(shape, shapeIndex, material, offset, (s, m) => isOpen ? s.ComputeOpenInertia(m) : s.ComputeClosedInertia(m))
         {
             IsOpen = isOpen;

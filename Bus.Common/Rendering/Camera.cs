@@ -34,7 +34,7 @@ namespace Bus.Common.Rendering
                 Listener.Position = Pose.Position;
                 //Listener.Velocity = Velocity;
 
-                Matrix4x4.Invert(Transform, out View);
+                View = Pose.Inverse().ToMatrix4x4();
             };
         }
 
@@ -58,8 +58,7 @@ namespace Bus.Common.Rendering
 
             foreach (LocatedModel model in models)
             {
-                model.Transform = Matrix4x4.CreateTranslation(Transform.Translation);
-
+                model.Pose = new Pose(Pose.Position);
                 model.Draw(drawContext);
             }
         }

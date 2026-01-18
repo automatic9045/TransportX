@@ -52,7 +52,7 @@ namespace Bus.Sample.Vehicles
 
             DynamicLocatedModel body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 
-            Matrix4x4 wheelRotation = Matrix4x4.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
+            Pose wheelRotation = Pose.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
 
 
             Cylinder axleFShape = new Cylinder(0.1f, 2.103f);
@@ -90,15 +90,15 @@ namespace Bus.Sample.Vehicles
 
             Constraint<Hinge> ConnectAxleToWheel(DynamicLocatedModel axle, DynamicLocatedModel wheel)
             {
-                Matrix4x4 baseToAxle = axle.BaseToCollider;
-                Matrix4x4 baseToWheel = wheel.BaseToCollider;
-                Matrix4x4 wheelToBase = wheel.ColliderToBase;
+                Pose baseToAxle = axle.BaseToCollider;
+                Pose baseToWheel = wheel.BaseToCollider;
+                Pose wheelToBase = wheel.ColliderToBase;
                 Hinge hinge = new Hinge()
                 {
-                    LocalOffsetA = (wheelToBase * baseToAxle).Translation,
+                    LocalOffsetA = (wheelToBase * baseToAxle).Position,
                     LocalOffsetB = Vector3.Zero,
-                    LocalHingeAxisA = Vector3.TransformNormal(Vector3.UnitX, baseToAxle),
-                    LocalHingeAxisB = Vector3.TransformNormal(Vector3.UnitX, baseToWheel),
+                    LocalHingeAxisA = Pose.TransformNormal(Vector3.UnitX, baseToAxle),
+                    LocalHingeAxisB = Pose.TransformNormal(Vector3.UnitX, baseToWheel),
                     SpringSettings = new SpringSettings(30, 1),
                 };
 
@@ -112,14 +112,14 @@ namespace Bus.Sample.Vehicles
 
             void ConnectBodyToAxle(DynamicLocatedModel body, DynamicLocatedModel axle, float springFrequency)
             {
-                Matrix4x4 baseToBody = body.BaseToCollider;
-                Matrix4x4 baseToAxle = axle.BaseToCollider;
-                Matrix4x4 axleToBase = axle.ColliderToBase;
+                Pose baseToBody = body.BaseToCollider;
+                Pose baseToAxle = axle.BaseToCollider;
+                Pose axleToBase = axle.ColliderToBase;
 
-                Vector3 axleInBody = (axleToBase * baseToBody).Translation;
-                Vector3 springOffsetInBody = Vector3.TransformNormal(Vector3.UnitX, baseToBody);
-                Vector3 springOffsetInAxle = Vector3.TransformNormal(Vector3.UnitX, baseToAxle);
-                Vector3 springDirectionInBody = Vector3.TransformNormal(Vector3.UnitY, baseToBody);
+                Vector3 axleInBody = (axleToBase * baseToBody).Position;
+                Vector3 springOffsetInBody = Pose.TransformNormal(Vector3.UnitX, baseToBody);
+                Vector3 springOffsetInAxle = Pose.TransformNormal(Vector3.UnitX, baseToAxle);
+                Vector3 springDirectionInBody = Pose.TransformNormal(Vector3.UnitY, baseToBody);
 
                 PointOnLineServo track = new PointOnLineServo()
                 {
@@ -155,8 +155,8 @@ namespace Bus.Sample.Vehicles
 
                 AngularHinge stabilizer = new AngularHinge()
                 {
-                    LocalHingeAxisA = Vector3.TransformNormal(Vector3.UnitZ, baseToBody),
-                    LocalHingeAxisB = Vector3.TransformNormal(Vector3.UnitZ, baseToAxle),
+                    LocalHingeAxisA = Pose.TransformNormal(Vector3.UnitZ, baseToBody),
+                    LocalHingeAxisB = Pose.TransformNormal(Vector3.UnitZ, baseToAxle),
                     SpringSettings = new SpringSettings(30, 1),
                 };
                 simulation.Solver.Add(body.Handle, axle.Handle, stabilizer);
@@ -175,7 +175,7 @@ namespace Bus.Sample.Vehicles
             {
                 AngularAxisMotor motor = new AngularAxisMotor()
                 {
-                    LocalAxisA = Vector3.TransformNormal(-Vector3.UnitX, axle.BaseToCollider),
+                    LocalAxisA = Pose.TransformNormal(-Vector3.UnitX, axle.BaseToCollider),
                     TargetVelocity = 0,
                     Settings = new MotorSettings(0, 0),
                 };

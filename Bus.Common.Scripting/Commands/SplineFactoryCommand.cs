@@ -39,7 +39,7 @@ namespace Bus.Common.Scripting.Commands
             SplineFactory.InterpolateByBezier(targetPort, (float)handleScale);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval, int count = int.MaxValue)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
             LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -51,7 +51,7 @@ namespace Bus.Common.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return new LocatedModelTemplate(model, transform);
+                return new LocatedModelTemplate(model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
             SplineFactory.PutStructure(structure);
@@ -62,8 +62,8 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
-            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.CreateTransform(), from, span, interval, count);
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKeys, position.ToPose(), from, span, interval, count);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,

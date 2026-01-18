@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Bus.Common
 {
-    public struct SixDoF
+    public readonly struct SixDoF
     {
         private const float RadPerDeg = float.Pi / 180;
 
         public static readonly SixDoF Zero = default;
 
 
-        public Vector3 Translation { get; }
-        public Vector3 Rotation { get; }
+        public readonly Vector3 Translation { get; }
+        public readonly Vector3 Rotation { get; }
 
         public SixDoF(Vector3 translation, Vector3 rotation)
         {
@@ -28,7 +29,8 @@ namespace Bus.Common
         {
         }
 
-        public static SixDoF Deg(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SixDoF FromDegrees(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
         {
             return new SixDoF(x, y, z, rotationX * RadPerDeg, rotationY * RadPerDeg, rotationZ * RadPerDeg);
         }
@@ -41,14 +43,8 @@ namespace Bus.Common
         {
         }
 
-        public Matrix4x4 CreateTransform()
-        {
-            Matrix4x4 translation = Matrix4x4.CreateTranslation(Translation);
-            Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
-            return rotation * translation;
-        }
-
-        public Pose ToPose()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Pose ToPose()
         {
             Quaternion rotation = Quaternion.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
             return new Pose(Translation, rotation);

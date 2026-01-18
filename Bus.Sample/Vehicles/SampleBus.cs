@@ -72,7 +72,7 @@ namespace Bus.Sample.Vehicles
                 foreach (LocatedModel model in Structure)
                 {
                     if (model is DynamicLocatedModel dynamicModel) dynamicModel.Body.Velocity = default;
-                    model.Transform = model.BaseTransform * Transform;
+                    model.Pose = model.BasePose * Pose;
                 }
             }
 
@@ -93,7 +93,7 @@ namespace Bus.Sample.Vehicles
                 Vector3 axis = Vector3.Transform(Vector3.UnitX, rotation);
                 hinge.Update(desc =>
                 {
-                    desc.LocalHingeAxisA = Vector3.TransformNormal(axis, BusModels.AxleF.BaseToCollider);
+                    desc.LocalHingeAxisA = Pose.TransformNormal(axis, BusModels.AxleF.BaseToCollider);
                     return desc;
                 });
             }

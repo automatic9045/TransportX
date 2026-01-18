@@ -22,8 +22,8 @@ namespace Bus.Common.Extensions.Networks
         public BezierLanePath(LanePin from, LanePin to, float? controlScale = null) : base(from, to)
         {
             FromPose = Pose.CreateRotationY(float.Pi) * from.LocalPose;
-            Pose fromTransformInv = FromPose.Inverse();
-            Pose transition = to.LocalPose * fromTransformInv;
+            Pose fromPoseInv = FromPose.Inverse();
+            Pose transition = to.LocalPose * fromPoseInv;
 
             Vector3 p0 = Vector3.Zero;
             Vector3 p3 = transition.Position;
@@ -50,9 +50,9 @@ namespace Bus.Common.Extensions.Networks
             Vector3 tangent = Curve.GetTangent(t);
 
             Vector3 up = Vector3.Normalize(Vector3.Lerp(FromUp, ToUp, t));
-            Pose localTransform = Pose.CreateWorldLH(position, tangent, up);
+            Pose localPose = Pose.CreateWorldLH(position, tangent, up);
 
-            return localTransform * FromPose;
+            return localPose * FromPose;
         }
     }
 }

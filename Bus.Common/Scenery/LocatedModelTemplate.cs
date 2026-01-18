@@ -12,20 +12,20 @@ namespace Bus.Common.Scenery
     public class LocatedModelTemplate
     {
         public IModel Model { get; }
-        public Matrix4x4 Transform { get; }
+        public Pose Pose { get; }
 
-        public LocatedModelTemplate(IModel model, Matrix4x4 transform)
+        public LocatedModelTemplate(IModel model, Pose pose)
         {
             Model = model;
-            Transform = transform;
+            Pose = pose;
         }
 
-        public virtual LocatedModel Build(Converter<Matrix4x4, Matrix4x4> transformConverter)
+        public virtual LocatedModel Build(Converter<Pose, Pose> poseConverter)
         {
-            Matrix4x4 transform = transformConverter(Transform);
-            return new LocatedModel(Model, transform);
+            Pose pose = poseConverter(Pose);
+            return new LocatedModel(Model, pose);
         }
 
-        public LocatedModel Build() => Build(transform => transform);
+        public LocatedModel Build() => Build(pose => pose);
     }
 }

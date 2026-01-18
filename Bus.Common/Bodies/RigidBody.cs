@@ -22,12 +22,12 @@ namespace Bus.Common.Bodies
 
         public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
-            Structure = new BodyStructure(physicsHost, () => Transform);
+            Structure = new BodyStructure(physicsHost, () => Pose);
 
             Moved += (sender, e) =>
             {
                 LocatedModel? rootModel = Structure.RootModel;
-                if (rootModel is not null && rootModel is not DynamicLocatedModel) rootModel.Transform = Transform;
+                if (rootModel is not null && rootModel is not DynamicLocatedModel) rootModel.Pose = Pose;
             };
         }
 
@@ -53,7 +53,7 @@ namespace Bus.Common.Bodies
         {
             if (Structure.RootModel is null) return;
 
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, Structure.RootModel!.BaseTransformInverse * Structure.RootModel.Transform);
+            PlateOffset plateOffset = Locate(PlateX, PlateZ, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
             if (!plateOffset.IsZero)
             {
                 foreach (LocatedModel model in Structure)
@@ -64,7 +64,7 @@ namespace Bus.Common.Bodies
                     }
                     else
                     {
-                        model.Transform = model.BaseTransform * Transform;
+                        model.Pose = model.BasePose * Pose;
                     }
                 }
             }

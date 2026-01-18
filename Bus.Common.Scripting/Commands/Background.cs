@@ -30,7 +30,7 @@ namespace Bus.Common.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModel locatedModel = new LocatedModel(model, Matrix4x4.Identity);
+            LocatedModel locatedModel = new LocatedModel(model, Pose.Identity);
             World.BackgroundModels.Add(locatedModel);
         }
     }

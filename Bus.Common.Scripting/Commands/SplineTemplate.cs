@@ -29,7 +29,7 @@ namespace Bus.Common.Scripting.Commands
             OutletLayout = World.Commander.Network.LaneLayouts.Get(outletLayoutKey);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Matrix4x4 transform, double from, double span, double interval)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
         {
             LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -41,7 +41,7 @@ namespace Bus.Common.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return new LocatedModelTemplate(model, transform);
+                return new LocatedModelTemplate(model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);
@@ -51,8 +51,8 @@ namespace Bus.Common.Scripting.Commands
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval)
         {
-            SixDoF position = SixDoF.Deg((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.CreateTransform(), from, span, interval);
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKeys, position.ToPose(), from, span, interval);
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
