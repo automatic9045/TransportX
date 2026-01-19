@@ -24,6 +24,8 @@ namespace Bus.Common
         public Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Pose.Orientation);
         public Vector3 Up => Vector3.Transform(Vector3.UnitY, Pose.Orientation);
 
+        public virtual Vector3 Velocity => Vector3.Zero;
+
         public event EventHandler? Moved;
 
         public LocatableObject(int plateX, int plateZ, Pose pose)

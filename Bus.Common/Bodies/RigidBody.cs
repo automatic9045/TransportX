@@ -15,7 +15,7 @@ namespace Bus.Common.Bodies
     {
         public BodyStructure Structure { get; }
 
-        public Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
+        public override Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is CollidableLocatedModel collidable ? collidable.Velocity : Vector3.Zero;
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is CollidableLocatedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
