@@ -29,11 +29,11 @@ namespace Bus.Common.Scenery
             foreach (Plate plate in this) plate.Dispose();
         }
 
-        public void SetCameraPosition(LocatableObject camera)
+        public void SetCameraPosition(ILocatable camera)
         {
             foreach (Plate plate in this)
             {
-                PlateOffset fromCamera = new PlateOffset(plate.X - camera.PlateX, plate.Z - camera.PlateZ);
+                PlateOffset fromCamera = new(plate.X - camera.PlateX, plate.Z - camera.PlateZ);
                 plate.SetFromCamera(fromCamera);
             }
         }

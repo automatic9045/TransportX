@@ -9,20 +9,15 @@ using Bus.Common.Scenery;
 
 namespace Bus.Common
 {
-    public class LocatableObject
+    public class LocatableObject : ILocatable
     {
-        public static readonly LocatableObject Origin = new LocatableObject();
+        public static readonly LocatableObject Origin = new();
 
 
         public int PlateX { get; private set; }
         public int PlateZ { get; private set; }
-
         public Pose Pose { get; private set; }
-        public Vector3 PositionInWorld => Pose.Position + Origin.GetPlateOffset(this).Position; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
-        public Matrix4x4 Transform => Pose.ToMatrix4x4();
-
-        public Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Pose.Orientation);
-        public Vector3 Up => Vector3.Transform(Vector3.UnitY, Pose.Orientation);
+        public Vector3 PositionInWorld => ((ILocatable)this).PositionInWorld;
 
         public virtual Vector3 Velocity => Vector3.Zero;
 
@@ -90,7 +85,7 @@ namespace Bus.Common
             return Locate(plateX, plateZ, pose);
         }
 
-        protected PlateOffset Locate(LocatableObject attachTo, Pose pose)
+        protected PlateOffset Locate(ILocatable attachTo, Pose pose)
         {
             return Locate(attachTo.PlateX, attachTo.PlateZ, pose);
         }
@@ -107,9 +102,6 @@ namespace Bus.Common
             return Move(pose);
         }
 
-        public PlateOffset GetPlateOffset(LocatableObject to)
-        {
-            return new PlateOffset(to.PlateX - PlateX, to.PlateZ - PlateZ);
-        }
+        public PlateOffset GetPlateOffset(ILocatable to) => ((ILocatable)this).GetPlateOffset(to);
     }
 }

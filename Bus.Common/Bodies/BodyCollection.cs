@@ -19,7 +19,7 @@ namespace Bus.Common.Bodies
             foreach (RigidBody body in this) body.Dispose();
         }
 
-        public void SetCameraPosition(LocatableObject camera)
+        public void SetCameraPosition(ILocatable camera)
         {
             foreach (RigidBody body in this)
             {
@@ -28,7 +28,7 @@ namespace Bus.Common.Bodies
             }
         }
 
-        public void SubTick(TimeSpan elapsed, LocatableObject camera)
+        public void SubTick(TimeSpan elapsed, ILocatable camera)
         {
             foreach (RigidBody body in this)
             {

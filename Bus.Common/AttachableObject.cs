@@ -9,10 +9,10 @@ namespace Bus.Common
 {
     public sealed class AttachableObject : LocatableObject
     {
-        public LocatableObject Parent { get; }
+        public ILocatable Parent { get; }
         public Pose Offset { get; }
 
-        public AttachableObject(LocatableObject parent, Pose offset) : base()
+        public AttachableObject(ILocatable parent, Pose offset) : base()
         {
             Parent = parent;
             Offset = offset;
@@ -27,7 +27,7 @@ namespace Bus.Common
             }
         }
 
-        public AttachableObject(LocatableObject parent, SixDoF position) : this(parent, position.ToPose())
+        public AttachableObject(ILocatable parent, SixDoF position) : this(parent, position.ToPose())
         {
         }
     }

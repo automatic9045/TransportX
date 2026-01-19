@@ -16,6 +16,9 @@ namespace Bus.Common
         public readonly Vector3 Position { get; }
         public readonly Quaternion Orientation { get; }
 
+        public readonly Vector3 Direction => Vector3.Transform(Vector3.UnitZ, Orientation);
+        public readonly Vector3 Up => Vector3.Transform(Vector3.UnitY, Orientation);
+
         public Pose(Vector3 position, Quaternion orientation)
         {
             Position = position;

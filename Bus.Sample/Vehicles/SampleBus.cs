@@ -15,6 +15,8 @@ using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
+using Bus.Common.Scenery.Networks;
+using Bus.Common.Traffic;
 using Bus.Common.Vehicles;
 
 using Bus.Sample.Vehicles.Input;
@@ -40,6 +42,14 @@ namespace Bus.Sample.Vehicles
         public override Viewpoint DriverViewpoint { get; }
         public override Viewpoint BirdViewpoint { get; }
 
+        public override float Width => Spec.Width;
+        public override float Length => Spec.Length;
+        public override bool IsEnabled => true;
+        public override LanePath? Path => null;
+        public override ParticipantDirection Heading => ParticipantDirection.Forward;
+        public override float S => 0;
+        public override float SVelocity => 0;
+
         public SampleBus(PluginLoadContext context, VehicleBuilder builder) : base(context, builder)
         {
             Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
@@ -62,6 +72,11 @@ namespace Bus.Sample.Vehicles
             base.Dispose();
             BusModels.Dispose();
             Powertrain.Dispose();
+        }
+
+        public override void Spawn(LanePath path, ParticipantDirection heading, float s)
+        {
+            throw new NotSupportedException();
         }
 
         public override void SubTick(TimeSpan elapsed)
@@ -132,7 +147,7 @@ namespace Bus.Sample.Vehicles
                 //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
                 $"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
                 $"rs={Interfaces.SteeringWheel.Rate:f2}, " +
-                $"v={Vector3.Dot(Velocity, Direction) * 3.6f:f1} km/h";
+                $"v={Vector3.Dot(Velocity, Pose.Direction) * 3.6f:f1} km/h";
 
             /*Tire tire = Drives.Chassis.Tires[2];
             Application.Current.MainWindow.Title =

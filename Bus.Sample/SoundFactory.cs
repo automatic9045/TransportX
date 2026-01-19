@@ -21,11 +21,11 @@ namespace Bus.Sample
         private readonly IXAudio2 XAudio2;
         private readonly IXAudio2MasteringVoice MasteringVoice;
         private readonly X3DAudio X3DAudio;
-        private readonly LocatableObject Body;
+        private readonly ILocatable Body;
 
         private readonly ConcurrentDictionary<SixDoF, AttachableObject> Locations = new();
 
-        public SoundFactory(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, LocatableObject body)
+        public SoundFactory(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, ILocatable body)
         {
             XAudio2 = xaudio2;
             MasteringVoice = masteringVoice;

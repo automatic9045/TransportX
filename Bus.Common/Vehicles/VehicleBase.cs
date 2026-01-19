@@ -10,11 +10,13 @@ using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Bus.Common.Scenery.Networks;
+using Bus.Common.Traffic;
 using Bus.Common.Worlds;
 
 namespace Bus.Common.Vehicles
 {
-    public abstract class VehicleBase : RigidBody
+    public abstract class VehicleBase : RigidBody, ITrafficParticipant
     {
         public abstract string Title { get; }
         public abstract string Description { get; }
@@ -35,6 +37,15 @@ namespace Bus.Common.Vehicles
         public abstract Viewpoint DriverViewpoint { get; }
         public abstract Viewpoint BirdViewpoint { get; }
 
+        public abstract float Width { get; }
+        public abstract float Length { get; }
+        public abstract bool IsEnabled { get; }
+        public abstract LanePath? Path { get; }
+        public abstract ParticipantDirection Heading { get; }
+        public abstract float S { get; }
+        public abstract float SVelocity { get; }
+        float ITrafficParticipant.SVelocity => SVelocity;
+
         public VehicleBase(PluginLoadContext context, VehicleBuilder builder) : base(builder.PhysicsHost)
         {
             DXHost = builder.DXHost;
@@ -49,5 +60,7 @@ namespace Bus.Common.Vehicles
             Camera = builder.Camera;
             World = builder.World;
         }
+
+        public abstract void Spawn(LanePath path, ParticipantDirection heading, float s);
     }
 }

@@ -9,15 +9,16 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Traffic
 {
-    public interface ITrafficParticipant
+    public interface ITrafficParticipant : ILocatable
     {
+        float Width { get; }
         float Length { get; }
 
         bool IsEnabled { get; }
         LanePath? Path { get; }
         ParticipantDirection Heading { get; }
         float S { get; }
-        float Velocity { get; }
+        float SVelocity { get; }
 
         void Spawn(LanePath path, ParticipantDirection heading, float s);
     }

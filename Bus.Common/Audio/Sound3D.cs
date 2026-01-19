@@ -20,7 +20,7 @@ namespace Bus.Common.Audio
         public Emitter Emitter { get; }
         public DspSettings DspSettings { get; }
 
-        public LocatableObject? AttachedTo { get; set; } = null;
+        public ILocatable? AttachedTo { get; set; } = null;
 
         public Sound3D(IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, SoundStream stream, IXAudio2SourceVoice sourceVoice) : base(stream, sourceVoice)
         {
@@ -50,10 +50,10 @@ namespace Bus.Common.Audio
         {
             if (AttachedTo is not null)
             {
-                Emitter.OrientFront = AttachedTo.Direction;
-                Emitter.OrientTop = AttachedTo.Up;
+                Emitter.OrientFront = AttachedTo.Pose.Direction;
+                Emitter.OrientTop = AttachedTo.Pose.Up;
                 Emitter.Position = AttachedTo.Pose.Position + new PlateOffset(AttachedTo.PlateX - cameraX, AttachedTo.PlateZ - cameraZ).Position;
-                //Emitter.Velocity = AttachedTo.Velocity;
+                Emitter.Velocity = AttachedTo.Velocity;
             }
 
             X3DAudio.Calculate(listener, Emitter, CalculateFlags.Matrix | CalculateFlags.Doppler | CalculateFlags.LpfDirect | CalculateFlags.Reverb, DspSettings);

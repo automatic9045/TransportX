@@ -29,10 +29,10 @@ namespace Bus.Common.Rendering
         {
             Moved += (sender, e) =>
             {
-                Listener.OrientFront = Direction;
-                Listener.OrientTop = Up;
+                Listener.OrientFront = Pose.Direction;
+                Listener.OrientTop = Pose.Up;
                 Listener.Position = Pose.Position;
-                //Listener.Velocity = Velocity;
+                Listener.Velocity = Velocity;
 
                 View = Pose.Inverse().ToMatrix4x4();
             };

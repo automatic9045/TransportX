@@ -9,11 +9,11 @@ namespace Bus.Common.Rendering
 {
     public class Viewpoint
     {
-        public LocatableObject Source { get; }
+        public ILocatable Source { get; }
         public virtual Pose Pose => Source.Pose;
         public float Perspective { get; protected set; } = 1;
 
-        public Viewpoint(LocatableObject source)
+        public Viewpoint(ILocatable source)
         {
             Source = source;
         }
@@ -179,12 +179,12 @@ namespace Bus.Common.Rendering
         private new readonly Rotator Rotator = new Rotator(Vector2.Zero);
         public override Pose Pose => Rotator.RotationPose * Offset * Source.Pose;
 
-        public DriverViewpoint(LocatableObject source, Pose offset) : base(source)
+        public DriverViewpoint(ILocatable source, Pose offset) : base(source)
         {
             Offset = offset;
         }
 
-        public DriverViewpoint(LocatableObject source, SixDoF offset) : this(source, offset.ToPose())
+        public DriverViewpoint(ILocatable source, SixDoF offset) : this(source, offset.ToPose())
         {
         }
 
@@ -213,14 +213,14 @@ namespace Bus.Common.Rendering
         private new readonly Rotator Rotator;
         public override Pose Pose => Translator.TranslationPose * Rotator.RotationPose * Offset * Source.Pose;
 
-        public BirdViewpoint(LocatableObject source, Pose offset, float initialDistance, Vector2 initialAngle) : base(source)
+        public BirdViewpoint(ILocatable source, Pose offset, float initialDistance, Vector2 initialAngle) : base(source)
         {
             Offset = offset;
             Translator = new Translator(initialDistance);
             Rotator = new Rotator(initialAngle);
         }
 
-        public BirdViewpoint(LocatableObject source, SixDoF offset, float initialDistance, Vector2 initialAngle)
+        public BirdViewpoint(ILocatable source, SixDoF offset, float initialDistance, Vector2 initialAngle)
             : this(source, offset.ToPose(), initialDistance, initialAngle)
         {
         }
