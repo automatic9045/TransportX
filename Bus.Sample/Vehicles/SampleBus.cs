@@ -59,7 +59,7 @@ namespace Bus.Sample.Vehicles
             ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
             SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
             BusModels = ModelSet.Create(PhysicsHost.Simulation, Structure, modelFactory);
-            Inputs = [new KeyboardInput(InputManager)];
+            Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, Pose.Direction))];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
 

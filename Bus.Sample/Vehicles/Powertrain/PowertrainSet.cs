@@ -32,7 +32,7 @@ namespace Bus.Sample.Vehicles.Powertrain
         public PowertrainSet(InterfaceSet interfaces, SoundFactory soundFactory,
             DynamicLocatedModel wheelRL, DynamicLocatedModel wheelRR, Constraint<AngularAxisMotor> motorRL, Constraint<AngularAxisMotor> motorRR)
         {
-            Shaft engineToClutch = new Shaft(3.4f);
+            Shaft engineToClutch = new Shaft(3);
             Shaft clutchToTransmission = new Shaft(0.15f);
             Shaft transmissionToDifferential = new Shaft(0.25f);
             Shaft differentialToLeftWheel = new Shaft(20);
