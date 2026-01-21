@@ -1,4 +1,4 @@
-Vehicles.Load("Bus.Sample.dll");
+Avatars.Load("Bus.Sample.dll");
 
 Models.LoadList("Models.txt");
 //Debug.ShowDialog("hello");

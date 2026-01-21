@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Bus.Common.Vehicles;
+using Bus.Common.Avatars;
 
 namespace Bus.Common.Rendering
 {
@@ -13,7 +13,7 @@ namespace Bus.Common.Rendering
     {
         private readonly Viewpoint Free = new FreeViewpoint();
 
-        public VehicleBase? AttachedTo { get; set; } = null;
+        public AvatarBase? AttachedTo { get; set; } = null;
         public ViewpointType Type { get; set; } = ViewpointType.Free;
         public Viewpoint Current
         {

@@ -16,7 +16,7 @@ namespace Bus.Common.Scripting.Commands
         public Plates Plates { get; }
         public Network Network { get; }
         public Triggers Triggers { get; }
-        public Vehicles Vehicles { get; }
+        public Avatars Avatars { get; }
 
         internal Commander(ScriptWorld world)
         {
@@ -28,7 +28,7 @@ namespace Bus.Common.Scripting.Commands
             Plates = new Plates(world);
             Network = new Network(world);
             Triggers = new Triggers(world);
-            Vehicles = new Vehicles(world);
+            Avatars = new Avatars(world);
         }
 
         private protected Commander(Commander parent)
@@ -41,7 +41,7 @@ namespace Bus.Common.Scripting.Commands
             Plates = parent.Plates;
             Network = parent.Network;
             Triggers = parent.Triggers;
-            Vehicles = parent.Vehicles;
+            Avatars = parent.Avatars;
         }
 
         internal void Dispose()

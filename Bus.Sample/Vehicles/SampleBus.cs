@@ -10,6 +10,7 @@ using System.Windows.Input;
 using BepuPhysics.Constraints;
 
 using Bus.Common;
+using Bus.Common.Avatars;
 using Bus.Common.Dependency;
 using Bus.Common.Input;
 using Bus.Common.Physics;
@@ -17,7 +18,6 @@ using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
-using Bus.Common.Vehicles;
 
 using Bus.Sample.Vehicles.Input;
 using Bus.Sample.Vehicles.Interfaces;
@@ -25,8 +25,8 @@ using Bus.Sample.Vehicles.Powertrain;
 
 namespace Bus.Sample.Vehicles
 {
-    [VehicleIdentifier("Sample")]
-    public class SampleBus : VehicleBase
+    [AvatarIdentifier("Sample")]
+    public class SampleBus : AvatarBase
     {
         private readonly ModelSet BusModels;
         private readonly IReadOnlyList<IInput> Inputs;
@@ -50,7 +50,7 @@ namespace Bus.Sample.Vehicles
         public override float S => 0;
         public override float SVelocity => 0;
 
-        public SampleBus(PluginLoadContext context, VehicleBuilder builder) : base(context, builder)
+        public SampleBus(PluginLoadContext context, AvatarBuilder builder) : base(context, builder)
         {
             Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
 

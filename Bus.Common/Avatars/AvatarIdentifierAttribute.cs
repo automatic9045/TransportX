@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Vehicles
+namespace Bus.Common.Avatars
 {
-    public class VehicleIdentifierAttribute : Attribute
+    public class AvatarIdentifierAttribute : Attribute
     {
         public string Identifier { get; }
 
-        public VehicleIdentifierAttribute(string identifier)
+        public AvatarIdentifierAttribute(string identifier)
         {
             Identifier = identifier;
         }

@@ -14,9 +14,9 @@ using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Bus.Common.Worlds;
 
-namespace Bus.Common.Vehicles
+namespace Bus.Common.Avatars
 {
-    public class VehicleBuilder
+    public class AvatarBuilder
     {
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
@@ -29,46 +29,46 @@ namespace Bus.Common.Vehicles
         public required Camera Camera { get; init; }
         public required WorldBase World { get; init; }
 
-        public VehicleBuilder()
+        public AvatarBuilder()
         {
         }
 
-        internal protected VehicleBase Build(string path, string? identifier)
+        internal protected AvatarBase Build(string path, string? identifier)
         {
-            if (!File.Exists(path)) throw new FileNotFoundException("車両ファイルが見つかりません。", path);
+            if (!File.Exists(path)) throw new FileNotFoundException("アバターファイルが見つかりません。", path);
 
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
             WorldContext.Children.Add(context);
 
-            Type[] vehicleTypes = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(VehicleBase)))
+            Type[] avatarTypes = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(AvatarBase)))
                 .ToArray();
 
-            if (vehicleTypes.Length == 0)
+            if (avatarTypes.Length == 0)
             {
                 string fileName = Path.GetFileName(path);
-                throw new ArgumentException($"{fileName} には車両が定義されていません。", nameof(path));
+                throw new ArgumentException($"{fileName} にはアバターが定義されていません。", nameof(path));
             }
 
-            Type vehicleType;
+            Type avatarType;
             if (identifier is null)
             {
-                if (vehicleTypes.Length == 1)
+                if (avatarTypes.Length == 1)
                 {
-                    vehicleType = vehicleTypes[0];
+                    avatarType = avatarTypes[0];
                 }
                 else
                 {
                     string fileName = Path.GetFileName(path);
-                    throw new ArgumentException($"{fileName} には 2 つ以上の車両が定義されています。", nameof(path));
+                    throw new ArgumentException($"{fileName} には 2 つ以上のアバターが定義されています。", nameof(path));
                 }
             }
             else
             {
                 Type? type = null;
-                foreach (Type t in vehicleTypes)
+                foreach (Type t in avatarTypes)
                 {
-                    VehicleIdentifierAttribute? identifierAttribute = t.GetCustomAttribute<VehicleIdentifierAttribute>();
+                    AvatarIdentifierAttribute? identifierAttribute = t.GetCustomAttribute<AvatarIdentifierAttribute>();
                     if (identifierAttribute?.Identifier == identifier)
                     {
                         type = t;
@@ -78,17 +78,17 @@ namespace Bus.Common.Vehicles
                 if (type is null)
                 {
                     string fileName = Path.GetFileName(path);
-                    throw new ArgumentException($"{fileName} には車両 '{identifier}' が定義されていません。", nameof(identifier));
+                    throw new ArgumentException($"{fileName} にはアバター '{identifier}' が定義されていません。", nameof(identifier));
                 }
-                vehicleType = type;
+                avatarType = type;
             }
 
-            ConstructorInfo constructor = vehicleType.GetConstructor([typeof(PluginLoadContext), typeof(VehicleBuilder)])
-                ?? throw new ArgumentException($"{vehicleType.Name} にはパラメータが " +
-                $"{nameof(PluginLoadContext)}, {nameof(VehicleBuilder)} のコンストラクタが定義されていません。", nameof(path));
+            ConstructorInfo constructor = avatarType.GetConstructor([typeof(PluginLoadContext), typeof(AvatarBuilder)])
+                ?? throw new ArgumentException($"{avatarType.Name} にはパラメータが " +
+                $"{nameof(PluginLoadContext)}, {nameof(AvatarBuilder)} のコンストラクタが定義されていません。", nameof(path));
 
-            VehicleBase vehicle = (VehicleBase)constructor.Invoke([context, this]);
-            return vehicle;
+            AvatarBase avatar = (AvatarBase)constructor.Invoke([context, this]);
+            return avatar;
         }
     }
 }

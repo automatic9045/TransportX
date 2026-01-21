@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using BepuPhysics;
 
+using Bus.Common.Avatars;
 using Bus.Common.Bodies;
 using Bus.Common.Dependency;
 using Bus.Common.Diagnostics;
@@ -14,7 +15,6 @@ using Bus.Common.Input;
 using Bus.Common.Rendering;
 using Bus.Common.Physics;
 using Bus.Common.Scenery;
-using Bus.Common.Vehicles;
 
 namespace Bus.Common.Worlds
 {
@@ -40,7 +40,7 @@ namespace Bus.Common.Worlds
         public PlateCollection Plates { get; } = new PlateCollection();
         public BodyCollection Bodies { get; } = new BodyCollection();
 
-        public VehicleBase? UserVehicle
+        public AvatarBase? Avatar
         {
             get => Camera.Viewpoints.AttachedTo;
             set => Camera.Viewpoints.AttachedTo = value;
@@ -124,9 +124,9 @@ namespace Bus.Common.Worlds
             Bodies.Tick(elapsed);
         }
 
-        public virtual VehicleBase CreateVehicle(string path, string? identifier)
+        public virtual AvatarBase CreateAvatar(string path, string? identifier)
         {
-            VehicleBuilder vehicleBuilder = new VehicleBuilder()
+            AvatarBuilder builder = new AvatarBuilder()
             {
                 DXHost = DXHost,
                 DXClient = DXClient,
@@ -140,24 +140,24 @@ namespace Bus.Common.Worlds
                 World = this,
             };
 
-            VehicleBase vehicle = vehicleBuilder.Build(path, identifier);
-            Bodies.Add(vehicle);
+            AvatarBase avatar = builder.Build(path, identifier);
+            Bodies.Add(avatar);
 
-            return vehicle;
+            return avatar;
         }
 
-        public virtual void DeleteVehicle(VehicleBase vehicle)
+        public virtual void DeleteAvatar(AvatarBase avatar)
         {
-            if (UserVehicle == vehicle) UserVehicle = null;
-            if (!Bodies.Remove(vehicle))
+            if (Avatar == avatar) Avatar = null;
+            if (!Bodies.Remove(avatar))
             {
-                throw new InvalidOperationException("このワールドで初期化された車両ではありません。");
+                throw new InvalidOperationException("このワールドで初期化されたアバターではありません。");
             }
 
-            PluginLoadContext vehicleContext = vehicle.VehicleContext;
-            vehicle.Dispose();
-            WorldContext.Children.Remove(vehicleContext);
-            vehicleContext.Unload();
+            PluginLoadContext avatarContext = avatar.AvatarContext;
+            avatar.Dispose();
+            WorldContext.Children.Remove(avatarContext);
+            avatarContext.Unload();
         }
     }
 }

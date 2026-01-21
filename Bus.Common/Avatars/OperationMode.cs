@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Vehicles
+namespace Bus.Common.Avatars
 {
     public enum OperationMode
     {

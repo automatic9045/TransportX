@@ -14,9 +14,9 @@ using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 using Bus.Common.Worlds;
 
-namespace Bus.Common.Vehicles
+namespace Bus.Common.Avatars
 {
-    public abstract class VehicleBase : RigidBody, ITrafficParticipant
+    public abstract class AvatarBase : RigidBody, ITrafficParticipant
     {
         public abstract string Title { get; }
         public abstract string Description { get; }
@@ -28,7 +28,7 @@ namespace Bus.Common.Vehicles
         public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext GameContext { get; }
         public PluginLoadContext WorldContext { get; }
-        public PluginLoadContext VehicleContext { get; }
+        public PluginLoadContext AvatarContext { get; }
         public ITimeManager TimeManager { get; }
         public InputManager InputManager { get; }
         public Camera Camera { get; }
@@ -46,7 +46,7 @@ namespace Bus.Common.Vehicles
         public abstract float SVelocity { get; }
         float ITrafficParticipant.SVelocity => SVelocity;
 
-        public VehicleBase(PluginLoadContext context, VehicleBuilder builder) : base(builder.PhysicsHost)
+        public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.PhysicsHost)
         {
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
@@ -54,7 +54,7 @@ namespace Bus.Common.Vehicles
             ErrorCollector = builder.ErrorCollector;
             GameContext = builder.GameContext;
             WorldContext = builder.WorldContext;
-            VehicleContext = context;
+            AvatarContext = context;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
             Camera = builder.Camera;
