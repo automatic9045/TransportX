@@ -20,6 +20,6 @@ namespace Bus.Common.Traffic
         float S { get; }
         float SVelocity { get; }
 
-        void Spawn(LanePath path, ParticipantDirection heading, float s);
+        bool Spawn(LanePath path, ParticipantDirection heading, float s);
     }
 }

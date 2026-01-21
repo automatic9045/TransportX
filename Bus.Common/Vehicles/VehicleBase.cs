@@ -61,6 +61,6 @@ namespace Bus.Common.Vehicles
             World = builder.World;
         }
 
-        public abstract void Spawn(LanePath path, ParticipantDirection heading, float s);
+        public abstract bool Spawn(LanePath path, ParticipantDirection heading, float s);
     }
 }

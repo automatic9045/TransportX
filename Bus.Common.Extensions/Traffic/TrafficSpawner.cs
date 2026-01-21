@@ -103,8 +103,8 @@ namespace Bus.Common.Extensions.Traffic
                 participant = disabledParticipant;
             }
 
-            participant.Spawn(path, heading, s);
-            return participant;
+            bool spawned = participant.Spawn(path, heading, s);
+            return spawned ? participant : null;
         }
     }
 }

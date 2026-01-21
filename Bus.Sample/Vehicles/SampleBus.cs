@@ -74,7 +74,7 @@ namespace Bus.Sample.Vehicles
             Powertrain.Dispose();
         }
 
-        public override void Spawn(LanePath path, ParticipantDirection heading, float s)
+        public override bool Spawn(LanePath path, ParticipantDirection heading, float s)
         {
             throw new NotSupportedException();
         }
