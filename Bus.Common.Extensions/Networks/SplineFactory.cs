@@ -82,7 +82,7 @@ namespace Bus.Common.Extensions.Networks
             int splineX = PlateX;
             int splineZ = PlateZ;
             Pose splinePose = Pose;
-            Pose splinePoseInv = splinePose.Inverse();
+            Pose splinePoseInv = Pose.Inverse(splinePose);
 
             Queue<Span> curves = new(Curves.Spans);
             Queue<Span> gradients = new(Gradients.Spans);
@@ -129,7 +129,7 @@ namespace Bus.Common.Extensions.Networks
                     splineX = PlateX;
                     splineZ = PlateZ;
                     splinePose = Pose;
-                    splinePoseInv = splinePose.Inverse();
+                    splinePoseInv = Pose.Inverse(splinePose);
 
                     segments = [];
                 }

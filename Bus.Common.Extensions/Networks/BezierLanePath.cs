@@ -22,7 +22,7 @@ namespace Bus.Common.Extensions.Networks
         public BezierLanePath(LanePin from, LanePin to, float? controlScale = null) : base(from, to)
         {
             FromPose = Pose.CreateRotationY(float.Pi) * from.LocalPose;
-            Pose fromPoseInv = FromPose.Inverse();
+            Pose fromPoseInv = Pose.Inverse(FromPose);
             Pose transition = to.LocalPose * fromPoseInv;
 
             Vector3 p0 = Vector3.Zero;

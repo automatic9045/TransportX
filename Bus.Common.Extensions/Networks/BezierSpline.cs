@@ -32,7 +32,7 @@ namespace Bus.Common.Extensions.Networks
             int plateX, int plateZ, Pose fromPose, Pose toPose, LaneLayout outletLayout, float handleScale = 0.5f)
             : base(device, physicsHost, plateX, plateZ, fromPose)
         {
-            Pose fromTranformInv = fromPose.Inverse();
+            Pose fromTranformInv = Pose.Inverse(fromPose);
             Pose transition = Pose.CreateRotationY(-float.Pi) * toPose * fromTranformInv;
 
             Vector3 p0 = Vector3.Zero;

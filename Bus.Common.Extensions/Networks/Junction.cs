@@ -45,7 +45,7 @@ namespace Bus.Common.Extensions.Networks
 
         public Pose GetConnectionPose(NetworkPort port, Pose targetPortOffset)
         {
-            Pose offsetInv = targetPortOffset.Inverse();
+            Pose offsetInv = Pose.Inverse(targetPortOffset);
             Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * Pose;
             return pose;
         }

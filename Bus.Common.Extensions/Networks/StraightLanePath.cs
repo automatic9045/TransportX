@@ -20,7 +20,7 @@ namespace Bus.Common.Extensions.Networks
         public StraightLanePath(LanePin from, LanePin to) : base(from, to)
         {
             FromPose = Pose.CreateRotationY(float.Pi) * from.LocalPose;
-            Pose fromPoseInv = FromPose.Inverse();
+            Pose fromPoseInv = Pose.Inverse(FromPose);
             Pose transition = to.LocalPose * fromPoseInv;
             ToUp = Vector3.Normalize(Pose.TransformNormal(Vector3.UnitY, transition));
             Length = transition.Position.Length();

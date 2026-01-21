@@ -43,7 +43,7 @@ namespace Bus.Common.Physics
             ShapeIndex = shapeIndex;
             Material = material;
             Offset = offset;
-            OffsetInverse = Offset.Inverse();
+            OffsetInverse = Pose.Inverse(Offset);
             InertiaFactory = inertiaFactory;
         }
 

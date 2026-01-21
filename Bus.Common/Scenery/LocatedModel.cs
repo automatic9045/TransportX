@@ -19,7 +19,7 @@ namespace Bus.Common.Scenery
             set
             {
                 field = value;
-                Pose basePoseInv = value.Inverse();
+                Pose basePoseInv = Pose.Inverse(value);
                 BasePoseInverse = basePoseInv;
             }
         }

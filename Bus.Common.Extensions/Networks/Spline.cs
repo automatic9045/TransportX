@@ -92,7 +92,7 @@ namespace Bus.Common.Extensions.Networks
 
         public T ConnectNew<T>(PortDefinition targetPortDef, Func<int, int, Pose, T> elementFactory) where T : NetworkElement
         {
-            Pose offsetInv = targetPortDef.Offset.Inverse();
+            Pose offsetInv = Pose.Inverse(targetPortDef.Offset);
             Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * Outlet.Offset * Pose;
 
             T element = elementFactory(PlateX, PlateZ, pose);

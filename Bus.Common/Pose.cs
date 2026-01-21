@@ -83,6 +83,14 @@ namespace Bus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Pose Inverse(Pose pose)
+        {
+            Quaternion orientationInv = Quaternion.Inverse(pose.Orientation);
+            Vector3 positionInv = Vector3.Transform(-pose.Position, orientationInv);
+            return new Pose(positionInv, orientationInv);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 Transform(Vector3 value, in Pose pose)
         {
             return pose.Position + Vector3.Transform(value, pose.Orientation);
@@ -100,14 +108,6 @@ namespace Bus.Common
             Matrix4x4 result = Matrix4x4.CreateFromQuaternion(Orientation);
             result.Translation = Position;
             return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly Pose Inverse()
-        {
-            Quaternion orientationInv = Quaternion.Inverse(Orientation);
-            Vector3 positionInv = Vector3.Transform(-Position, orientationInv);
-            return new Pose(positionInv, orientationInv);
         }
     }
 }

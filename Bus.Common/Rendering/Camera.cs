@@ -34,7 +34,7 @@ namespace Bus.Common.Rendering
                 Listener.Position = Pose.Position;
                 Listener.Velocity = Velocity;
 
-                View = Pose.Inverse().ToMatrix4x4();
+                View = Pose.Inverse(Pose).ToMatrix4x4();
             };
         }
 
