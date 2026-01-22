@@ -22,8 +22,8 @@ namespace Bus.Sample.Vehicles.Powertrain
         private readonly Simulation Simulation;
 
         public Engine Engine { get; }
-        public Clutch Clutch { get; }
-        public MT Transmission { get; }
+        public ClutchBase Clutch { get; }
+        public TransmissionBase Transmission { get; }
         public Differential Differential { get; }
         public DriveWheel LeftWheel { get; }
         public DriveWheel RightWheel { get; }
@@ -40,9 +40,13 @@ namespace Bus.Sample.Vehicles.Powertrain
 
             engineToClutch.Rpm = 600;
 
+            Actuator clutchActuator = new();
+
             Engine = new Engine(interfaces.Throttle, engineToClutch, soundFactory);
-            Clutch = new Clutch(interfaces.Clutch, engineToClutch, clutchToTransmission);
-            Transmission = new MT(interfaces.MTShifter, clutchToTransmission, transmissionToDifferential);
+            //Clutch = new FrictionClutch(interfaces.Clutch, engineToClutch, clutchToTransmission);
+            //Transmission = new MT(interfaces.MTShifter, clutchToTransmission, transmissionToDifferential);
+            Clutch = new FluidClutch(clutchActuator, engineToClutch, clutchToTransmission);
+            Transmission = new AMT(Engine, (FluidClutch)Clutch, interfaces.AMTShifter, clutchActuator, clutchToTransmission, transmissionToDifferential);
             Differential = new Differential(transmissionToDifferential, differentialToLeftWheel, differentialToRightWheel);
             LeftWheel = new DriveWheel(wheelRL, motorRL, differentialToLeftWheel, true);
             RightWheel = new DriveWheel(wheelRR, motorRR, differentialToRightWheel, false);
@@ -51,6 +55,9 @@ namespace Bus.Sample.Vehicles.Powertrain
             Engine.ECU.Clutch = Clutch;
             Engine.ECU.Transmission = Transmission;
             Engine.ECU.ASR = ASR;
+            //Engine.ECU.AntiStall = false; // MT
+            //Engine.ECU.IdlingGains = (0.01f, 0.05f, 0.0002f); // MT
+            Engine.ECU.IdlingGains = (0.01f, 0.05f, 0.0002f); // AMT
 
             Simulation = new Simulation();
             Simulation.AddModule(Engine);

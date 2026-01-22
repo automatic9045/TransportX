@@ -31,6 +31,7 @@ namespace Bus.Sample.Vehicles.Interfaces
         public Pedal Throttle { get; }
         public SteeringWheel SteeringWheel { get; }
         public ATShifter ATShifter { get; }
+        public AMTShifter AMTShifter { get; }
         public MTShifter MTShifter { get; }
 
         public InterfaceSet(IEnumerable<IInput> sources, IInput defaultSource)
@@ -42,12 +43,14 @@ namespace Bus.Sample.Vehicles.Interfaces
             Throttle = new Pedal(SourceKey.Throttle);
             SteeringWheel = new SteeringWheel(SourceKey.Steering);
             ATShifter = new ATShifter(sources.Select(source => source.ATShifter));
+            AMTShifter = new AMTShifter(SourceKey.MTShifter);
             MTShifter = new MTShifter(SourceKey.MTShifter);
         }
 
         public void Tick(double vehicleAngularVelocity, TimeSpan elapsed)
         {
             ATShifter.Tick(vehicleAngularVelocity, elapsed);
+            AMTShifter.Tick(elapsed);
             MTShifter.Tick(elapsed);
         }
     }

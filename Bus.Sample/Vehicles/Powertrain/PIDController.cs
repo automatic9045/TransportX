@@ -8,21 +8,28 @@ namespace Bus.Sample.Vehicles.Powertrain
 {
     internal class PIDController
     {
-        private readonly float Kp;
-        private readonly float Ki;
-        private readonly float Kd;
-        private readonly float Min;
-        private readonly float Max;
+        public float Kp { get; private set; } = 0;
+        public float Ki { get; private set; } = 0;
+        public float Kd { get; private set; } = 0;
+        public (float P, float I, float D) K
+        {
+            get => (Kp, Ki, Kd);
+            set
+            {
+                Kp = value.P;
+                Ki = value.I;
+                Kd = value.D;
+            }
+        }
+
+        public float Min { get; }
+        public float Max { get; }
 
         private float I = 0;
         private float OldError = 0;
 
-        public PIDController(float kp, float ki, float kd, float min = float.MinValue, float max = float.MaxValue)
+        public PIDController(float min = float.MinValue, float max = float.MaxValue)
         {
-            Kp = kp;
-            Ki = ki;
-            Kd = kd;
-
             Min = min;
             Max = max;
         }

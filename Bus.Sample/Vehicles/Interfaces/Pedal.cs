@@ -8,7 +8,7 @@ using Bus.Common.Input;
 
 namespace Bus.Sample.Vehicles.Interfaces
 {
-    internal class Pedal
+    internal class Pedal : IAxis
     {
         public Slider Source { get; set; }
 

@@ -13,32 +13,38 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
         private readonly Pedal ThrottlePedal;
         private readonly PIDController IdlingController;
 
-        public Clutch? Clutch { private get; set; }
-        public MT? Transmission { private get; set; }
+        public ClutchBase? Clutch { private get; set; }
+        public TransmissionBase? Transmission { private get; set; }
         public ASR? ASR { private get; set; }
 
+        public bool AntiStall { get; set; } = true;
+        public (float P, float I, float D) IdlingGains { get; set; } = (0, 0, 0);
+
+        public float ThrottleInput => ThrottlePedal.Rate;
         public float Throttle { get; private set; } = 0;
 
         public ECU(Pedal throttlePedal)
         {
             ThrottlePedal = throttlePedal;
-            IdlingController = new PIDController(0.01f, 0.05f, 0.0001f, 0, 1);
+            IdlingController = new PIDController(0, 1);
         }
 
         public void Tick(float rpm, TimeSpan elapsed)
         {
-            float throttle = ThrottlePedal.Rate;
+            float throttle = float.Clamp(ThrottlePedal.Rate, Transmission!.MinThrottle, Transmission!.MaxThrottle);
 
-            if (ASR!.IsSlipping)
+            if (ASR!.IsSlipping || 3500 < rpm)
             {
-                Throttle = 0;
+                throttle = 0;
                 IdlingController.Reset();
-                return;
             }
 
-            if (rpm < 1000 && (Clutch!.Engagement < 1e-3f || Transmission!.Gear == 0))
+            if (AntiStall || Transmission!.Gear == 0 || Clutch!.Engagement < 1e-3f)
             {
-                float idlingThrottle = IdlingController.Next(600 - rpm, elapsed);
+                IdlingController.K = IdlingGains;
+
+                float targetRpm = Transmission!.Gear == 0 ? 600 : 575;
+                float idlingThrottle = IdlingController.Next(targetRpm - rpm, elapsed);
                 if (throttle < idlingThrottle)
                 {
                     Throttle = idlingThrottle;
@@ -48,11 +54,6 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                     Throttle = throttle;
                     IdlingController.Reset();
                 }
-            }
-            else if (3500 < rpm)
-            {
-                Throttle = 0;
-                IdlingController.Reset();
             }
             else
             {

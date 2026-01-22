@@ -5,38 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Sample.Vehicles.Interfaces;
-using Bus.Sample.Vehicles.Powertrain.Constraints;
 using Bus.Sample.Vehicles.Powertrain.Physics;
 
 namespace Bus.Sample.Vehicles.Powertrain.Modules
 {
-    internal class Clutch : IModule
+    internal class FrictionClutch : ClutchBase
     {
         private static readonly float FrictionCoefficient = 900;
 
 
-        private readonly Pedal ClutchPedal;
-
-        private readonly Shaft Input;
-        private readonly Shaft Output;
-
-        private readonly ClutchConstraint Constraint;
-
-        public IEnumerable<IConstraint> Constraints { get; }
-        public float Engagement => ClutchPedal.Rate;
-
-        public Clutch(Pedal clutchPedal, Shaft input, Shaft output)
+        public FrictionClutch(IAxis axis, Shaft input, Shaft output) : base(axis, input, output)
         {
-            ClutchPedal = clutchPedal;
-
-            Input = input;
-            Output = output;
-
-            Constraint = new ClutchConstraint(Input, Output);
-            Constraints = [Constraint];
         }
 
-        public void Tick(TimeSpan elapsed)
+        public override void Tick(TimeSpan elapsed)
         {
             if (Engagement < 1e-3f)
             {
@@ -56,11 +38,6 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                 Input.ApplyTorque(-torque, elapsed);
                 Output.ApplyTorque(torque, elapsed);
             }
-        }
-
-        public void PropagateTorque()
-        {
-            Constraint.PropagateTorque(Input);
         }
     }
 }
