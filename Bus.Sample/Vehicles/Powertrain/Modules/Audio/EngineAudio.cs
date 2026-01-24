@@ -48,10 +48,10 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules.Audio
 
         public override void UpdateSound(Camera camera)
         {
-            LowVolume = float.Min(float.Max(0, -(Engine.Rpm - 1500) / 1500 + 1), 1);
+            LowVolume = 0; //float.Min(float.Max(0, -(Engine.Rpm - 1500) / 1500 + 1), 1);
 
-            UpdateSoundState(camera, LowSound, LowVolume, 0.006f * Engine.AngularVelocity);
-            UpdateSoundState(camera, HighSound, 1 - LowVolume, 0.0033f * Engine.AngularVelocity);
+            UpdateSoundState(camera, LowSound, LowVolume, 0.002f * 3.3f * Engine.AngularVelocity);
+            UpdateSoundState(camera, HighSound, 1 - LowVolume, 0.0011f * 3.3f * Engine.AngularVelocity);
         }
     }
 }
