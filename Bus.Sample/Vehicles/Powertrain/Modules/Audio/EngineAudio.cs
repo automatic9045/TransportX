@@ -15,17 +15,17 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules.Audio
     {
         private readonly Engine Engine;
 
-        private readonly Sound3D LowSound;
-        private readonly Sound3D HighSound;
+        private readonly Sound3D IdlingSound;
+        private readonly Sound3D Sound;
 
-        public float LowVolume { get; private set; } = 0;
+        public float IdlingVolume { get; private set; } = 0;
 
         public EngineAudio(Engine engine, SoundFactory soundFactory)
         {
             Engine = engine;
 
-            LowSound = LoadSound("EngineLow.wav");
-            HighSound = LoadSound("EngineHigh.wav");
+            IdlingSound = LoadSound("EngineIdling.wav");
+            Sound = LoadSound("Engine.wav");
 
 
             Sound3D LoadSound(string filePath)
@@ -42,16 +42,16 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules.Audio
 
         public override void Dispose()
         {
-            LowSound.Dispose();
-            HighSound.Dispose();
+            IdlingSound.Dispose();
+            Sound.Dispose();
         }
 
         public override void UpdateSound(Camera camera)
         {
-            LowVolume = 0; //float.Min(float.Max(0, -(Engine.Rpm - 1500) / 1500 + 1), 1);
+            IdlingVolume = float.Clamp(-(Engine.Rpm - 600) / 100 + 1, 0, 1);
 
-            UpdateSoundState(camera, LowSound, LowVolume, 0.002f * 3.3f * Engine.AngularVelocity);
-            UpdateSoundState(camera, HighSound, 1 - LowVolume, 0.0011f * 3.3f * Engine.AngularVelocity);
+            UpdateSoundState(camera, IdlingSound, IdlingVolume, 0.0166f * Engine.AngularVelocity);
+            UpdateSoundState(camera, Sound, 1, 0.0036f * Engine.AngularVelocity);
         }
     }
 }
