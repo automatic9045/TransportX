@@ -10,6 +10,7 @@ using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
+using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 using Bus.Common.Worlds;
@@ -59,6 +60,11 @@ namespace Bus.Common.Avatars
             InputManager = builder.InputManager;
             Camera = builder.Camera;
             World = builder.World;
+        }
+
+        public new PlateOffset TeleportTo(int plateX, int plateZ, Pose pose)
+        {
+            return base.TeleportTo(plateX, plateZ, pose);
         }
 
         public abstract bool Spawn(LanePath path, ParticipantDirection heading, float s);

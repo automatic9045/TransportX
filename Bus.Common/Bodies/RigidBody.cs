@@ -22,7 +22,7 @@ namespace Bus.Common.Bodies
 
         public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
-            Structure = new BodyStructure(physicsHost, () => Pose);
+            Structure = new BodyStructure(physicsHost);
 
             Moved += (sender, e) =>
             {
@@ -47,6 +47,17 @@ namespace Bus.Common.Bodies
         public virtual void SetFromCamera(PlateOffset fromCamera)
         {
             Structure.SetFromCamera(fromCamera);
+        }
+
+        protected virtual PlateOffset TeleportTo(int plateX, int plateZ, Pose pose)
+        {
+            PlateOffset plateOffset = Locate(plateX, plateZ, pose);
+            foreach (LocatedModel model in Structure)
+            {
+                model.Pose = model.BasePose * Pose;
+            }
+
+            return plateOffset;
         }
 
         public virtual void SubTick(TimeSpan elapsed)

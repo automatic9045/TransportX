@@ -52,8 +52,6 @@ namespace Bus.Sample.Vehicles
 
         public SampleBus(PluginLoadContext context, AvatarBuilder builder) : base(context, builder)
         {
-            Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
-
             ResetKey = InputManager.ObserveKey(Key.R);
 
             ModelFactory modelFactory = new ModelFactory(DXHost.Device, DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));

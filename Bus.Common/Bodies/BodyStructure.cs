@@ -17,7 +17,6 @@ namespace Bus.Common.Bodies
     public class BodyStructure : IReadOnlyList<LocatedModel>, IDisposable, IDrawable
     {
         protected readonly IPhysicsHost PhysicsHost;
-        protected readonly Func<Pose> PoseFactory;
 
         protected readonly List<LocatedModel> Items = new List<LocatedModel>();
 
@@ -26,20 +25,16 @@ namespace Bus.Common.Bodies
         public IEnumerator<LocatedModel> GetEnumerator() => Items.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public Pose Pose => PoseFactory();
-
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
         public LocatedModel? RootModel => Count == 0 ? null : this[0];
 
-        public BodyStructure(IPhysicsHost physicsHost, Func<Pose> poseFactory)
+        public BodyStructure(IPhysicsHost physicsHost)
         {
             PhysicsHost = physicsHost;
-            PoseFactory = poseFactory;
         }
 
         private T AttachCollidable<T>(T locatedModel, ColliderGroupHandle group) where T : CollidableLocatedModel
         {
-            locatedModel.Pose = locatedModel.BasePose * Pose;
             PhysicsHost.SetGroup(locatedModel.Handle, group);
 
             Items.Add(locatedModel);
@@ -104,7 +99,6 @@ namespace Bus.Common.Bodies
         public LocatedModel Attach(IModel model, Pose pose)
         {
             LocatedModel locatedModel = new LocatedModel(model, pose);
-            locatedModel.Pose = locatedModel.BasePose * Pose;
 
             Items.Add(locatedModel);
             return locatedModel;
