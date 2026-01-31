@@ -1,4 +1,5 @@
-Avatars.Load("Bus.Sample.dll");
+Avatar.Load("Bus.Sample.dll");
+Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
 
 Models.LoadList("Models.txt");
 //Debug.ShowDialog("hello");
@@ -44,22 +45,31 @@ tJunction.PutStructure("Road1_3", 0, 0, 7);
 tJunction.PutStructure("Road1_3", 0, 0, 8);
 tJunction.PutStructure("Road1_3", 0, 0, 9);
 
+tJunction = Network.Templates.CreateJunction("JunctionTemplate2");
+tJunction.AddPort("0", "Layout1", 0, 0, 0, 0, 180, 0);
+tJunction.Wire("0", 1, "0", 2);
+tJunction.PutStructure("Road2", 0, 0, 0);
+
 Background.Add("Background");
 
-Plates[0, 0].PutStructure("Grass", 0, -0.01, 0);
-Plates[0, 0].PutStructure("Signal", 20, 0, 40);
-
 Plates[-1, 0].PutStructure("Grass", 0, -0.01, 0);
+Plates[0, 0].PutStructure("Grass", 0, -0.01, 0);
+Plates[-1, 1].PutStructure("Grass", 0, -0.01, 0);
 Plates[0, 1].PutStructure("Grass", 0, -0.01, 0);
 
-var factory = Plates[-1, 0].BeginSpline("SplineTemplate2", 245, 0, 30);
+Plates[0, 0].PutStructure("Signal", 20, 0, 40);
+
+var factory = Plates[-1, 0].BeginSpline("SplineTemplate2", 200, 0, 30);
 for (int i = 0; i < 5; i++) factory.Curves.Straight(250);
 factory.PutStructure(["Pedestrian"], -5.5, 0.15, 0, 20, 0, 0, 1);
 var spline = factory.Build();
 
-factory = Plates[0, 0].BeginSpline("SplineTemplate1", 10, 0, 30);
-factory.Curves.Straight(70);
+factory = Plates[0, 0].BeginSpline("SplineTemplate1", 10, 0, 0);
+factory.Curves.Straight(100);
 spline = factory.Build();
+
+Plates[0, 0].PutStructure("RoadTerminal1", -1.7, 0, 30);
+Plates[0, 0].PutStructure("BusStop", -4.5, 0.15, 49.3);
 
 var junction = spline.IntoJunction("JunctionTemplate1", "S");
 
@@ -76,6 +86,7 @@ factory.Curves.Straight(20);
 factory.Curves.ByRadius(50, 50);
 factory.Curves.ByRadius(-50, 50);
 factory.Curves.Straight(200);
+factory.PutStructure(["BusStop"], -5.25, 0.15, 0, 250, 0, 0, 1);
 spline = factory.Build();
 
 junction = spline.IntoJunction("JunctionTemplate1", "S");
@@ -102,18 +113,10 @@ factory.ConnectBezier(junction2.Junction.Ports["S"]);
 spline = factory.Build();
 
 factory = junction2.IntoSpline("N", "SplineTemplate1");
-factory.Curves.Straight(20);
+factory.Curves.Straight(30);
 spline = factory.Build();
 
-junction = spline.IntoJunction("JunctionTemplate1", "S");
-
-factory = junction.IntoSpline("N", "SplineTemplate1");
-double radius = 10;
-factory.Curves.Straight(radius - 5);
-factory.Curves.ByRadius(radius, radius / 2 * 3 * double.Pi);
-factory.Curves.Straight(radius - 6);
-spline = factory.Build();
-Network.Connect(spline.Outlet, junction.Junction.Ports["E"]);
+junction = spline.IntoJunction("JunctionTemplate2", "0");
 
 factory = Plates[0, 0].BeginSpline("SplineTemplate1", 30, 0, 35);
 factory.Curves.Straight(110);
