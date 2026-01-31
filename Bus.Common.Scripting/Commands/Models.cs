@@ -43,13 +43,13 @@ namespace Bus.Common.Scripting.Commands
                     {
                         string[] line = sr.ReadLine()!.Split('\t', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                         if (line.Length == 0) continue;
-                        if (line[0].StartsWith("#")) continue;
+                        if (line[0].StartsWith('#')) continue;
 
                         try
                         {
                             if (line.Length < 2)
                             {
-                                Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。", listPath)
+                                Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。引数が不足しています。", listPath)
                                 {
                                     LineNumber = i + 1,
                                 };

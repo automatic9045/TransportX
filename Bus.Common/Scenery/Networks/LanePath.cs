@@ -25,7 +25,7 @@ namespace Bus.Common.Scenery.Networks
 
         protected LanePath(LanePin from, LanePin to)
         {
-            if (from.Port.Owner != to.Port.Owner) throw new ArgumentException(nameof(to), $"同一 {nameof(NetworkElement)} 内のピンを指定する必要があります。");
+            if (from.Port.Owner != to.Port.Owner) throw new ArgumentException($"同一 {nameof(NetworkElement)} 内のピンを指定する必要があります。", nameof(to));
 
             From = from;
             To = to;
