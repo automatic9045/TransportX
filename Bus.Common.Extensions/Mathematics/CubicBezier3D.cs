@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Extensions.Utilities
+namespace Bus.Common.Extensions.Mathematics
 {
     public class CubicBezier3D
     {

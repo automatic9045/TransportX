@@ -10,8 +10,8 @@ using Vortice.Direct3D11;
 using Bus.Common.Physics;
 using Bus.Common.Scenery.Networks;
 
+using Bus.Common.Extensions.Mathematics;
 using Bus.Common.Extensions.Networks.Paths;
-using Bus.Common.Extensions.Utilities;
 
 namespace Bus.Common.Extensions.Networks.Elements
 {
