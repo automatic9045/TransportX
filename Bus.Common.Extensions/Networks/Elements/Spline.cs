@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 
 using Bus.Common.Physics;
-using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
-namespace Bus.Common.Extensions.Networks
+using Bus.Common.Extensions.Networks.Paths;
+
+namespace Bus.Common.Extensions.Networks.Elements
 {
     public class Spline : SplineBase
     {

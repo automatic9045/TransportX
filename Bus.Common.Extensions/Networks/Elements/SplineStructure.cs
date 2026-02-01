@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Scenery;
 
-namespace Bus.Common.Extensions.Networks
+namespace Bus.Common.Extensions.Networks.Elements
 {
     public class SplineStructure
     {

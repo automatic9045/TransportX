@@ -9,7 +9,9 @@ using Bus.Common.Collections;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
-namespace Bus.Common.Extensions.Networks
+using Bus.Common.Extensions.Networks.Paths;
+
+namespace Bus.Common.Extensions.Networks.Elements
 {
     public class Junction : NetworkNode
     {

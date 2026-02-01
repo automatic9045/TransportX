@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Extensions.Networks
+namespace Bus.Common.Extensions.Networks.Elements
 {
     public readonly struct SplineSegment
     {

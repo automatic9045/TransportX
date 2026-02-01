@@ -10,7 +10,7 @@ using Bus.Common.Rendering;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
-using Bus.Common.Extensions.Networks;
+using Bus.Common.Extensions.Networks.Elements;
 
 namespace Bus.Common.Scripting.Commands
 {

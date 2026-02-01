@@ -11,7 +11,7 @@ using Bus.Common.Physics;
 using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
-namespace Bus.Common.Extensions.Networks
+namespace Bus.Common.Extensions.Networks.Elements
 {
     public class SplineFactory : LocatableObject
     {

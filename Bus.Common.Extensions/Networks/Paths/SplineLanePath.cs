@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 using Bus.Common.Scenery.Networks;
 
-namespace Bus.Common.Extensions.Networks
+using Bus.Common.Extensions.Networks.Elements;
+
+namespace Bus.Common.Extensions.Networks.Paths
 {
     public class SplineLanePath : LanePath
     {
