@@ -216,7 +216,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                 }
                 else
                 {
-                    float lockupRpm = float.Lerp(700, 1100, (Engine.ECU.ThrottleInput - 0.7f) / 0.3f);
+                    float lockupRpm = float.Clamp(float.Lerp(700, 1100, (Engine.ECU.ThrottleInput - 0.7f) / 0.3f), 700, 1100);
                     if (lockupRpm < rpm) lockup = true;
                 }
 
