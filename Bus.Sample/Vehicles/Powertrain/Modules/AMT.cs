@@ -148,7 +148,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
             float minThrottle = 0;
             float maxThrottle = 1;
             float clutchRate = 1;
-            bool forceLockup = false;
+            bool immediateLockup = false;
             if (IsShifting)
             {
                 if (ShiftingElapsed < ShiftingDurations.Phase0)
@@ -187,7 +187,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                     }
                     clutchRate = float.Max(0, float.Lerp(-0.5f, 1, amount));
                     GearKey = DestGear;
-                    forceLockup = true;
+                    immediateLockup = true;
                 }
                 else
                 {
@@ -206,7 +206,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                     lockup = false;
                     finalClutchRate = 0;
                 }
-                else if (forceLockup)
+                else if (immediateLockup)
                 {
                     lockup = true;
                 }
@@ -228,32 +228,18 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                 {
                     maxThrottle = float.Max(minThrottle, maxThrottle * 0.32f);
                 }
+
+                if (!IsShifting && Engine.Rpm < 550)
+                {
+                    finalClutchRate = float.Clamp((Engine.Rpm - 500) / 50, 0, finalClutchRate);
+                }
             }
-
-            /*
-            float finalClutchRate = clutchRate;
-            if ((!IsShifting || ShiftingElapsed < ShiftingDurations.UntilPhase2 || ShiftingDurations.UntilPhase4 <= ShiftingElapsed) && Gear != 0
-                && (float.Abs(Output.Rpm) < 350 || Input.Rpm < 600))
-            {
-                if (Engine.ECU.ThrottleInput < 0.25f)
-                {
-                    finalClutchRate = float.Clamp((Engine.Rpm - 500) * 0.004f, 0, 1);
-                }
-                else
-                {
-                    float throttleRate = float.Lerp(0.5f, 0.7f, (Engine.ECU.ThrottleInput - 0.5f) / 0.5f);
-                    minThrottle *= throttleRate;
-                    maxThrottle *= throttleRate;
-
-                    float targetRpm = float.Lerp(700, 1100, float.Max(0, (Engine.ECU.ThrottleInput - 0.6f) / 0.4f));
-                    finalClutchRate = float.Clamp((Engine.Rpm - targetRpm) * 0.005f, 0, 1);
-                }
-            }*/
 
             MinThrottleKey = minThrottle;
             MaxThrottleKey = maxThrottle;
+            Clutch.EnableCreep = Gear <= 3;
             Clutch.Lockup = lockup;
-            Clutch.LockupMode = forceLockup ? FluidClutch.LockupResponseMode.Immediate : FluidClutch.LockupResponseMode.Normal;
+            Clutch.LockupMode = immediateLockup ? FluidClutch.LockupResponseMode.Immediate : FluidClutch.LockupResponseMode.Normal;
             ClutchActuatorKey.Rate = finalClutchRate;
 
             base.Tick(elapsed);

@@ -18,6 +18,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
         private const float ImmediateLockUpSpeed = 10f;
 
 
+        public bool EnableCreep { get; set; } = false;
         public bool Lockup { get; set; } = false;
         public LockupResponseMode LockupMode { get; set; } = LockupResponseMode.Normal;
         public float LockupRate { get; private set; } = 0;
@@ -73,7 +74,7 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                 float transmittedTorque = float.Clamp(fluidTorque + frictionTorque, -maxStabilizingTorque, maxStabilizingTorque) * Engagement;
 
                 float torqueMultiplier = 1;
-                if (1 < Input.AngularVelocity && 0 <= Output.AngularVelocity)
+                if (EnableCreep && 1 < Input.AngularVelocity && 0 <= Output.AngularVelocity)
                 {
                     float speedRatio = float.Max(0, Output.AngularVelocity / Input.AngularVelocity);
                     float speedFactor = float.Min(float.Lerp(1, 10, speedRatio * 10), float.Clamp(float.Lerp(1000, 1, speedRatio / 0.85f), 1, 5));
