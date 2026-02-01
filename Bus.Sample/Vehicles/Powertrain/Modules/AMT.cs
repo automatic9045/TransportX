@@ -139,7 +139,12 @@ namespace Bus.Sample.Vehicles.Powertrain.Modules
                 {
                     ShiftingElapsed = ShiftingDurations.UntilPhase3;
                 }
-                else if (ShiftingDurations.UntilPhase2 < ShiftingElapsed || Gear == 0 || (0 < DestGear && DestGear < Gear) || Engine.ECU.Throttle < 0.05f)
+                else if (
+                    ShiftingDurations.UntilPhase2 < ShiftingElapsed // 変速動作中に再リクエストした場合
+                    || Gear == 0                                    // Nからの変速の場合
+                    || (0 < DestGear && DestGear < Gear)            // シフトダウンの場合
+                    || Engine.ECU.Throttle < 0.05f                  // スロットルが開いていない場合
+                    || !Clutch.Lockup)                              // クラッチがロックアップ中でない場合
                 {
                     ShiftingElapsed = ShiftingDurations.UntilPhase2;
                 }
