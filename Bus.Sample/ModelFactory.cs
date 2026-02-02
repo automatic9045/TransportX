@@ -8,8 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using BepuPhysics.Collidables;
 using Vortice.Direct3D11;
 
+using Bus.Common;
 using Bus.Common.Diagnostics;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
@@ -75,6 +77,16 @@ namespace Bus.Sample
             model.Collider.CreateDebugResources(Device);
             model.Collider.DebugColor = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
+            return model;
+        }
+
+        public CollidableModel WithCylinder(Model baseModel, Cylinder shape, ColliderMaterial material, Pose offset)
+        {
+            Collider<Cylinder> collider = ColliderFactory.Cylinder(Simulation, shape, material, offset);
+            collider.CreateDebugResources(Device);
+            collider.DebugColor = DebugModelColor;
+
+            CollidableModel model = new(baseModel, collider);
             return model;
         }
     }

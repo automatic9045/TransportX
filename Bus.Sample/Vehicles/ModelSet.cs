@@ -46,7 +46,10 @@ namespace Bus.Sample.Vehicles
 
         public static ModelSet Create(Simulation simulation, BodyStructure structure, ModelFactory modelFactory)
         {
-            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, new ColliderMaterial(0.6f, 2, new SpringSettings(30, 1)));
+            ColliderMaterial bodyMaterial = new(0.6f, 2, new SpringSettings(30, 1));
+            ColliderMaterial wheelMaterial = new(1, 0.5f, new SpringSettings(30, 1));
+
+            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, bodyMaterial);
             Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb", true);
             Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb", true);
 
@@ -67,15 +70,12 @@ namespace Bus.Sample.Vehicles
             DynamicLocatedModel axleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
 
 
-            ColliderMaterial wheelMaterial = new ColliderMaterial(1, 0.5f, new SpringSettings(30, 1));
 
             Cylinder wheelFShape = new Cylinder(0.48f, 0.277f);
-            Collider<Cylinder> wheelFCollider = ColliderFactory.Cylinder(simulation, wheelFShape, wheelMaterial, wheelRotation);
-            CollidableModel wheelFLModel = new CollidableModel(wheelFLModelBase, wheelFCollider);
+            CollidableModel wheelFLModel = modelFactory.WithCylinder(wheelFLModelBase, wheelFShape, wheelMaterial, wheelRotation);
 
             Cylinder wheelRShape = new Cylinder(0.48f, 0.57f);
-            Collider<Cylinder> wheelRCollider = ColliderFactory.Cylinder(simulation, wheelRShape, wheelMaterial, wheelRotation);
-            CollidableModel wheelRLModel = new CollidableModel(wheelRLModelBase, wheelRCollider);
+            CollidableModel wheelRLModel = modelFactory.WithCylinder(wheelRLModelBase, wheelRShape, wheelMaterial, wheelRotation);
 
             DynamicLocatedModel wheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
             DynamicLocatedModel wheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));

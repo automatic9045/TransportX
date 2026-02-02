@@ -14,19 +14,19 @@ namespace Bus.Common.Physics
 {
     public static class ColliderFactory
     {
-        public static Collider<Box> Box(Box shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            => new Collider<Box>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static BoxCollider Box(Box shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
+            => new BoxCollider(shape, shapeIndex, material, offset);
 
-        public static Collider<Box> Box(Simulation simulation, Box shape, ColliderMaterial material, Pose offset)
+        public static BoxCollider Box(Simulation simulation, Box shape, ColliderMaterial material, Pose offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
             return Box(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Cylinder> Cylinder(Cylinder shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            => new Collider<Cylinder>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static CylinderCollider Cylinder(Cylinder shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
+            => new CylinderCollider(shape, shapeIndex, material, offset);
 
-        public static Collider<Cylinder> Cylinder(Simulation simulation, Cylinder shape, ColliderMaterial material, Pose offset)
+        public static CylinderCollider Cylinder(Simulation simulation, Cylinder shape, ColliderMaterial material, Pose offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
             return Cylinder(shape, shapeIndex, material, offset);
