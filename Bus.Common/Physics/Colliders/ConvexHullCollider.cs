@@ -51,8 +51,8 @@ namespace Bus.Common.Physics.Colliders
                 vertices[i + 1] = new Vertex(extractedPoints[i], Vector4.One);
             }
 
-            int[] indices = new int[Shape.Points.Length * 2];
-            for (int i = 0; i < Shape.Points.Length; i++)
+            int[] indices = new int[extractedPoints.Count * 2];
+            for (int i = 0; i < extractedPoints.Count; i++)
             {
                 int baseIndex = i * 2;
                 indices[baseIndex] = 0;
