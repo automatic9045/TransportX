@@ -21,8 +21,8 @@ namespace Bus.Common.Scripting.Commands
         private readonly KeyedList<string, PortDefinition> PortsKey = new KeyedList<string, PortDefinition>(item => item.Name);
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
-        private readonly List<PathDefinition> PathsKey = [];
-        public IReadOnlyList<PathDefinition> Paths => PathsKey;
+        private readonly List<JunctionPathTemplate> PathsKey = [];
+        public IReadOnlyList<JunctionPathTemplate> Paths => PathsKey;
 
         private readonly List<LocatedModelTemplate> StructuresKey = [];
         public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
@@ -50,13 +50,15 @@ namespace Bus.Common.Scripting.Commands
             return null;
         }
 
-        public void Wire(string fromKey, int fromPin, string toKey, int toPin)
+        public JunctionPathTemplate Wire(string fromKey, int fromPin, string toKey, int toPin)
         {
-            if (!CheckPin(fromKey, fromPin)) return;
-            if (!CheckPin(toKey, toPin)) return;
+            if (!CheckPin(fromKey, fromPin)) return JunctionPathTemplate.Empty(World);
+            if (!CheckPin(toKey, toPin)) return JunctionPathTemplate.Empty(World);
 
-            PathDefinition path = new(fromKey, fromPin, toKey, toPin);
+            JunctionPathTemplate path = new(World, fromKey, fromPin, toKey, toPin);
             PathsKey.Add(path);
+
+            return path;
 
 
             bool CheckPin(string portKey, int pinIndex)
@@ -107,11 +109,9 @@ namespace Bus.Common.Scripting.Commands
         {
             Junction junction = new(plateX, plateZ, pose, Ports);
 
-            foreach (PathDefinition path in PathsKey)
+            foreach (JunctionPathTemplate path in PathsKey)
             {
-                LanePin from = junction.Ports[path.FromPortKey].Pins[path.FromPinIndex];
-                LanePin to = junction.Ports[path.ToPortKey].Pins[path.ToPinIndex];
-                junction.Wire(from, to);
+                path.Build(junction);
             }
 
             foreach (LocatedModelTemplate model in Structures)
@@ -121,23 +121,6 @@ namespace Bus.Common.Scripting.Commands
             }
 
             return junction;
-        }
-
-
-        public struct PathDefinition
-        {
-            public string FromPortKey { get; }
-            public int FromPinIndex { get; }
-            public string ToPortKey { get; }
-            public int ToPinIndex { get; }
-
-            public PathDefinition(string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
-            {
-                FromPortKey = fromPortKey;
-                FromPinIndex = fromPinIndex;
-                ToPortKey = toPortKey;
-                ToPinIndex = toPinIndex;
-            }
         }
     }
 }

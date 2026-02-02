@@ -28,14 +28,13 @@ namespace Bus.Common.Extensions.Networks.Elements
             Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
 
-        public LanePath Wire(LanePin from, LanePin to)
+        public LanePath Wire(LanePath path)
         {
-            if (!Ports.Contains(from.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(from));
-            if (!Ports.Contains(to.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(to));
+            if (!Ports.Contains(path.From.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));
+            if (!Ports.Contains(path.To.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));
 
-            BezierLanePath path = new(from, to);
-            from.Wire(path);
-            to.Wire(path);
+            path.From.Wire(path);
+            path.To.Wire(path);
             PathsKey.Add(path);
             return path;
         }
