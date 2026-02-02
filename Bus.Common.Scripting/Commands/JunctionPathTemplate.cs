@@ -94,7 +94,7 @@ namespace Bus.Common.Scripting.Commands
             CurveFactories.Add((from, to) => new BezierPoseCurve(from, to, (float?)controlScale));
         }
 
-        internal void Build(Junction junction)
+        internal LanePath Build(Junction junction)
         {
             LanePin from = junction.Ports[FromPortKey].Pins[FromPinIndex];
             LanePin to = junction.Ports[ToPortKey].Pins[ToPinIndex];
@@ -118,6 +118,7 @@ namespace Bus.Common.Scripting.Commands
             }
 
             junction.Wire(path);
+            return path;
         }
     }
 }

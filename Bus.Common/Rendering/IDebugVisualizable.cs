@@ -5,11 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
-using BepuPhysics.Collidables;
 using Vortice.Direct3D11;
-
-using Bus.Common.Rendering;
 
 namespace Bus.Common.Rendering
 {
@@ -19,6 +15,6 @@ namespace Bus.Common.Rendering
         Vector4 DebugColor { get; set; }
 
         void CreateDebugResources(ID3D11Device device);
-        void DrawDebug(DrawContext context);
+        void DrawDebug(LocatedDrawContext context);
     }
 }

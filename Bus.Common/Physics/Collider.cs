@@ -62,11 +62,11 @@ namespace Bus.Common.Physics
         {
         }
 
-        public void DrawDebug(DrawContext context)
+        public void DrawDebug(LocatedDrawContext context)
         {
             if (DebugModel is null) throw new InvalidOperationException("デバッグモデルが作成されていません。");
 
-            DebugModel.Draw(context);
+            DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }
     }
 }

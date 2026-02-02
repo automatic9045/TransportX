@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Bus.Common.Diagnostics;
 using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Scripting.Commands
@@ -21,6 +20,8 @@ namespace Bus.Common.Scripting.Commands
         private readonly ScriptDictionary<string, LaneTrafficGroup> GroupsKey;
         public IReadOnlyScriptDictionary<string, LaneTrafficGroup> Groups => GroupsKey;
 
+        private readonly Dictionary<LaneTrafficGroup, Vector4> GroupColors = [];
+
         internal LaneTraffic(ScriptWorld world)
         {
             World = world;
@@ -29,31 +30,31 @@ namespace Bus.Common.Scripting.Commands
             GroupsKey = new(World.ErrorCollector, "進路種別グループ", key => new LaneTrafficGroup());
         }
 
-        public LaneTrafficType AddType(string key, LaneTrafficType type, bool generateGroup = true)
+        public LaneTrafficType AddType(string key, LaneTrafficType type, string debugColor)
         {
             TypesKey.Add(key, type);
-            if (generateGroup)
-            {
-                LaneTrafficGroup group = new(type);
-                AddGroup(key, group);
-            }
+
+            LaneTrafficGroup group = new(type);
+            AddGroup(key, group, debugColor);
 
             return type;
         }
 
-        public LaneTrafficType AddType(string key, string name, bool generateGroup = true)
+        public LaneTrafficType AddType(string key, string name, string debugColor)
         {
             LaneTrafficType type = new(name);
-            return AddType(key, type, generateGroup);
+            return AddType(key, type, debugColor);
         }
 
-        public LaneTrafficGroup AddGroup(string key, LaneTrafficGroup group)
+        public LaneTrafficGroup AddGroup(string key, LaneTrafficGroup group, string debugColor)
         {
             GroupsKey.Add(key, group);
+            Color color = ColorTranslator.FromHtml(debugColor);
+            GroupColors.Add(group, new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f));
             return group;
         }
 
-        public LaneTrafficGroup AddGroup(string key, string typeKeys)
+        public LaneTrafficGroup AddGroup(string key, string typeKeys, string debugColor)
         {
             string[] typeKeysSplitted = typeKeys.Split('|', StringSplitOptions.TrimEntries);
             IEnumerable<LaneTrafficType> types = typeKeysSplitted
@@ -62,7 +63,12 @@ namespace Bus.Common.Scripting.Commands
                 .Cast<LaneTrafficType>();
 
             LaneTrafficGroup group = new(types);
-            return AddGroup(key, group);
+            return AddGroup(key, group, debugColor);
+        }
+
+        public Vector4 GetGroupColor(LaneTrafficGroup group)
+        {
+            return GroupColors.TryGetValue(group, out Vector4 color) ? color : Vector4.One;
         }
     }
 }

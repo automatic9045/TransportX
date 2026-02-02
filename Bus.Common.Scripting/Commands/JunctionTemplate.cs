@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -111,7 +112,9 @@ namespace Bus.Common.Scripting.Commands
 
             foreach (JunctionPathTemplate path in PathsKey)
             {
-                path.Build(junction);
+                LanePath compiled = path.Build(junction);
+                compiled.CreateDebugResources(World.DXHost.Device);
+                compiled.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(compiled.AllowedTraffic);
             }
 
             foreach (LocatedModelTemplate model in Structures)

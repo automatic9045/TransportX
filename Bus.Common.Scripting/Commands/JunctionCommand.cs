@@ -18,6 +18,12 @@ namespace Bus.Common.Scripting.Commands
 
         public Junction Junction { get; }
 
+        public string Name
+        {
+            get => Junction.DebugName ?? nameof(Extensions.Networks.Elements.Junction);
+            set => Junction.DebugName = value;
+        }
+
         public JunctionCommand(ScriptWorld world, Junction junction)
         {
             World = world;
@@ -57,6 +63,7 @@ namespace Bus.Common.Scripting.Commands
             Junction junction = port is null || template is null || targetPort is null
                 ? new Junction(Junction.PlateX, Junction.PlateZ, Junction.Pose, [])
                 : Junction.ConnectNew(port, targetPort, template.Build);
+            junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
 
             Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);
             plate.Network.Add(junction);

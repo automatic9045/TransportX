@@ -20,7 +20,13 @@ namespace Bus.Common.Physics
             DrawColliderModel = inputManager.ObserveKey(Key.F6);
             DrawColliderModel.Pressed += (sender, e) =>
             {
-                camera.DrawColliderDebugModel = !camera.DrawColliderDebugModel;
+                camera.DebugMode = camera.DebugMode switch
+                {
+                    DebugRenderingMode.None => DebugRenderingMode.Colliders,
+                    DebugRenderingMode.Colliders => DebugRenderingMode.Network,
+                    DebugRenderingMode.Network => DebugRenderingMode.None,
+                    _ => throw new NotSupportedException(),
+                };
             };
         }
 

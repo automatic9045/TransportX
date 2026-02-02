@@ -41,6 +41,7 @@ namespace Bus.Common.Scripting.Commands
             Junction junction = template is null || targetPort is null
                 ? new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Pose, [])
                 : ((Spline)Splines[^1]).ConnectNew(targetPort, template.Build);
+            junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
 
             AddElementToPlate(junction);
             return new JunctionCommand(World, junction);

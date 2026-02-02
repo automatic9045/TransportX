@@ -24,6 +24,12 @@ namespace Bus.Common.Scripting.Commands
         public GradientList Gradients { get; }
         public CantList Cants { get; }
 
+        public string Name
+        {
+            get => SplineFactory.DebugName ?? nameof(Spline);
+            set => SplineFactory.DebugName = value;
+        }
+
         internal SplineFactoryCommand(ScriptWorld world, SplineFactory splineFactory)
         {
             World = world;
@@ -75,14 +81,19 @@ namespace Bus.Common.Scripting.Commands
         public SplineCommand Build()
         {
             List<SplineBase> splines = SplineFactory.Build();
-            foreach (SplineBase spline in splines) AddElementToPlate(spline);
-            return new SplineCommand(World, splines);
-        }
+            foreach (SplineBase spline in splines)
+            {
+                Plate plate = World.Plates.GetOrAdd(spline.PlateX, spline.PlateZ);
+                plate.Network.Add(spline);
 
-        private void AddElementToPlate(NetworkElement element)
-        {
-            Plate plate = World.Plates.GetOrAdd(element.PlateX, element.PlateZ);
-            plate.Network.Add(element);
+                foreach (LanePath path in spline.Paths)
+                {
+                    path.CreateDebugResources(World.DXHost.Device);
+                    path.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(path.AllowedTraffic);
+                }
+            }
+
+            return new SplineCommand(World, splines);
         }
 
 

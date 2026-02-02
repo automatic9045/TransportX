@@ -4,10 +4,10 @@ Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
 Models.LoadList("Models.txt");
 //Debug.ShowDialog("hello");
 
-Network.LaneTraffic.AddType("Pedestrians", "歩行者");
-Network.LaneTraffic.AddType("Buses", "バス");
-Network.LaneTraffic.AddType("OtherCars", "その他自動車");
-Network.LaneTraffic.AddGroup("Cars", "Buses|OtherCars");
+Network.LaneTraffic.AddType("Pedestrians", "歩行者", "#FF00FF");
+Network.LaneTraffic.AddType("Buses", "バス", "#00FF00");
+Network.LaneTraffic.AddType("OtherCars", "その他自動車", "#0000FF");
+Network.LaneTraffic.AddGroup("Cars", "Buses|OtherCars", "#00FFFF");
 
 Network.LaneLayouts.Load("Layout1", "LaneLayout1.xml");
 
@@ -22,10 +22,10 @@ var tJunction = Network.Templates.CreateJunction("3Forked1");
 tJunction.AddPort("S", "Layout1", 0, 0, 0, 0, 180, 0);
 tJunction.AddPort("N", "Layout1", 0, 0, 10, 0, 0, 0);
 tJunction.AddPort("E", "Layout1", 5, 0, 5, 0, 90, 0);
-tJunction.Wire("S", 0, "N", 3);
-tJunction.Wire("S", 1, "N", 2);
-tJunction.Wire("S", 2, "N", 1);
-tJunction.Wire("S", 3, "N", 0);
+tJunction.Wire("S", 0, "N", 3).StraightToEnd();
+tJunction.Wire("S", 1, "N", 2).StraightToEnd();
+tJunction.Wire("S", 2, "N", 1).StraightToEnd();
+tJunction.Wire("S", 3, "N", 0).StraightToEnd();
 tJunction.Wire("S", 0, "E", 3);
 tJunction.Wire("S", 1, "E", 2);
 tJunction.Wire("S", 2, "E", 1);

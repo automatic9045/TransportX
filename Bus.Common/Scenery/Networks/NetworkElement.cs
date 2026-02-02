@@ -16,6 +16,17 @@ namespace Bus.Common.Scenery.Networks
         public abstract IReadOnlyList<LanePath> Paths { get; }
         public abstract IReadOnlyList<LocatedModel> Models { get; }
 
+
+        public string? DebugName
+        {
+            get => field;
+            set
+            {
+                field = value;
+                foreach (LanePath path in Paths) path.DebugName = value;
+            }
+        } = null;
+
         public NetworkElement(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
         }
@@ -30,6 +41,14 @@ namespace Bus.Common.Scenery.Networks
             foreach (LocatedModel model in Models)
             {
                 model.Draw(context);
+            }
+
+            if (context.DebugMode == DebugRenderingMode.Network)
+            {
+                foreach (LanePath path in Paths)
+                {
+                    if (path.CanDrawDebug) path.DrawDebug(context);
+                }
             }
         }
     }

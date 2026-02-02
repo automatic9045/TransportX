@@ -21,6 +21,9 @@ namespace Bus.Common.Scripting.Commands
 
         private readonly Plate Target;
 
+        private int SplineCounter = 0;
+        private int JunctionCounter = 0;
+
         internal PlateCommand(ScriptWorld world, int x, int z)
         {
             World = world;
@@ -70,6 +73,7 @@ namespace Bus.Common.Scripting.Commands
                     ? new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort)
                     : template.Build(X, Z, pose, sourcePort);
             }
+            splineFactory.DebugName = CreateSplineDebugName(templateKey);
 
             return new SplineFactoryCommand(World, splineFactory);
         }
@@ -114,6 +118,7 @@ namespace Bus.Common.Scripting.Commands
 
                 junction = new Junction(X, Z, pose, []);
             }
+            junction.DebugName = CreateJunctionDebugName(templateKey);
 
             Target.Network.Add(junction);
             return junction;
@@ -128,6 +133,16 @@ namespace Bus.Common.Scripting.Commands
         public Junction PutJunction(string templateKey, double x, double y, double z)
         {
             return PutJunction(templateKey, x, y, z, 0, 0, 0);
+        }
+
+        internal string CreateSplineDebugName(string? templateKey)
+        {
+            return $"{templateKey ?? "Spline"}_{X};{Z};{SplineCounter++}";
+        }
+
+        internal string CreateJunctionDebugName(string? templateKey)
+        {
+            return $"{templateKey ?? "Junction"}_{X};{Z};{JunctionCounter++}";
         }
     }
 }

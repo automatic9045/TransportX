@@ -29,6 +29,8 @@ namespace Bus.Common.Extensions.Networks.Elements
         public GradientList Gradients { get; } = new();
         public CantList Cants { get; } = new();
 
+        public string? DebugName { get; set; } = null;
+
         public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose, LaneLayout outletLayout, NetworkPort? sourcePort)
             : base(plateX, plateZ, pose)
         {
@@ -66,7 +68,10 @@ namespace Bus.Common.Extensions.Networks.Elements
                 );
                 Pose to = targetPort.Offset * targetElement.Pose * offset.Pose;
 
-                BezierSpline spline = new(Device, PhysicsHost, last.PlateX, last.PlateZ, from, to, last.Outlet.Layout, handleScale);
+                BezierSpline spline = new(Device, PhysicsHost, last.PlateX, last.PlateZ, from, to, last.Outlet.Layout, handleScale)
+                {
+                    DebugName = DebugName,
+                };
                 last.Outlet.ConnectTo(spline.Inlet);
                 spline.Outlet.ConnectTo(targetPort);
 
@@ -173,7 +178,10 @@ namespace Bus.Common.Extensions.Networks.Elements
                     CantDelta = segment.CantDelta,
                 }).ToArray();
 
-                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splinePose, OutletLayout, normalizedSegments);
+                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splinePose, OutletLayout, normalizedSegments)
+                {
+                    DebugName = DebugName,
+                };
                 sourcePort?.ConnectTo(spline.Inlet);
                 sourcePort = spline.Outlet;
                 ApplyStructures(spline);
