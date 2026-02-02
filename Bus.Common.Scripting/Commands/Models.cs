@@ -94,8 +94,8 @@ namespace Bus.Common.Scripting.Commands
 
                             if (model is CollidableModel collidableModel)
                             {
-                                collidableModel.Collider.CreateDebugModel(World.DXHost.Device);
-                                collidableModel.Collider.DebugModelColor = new Vector4(1, 0, 0, 1);
+                                collidableModel.Collider.CreateDebugResources(World.DXHost.Device);
+                                collidableModel.Collider.DebugColor = new Vector4(1, 0, 0, 1);
                             }
 
                             World.Models[key] = model;

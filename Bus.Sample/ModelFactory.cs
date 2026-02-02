@@ -54,8 +54,8 @@ namespace Bus.Sample
         {
             CollidableModel model = CollidableModel.Load(Device, Context, Simulation, ErrorCollector,
                 GetAbsolutePath(visualPath), makeVisualLH, GetAbsolutePath(collisionPath), makeCollisionLH, material, isOpen);
-            model.Collider.CreateDebugModel(Device);
-            model.Collider.DebugModelColor = DebugModelColor;
+            model.Collider.CreateDebugResources(Device);
+            model.Collider.DebugColor = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(visualPath);
             return model;
         }
@@ -63,8 +63,8 @@ namespace Bus.Sample
         public CollidableModel WithBoundingBox(string path, bool makeLH, ColliderMaterial material)
         {
             CollidableModel model = CollidableModel.LoadWithBoundingBox(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
-            model.Collider.CreateDebugModel(Device);
-            model.Collider.DebugModelColor = DebugModelColor;
+            model.Collider.CreateDebugResources(Device);
+            model.Collider.DebugColor = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
             return model;
         }
@@ -72,8 +72,8 @@ namespace Bus.Sample
         public CollidableModel WithConvexHull(string path, bool makeLH, ColliderMaterial material)
         {
             CollidableModel model = CollidableModel.LoadWithConvexHull(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
-            model.Collider.CreateDebugModel(Device);
-            model.Collider.DebugModelColor = DebugModelColor;
+            model.Collider.CreateDebugResources(Device);
+            model.Collider.DebugColor = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
             return model;
         }

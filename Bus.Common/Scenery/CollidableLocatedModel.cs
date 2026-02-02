@@ -94,7 +94,7 @@ namespace Bus.Common.Scenery
         public override void Draw(LocatedDrawContext context)
         {
             base.Draw(context);
-            if (!context.DrawColliderDebugModel || Model.Collider.DebugModel is null) return;
+            if (!context.DrawColliderDebugModel || !Model.Collider.CanDrawDebug) return;
 
             if (NoDepthState is null)
             {
@@ -133,7 +133,7 @@ namespace Bus.Common.Scenery
             };
             context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
-            Model.Collider.DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+            Model.Collider.DrawDebug(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
 
             context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
             oldDState?.Dispose();

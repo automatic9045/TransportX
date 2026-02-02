@@ -34,8 +34,9 @@ namespace Bus.Common.Physics
             }
         } = null;
 
+        public bool CanDrawDebug => DebugModel is not null;
+        public virtual Vector4 DebugColor { get; set; } = Vector4.One;
         public IModel? DebugModel { get; protected set; } = null;
-        public virtual Vector4 DebugModelColor { get; set; } = Vector4.One;
 
         public Collider(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset, Func<TShape, float, BodyInertia> inertiaFactory)
         {
@@ -47,13 +48,25 @@ namespace Bus.Common.Physics
             InertiaFactory = inertiaFactory;
         }
 
+        public virtual void Dispose()
+        {
+            DebugModel?.Dispose();
+        }
+
         public BodyInertia ComputeInertia(float mass)
         {
             return InertiaFactory(Shape, mass);
         }
 
-        public virtual void CreateDebugModel(ID3D11Device device)
+        public virtual void CreateDebugResources(ID3D11Device device)
         {
+        }
+
+        public void DrawDebug(DrawContext context)
+        {
+            if (DebugModel is null) throw new InvalidOperationException("デバッグモデルが作成されていません。");
+
+            DebugModel.Draw(context);
         }
     }
 }

@@ -15,6 +15,10 @@ namespace Bus.Common.Extensions.Networks.Elements
 {
     public abstract class SplineBase : NetworkEdge
     {
+        private static readonly IReadOnlyList<Vector4> DebugColors = [new(0, 0, 1, 1), new(0, 0.75f, 1, 1), new(0, 0.375f, 1, 1), new(0, 0, 0.625f, 1)];
+        private static int DebugColorIndex = 0;
+
+
         protected readonly ID3D11Device Device;
         protected readonly IPhysicsHost PhysicsHost;
 
@@ -61,9 +65,12 @@ namespace Bus.Common.Extensions.Networks.Elements
             if (0 < modelsToMerge.Count)
             {
                 MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
-                mergedModel.Model.Collider.CreateDebugModel(Device);
-                mergedModel.Model.Collider.DebugModelColor = new Vector4(0, 0, 1, 1);
+                mergedModel.Model.Collider.CreateDebugResources(Device);
+                mergedModel.Model.Collider.DebugColor = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
+
+                DebugColorIndex++;
+                if (DebugColorIndex == DebugColors.Count) DebugColorIndex = 0;
             }
         }
 

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using Vortice.Direct3D11;
 
 using Bus.Common.Rendering;
-using Vortice.Direct3D11;
 
 namespace Bus.Common.Physics
 {
-    public interface ICollider : IDisposable
+    public interface ICollider : IDebugVisualizable
     {
         IShape Shape { get; }
         TypedIndex ShapeIndex { get; }
@@ -22,15 +22,7 @@ namespace Bus.Common.Physics
         Pose OffsetInverse { get; }
 
         string? DebugName { get; set; }
-        IModel? DebugModel { get; }
-        Vector4 DebugModelColor { get; set; }
-
-        void IDisposable.Dispose()
-        {
-            DebugModel?.Dispose();
-        }
 
         BodyInertia ComputeInertia(float mass);
-        void CreateDebugModel(ID3D11Device device);
     }
 }

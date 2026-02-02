@@ -19,7 +19,7 @@ namespace Bus.Common.Physics.Colliders
         public bool IsOpen { get; }
 
         protected readonly Material DebugMaterial = new(Vector4.One, []);
-        public override Vector4 DebugModelColor
+        public override Vector4 DebugColor
         {
             get => DebugMaterial.BaseColor;
             set => DebugMaterial.BaseColor = value;
@@ -31,7 +31,7 @@ namespace Bus.Common.Physics.Colliders
             IsOpen = isOpen;
         }
 
-        public override void CreateDebugModel(ID3D11Device device)
+        public override void CreateDebugResources(ID3D11Device device)
         {
             if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
 
