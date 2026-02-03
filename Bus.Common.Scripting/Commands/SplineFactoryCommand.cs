@@ -86,7 +86,7 @@ namespace Bus.Common.Scripting.Commands
                 Plate plate = World.Plates.GetOrAdd(spline.PlateX, spline.PlateZ);
                 plate.Network.Add(spline);
 
-                foreach (LanePath path in spline.Paths)
+                foreach (ILanePath path in spline.Paths)
                 {
                     path.CreateDebugResources(World.DXHost.Device);
                     path.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(path.AllowedTraffic);

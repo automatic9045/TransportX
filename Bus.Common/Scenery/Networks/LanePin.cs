@@ -16,11 +16,11 @@ namespace Bus.Common.Scenery.Networks
         public Lane Definition => Port.Layout.Lanes[Index];
         public LanePin? ConnectedPin => Port.ConnectedPort is null ? null : Port.ConnectedPort.Pins[Port.Pins.Count - 1 - Index];
 
-        private readonly List<LanePath> SourcePathsKey = new List<LanePath>();
-        public IReadOnlyList<LanePath> SourcePaths => SourcePathsKey;
+        private readonly List<ILanePath> SourcePathsKey = new List<ILanePath>();
+        public IReadOnlyList<ILanePath> SourcePaths => SourcePathsKey;
 
-        private readonly List<LanePath> DestPathsKey = new List<LanePath>();
-        public IReadOnlyList<LanePath> DestPaths => DestPathsKey;
+        private readonly List<ILanePath> DestPathsKey = new List<ILanePath>();
+        public IReadOnlyList<ILanePath> DestPaths => DestPathsKey;
 
         public LanePin(NetworkPort port, int index)
         {
@@ -29,7 +29,7 @@ namespace Bus.Common.Scenery.Networks
             LocalPose = new Pose(new Vector3(Definition.Position, 0)) * Port.Offset;
         }
 
-        public void Wire(LanePath path)
+        public void Wire(ILanePath path)
         {
             bool isWired = false;
 

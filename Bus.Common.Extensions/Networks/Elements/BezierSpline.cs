@@ -25,8 +25,8 @@ namespace Bus.Common.Extensions.Networks.Elements
         public override NetworkPort Inlet { get; }
         public override NetworkPort Outlet { get; }
 
-        private readonly List<LanePath> PathsKey = [];
-        public override IReadOnlyList<LanePath> Paths => PathsKey;
+        private readonly List<ILanePath> PathsKey = [];
+        public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
         public override float Length => CenterCurve.Length;
 

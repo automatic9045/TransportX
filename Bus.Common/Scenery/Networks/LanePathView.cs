@@ -11,7 +11,7 @@ namespace Bus.Common.Scenery.Networks
 {
     public readonly struct LanePathView
     {
-        public LanePath Source { get; }
+        public ILanePath Source { get; }
         public bool Reverse { get; }
 
         public LanePin From => Reverse ? Source.To : Source.From;
@@ -19,7 +19,7 @@ namespace Bus.Common.Scenery.Networks
 
         private Pose DirectionPose { get; }
 
-        public LanePathView(LanePath source, bool reverse)
+        public LanePathView(ILanePath source, bool reverse)
         {
             Source = source;
             Reverse = reverse;
@@ -27,7 +27,7 @@ namespace Bus.Common.Scenery.Networks
             DirectionPose = Reverse ? Pose.CreateRotationY(float.Pi) : Pose.Identity;
         }
 
-        public LanePathView(LanePath source, ParticipantDirection heading) : this(source, heading == ParticipantDirection.Backward)
+        public LanePathView(ILanePath source, ParticipantDirection heading) : this(source, heading == ParticipantDirection.Backward)
         {
         }
 

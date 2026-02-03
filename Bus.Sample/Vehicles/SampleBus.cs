@@ -45,7 +45,7 @@ namespace Bus.Sample.Vehicles
         public override float Width => Spec.Width;
         public override float Length => Spec.Length;
         public override bool IsEnabled => true;
-        public override LanePath? Path => null;
+        public override ILanePath? Path => null;
         public override ParticipantDirection Heading => ParticipantDirection.Forward;
         public override float S => 0;
         public override float SVelocity => 0;
@@ -72,7 +72,7 @@ namespace Bus.Sample.Vehicles
             Powertrain.Dispose();
         }
 
-        public override bool Spawn(LanePath path, ParticipantDirection heading, float s)
+        public override bool Spawn(ILanePath path, ParticipantDirection heading, float s)
         {
             throw new NotSupportedException();
         }

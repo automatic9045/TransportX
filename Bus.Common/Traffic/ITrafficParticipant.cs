@@ -15,11 +15,11 @@ namespace Bus.Common.Traffic
         float Length { get; }
 
         bool IsEnabled { get; }
-        LanePath? Path { get; }
+        ILanePath? Path { get; }
         ParticipantDirection Heading { get; }
         float S { get; }
         float SVelocity { get; }
 
-        bool Spawn(LanePath path, ParticipantDirection heading, float s);
+        bool Spawn(ILanePath path, ParticipantDirection heading, float s);
     }
 }

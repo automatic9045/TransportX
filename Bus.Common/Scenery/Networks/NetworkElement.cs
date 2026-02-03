@@ -13,7 +13,7 @@ namespace Bus.Common.Scenery.Networks
     public abstract class NetworkElement : LocatableObject, IDrawable, IDisposable
     {
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
-        public abstract IReadOnlyList<LanePath> Paths { get; }
+        public abstract IReadOnlyList<ILanePath> Paths { get; }
         public abstract IReadOnlyList<LocatedModel> Models { get; }
 
 
@@ -23,7 +23,7 @@ namespace Bus.Common.Scenery.Networks
             set
             {
                 field = value;
-                foreach (LanePath path in Paths) path.DebugName = value;
+                foreach (ILanePath path in Paths) path.DebugName = value;
             }
         } = null;
 
@@ -45,7 +45,7 @@ namespace Bus.Common.Scenery.Networks
 
             if (context.DebugMode == DebugRenderingMode.Network)
             {
-                foreach (LanePath path in Paths)
+                foreach (ILanePath path in Paths)
                 {
                     if (path.CanDrawDebug) path.DrawDebug(context);
                 }

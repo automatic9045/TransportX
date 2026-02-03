@@ -17,7 +17,7 @@ namespace Bus.Common.Extensions.Traffic
         private readonly LaneTrafficType Type;
         private readonly float DefaultDensity;
 
-        private IReadOnlyList<(LanePath Path, ParticipantDirection Heading)> SourcePaths = [];
+        private IReadOnlyList<(ILanePath Path, ParticipantDirection Heading)> SourcePaths = [];
         private TimeSpan SinceLastSpawn = TimeSpan.Zero;
 
         public List<IParticipantFactory> ParticipantFactories { get; } = [];
@@ -28,13 +28,13 @@ namespace Bus.Common.Extensions.Traffic
             DefaultDensity = defaultDensity;
         }
 
-        public void Initialize(IEnumerable<LanePath> paths, IEnumerable<NetworkPort> sourcePorts)
+        public void Initialize(IEnumerable<ILanePath> paths, IEnumerable<NetworkPort> sourcePorts)
         {
-            IReadOnlyList<LanePath> targetPaths = paths
+            IReadOnlyList<ILanePath> targetPaths = paths
                 .Where(path => path.AllowedTraffic.Contains(Type))
                 .ToArray();
 
-            foreach (LanePath path in targetPaths)
+            foreach (ILanePath path in targetPaths)
             {
                 float s = 0;
                 while (s < path.Length)
@@ -77,12 +77,12 @@ namespace Bus.Common.Extensions.Traffic
                 SinceLastSpawn = TimeSpan.Zero;
                 if (SourcePaths.Count == 0) return;
 
-                (LanePath path, ParticipantDirection heading) = SourcePaths[Random.Shared.Next(SourcePaths.Count)];
+                (ILanePath path, ParticipantDirection heading) = SourcePaths[Random.Shared.Next(SourcePaths.Count)];
                 TrySpawnAt(path, heading, heading == ParticipantDirection.Backward ? path.Length : 0);
             }
         }
 
-        private ITrafficParticipant? TrySpawnAt(LanePath path, ParticipantDirection heading, float s)
+        private ITrafficParticipant? TrySpawnAt(ILanePath path, ParticipantDirection heading, float s)
         {
             IParticipantFactory factory = ParticipantFactories[Random.Shared.Next(ParticipantFactories.Count)];
 

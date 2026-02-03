@@ -112,7 +112,7 @@ namespace Bus.Common.Scripting.Commands
 
             foreach (JunctionPathTemplate path in PathsKey)
             {
-                LanePath compiled = path.Build(junction);
+                ILanePath compiled = path.Build(junction);
                 compiled.CreateDebugResources(World.DXHost.Device);
                 compiled.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(compiled.AllowedTraffic);
             }

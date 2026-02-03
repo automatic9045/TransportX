@@ -23,8 +23,8 @@ namespace Bus.Common.Extensions.Networks.Elements
         public override NetworkPort Inlet { get; }
         public override NetworkPort Outlet { get; }
 
-        private readonly List<LanePath> PathsKey = [];
-        public override IReadOnlyList<LanePath> Paths => PathsKey;
+        private readonly List<ILanePath> PathsKey = [];
+        public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
         public Spline(ID3D11Device device,IPhysicsHost physicsHost,int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments)
             : base(device, physicsHost, plateX, plateZ, pose)

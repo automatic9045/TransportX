@@ -13,7 +13,7 @@ using Bus.Common.Traffic;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public abstract class LanePath : IDebugVisualizable
+    public abstract class LanePath : ILanePath
     {
         private const float DebugModelWidth = 0.25f;
 

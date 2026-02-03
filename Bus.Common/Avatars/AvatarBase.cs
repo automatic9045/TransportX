@@ -41,7 +41,7 @@ namespace Bus.Common.Avatars
         public abstract float Width { get; }
         public abstract float Length { get; }
         public abstract bool IsEnabled { get; }
-        public abstract LanePath? Path { get; }
+        public abstract ILanePath? Path { get; }
         public abstract ParticipantDirection Heading { get; }
         public abstract float S { get; }
         public abstract float SVelocity { get; }
@@ -67,6 +67,6 @@ namespace Bus.Common.Avatars
             return base.TeleportTo(plateX, plateZ, pose);
         }
 
-        public abstract bool Spawn(LanePath path, ParticipantDirection heading, float s);
+        public abstract bool Spawn(ILanePath path, ParticipantDirection heading, float s);
     }
 }

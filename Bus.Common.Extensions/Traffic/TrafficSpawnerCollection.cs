@@ -23,7 +23,7 @@ namespace Bus.Common.Extensions.Traffic
 
         public void Initialize(IEnumerable<NetworkElement> network)
         {
-            IEnumerable<LanePath> paths = network.SelectMany(element => element.Paths);
+            IEnumerable<ILanePath> paths = network.SelectMany(element => element.Paths);
 
             IEnumerable<NetworkPort> sourcePorts = network
                 .SelectMany(element => element.Ports)

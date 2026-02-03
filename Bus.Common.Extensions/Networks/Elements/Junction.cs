@@ -17,8 +17,8 @@ namespace Bus.Common.Extensions.Networks.Elements
     {
         public override IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
 
-        private readonly List<LanePath> PathsKey = [];
-        public override IReadOnlyList<LanePath> Paths => PathsKey;
+        private readonly List<ILanePath> PathsKey = [];
+        public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
@@ -28,7 +28,7 @@ namespace Bus.Common.Extensions.Networks.Elements
             Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
 
-        public LanePath Wire(LanePath path)
+        public ILanePath Wire(ILanePath path)
         {
             if (!Ports.Contains(path.From.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));
             if (!Ports.Contains(path.To.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));

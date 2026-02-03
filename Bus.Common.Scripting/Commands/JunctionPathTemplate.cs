@@ -94,12 +94,12 @@ namespace Bus.Common.Scripting.Commands
             CurveFactories.Add((from, to) => new BezierPoseCurve(from, to, (float?)controlScale));
         }
 
-        internal LanePath Build(Junction junction)
+        internal ILanePath Build(Junction junction)
         {
             LanePin from = junction.Ports[FromPortKey].Pins[FromPinIndex];
             LanePin to = junction.Ports[ToPortKey].Pins[ToPinIndex];
 
-            LanePath path;
+            ILanePath path;
             if (CurveFactories.Count == 0)
             {
                 path = new BezierLanePath(from, to);
