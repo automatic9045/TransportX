@@ -10,7 +10,7 @@ namespace Bus.Common
     public class TimeManager : ITimeManager
     {
         private static readonly int FrameSpan = 60;
-        private static readonly TimeSpan EpsilonTime = TimeSpan.FromTicks(1);
+        private static readonly TimeSpan EpsilonTime = TimeSpan.FromSeconds(1e-3f);
 
 
         private readonly Stopwatch Stopwatch = new Stopwatch();
