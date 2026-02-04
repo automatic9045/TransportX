@@ -47,10 +47,15 @@ tJunction.PutStructure("Road1_3", 0, 0, 9);
 
 tJunction = Network.Templates.CreateJunction("DeadEnd1");
 tJunction.AddPort("0", "Layout1", 0, 0, 0, 0, 180, 0);
-tJunction.Wire("0", 2, "0", 1)
-    .StraightTo(-2, 0, 9.5, 0, 0, 0)
-    .BezierTo(5.5, 0, 9.5, 0, 180, 0)
+var tJunctionPath = tJunction.Wire("0", 2, "0", 1);
+tJunctionPath
+    .StraightTo(-2, 0, 10, 0, 0, 0, out var s1)
+    .BezierTo(5.5, 0, 10, 0, 180, 0, out var s2)
     .BezierToEnd();
+tJunctionPath.Width
+    .Constant(5)
+    .TransitionTo(2.25, 2, s1 - 5)
+    .Constant(s2 - s1);
 tJunction.PutStructure("RoadDeadEnd1", 0, 0, 0);
 
 Background.Add("Background");
@@ -77,18 +82,20 @@ Plates[0, 0].PutStructure("BusStop", -4.5, 0.15, 49.3);
 var junction = spline.IntoJunction("3Forked1", "S");
 
 var factory2 = junction.IntoSpline("E", "SplineTemplate1");
-factory2.Curves.ByRadius(-100, 35);
-factory2.Curves.Straight(25);
-factory2.Curves.ByRadius(100, 35);
+factory2.Curves
+    .ByRadius(-100, 35)
+    .Straight(25)
+    .ByRadius(100, 35);
 var spline2 = factory2.Build();
 
 var junction2 = spline2.IntoJunction("3Forked1", "E");
 
 factory = junction.IntoSpline("N", "SplineTemplate1");
-factory.Curves.Straight(20);
-factory.Curves.ByRadius(50, 50);
-factory.Curves.ByRadius(-50, 50);
-factory.Curves.Straight(200);
+factory.Curves
+    .Straight(20)
+    .ByRadius(50, 50)
+    .ByRadius(-50, 50)
+    .Straight(200);
 factory.PutStructure(["BusStop"], -5.25, 0.15, 0, 250, 0, 0, 1);
 spline = factory.Build();
 
@@ -99,19 +106,22 @@ factory.Curves.Straight(200);
 spline = factory.Build();
 
 factory = junction.IntoSpline("E", "SplineTemplate1");
-factory.Curves.Straight(10);
-factory.Curves.ByRadius(50, 70);
-factory.Curves.Straight(120);
-factory.Cants.Constant(10);
-factory.Cants.TransitionToPercent(5, 20);
-factory.Cants.Constant(50);
-factory.Cants.TransitionToPercent(0, 20);
-factory.Gradients.TransitionByPercent(5, 5);
-factory.Gradients.TransitionByPercent(-5, 5);
-factory.Gradients.Constant(110);
-factory.Gradients.TransitionByPercent(10, 30);
-factory.Gradients.Constant(50);
-factory.Gradients.TransitionByPercent(-10, 30);
+factory.Curves
+    .Straight(10)
+    .ByRadius(50, 70)
+    .Straight(120);
+factory.Cants
+    .Constant(10)
+    .TransitionToPercent(5, 20)
+    .Constant(50)
+    .TransitionToPercent(0, 20);
+factory.Gradients
+    .TransitionByPercent(5, 5)
+    .TransitionByPercent(-5, 5)
+    .Constant(110)
+    .TransitionByPercent(10, 30)
+    .Constant(50)
+    .TransitionByPercent(-10, 30);
 factory.ConnectBezier(junction2.Junction.Ports["S"]);
 spline = factory.Build();
 
@@ -123,6 +133,7 @@ junction = spline.IntoJunction("DeadEnd1", "0");
 
 factory = Plates[0, 0].BeginSpline("SplineTemplate1", 30, 0, 35);
 factory.Curves.Straight(110);
-factory.Gradients.Constant(30);
-factory.Gradients.TransitionByDegree(180, 50);
+factory.Gradients
+    .Constant(30)
+    .TransitionByDegree(180, 50);
 spline = factory.Build();
