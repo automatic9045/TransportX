@@ -29,6 +29,7 @@ namespace Bus.Common.Scripting.Commands
 
         private readonly List<PoseCurveBase> Curves = [];
 
+        private float Length = 0;
         private bool IsFinalized = false;
 
         private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
@@ -64,43 +65,80 @@ namespace Bus.Common.Scripting.Commands
             return position.ToPose();
         }
 
+        public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s)
+        {
+            if (!CheckNotFinalized())
+            {
+                s = Length;
+                return this;
+            }
+
+            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
+            LinearPoseCurve curve = new(LastCurvePoint, to);
+            Curves.Add(curve);
+
+            Length += curve.Length;
+            s = Length;
+            return this;
+        }
+
+        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s, double? controlScale = null)
+        {
+            if (!CheckNotFinalized())
+            {
+                s = Length;
+                return this;
+            }
+
+            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
+            BezierPoseCurve curve = new(LastCurvePoint, to, (float?)controlScale);
+            Curves.Add(curve);
+
+            Length += curve.Length;
+            s = Length;
+            return this;
+        }
+
+        public void StraightToEnd(out double s)
+        {
+            if (!CheckNotFinalized())
+            {
+                s = Length;
+                return;
+            }
+            IsFinalized = true;
+
+            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
+            LinearPoseCurve curve = new(LastCurvePoint, to);
+            Curves.Add(curve);
+
+            Length += curve.Length;
+            s = Length;
+        }
+
+        public void BezierToEnd(out double s, double? controlScale = null)
+        {
+            if (!CheckNotFinalized())
+            {
+                s = Length;
+                return;
+            }
+            IsFinalized = true;
+
+            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
+            BezierPoseCurve curve = new(LastCurvePoint, to, (float?)controlScale);
+            Curves.Add(curve);
+
+            Length += curve.Length;
+            s = Length;
+        }
+
         public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
-        {
-            if (!CheckNotFinalized()) return this;
-
-            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
-            Curves.Add(new LinearPoseCurve(LastCurvePoint, to));
-
-            return this;
-        }
-
+            => StraightTo(x, y, z, rotationX, rotationY, rotationZ, out _);
         public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double? controlScale = null)
-        {
-            if (!CheckNotFinalized()) return this;
-
-            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
-            Curves.Add(new BezierPoseCurve(LastCurvePoint, to, (float?)controlScale));
-
-            return this;
-        }
-
-        public void StraightToEnd()
-        {
-            if (!CheckNotFinalized()) return;
-            IsFinalized = true;
-
-            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
-            Curves.Add(new LinearPoseCurve(LastCurvePoint, to));
-        }
-
-        public void BezierToEnd(double? controlScale = null)
-        {
-            if (!CheckNotFinalized()) return;
-            IsFinalized = true;
-
-            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
-            Curves.Add(new BezierPoseCurve(LastCurvePoint, to, (float?)controlScale));
-        }
+            => BezierTo(x, y, z, rotationX, rotationY, rotationZ, out _, controlScale);
+        public void StraightToEnd() => StraightToEnd(out _);
+        public void BezierToEnd(double? controlScale = null) => BezierToEnd(out _, controlScale);
 
         internal ILanePath Build(Junction junction)
         {
@@ -136,23 +174,25 @@ namespace Bus.Common.Scripting.Commands
                 InitialWidth = initialWidth;
             }
 
-            public WidthPointList TransitionTo(LaneWidth width, double length)
+            public WidthPointList TransitionTo(LaneWidth width, double length, out double s)
             {
                 CompositeLanePath.WidthPoint point = new(LastItem.S + (float)length, width);
                 Points.Add(point);
+                s = LastItem.S;
                 return this;
             }
 
-            public WidthPointList TransitionTo(double left, double right, double length)
+            public WidthPointList TransitionTo(double left, double right, double length, out double s)
             {
                 LaneWidth width = new((float)left, (float)right);
-                return TransitionTo(width, length);
+                return TransitionTo(width, length, out s);
             }
 
-            public WidthPointList Constant(double length)
-            {
-                return TransitionTo(LastItem.Width, length);
-            }
+            public WidthPointList Constant(double length, out double s) => TransitionTo(LastItem.Width, length, out s);
+
+            public WidthPointList TransitionTo(LaneWidth width, double length) => TransitionTo(width, length, out _);
+            public WidthPointList TransitionTo(double left, double right, double length) => TransitionTo(left, right, length, out _);
+            public WidthPointList Constant(double length) => Constant(length, out _);
         }
     }
 }
