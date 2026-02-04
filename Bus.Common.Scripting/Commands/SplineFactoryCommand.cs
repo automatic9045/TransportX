@@ -106,9 +106,23 @@ namespace Bus.Common.Scripting.Commands
                 List = list;
             }
 
-            public void Straight(double length) => List.Straight((float)length);
-            public void ByRadius(double radius, double length) => List.ByRadius((float)radius, (float)length);
-            public void ByCurvature(double curvature, double length) => List.ByCurvature((float)curvature, (float)length);
+            public CurveList Straight(double length)
+            {
+                List.Straight((float)length);
+                return this;
+            }
+
+            public CurveList ByRadius(double radius, double length)
+            {
+                List.ByRadius((float)radius, (float)length);
+                return this;
+            }
+
+            public CurveList ByCurvature(double curvature, double length)
+            {
+                List.ByCurvature((float)curvature, (float)length);
+                return this;
+            }
         }
 
         public class GradientList
@@ -120,11 +134,20 @@ namespace Bus.Common.Scripting.Commands
                 List = list;
             }
 
-            public void Constant(double length) => List.Constant((float)length);
-            public void TransitionByRadian(double radian, double length) => List.TransitionBy((float)radian, (float)length);
-            public void TransitionByDegree(double degree, double length) => TransitionByRadian(degree / 180 * double.Pi, length);
-            public void TransitionByPercent(double percent, double length) => TransitionByRadian(double.Atan(percent / 100), length);
-            public void TransitionByPermil(double permil, double length) => TransitionByRadian(double.Atan(permil / 1000), length);
+            public GradientList Constant(double length)
+            {
+                List.Constant((float)length);
+                return this;
+            }
+            public GradientList TransitionByRadian(double radian, double length)
+            {
+                List.TransitionBy((float)radian, (float)length);
+                return this;
+            }
+
+            public GradientList TransitionByDegree(double degree, double length) => TransitionByRadian(degree / 180 * double.Pi, length);
+            public GradientList TransitionByPercent(double percent, double length) => TransitionByRadian(double.Atan(percent / 100), length);
+            public GradientList TransitionByPermil(double permil, double length) => TransitionByRadian(double.Atan(permil / 1000), length);
         }
 
         public class CantList
@@ -136,14 +159,24 @@ namespace Bus.Common.Scripting.Commands
                 List = list;
             }
 
-            public void Constant(double length) => List.Constant((float)length);
-            public void TransitionToRadian(double radian, double length) => List.TransitionTo((float)radian, (float)length);
-            public void TransitionToDegree(double degree, double length) => TransitionToRadian(degree / 180 * double.Pi, length);
-            public void TransitionToPercent(double percent, double length) => TransitionToRadian(double.Atan(percent / 100), length);
-            public void TransitionToHeight(double height, double gauge, double length)
+            public CantList Constant(double length)
+            {
+                List.Constant((float)length);
+                return this;
+            }
+
+            public CantList TransitionToRadian(double radian, double length)
+            {
+                List.TransitionTo((float)radian, (float)length);
+                return this;
+            }
+
+            public CantList TransitionToDegree(double degree, double length) => TransitionToRadian(degree / 180 * double.Pi, length);
+            public CantList TransitionToPercent(double percent, double length) => TransitionToRadian(double.Atan(percent / 100), length);
+            public CantList TransitionToHeight(double height, double gauge, double length)
             {
                 double ratio = double.Clamp(height / gauge, -1, 1);
-                TransitionToRadian(double.Asin(ratio), length);
+                return TransitionToRadian(double.Asin(ratio), length);
             }
         }
     }
