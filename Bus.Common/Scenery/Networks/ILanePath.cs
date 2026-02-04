@@ -25,6 +25,7 @@ namespace Bus.Common.Scenery.Networks
 
         Pose GetLocalPose(float at);
         Pose GetPose(float at);
+        LaneWidth GetWidth(float at);
 
         void Enter(ITrafficParticipant participant);
         void Exit(ITrafficParticipant participant);

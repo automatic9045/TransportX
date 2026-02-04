@@ -13,20 +13,25 @@ namespace Bus.Common.Physics
 {
     public class DebugInput : IDisposable
     {
+        private static readonly Camera.VisualLayers[] Modes = [
+            Camera.VisualLayers.Normal,
+            Camera.VisualLayers.Normal | Camera.VisualLayers.Colliders,
+            Camera.VisualLayers.Normal | Camera.VisualLayers.Network,
+        ];
+
+
         private readonly KeyObserver DrawColliderModel;
+        private int ModeIndex = 0;
 
         public DebugInput(InputManager inputManager, Camera camera)
         {
             DrawColliderModel = inputManager.ObserveKey(Key.F6);
             DrawColliderModel.Pressed += (sender, e) =>
             {
-                camera.DebugMode = camera.DebugMode switch
-                {
-                    DebugRenderingMode.None => DebugRenderingMode.Colliders,
-                    DebugRenderingMode.Colliders => DebugRenderingMode.Network,
-                    DebugRenderingMode.Network => DebugRenderingMode.None,
-                    _ => throw new NotSupportedException(),
-                };
+                ModeIndex++;
+                if (ModeIndex == Modes.Length) ModeIndex = 0;
+
+                camera.VisibleLayers = Modes[ModeIndex];
             };
         }
 

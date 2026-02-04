@@ -20,7 +20,7 @@ namespace Bus.Common.Rendering
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
         public Vector3 Light { get; init; } = Vector3.Zero;
-        public DebugRenderingMode DebugMode { get; init; } = DebugRenderingMode.None;
+        public RenderPass Pass { get; init; } = RenderPass.Normal;
 
         public LocatedDrawContext()
         {

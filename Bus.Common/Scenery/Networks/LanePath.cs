@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using Bus.Common.Rendering;
 using Bus.Common.Traffic;
@@ -15,13 +16,17 @@ namespace Bus.Common.Scenery.Networks
 {
     public abstract class LanePath : ILanePath
     {
-        private const float DebugModelWidth = 0.25f;
+        protected const float SweepBack = 0.5f;
 
 
-        protected readonly Material DebugMaterial = new(Vector4.One, []);
+        protected readonly LaneWidth FromWidth;
+
+        protected readonly Material DebugSpineMaterial = new(Vector4.One, []);
+        protected readonly Material DebugWingMaterial = new(new Vector4(1, 1, 1, 0.5f), []);
 
         protected ID3D11DepthStencilState? NoDepthState = null;
         protected ID3D11RasterizerState? DebugRasterizerState = null;
+        protected ID3D11BlendState? AlphaBlendState = null;
 
         public NetworkElement Owner => From.Port.Owner;
         public LaneTrafficGroup AllowedTraffic => From.Definition.AllowedTraffic;
@@ -48,8 +53,12 @@ namespace Bus.Common.Scenery.Networks
         public bool CanDrawDebug => DebugModel is not null;
         public virtual Vector4 DebugColor
         {
-            get => DebugMaterial.BaseColor;
-            set => DebugMaterial.BaseColor = value;
+            get => DebugSpineMaterial.BaseColor;
+            set
+            {
+                DebugSpineMaterial.BaseColor = value;
+                DebugWingMaterial.BaseColor = new Vector4(value.AsVector3(), value.W * 0.3f);
+            }
         }
         public IModel? DebugModel { get; protected set; } = null;
 
@@ -60,11 +69,15 @@ namespace Bus.Common.Scenery.Networks
 
             From = from;
             To = to;
+            FromWidth = LaneWidth.Opposition(From.Definition.Width);
         }
 
         public virtual void Dispose()
         {
             DebugModel?.Dispose();
+            NoDepthState?.Dispose();
+            DebugRasterizerState?.Dispose();
+            AlphaBlendState?.Dispose();
         }
 
         public abstract Pose GetLocalPose(float at);
@@ -73,6 +86,8 @@ namespace Bus.Common.Scenery.Networks
         {
             return GetLocalPose(at) * Owner.Pose;
         }
+
+        public abstract LaneWidth GetWidth(float at);
 
         public virtual void Enter(ITrafficParticipant participant)
         {
@@ -90,29 +105,59 @@ namespace Bus.Common.Scenery.Networks
 
             int stepCount = int.Max(1, (int)float.Ceiling(Length));
 
-            List<Vertex> vertices = [];
-            List<int> indices = [];
+            List<Vertex> spineVertices = [];
+            List<int> spineIndices = [];
+
+            List<Vertex> wingVertices = [];
+            List<int> wingIndices = [];
+
+            int? prevSpineIndex = null;
+
             for (int i = 0; i <= stepCount; i++)
             {
-                Pose pose = GetLocalPose(i == stepCount ? Length : i);
+                float s = (i == stepCount) ? Length : (float)i;
 
-                Vector3 right = Pose.TransformNormal(Vector3.UnitX * DebugModelWidth, pose);
+                Pose pose = GetLocalPose(s);
 
-                vertices.Add(new Vertex(pose.Position, Vector4.One));
-                vertices.Add(new Vertex(pose.Position + right, Vector4.One));
+                int currentSpineIndex = spineVertices.Count;
+                spineVertices.Add(new Vertex(pose.Position, Vector4.One));
 
-                indices.Add(i * 2);
-                indices.Add(i * 2 + 1);
-
-                if (0 < i)
+                if (prevSpineIndex.HasValue)
                 {
-                    indices.Add((i - 1) * 2);
-                    indices.Add(i * 2);
+                    spineIndices.Add(prevSpineIndex.Value);
+                    spineIndices.Add(currentSpineIndex);
+                }
+                prevSpineIndex = currentSpineIndex;
+
+                if (SweepBack <= s)
+                {
+                    float sWing = s - SweepBack;
+                    Pose wingPose = GetLocalPose(sWing);
+                    LaneWidth wingWidth = GetWidth(sWing);
+
+                    Vector3 wingRight = Pose.TransformNormal(Vector3.UnitX, wingPose);
+
+                    int leftIndex = wingVertices.Count;
+                    wingVertices.Add(new Vertex(wingPose.Position - wingRight * wingWidth.Left, Vector4.One));
+
+                    int rightIndex = wingVertices.Count;
+                    wingVertices.Add(new Vertex(wingPose.Position + wingRight * wingWidth.Right, Vector4.One));
+
+                    int tipIndex = wingVertices.Count;
+                    wingVertices.Add(new Vertex(pose.Position, Vector4.One));
+
+                    wingIndices.Add(leftIndex);
+                    wingIndices.Add(tipIndex);
+
+                    wingIndices.Add(rightIndex);
+                    wingIndices.Add(tipIndex);
                 }
             }
 
-            Mesh visualMesh = Mesh.Create(device, vertices.ToArray(), indices.ToArray(), DebugMaterial, PrimitiveTopology.LineList);
-            DebugModel = new Model([visualMesh], []);
+            Mesh spineMesh = Mesh.Create(device, spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
+            Mesh wingMesh = Mesh.Create(device, wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);
+
+            DebugModel = new Model([spineMesh, wingMesh], []);
         }
 
         public void DrawDebug(LocatedDrawContext context)
@@ -142,10 +187,29 @@ namespace Bus.Common.Scenery.Networks
                 DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
             }
 
-            context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
-            context.DeviceContext.OMSetDepthStencilState(NoDepthState, 0);
+            if (AlphaBlendState is null)
+            {
+                BlendDescription desc = new BlendDescription();
+                desc.RenderTarget[0] = new RenderTargetBlendDescription()
+                {
+                    BlendEnable = true,
+                    SourceBlend = Blend.SourceAlpha,
+                    DestinationBlend = Blend.InverseSourceAlpha,
+                    BlendOperation = BlendOperation.Add,
+                    SourceBlendAlpha = Blend.One,
+                    DestinationBlendAlpha = Blend.Zero,
+                    BlendOperationAlpha = BlendOperation.Add,
+                    RenderTargetWriteMask = ColorWriteEnable.All,
+                };
+                AlphaBlendState = context.DeviceContext.Device.CreateBlendState(desc);
+            }
 
+            context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
+            ID3D11BlendState? oldBState = context.DeviceContext.OMGetBlendState(out Color4 oldBFactor, out uint oldBMask);
             ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
+
+            context.DeviceContext.OMSetDepthStencilState(NoDepthState);
+            context.DeviceContext.OMSetBlendState(AlphaBlendState);
             context.DeviceContext.RSSetState(DebugRasterizerState);
 
             VertexConstantBuffer vertexBuffer = new()
@@ -160,9 +224,11 @@ namespace Bus.Common.Scenery.Networks
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
 
             context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
-            oldDState?.Dispose();
-
+            context.DeviceContext.OMSetBlendState(oldBState, oldBFactor, oldBMask);
             context.DeviceContext.RSSetState(oldRSState);
+
+            oldDState?.Dispose();
+            oldBState?.Dispose();
             oldRSState?.Dispose();
         }
     }

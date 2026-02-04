@@ -40,6 +40,8 @@ namespace Bus.Common.Scenery
 
         public virtual void Draw(LocatedDrawContext context)
         {
+            if (context.Pass != RenderPass.Normal) return;
+
             VertexConstantBuffer vertexBuffer = new()
             {
                 World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),

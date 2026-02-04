@@ -34,6 +34,7 @@ namespace Bus.Common.Scenery.Networks
         public void Dispose()
         {
             foreach (LocatedModel model in Models) (model as CollidableLocatedModel)?.Dispose();
+            foreach (ILanePath path in Paths) path.Dispose();
         }
 
         public void Draw(LocatedDrawContext context)
@@ -43,7 +44,7 @@ namespace Bus.Common.Scenery.Networks
                 model.Draw(context);
             }
 
-            if (context.DebugMode == DebugRenderingMode.Network)
+            if (context.Pass == RenderPass.Network)
             {
                 foreach (ILanePath path in Paths)
                 {

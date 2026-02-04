@@ -26,5 +26,10 @@ namespace Bus.Common.Extensions.Networks.Paths
         {
             return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
         }
+
+        public override LaneWidth GetWidth(float at)
+        {
+            return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+        }
     }
 }

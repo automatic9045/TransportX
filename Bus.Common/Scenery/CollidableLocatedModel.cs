@@ -93,53 +93,63 @@ namespace Bus.Common.Scenery
 
         public override void Draw(LocatedDrawContext context)
         {
-            base.Draw(context);
-            if (context.DebugMode != DebugRenderingMode.Colliders || !Model.Collider.CanDrawDebug) return;
-
-            if (NoDepthState is null)
+            switch (context.Pass)
             {
-                DepthStencilDescription desc = new()
+                case RenderPass.Normal:
+                    base.Draw(context);
+                    break;
+
+                case RenderPass.Colliders:
                 {
-                    DepthEnable = false,
-                    DepthWriteMask = DepthWriteMask.All,
-                    DepthFunc = ComparisonFunction.Always,
-                    StencilEnable = false,
-                };
-                NoDepthState = context.DeviceContext.Device.CreateDepthStencilState(desc);
+                    if (context.Pass != RenderPass.Colliders || !Model.Collider.CanDrawDebug) return;
+
+                    if (NoDepthState is null)
+                    {
+                        DepthStencilDescription desc = new()
+                        {
+                            DepthEnable = false,
+                            DepthWriteMask = DepthWriteMask.All,
+                            DepthFunc = ComparisonFunction.Always,
+                            StencilEnable = false,
+                        };
+                        NoDepthState = context.DeviceContext.Device.CreateDepthStencilState(desc);
+                    }
+
+                    if (DebugRasterizerState is null)
+                    {
+                        RasterizerDescription desc = new RasterizerDescription()
+                        {
+                            CullMode = CullMode.None,
+                            FillMode = FillMode.Wireframe,
+                            DepthClipEnable = true,
+                        };
+                        DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
+                    }
+
+                    context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
+                    context.DeviceContext.OMSetDepthStencilState(NoDepthState, 0);
+
+                    ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
+                    context.DeviceContext.RSSetState(DebugRasterizerState);
+
+                    VertexConstantBuffer vertexBuffer = new()
+                    {
+                        World = Matrix4x4.Transpose(Body.Pose.ToPose().ToMatrix4x4()),
+                        View = Matrix4x4.Transpose(context.View),
+                        Projection = Matrix4x4.Transpose(context.Projection),
+                    };
+                    context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+
+                    Model.Collider.DrawDebug(context);
+
+                    context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
+                    context.DeviceContext.RSSetState(oldRSState);
+
+                    oldDState?.Dispose();
+                    oldRSState?.Dispose();
+                    break;
+                }
             }
-
-            if (DebugRasterizerState is null)
-            {
-                RasterizerDescription desc = new RasterizerDescription()
-                {
-                    CullMode = CullMode.None,
-                    FillMode = FillMode.Wireframe,
-                    DepthClipEnable = true,
-                };
-                DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
-            }
-
-            context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
-            context.DeviceContext.OMSetDepthStencilState(NoDepthState, 0);
-
-            ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
-            context.DeviceContext.RSSetState(DebugRasterizerState);
-
-            VertexConstantBuffer vertexBuffer = new()
-            {
-                World = Matrix4x4.Transpose(Body.Pose.ToPose().ToMatrix4x4()),
-                View = Matrix4x4.Transpose(context.View),
-                Projection = Matrix4x4.Transpose(context.Projection),
-            };
-            context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
-
-            Model.Collider.DrawDebug(context);
-
-            context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
-            oldDState?.Dispose();
-
-            context.DeviceContext.RSSetState(oldRSState);
-            oldRSState?.Dispose();
         }
     }
 }

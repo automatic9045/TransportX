@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,29 +16,34 @@ namespace Bus.Common.Scripting.Commands
 {
     public class JunctionPathTemplate
     {
-        internal static JunctionPathTemplate Empty(ScriptWorld world) => new(world, string.Empty, 0, string.Empty, 0);
+        private static PortDefinition EmptyPort() => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity);
+        internal static JunctionPathTemplate Empty(ScriptWorld world) => new(world, EmptyPort(), 0, EmptyPort(), 0);
 
 
         private readonly ScriptWorld World;
 
-        private readonly string FromPortKey;
+        private readonly PortDefinition FromPort;
         private readonly int FromPinIndex;
-        private readonly string ToPortKey;
+        private readonly PortDefinition ToPort;
         private readonly int ToPinIndex;
 
-        private readonly List<Func<Pose, Pose, PoseCurveBase>> CurveFactories = [];
-        private readonly List<Pose> IntermediatePoints = [];
+        private readonly List<PoseCurveBase> Curves = [];
 
         private bool IsFinalized = false;
 
-        public JunctionPathTemplate(ScriptWorld world, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
+        private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
+        public WidthPointList Width { get; }
+
+        public JunctionPathTemplate(ScriptWorld world, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
         {
             World = world;
 
-            FromPortKey = fromPortKey;
+            FromPort = fromPort;
             FromPinIndex = fromPinIndex;
-            ToPortKey = toPortKey;
+            ToPort = toPort;
             ToPinIndex = toPinIndex;
+
+            Width = new(LaneWidth.Opposition(FromPort.Layout.Lanes[FromPinIndex].Width));
         }
 
         private bool CheckNotFinalized()
@@ -52,18 +58,18 @@ namespace Bus.Common.Scripting.Commands
             return true;
         }
 
-        private void AddIntermediatePoint(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        private Pose CreateCurvePoint(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            IntermediatePoints.Add(position.ToPose());
+            return position.ToPose();
         }
 
         public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             if (!CheckNotFinalized()) return this;
 
-            AddIntermediatePoint(x, y, z, rotationX, rotationY, rotationZ);
-            CurveFactories.Add((from, to) => new LinearPoseCurve(from, to));
+            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
+            Curves.Add(new LinearPoseCurve(LastCurvePoint, to));
 
             return this;
         }
@@ -72,8 +78,8 @@ namespace Bus.Common.Scripting.Commands
         {
             if (!CheckNotFinalized()) return this;
 
-            AddIntermediatePoint(x, y, z, rotationX, rotationY, rotationZ);
-            CurveFactories.Add((from, to) => new BezierPoseCurve(from, to, (float?)controlScale));
+            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
+            Curves.Add(new BezierPoseCurve(LastCurvePoint, to, (float?)controlScale));
 
             return this;
         }
@@ -83,7 +89,8 @@ namespace Bus.Common.Scripting.Commands
             if (!CheckNotFinalized()) return;
             IsFinalized = true;
 
-            CurveFactories.Add((from, to) => new LinearPoseCurve(from, to));
+            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
+            Curves.Add(new LinearPoseCurve(LastCurvePoint, to));
         }
 
         public void BezierToEnd(double? controlScale = null)
@@ -91,34 +98,61 @@ namespace Bus.Common.Scripting.Commands
             if (!CheckNotFinalized()) return;
             IsFinalized = true;
 
-            CurveFactories.Add((from, to) => new BezierPoseCurve(from, to, (float?)controlScale));
+            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
+            Curves.Add(new BezierPoseCurve(LastCurvePoint, to, (float?)controlScale));
         }
 
         internal ILanePath Build(Junction junction)
         {
-            LanePin from = junction.Ports[FromPortKey].Pins[FromPinIndex];
-            LanePin to = junction.Ports[ToPortKey].Pins[ToPinIndex];
+            LanePin from = junction.Ports[FromPort.Name].Pins[FromPinIndex];
+            LanePin to = junction.Ports[ToPort.Name].Pins[ToPinIndex];
 
             ILanePath path;
-            if (CurveFactories.Count == 0)
+            if (Curves.Count == 0 && Width.Items.Count == 0)
             {
                 path = new BezierLanePath(from, to);
             }
             else
             {
-                PoseCurveBase[] curves = new PoseCurveBase[CurveFactories.Count];
-                for (int i = 0; i <= IntermediatePoints.Count; i++)
-                {
-                    Pose src = i == 0 ? Pose.CreateRotationY(float.Pi) * from.LocalPose : IntermediatePoints[i - 1];
-                    Pose dest = i == IntermediatePoints.Count ? to.LocalPose : IntermediatePoints[i];
-                    curves[i] = CurveFactories[i](src, dest);
-                }
-
-                path = new CompositeLanePath(from, to, curves);
+                if (!IsFinalized) BezierToEnd();
+                path = new CompositeLanePath(from, to, Curves, Width.Items);
             }
 
             junction.Wire(path);
             return path;
+        }
+
+
+        public class WidthPointList
+        {
+            private readonly LaneWidth InitialWidth;
+            private readonly List<CompositeLanePath.WidthPoint> Points = [];
+
+            private CompositeLanePath.WidthPoint LastItem => Points.Count == 0 ? new(0, InitialWidth) : Points[^1];
+            public IReadOnlyList<CompositeLanePath.WidthPoint> Items => Points;
+
+            internal WidthPointList(LaneWidth initialWidth)
+            {
+                InitialWidth = initialWidth;
+            }
+
+            public WidthPointList TransitionTo(LaneWidth width, double length)
+            {
+                CompositeLanePath.WidthPoint point = new(LastItem.S + (float)length, width);
+                Points.Add(point);
+                return this;
+            }
+
+            public WidthPointList TransitionTo(double left, double right, double length)
+            {
+                LaneWidth width = new((float)left, (float)right);
+                return TransitionTo(width, length);
+            }
+
+            public WidthPointList Constant(double length)
+            {
+                return TransitionTo(LastItem.Width, length);
+            }
         }
     }
 }

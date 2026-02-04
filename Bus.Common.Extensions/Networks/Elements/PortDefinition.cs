@@ -21,5 +21,10 @@ namespace Bus.Common.Extensions.Networks.Elements
             Layout = layout;
             Offset = offset;
         }
+
+        public Pose GetPinLocalPose(int pinIndex)
+        {
+            return new Pose(new Vector3(Layout.Lanes[pinIndex].Position, 0)) * Offset;
+        }
     }
 }

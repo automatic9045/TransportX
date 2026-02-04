@@ -12,6 +12,7 @@ using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 
 using Bus.Common.Extensions.Networks.Elements;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bus.Common.Scripting.Commands
 {
@@ -51,20 +52,20 @@ namespace Bus.Common.Scripting.Commands
             return null;
         }
 
-        public JunctionPathTemplate Wire(string fromKey, int fromPin, string toKey, int toPin)
+        public JunctionPathTemplate Wire(string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
         {
-            if (!CheckPin(fromKey, fromPin)) return JunctionPathTemplate.Empty(World);
-            if (!CheckPin(toKey, toPin)) return JunctionPathTemplate.Empty(World);
+            if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(World);
+            if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(World);
 
-            JunctionPathTemplate path = new(World, fromKey, fromPin, toKey, toPin);
+            JunctionPathTemplate path = new(World, fromPort, fromPinIndex, toPort, toPinIndex);
             PathsKey.Add(path);
 
             return path;
 
 
-            bool CheckPin(string portKey, int pinIndex)
+            bool CheckPin(string portKey, int pinIndex, [MaybeNullWhen(false)] out PortDefinition port)
             {
-                PortDefinition? port = GetPort(portKey);
+                port = GetPort(portKey);
                 if (port is null) return false;
 
                 if (pinIndex < 0 || port.Layout.Lanes.Count <= pinIndex)

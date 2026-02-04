@@ -57,7 +57,8 @@ namespace Bus.Common.Scripting.Commands
                         continue;
                     }
 
-                    Lane lane = new(group, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value));
+                    LaneWidth width = new(laneData.LeftWidth.Value, laneData.RightWidth.Value);
+                    Lane lane = new(group, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value), width);
                     lanes.Add(lane);
 
 

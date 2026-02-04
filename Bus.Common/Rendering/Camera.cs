@@ -23,7 +23,7 @@ namespace Bus.Common.Rendering
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
-        public DebugRenderingMode DebugMode { get; set; } = DebugRenderingMode.None;
+        public VisualLayers VisibleLayers { get; set; } = VisualLayers.Normal;
 
         public Camera() : base()
         {
@@ -45,6 +45,8 @@ namespace Bus.Common.Rendering
 
         public void DrawBackground(CameraDrawContext context, IEnumerable<LocatedModel> models)
         {
+            if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
+
             LocatedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
@@ -67,27 +69,35 @@ namespace Bus.Common.Rendering
         {
             Matrix4x4 projection = CreateProjection(context.ClientSize);
 
-            for (int i = DrawPlateCount - 1; 0 <= i; i--)
+            if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(RenderPass.Normal);
+            if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(RenderPass.Colliders);
+            if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(RenderPass.Network);
+
+
+            void Draw(RenderPass pass)
             {
-                for (int x = PlateX - i; x <= PlateX + i; x++)
+                for (int i = DrawPlateCount - 1; 0 <= i; i--)
                 {
-                    int dz = int.Abs(x - PlateX) == i ? 1 : i * 2;
-                    for (int z = PlateZ - i; z <= PlateZ + i; z += dz)
+                    for (int x = PlateX - i; x <= PlateX + i; x++)
                     {
-                        if (plates.TryGetValue(x, z, out Plate? plate))
+                        int dz = int.Abs(x - PlateX) == i ? 1 : i * 2;
+                        for (int z = PlateZ - i; z <= PlateZ + i; z += dz)
                         {
-                            LocatedDrawContext drawContext = new()
+                            if (plates.TryGetValue(x, z, out Plate? plate))
                             {
-                                DeviceContext = context.DeviceContext,
-                                VertexConstantBuffer = context.VertexConstantBuffer,
-                                PixelConstantBuffer = context.PixelConstantBuffer,
-                                PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
-                                View = View,
-                                Projection = projection,
-                                Light = context.Light,
-                                DebugMode = DebugMode,
-                            };
-                            plate!.Draw(drawContext);
+                                LocatedDrawContext drawContext = new()
+                                {
+                                    DeviceContext = context.DeviceContext,
+                                    VertexConstantBuffer = context.VertexConstantBuffer,
+                                    PixelConstantBuffer = context.PixelConstantBuffer,
+                                    PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
+                                    View = View,
+                                    Projection = projection,
+                                    Light = context.Light,
+                                    Pass = pass,
+                                };
+                                plate!.Draw(drawContext);
+                            }
                         }
                     }
                 }
@@ -109,9 +119,22 @@ namespace Bus.Common.Rendering
                     View = View,
                     Projection = projection,
                     Light = context.Light,
-                    DebugMode = DebugMode,
+                    Pass = RenderPass.Normal,
                 };
-                body.Draw(drawContext);
+
+                if (VisibleLayers.HasFlag(VisualLayers.Normal))
+                {
+                    body.Draw(drawContext);
+                }
+
+                if (VisibleLayers.HasFlag(VisualLayers.Colliders))
+                {
+                    drawContext = drawContext with
+                    {
+                        Pass = RenderPass.Colliders,
+                    };
+                    body.Draw(drawContext);
+                }
             }
         }
 
@@ -120,6 +143,16 @@ namespace Bus.Common.Rendering
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
             return projection;
+        }
+
+
+        [Flags]
+        public enum VisualLayers
+        {
+            None = 0b000,
+            Normal = 0x001,
+            Colliders = 0b010,
+            Network = 0b100,
         }
     }
 }

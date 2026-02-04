@@ -16,10 +16,11 @@ namespace Bus.Common.Extensions.Networks.Paths
         private readonly IReadOnlyList<float> TotalLengths;
 
         public IReadOnlyList<PoseCurveBase> Curves { get; }
-        public IReadOnlyList<Pose> IntermediatePoints { get; }
+        public IReadOnlyList<Pose> CurvePoints { get; }
         public override float Length => TotalLengths[^1];
+        public IReadOnlyList<WidthPoint> WidthPoints { get; }
 
-        public CompositeLanePath(LanePin from, LanePin to, IEnumerable<PoseCurveBase> curves) : base(from, to)
+        public CompositeLanePath(LanePin from, LanePin to, IEnumerable<PoseCurveBase> curves, IEnumerable<WidthPoint> widthPoints) : base(from, to)
         {
             Curves = curves.ToArray();
             if (Curves.Count == 0) throw new ArgumentException("パスを構成するには少なくとも 1 つの曲線が必要です。", nameof(curves));
@@ -31,12 +32,14 @@ namespace Bus.Common.Extensions.Networks.Paths
             }
             TotalLengths = totalLengths;
 
-            Pose[] intermediatePoints = new Pose[int.Max(0, Curves.Count - 1)];
+            Pose[] curvePoints = new Pose[int.Max(0, Curves.Count - 1)];
             for (int i = 0; i < Curves.Count - 1; i++)
             {
-                intermediatePoints[i] = Curves[i].To;
+                curvePoints[i] = Curves[i].To;
             }
-            IntermediatePoints = intermediatePoints;
+            CurvePoints = curvePoints;
+
+            WidthPoints = widthPoints.ToArray();
         }
 
         public override Pose GetLocalPose(float at)
@@ -54,6 +57,52 @@ namespace Bus.Common.Extensions.Networks.Paths
             }
 
             throw new InvalidOperationException();
+        }
+
+        public override LaneWidth GetWidth(float at)
+        {
+            if (WidthPoints.Count == 0)
+            {
+                return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+            }
+
+            float fromS = 0;
+            LaneWidth fromWidth = FromWidth;
+
+            float toS = Length;
+            LaneWidth toWidth = To.Definition.Width;
+
+            for (int i = 0; i < WidthPoints.Count; i++)
+            {
+                WidthPoint point = WidthPoints[i];
+                if (point.S <= at)
+                {
+                    fromS = point.S;
+                    fromWidth = point.Width;
+                }
+                else
+                {
+                    toS = point.S;
+                    toWidth = point.Width;
+                    break;
+                }
+            }
+
+            float range = toS - fromS;
+            return range <= 1e-3f ? fromWidth : LaneWidth.Lerp(fromWidth, toWidth, (at - fromS) / range);
+        }
+
+
+        public readonly struct WidthPoint
+        {
+            public float S { get; }
+            public LaneWidth Width { get; }
+
+            public WidthPoint(float s, LaneWidth width)
+            {
+                S = s;
+                Width = width;
+            }
         }
     }
 }

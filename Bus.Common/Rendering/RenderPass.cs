@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Bus.Common.Rendering
 {
-    public enum DebugRenderingMode
+    public enum RenderPass
     {
-        None,
+        Normal,
         Colliders,
         Network,
     }

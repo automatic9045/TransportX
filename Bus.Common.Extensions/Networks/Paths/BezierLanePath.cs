@@ -22,5 +22,10 @@ namespace Bus.Common.Extensions.Networks.Paths
         }
 
         public override Pose GetLocalPose(float at) => Curve.GetPose(at);
+
+        public override LaneWidth GetWidth(float at)
+        {
+            return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+        }
     }
 }

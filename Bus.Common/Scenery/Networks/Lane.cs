@@ -16,28 +16,31 @@ namespace Bus.Common.Scenery.Networks
         public LaneTrafficGroup AllowedTraffic { get; }
         public FlowDirections Directions { get; }
         public Vector2 Position { get; }
+        public LaneWidth Width { get; }
 
         public Lane Opposition { get; }
 
-        private Lane(LaneTrafficGroup allowedTraffic, FlowDirections directions, Vector2 position, Lane opposition)
+        private Lane(LaneTrafficGroup allowedTraffic, FlowDirections directions, Vector2 position, LaneWidth width, Lane opposition)
         {
             AllowedTraffic = allowedTraffic;
             Directions = directions;
             Position = position;
+            Width = width;
 
             Opposition = opposition;
             Oppositions.TryAdd(this, opposition);
         }
 
-        public Lane(LaneTrafficGroup allowedTraffic, FlowDirections directions, Vector2 position)
+        public Lane(LaneTrafficGroup allowedTraffic, FlowDirections directions, Vector2 position, LaneWidth width)
         {
             AllowedTraffic = allowedTraffic;
             Directions = directions;
             Position = position;
+            Width = width;
 
             Opposition = Oppositions.GetOrAdd(this, x =>
             {
-                Lane opposition = new Lane(AllowedTraffic, Directions.GetOpposition(), new Vector2(-Position.X, Position.Y), this);
+                Lane opposition = new(AllowedTraffic, Directions.GetOpposition(), new Vector2(-Position.X, Position.Y), LaneWidth.Opposition(Width), this);
                 return opposition;
             });
         }
@@ -48,7 +51,8 @@ namespace Bus.Common.Scenery.Networks
         {
             return AllowedTraffic == other.AllowedTraffic
                 && Directions.IsOppositeOf(other.Directions)
-                && Position.X == -other.Position.X && Position.Y == other.Position.Y;
+                && Position.X == -other.Position.X && Position.Y == other.Position.Y
+                && Width.Left == other.Width.Right && Width.Right == other.Width.Left;
         }
     }
 }
