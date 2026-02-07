@@ -90,6 +90,11 @@ namespace Bus.Common
             return Locate(attachTo.PlateX, attachTo.PlateZ, pose);
         }
 
+        protected PlateOffset Locate(ILocatable attachTo)
+        {
+            return Locate(attachTo.PlateX, attachTo.PlateZ, attachTo.Pose);
+        }
+
         protected PlateOffset Move(Pose delta)
         {
             Pose pose = delta * Pose;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Scenery.Networks;
+using Bus.Common.Traffic;
 
 namespace Bus.Common.Extensions.Traffic
 {

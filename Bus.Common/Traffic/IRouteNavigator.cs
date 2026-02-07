@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Scenery.Networks;
 
-namespace Bus.Common.Extensions.Traffic
+namespace Bus.Common.Traffic
 {
     public interface IRouteNavigator
     {
