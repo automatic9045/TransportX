@@ -188,7 +188,7 @@ namespace Bus.Common.Rendering
             Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
             Vector3 center = (min + max) / 2;
             Pose colliderOffset = new(center);
-            Collider<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
+            ColliderBase<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
         }
@@ -214,7 +214,7 @@ namespace Bus.Common.Rendering
 
             ConvexHullHelper.CreateShape(pointBuffer, Simulation.BufferPool, out Vector3 center, out ConvexHull convexHull);
             Pose colliderOffset = new(center);
-            Collider<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, colliderOffset);
+            ColliderBase<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);
         }
@@ -251,7 +251,7 @@ namespace Bus.Common.Rendering
 
             collisionMesh.Recenter(center);
             Pose colliderOffset = new(center);
-            Collider<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, colliderOffset, isOpen);
+            ColliderBase<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, colliderOffset, isOpen);
 
             return new CollidableModel(baseModel, collider);
         }

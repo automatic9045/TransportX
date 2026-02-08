@@ -83,11 +83,12 @@ namespace Bus.Common.Rendering
     public class CollidableModel : Model, ICollidableModel
     {
         public ICollider Collider { get; }
+        public IDebugModel? ColliderDebugModel { get; private set; } = null;
 
         public override string? DebugName
         {
             get => base.DebugName;
-            set => base.DebugName = Collider.DebugName = value;
+            set => ColliderDebugModel?.DebugName = base.DebugName = value;
         }
 
         public CollidableModel(IEnumerable<Mesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
@@ -131,7 +132,12 @@ namespace Bus.Common.Rendering
         public override void Dispose()
         {
             base.Dispose();
-            Collider.Dispose();
+            ColliderDebugModel?.Dispose();
+        }
+
+        public void CreateColliderDebugModel(ID3D11Device device)
+        {
+            ColliderDebugModel ??= Collider.CreateDebugModel(device);
         }
     }
 }

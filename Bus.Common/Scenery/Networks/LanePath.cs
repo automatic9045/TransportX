@@ -21,13 +21,6 @@ namespace Bus.Common.Scenery.Networks
 
         protected readonly LaneWidth FromWidth;
 
-        protected readonly Material DebugSpineMaterial = new(Vector4.One, []);
-        protected readonly Material DebugWingMaterial = new(new Vector4(1, 1, 1, 0.5f), []);
-
-        protected ID3D11DepthStencilState? NoDepthState = null;
-        protected ID3D11RasterizerState? DebugRasterizerState = null;
-        protected ID3D11BlendState? AlphaBlendState = null;
-
         public NetworkElement Owner => From.Port.Owner;
         public LaneTrafficGroup AllowedTraffic => From.Definition.AllowedTraffic;
         public FlowDirections Directions => From.Definition.Directions.GetOpposition();
@@ -50,17 +43,7 @@ namespace Bus.Common.Scenery.Networks
             }
         } = null;
 
-        public bool CanDrawDebug => DebugModel is not null;
-        public virtual Vector4 DebugColor
-        {
-            get => DebugSpineMaterial.BaseColor;
-            set
-            {
-                DebugSpineMaterial.BaseColor = value;
-                DebugWingMaterial.BaseColor = new Vector4(value.AsVector3(), value.W * 0.3f);
-            }
-        }
-        public IModel? DebugModel { get; protected set; } = null;
+        public IDebugModel? DebugModel { get; protected set; } = null;
 
         protected LanePath(LanePin from, LanePin to)
         {
@@ -75,9 +58,6 @@ namespace Bus.Common.Scenery.Networks
         public virtual void Dispose()
         {
             DebugModel?.Dispose();
-            NoDepthState?.Dispose();
-            DebugRasterizerState?.Dispose();
-            AlphaBlendState?.Dispose();
         }
 
         public abstract Pose GetLocalPose(float at);
@@ -99,7 +79,7 @@ namespace Bus.Common.Scenery.Networks
             ParticipantsKey.Remove(participant);
         }
 
-        public virtual void CreateDebugResources(ID3D11Device device)
+        public virtual void CreateDebugModel(ID3D11Device device)
         {
             if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
 
@@ -154,63 +134,15 @@ namespace Bus.Common.Scenery.Networks
                 }
             }
 
-            Mesh spineMesh = Mesh.Create(device, spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
-            Mesh wingMesh = Mesh.Create(device, wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);
+            Mesh spineMesh = Mesh.Create(device, spineVertices.ToArray(), spineIndices.ToArray(), new Material(Vector4.One, []), PrimitiveTopology.LineList);
+            Mesh wingMesh = Mesh.Create(device, wingVertices.ToArray(), wingIndices.ToArray(), new Material(new(1, 1, 1, 0.3f), []), PrimitiveTopology.LineList);
 
-            DebugModel = new Model([spineMesh, wingMesh], []);
+            DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
         }
 
         public void DrawDebug(LocatedDrawContext context)
         {
             if (DebugModel is null) throw new InvalidOperationException("デバッグモデルが作成されていません。");
-
-            if (NoDepthState is null)
-            {
-                DepthStencilDescription desc = new()
-                {
-                    DepthEnable = false,
-                    DepthWriteMask = DepthWriteMask.All,
-                    DepthFunc = ComparisonFunction.Always,
-                    StencilEnable = false,
-                };
-                NoDepthState = context.DeviceContext.Device.CreateDepthStencilState(desc);
-            }
-
-            if (DebugRasterizerState is null)
-            {
-                RasterizerDescription desc = new RasterizerDescription()
-                {
-                    CullMode = CullMode.None,
-                    FillMode = FillMode.Wireframe,
-                    DepthClipEnable = true,
-                };
-                DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
-            }
-
-            if (AlphaBlendState is null)
-            {
-                BlendDescription desc = new BlendDescription();
-                desc.RenderTarget[0] = new RenderTargetBlendDescription()
-                {
-                    BlendEnable = true,
-                    SourceBlend = Blend.SourceAlpha,
-                    DestinationBlend = Blend.InverseSourceAlpha,
-                    BlendOperation = BlendOperation.Add,
-                    SourceBlendAlpha = Blend.One,
-                    DestinationBlendAlpha = Blend.Zero,
-                    BlendOperationAlpha = BlendOperation.Add,
-                    RenderTargetWriteMask = ColorWriteEnable.All,
-                };
-                AlphaBlendState = context.DeviceContext.Device.CreateBlendState(desc);
-            }
-
-            context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
-            ID3D11BlendState? oldBState = context.DeviceContext.OMGetBlendState(out Color4 oldBFactor, out uint oldBMask);
-            ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
-
-            context.DeviceContext.OMSetDepthStencilState(NoDepthState);
-            context.DeviceContext.OMSetBlendState(AlphaBlendState);
-            context.DeviceContext.RSSetState(DebugRasterizerState);
 
             VertexConstantBuffer vertexBuffer = new()
             {
@@ -222,14 +154,6 @@ namespace Bus.Common.Scenery.Networks
             context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
-
-            context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
-            context.DeviceContext.OMSetBlendState(oldBState, oldBFactor, oldBMask);
-            context.DeviceContext.RSSetState(oldRSState);
-
-            oldDState?.Dispose();
-            oldBState?.Dispose();
-            oldRSState?.Dispose();
         }
     }
 }

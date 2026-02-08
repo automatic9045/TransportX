@@ -59,11 +59,11 @@ namespace Bus.Sample.Vehicles
 
 
             Cylinder axleFShape = new Cylinder(0.1f, 2.103f);
-            Collider<Cylinder> axleFCollider = ColliderFactory.Cylinder(simulation, axleFShape, default, wheelRotation);
+            ColliderBase<Cylinder> axleFCollider = ColliderFactory.Cylinder(simulation, axleFShape, default, wheelRotation);
             CollidableModel axleFModel = new CollidableModel(axleFCollider);
 
             Cylinder axleRShape = new Cylinder(0.1f, 1.81f);
-            Collider<Cylinder> axleRCollider = ColliderFactory.Cylinder(simulation, axleRShape, default, wheelRotation);
+            ColliderBase<Cylinder> axleRCollider = ColliderFactory.Cylinder(simulation, axleRShape, default, wheelRotation);
             CollidableModel axleRModel = new CollidableModel(axleRCollider);
 
             DynamicLocatedModel axleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));

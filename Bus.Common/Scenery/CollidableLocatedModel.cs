@@ -17,9 +17,6 @@ namespace Bus.Common.Scenery
     {
         protected readonly Simulation Simulation;
 
-        protected ID3D11DepthStencilState? NoDepthState = null;
-        protected ID3D11RasterizerState? DebugRasterizerState = null;
-
         public new ICollidableModel Model { get; }
 
         /// <summary>
@@ -64,8 +61,6 @@ namespace Bus.Common.Scenery
         public virtual void Dispose()
         {
             Simulation.Bodies.Remove(Handle);
-            NoDepthState?.Dispose();
-            DebugRasterizerState?.Dispose();
         }
 
         /// <summary>
@@ -101,36 +96,7 @@ namespace Bus.Common.Scenery
 
                 case RenderPass.Colliders:
                 {
-                    if (context.Pass != RenderPass.Colliders || !Model.Collider.CanDrawDebug) return;
-
-                    if (NoDepthState is null)
-                    {
-                        DepthStencilDescription desc = new()
-                        {
-                            DepthEnable = false,
-                            DepthWriteMask = DepthWriteMask.All,
-                            DepthFunc = ComparisonFunction.Always,
-                            StencilEnable = false,
-                        };
-                        NoDepthState = context.DeviceContext.Device.CreateDepthStencilState(desc);
-                    }
-
-                    if (DebugRasterizerState is null)
-                    {
-                        RasterizerDescription desc = new RasterizerDescription()
-                        {
-                            CullMode = CullMode.None,
-                            FillMode = FillMode.Wireframe,
-                            DepthClipEnable = true,
-                        };
-                        DebugRasterizerState = context.DeviceContext.Device.CreateRasterizerState(desc);
-                    }
-
-                    context.DeviceContext.OMGetDepthStencilState(out ID3D11DepthStencilState? oldDState, out uint oldRef);
-                    context.DeviceContext.OMSetDepthStencilState(NoDepthState, 0);
-
-                    ID3D11RasterizerState? oldRSState = context.DeviceContext.RSGetState();
-                    context.DeviceContext.RSSetState(DebugRasterizerState);
+                    if (Model.ColliderDebugModel is null) return;
 
                     VertexConstantBuffer vertexBuffer = new()
                     {
@@ -140,13 +106,7 @@ namespace Bus.Common.Scenery
                     };
                     context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
-                    Model.Collider.DrawDebug(context);
-
-                    context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
-                    context.DeviceContext.RSSetState(oldRSState);
-
-                    oldDState?.Dispose();
-                    oldRSState?.Dispose();
+                    Model.ColliderDebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
                     break;
                 }
             }

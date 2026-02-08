@@ -30,7 +30,7 @@ namespace Bus.Common.Scenery
             List<KinematicLocatedModelTemplate> sourceList = sources.ToList();
             if (sourceList.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
-            int totalTriangles = sourceList.Sum(m => ((Collider<ColliderMesh>)m.Model.Collider).Shape.Triangles.Length);
+            int totalTriangles = sourceList.Sum(m => ((ColliderBase<ColliderMesh>)m.Model.Collider).Shape.Triangles.Length);
             physicsHost.Simulation.BufferPool.Take(totalTriangles, out Buffer<Triangle> combinedTriangles);
 
             List<LocatedModel> children = [];
@@ -39,7 +39,7 @@ namespace Bus.Common.Scenery
             {
                 Pose pose = model.ColliderToBase;
 
-                if (model.Model.Collider is Collider<ColliderMesh> meshCollider)
+                if (model.Model.Collider is ColliderBase<ColliderMesh> meshCollider)
                 {
                     for (int i = 0; i < meshCollider.Shape.Triangles.Length; i++)
                     {
@@ -63,7 +63,7 @@ namespace Bus.Common.Scenery
             newMesh.Recenter(center);
 
             ColliderMaterial material = sourceList[0].Model.Collider.Material;
-            Collider<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
+            ColliderBase<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
             CollidableModel physicsWrapper = new(newCollider)
             {
                 DebugName = $"Merged{{{sourceList[0].Model.DebugName}, others: {sourceList.Count - 1}}}",

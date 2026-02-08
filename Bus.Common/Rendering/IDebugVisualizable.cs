@@ -11,10 +11,9 @@ namespace Bus.Common.Rendering
 {
     public interface IDebugVisualizable : IDisposable
     {
-        bool CanDrawDebug { get; }
-        Vector4 DebugColor { get; set; }
+        IDebugModel? DebugModel { get; }
 
-        void CreateDebugResources(ID3D11Device device);
+        void CreateDebugModel(ID3D11Device device);
         void DrawDebug(LocatedDrawContext context);
     }
 }

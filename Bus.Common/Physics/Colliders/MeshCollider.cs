@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using BepuPhysics;
 using BepuPhysics.Collidables;
 using ColliderMesh = BepuPhysics.Collidables.Mesh;
 using Vortice.Direct3D;
@@ -14,27 +15,23 @@ using Bus.Common.Rendering;
 
 namespace Bus.Common.Physics.Colliders
 {
-    public class MeshCollider : Collider<ColliderMesh>
+    public class MeshCollider : ColliderBase<ColliderMesh>
     {
         public bool IsOpen { get; }
 
-        protected readonly Material DebugMaterial = new(Vector4.One, []);
-        public override Vector4 DebugColor
-        {
-            get => DebugMaterial.BaseColor;
-            set => DebugMaterial.BaseColor = value;
-        }
-
         public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset, bool isOpen)
-            : base(shape, shapeIndex, material, offset, (s, m) => isOpen ? s.ComputeOpenInertia(m) : s.ComputeClosedInertia(m))
+            : base(shape, shapeIndex, material, offset)
         {
             IsOpen = isOpen;
         }
 
-        public override void CreateDebugResources(ID3D11Device device)
+        public override BodyInertia ComputeInertia(float mass)
         {
-            if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
+            return IsOpen ? Shape.ComputeOpenInertia(mass) : Shape.ComputeClosedInertia(mass);
+        }
 
+        public override IDebugModel CreateDebugModel(ID3D11Device device)
+        {
             int triangleCount = Shape.Triangles.Length;
             Vertex[] vertices = new Vertex[triangleCount * 3];
             int[] indices = new int[triangleCount * 6];
@@ -60,9 +57,9 @@ namespace Bus.Common.Physics.Colliders
                 indices[indexOffset + 5] = baseIndex;
             }
 
-            Rendering.Mesh visualMesh = Rendering.Mesh.Create(device, vertices, indices, DebugMaterial, PrimitiveTopology.LineList);
-            DebugModel = new Model([visualMesh], []);
-            DebugName = DebugName;
+            Material material = new(Vector4.One, []);
+            Rendering.Mesh mesh = Rendering.Mesh.Create(device, vertices, indices, material, PrimitiveTopology.LineList);
+            return new WireframeDebugModel([mesh]);
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
 using Bus.Common.Physics;
 
 namespace Bus.Common.Rendering
@@ -19,5 +21,8 @@ namespace Bus.Common.Rendering
     public interface ICollidableModel : IModel
     {
         ICollider Collider { get; }
+        IDebugModel? ColliderDebugModel { get; }
+
+        void CreateColliderDebugModel(ID3D11Device device);
     }
 }

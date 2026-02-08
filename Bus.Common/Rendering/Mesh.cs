@@ -13,10 +13,9 @@ namespace Bus.Common.Rendering
 {
     public class Mesh : IDisposable
     {
-        private readonly ID3D11Buffer VertexBuffer;
-        private readonly ID3D11Buffer IndexBuffer;
-        private readonly Material Material;
-
+        public ID3D11Buffer VertexBuffer { get; }
+        public ID3D11Buffer IndexBuffer { get; }
+        public Material Material { get; }
         public PrimitiveTopology Topology { get; }
 
         public string? DebugName

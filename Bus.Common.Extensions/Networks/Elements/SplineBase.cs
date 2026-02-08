@@ -65,8 +65,8 @@ namespace Bus.Common.Extensions.Networks.Elements
             if (0 < modelsToMerge.Count)
             {
                 MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
-                mergedModel.Model.Collider.CreateDebugResources(Device);
-                mergedModel.Model.Collider.DebugColor = DebugColors[DebugColorIndex];
+                mergedModel.Model.CreateColliderDebugModel(Device);
+                mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
 
                 DebugColorIndex++;

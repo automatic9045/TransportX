@@ -32,10 +32,10 @@ namespace Bus.Common.Physics
             return Cylinder(shape, shapeIndex, material, offset);
         }
 
-        public static Collider<Sphere> Sphere(Sphere shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            => new Collider<Sphere>(shape, shapeIndex, material, offset, (shape, mass) => shape.ComputeInertia(mass));
+        public static SphereCollider Sphere(Sphere shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
+            => new SphereCollider(shape, shapeIndex, material, offset);
 
-        public static Collider<Sphere> Sphere(Simulation simulation, Sphere shape, ColliderMaterial material, Pose offset)
+        public static ColliderBase<Sphere> Sphere(Simulation simulation, Sphere shape, ColliderMaterial material, Pose offset)
         {
             TypedIndex shapeIndex = simulation.Shapes.Add(shape);
             return Sphere(shape, shapeIndex, material, offset);
