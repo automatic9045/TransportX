@@ -11,7 +11,7 @@ using Vortice.DXGI;
 
 namespace Bus.Common.Rendering
 {
-    public class Mesh : IDisposable
+    public class Mesh : IMesh
     {
         public ID3D11Buffer VertexBuffer { get; }
         public ID3D11Buffer IndexBuffer { get; }
@@ -78,7 +78,7 @@ namespace Bus.Common.Rendering
             SubresourceData indexBufferData = new SubresourceData(pIndices);
             ID3D11Buffer indexBuffer = device.CreateBuffer(indexBufferDesc, indexBufferData);
 
-            Mesh mesh = new Mesh(vertexBuffer, indexBuffer, material, topology);
+            Mesh mesh = new(vertexBuffer, indexBuffer, material, topology);
             verticesFixed.Free();
             indicesFixed.Free();
 

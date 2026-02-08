@@ -17,6 +17,7 @@ namespace Bus.Common.Physics
             Camera.VisualLayers.Normal,
             Camera.VisualLayers.Normal | Camera.VisualLayers.Colliders,
             Camera.VisualLayers.Normal | Camera.VisualLayers.Network,
+            Camera.VisualLayers.Normal | Camera.VisualLayers.Traffic,
         ];
 
 

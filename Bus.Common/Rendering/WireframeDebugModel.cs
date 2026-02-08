@@ -20,7 +20,7 @@ namespace Bus.Common.Rendering
         protected static ID3D11RasterizerState? RasterizerState = null;
 
 
-        protected readonly IEnumerable<Mesh> Meshes;
+        protected readonly IEnumerable<IMesh> Meshes;
 
         public virtual string? DebugName
         {
@@ -28,7 +28,7 @@ namespace Bus.Common.Rendering
             set
             {
                 field = value;
-                foreach (Mesh mesh in Meshes) mesh.DebugName = value;
+                foreach (IMesh mesh in Meshes) mesh.DebugName = value;
             }
         } = null;
 
@@ -38,11 +38,11 @@ namespace Bus.Common.Rendering
             set
             {
                 field = value;
-                foreach (Mesh mesh in Meshes) mesh.Material.BaseColor = value;
+                foreach (IMesh mesh in Meshes) mesh.Material.BaseColor = value;
             }
         } = Vector4.One;
 
-        public WireframeDebugModel(IEnumerable<Mesh> meshes)
+        public WireframeDebugModel(IEnumerable<IMesh> meshes)
         {
             ReferenceCount++;
             Meshes = meshes;
@@ -50,7 +50,7 @@ namespace Bus.Common.Rendering
 
         public virtual void Dispose()
         {
-            foreach (Mesh mesh in Meshes) mesh.Dispose();
+            foreach (IMesh mesh in Meshes) mesh.Dispose();
 
             ReferenceCount--;
             if (ReferenceCount == 0)
@@ -117,7 +117,7 @@ namespace Bus.Common.Rendering
             context.DeviceContext.OMSetBlendState(AlphaBlendState);
             context.DeviceContext.RSSetState(RasterizerState);
 
-            foreach (Mesh mesh in Meshes) mesh.Draw(context);
+            foreach (IMesh mesh in Meshes) mesh.Draw(context);
 
             context.DeviceContext.OMSetDepthStencilState(oldDState, oldRef);
             context.DeviceContext.OMSetBlendState(oldBState, oldBFactor, oldBMask);

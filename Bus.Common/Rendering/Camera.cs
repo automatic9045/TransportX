@@ -135,6 +135,15 @@ namespace Bus.Common.Rendering
                     };
                     body.Draw(drawContext);
                 }
+
+                if (VisibleLayers.HasFlag(VisualLayers.Traffic))
+                {
+                    drawContext = drawContext with
+                    {
+                        Pass = RenderPass.Traffic,
+                    };
+                    body.Draw(drawContext);
+                }
             }
         }
 
@@ -149,10 +158,11 @@ namespace Bus.Common.Rendering
         [Flags]
         public enum VisualLayers
         {
-            None = 0b000,
-            Normal = 0x001,
-            Colliders = 0b010,
-            Network = 0b100,
+            None = 0b0000,
+            Normal = 0x0001,
+            Colliders = 0b0010,
+            Network = 0b0100,
+            Traffic = 0b1000,
         }
     }
 }

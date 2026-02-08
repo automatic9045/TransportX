@@ -21,7 +21,7 @@ namespace Bus.Common.Rendering
         };
 
 
-        public IEnumerable<Mesh> VisualMeshes { get; }
+        public IEnumerable<IMesh> VisualMeshes { get; }
         public IEnumerable<ID3D11ShaderResourceView> Textures { get; }
 
         public virtual string? DebugName
@@ -30,7 +30,7 @@ namespace Bus.Common.Rendering
             set
             {
                 field = value;
-                foreach (Mesh mesh in VisualMeshes) mesh.DebugName = value;
+                foreach (IMesh mesh in VisualMeshes) mesh.DebugName = value;
 
                 if (value is null)
                 {
@@ -44,7 +44,7 @@ namespace Bus.Common.Rendering
             }
         } = null;
 
-        public Model(IEnumerable<Mesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures)
+        public Model(IEnumerable<IMesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures)
         {
             VisualMeshes = visualMeshes;
             Textures = textures;
@@ -64,7 +64,7 @@ namespace Bus.Common.Rendering
                 texture.Dispose();
             }
 
-            foreach (Mesh mesh in VisualMeshes)
+            foreach (IMesh mesh in VisualMeshes)
             {
                 mesh.Dispose();
             }
@@ -72,7 +72,7 @@ namespace Bus.Common.Rendering
 
         public void Draw(DrawContext context)
         {
-            foreach (Mesh mesh in VisualMeshes)
+            foreach (IMesh mesh in VisualMeshes)
             {
                 mesh.Draw(context);
             }
@@ -91,7 +91,7 @@ namespace Bus.Common.Rendering
             set => ColliderDebugModel?.DebugName = base.DebugName = value;
         }
 
-        public CollidableModel(IEnumerable<Mesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
+        public CollidableModel(IEnumerable<IMesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
         {
             Collider = collider;
         }

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Bus.Common.Rendering
 {
-    public enum RenderPass
+    public interface IMesh : IDisposable
     {
-        Normal,
-        Colliders,
-        Network,
-        Traffic,
+        Material Material { get; }
+        string? DebugName { get; set; }
+
+        void Draw(DrawContext context);
     }
 }
