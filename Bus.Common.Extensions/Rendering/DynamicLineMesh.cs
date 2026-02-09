@@ -16,7 +16,7 @@ namespace Bus.Common.Extensions.Rendering
     public class DynamicLineMesh : IMesh
     {
         public ID3D11Buffer VertexBuffer { get; }
-        public Material Material { get; } = new(Vector4.One, []);
+        public Material Material { get; }
 
         public string? DebugName
         {
@@ -28,7 +28,7 @@ namespace Bus.Common.Extensions.Rendering
             }
         } = null;
 
-        public DynamicLineMesh(ID3D11Device device)
+        public DynamicLineMesh(ID3D11Device device, Material material)
         {
             BufferDescription desc = new()
             {
@@ -39,7 +39,10 @@ namespace Bus.Common.Extensions.Rendering
                 MiscFlags = ResourceOptionFlags.None,
             };
             VertexBuffer = device.CreateBuffer(new Vertex[2], desc);
+
+            Material = material;
         }
+
         public void Dispose()
         {
             VertexBuffer.Dispose();

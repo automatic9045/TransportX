@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +20,8 @@ namespace Bus.Common.Avatars
 {
     public abstract class AvatarBase : RigidBody, ITrafficParticipant
     {
+        private readonly IDebugModel DebugModel;
+
         public abstract string Title { get; }
         public abstract string Description { get; }
         public abstract string Author { get; }
@@ -49,6 +52,12 @@ namespace Bus.Common.Avatars
         public abstract float SVelocity { get; }
         float ITrafficParticipant.SVelocity => SVelocity;
 
+        protected Vector4 DebugColor
+        {
+            get => DebugModel.Color;
+            set => DebugModel.Color = value;
+        }
+
         public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.PhysicsHost)
         {
             DXHost = builder.DXHost;
@@ -62,6 +71,16 @@ namespace Bus.Common.Avatars
             InputManager = builder.InputManager;
             Camera = builder.Camera;
             World = builder.World;
+
+            DebugModel = this.CreateDebugModel(DXHost.Device);
+            DebugModel.DebugName = GetType().Name;
+            DebugModel.Color = new Vector4(1, 0, 0, 1);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            DebugModel.Dispose();
         }
 
         public new PlateOffset TeleportTo(int plateX, int plateZ, Pose pose)
@@ -70,5 +89,24 @@ namespace Bus.Common.Avatars
         }
 
         public abstract bool Spawn(ILanePath path, ParticipantDirection heading, float s);
+
+        public override void Draw(LocatedDrawContext context)
+        {
+            base.Draw(context);
+
+            if (context.Pass == RenderPass.Traffic)
+            {
+                VertexConstantBuffer vertexBuffer = new()
+                {
+                    World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                    View = Matrix4x4.Transpose(context.View),
+                    Projection = Matrix4x4.Transpose(context.Projection),
+                    Light = context.Light.AsVector4(),
+                };
+                context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+
+                DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+            }
+        }
     }
 }

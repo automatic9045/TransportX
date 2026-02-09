@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Bodies;
 using Bus.Common.Physics;
+using Bus.Common.Rendering;
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 
@@ -14,6 +16,7 @@ namespace Bus.Common.Extensions.Traffic
     public abstract class AgentBase : RigidBody, ITrafficParticipant
     {
         private ILaneTracker? SubscribedLocomotion = null;
+        private IDebugModel? DebugModel = null;
 
         public abstract IRouteNavigator Navigator { get; }
         public abstract ILaneTracker LaneTracker { get; }
@@ -33,8 +36,20 @@ namespace Bus.Common.Extensions.Traffic
 
         public IEnumerable<ITrafficParticipant> Obstacles { get; set; } = [];
 
+        protected Vector4 DebugColor
+        {
+            get => field;
+            set => DebugModel?.Color = field = value;
+        } = new Vector4(0, 0, 1, 1);
+
         protected AgentBase(IPhysicsHost physicsHost) : base(physicsHost)
         {
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            DebugModel?.Dispose();
         }
 
         public bool Spawn(ILanePath path, ParticipantDirection heading, float s)
@@ -80,6 +95,32 @@ namespace Bus.Common.Extensions.Traffic
             LanePathView pathView = new(Path!, Heading);
             PoseSolver.Tick(LaneTracker.History, pathView, pathView.ToViewS(S), elapsed);
             Locate(PoseSolver);
+        }
+
+        public override void Draw(LocatedDrawContext context)
+        {
+            base.Draw(context);
+
+            if (context.Pass == RenderPass.Traffic)
+            {
+                if (DebugModel is null)
+                {
+                    DebugModel = this.CreateDebugModel(context.DeviceContext.Device);
+                    DebugModel.DebugName = GetType().Name;
+                    DebugModel.Color = DebugColor;
+                }
+
+                VertexConstantBuffer vertexBuffer = new()
+                {
+                    World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                    View = Matrix4x4.Transpose(context.View),
+                    Projection = Matrix4x4.Transpose(context.Projection),
+                    Light = context.Light.AsVector4(),
+                };
+                context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+
+                DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+            }
         }
     }
 }

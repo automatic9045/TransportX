@@ -127,7 +127,7 @@ namespace Bus.Common.Extensions.Traffic
 
             if (DebugModel is null)
             {
-                DebugMesh = new DynamicLineMesh(context.DeviceContext.Device);
+                DebugMesh = new DynamicLineMesh(context.DeviceContext.Device, new Material(default, []));
                 DebugModel = new WireframeDebugModel([DebugMesh]);
                 DebugName = DebugName;
             }

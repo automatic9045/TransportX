@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
@@ -46,6 +47,31 @@ namespace Bus.Common.Rendering
         {
             ReferenceCount++;
             Meshes = meshes;
+        }
+
+        public static WireframeDebugModel CreateBoundingBox(ID3D11Device device, Material material, Vector3 min, Vector3 max)
+        {
+            Vector3[] points = [
+                new(min.X, min.Y, min.Z),
+                new(max.X, min.Y, min.Z),
+                new(min.X, max.Y, min.Z),
+                new(max.X, max.Y, min.Z),
+                new(min.X, min.Y, max.Z),
+                new(max.X, min.Y, max.Z),
+                new(min.X, max.Y, max.Z),
+                new(max.X, max.Y, max.Z),
+            ];
+
+            Vertex[] vertices = points.Select(p => new Vertex(p, Vector4.One)).ToArray();
+
+            int[] indices = [
+                0, 1, 1, 3, 3, 2, 2, 0,
+                4, 5, 5, 7, 7, 6, 6, 4,
+                0, 4, 1, 5, 2, 6, 3, 7,
+            ];
+
+            Mesh mesh = Mesh.Create(device, vertices, indices, material, PrimitiveTopology.LineList);
+            return new WireframeDebugModel([mesh]);
         }
 
         public virtual void Dispose()

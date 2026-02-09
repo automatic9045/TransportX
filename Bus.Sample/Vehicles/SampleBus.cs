@@ -155,10 +155,5 @@ namespace Bus.Sample.Vehicles
                 $"Fx={tire.LateralForce:F1}, Fy={tire.VerticalLoad:F1}, Fz={tire.LongitudinalForce:F1}; " +
                 $"Mx={tire.RollingResistanceMoment:F1}, My={tire.SelfAligningTorque:F1}";*/
         }
-
-        public override void Draw(LocatedDrawContext context)
-        {
-            base.Draw(context);
-        }
     }
 }
