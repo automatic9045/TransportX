@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common
 {

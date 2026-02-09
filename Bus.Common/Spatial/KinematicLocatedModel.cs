@@ -10,7 +10,7 @@ using BepuPhysics;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Spatial
 {
     public class KinematicLocatedModel : CollidableLocatedModel
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Network;
 using Bus.Common.Collections;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 using Bus.Common.Extensions.Network.Paths;
 

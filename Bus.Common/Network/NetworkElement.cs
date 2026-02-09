@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Collections;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Network
 {

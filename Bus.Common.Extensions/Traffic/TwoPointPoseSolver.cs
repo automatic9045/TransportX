@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Network;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 using Bus.Common.Traffic;
 
 namespace Bus.Common.Extensions.Traffic

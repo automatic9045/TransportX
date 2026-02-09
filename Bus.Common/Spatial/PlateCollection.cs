@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using BepuPhysics;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Spatial
 {
     public class PlateCollection : IEnumerable<Plate>, IDisposable
     {

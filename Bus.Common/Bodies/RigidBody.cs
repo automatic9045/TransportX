@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Bodies
 {

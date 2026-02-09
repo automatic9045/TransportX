@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using BepuPhysics.Constraints;
 
 using Bus.Common.Physics;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 using Bus.Sample.Vehicles.Powertrain.Physics;
 

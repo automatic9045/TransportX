@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Bus.Common.Diagnostics;
 using Bus.Common.Network;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 using Bus.Common.Extensions.Network.Elements;
 

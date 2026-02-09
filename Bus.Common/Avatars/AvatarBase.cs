@@ -12,7 +12,7 @@ using Bus.Common.Input;
 using Bus.Common.Network;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 using Bus.Common.Traffic;
 using Bus.Common.Worlds;
 

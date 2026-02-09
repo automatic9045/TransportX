@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Bus.Common.Rendering;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Spatial
 {
     public class LocatedModelTemplate
     {

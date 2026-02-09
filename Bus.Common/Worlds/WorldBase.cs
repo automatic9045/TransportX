@@ -14,7 +14,7 @@ using Bus.Common.Diagnostics;
 using Bus.Common.Input;
 using Bus.Common.Rendering;
 using Bus.Common.Physics;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Worlds
 {

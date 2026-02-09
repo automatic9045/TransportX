@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Rendering
 {

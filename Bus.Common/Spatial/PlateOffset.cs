@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Spatial
 {
     public readonly struct PlateOffset
     {

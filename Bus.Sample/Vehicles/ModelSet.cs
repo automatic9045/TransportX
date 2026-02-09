@@ -13,7 +13,7 @@ using Bus.Common;
 using Bus.Common.Bodies;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Sample.Vehicles
 {

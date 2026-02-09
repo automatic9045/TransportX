@@ -11,7 +11,7 @@ using Bus.Common.Physics;
 using Bus.Common.Rendering;
 using Vortice.Direct3D11;
 
-namespace Bus.Common.Scenery
+namespace Bus.Common.Spatial
 {
     public abstract class CollidableLocatedModel : LocatedModel, IDisposable
     {

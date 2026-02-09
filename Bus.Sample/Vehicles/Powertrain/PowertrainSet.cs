@@ -9,7 +9,7 @@ using BepuPhysics.Constraints;
 
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 using Bus.Sample.Vehicles.Interfaces;
 using Bus.Sample.Vehicles.Powertrain.Modules;

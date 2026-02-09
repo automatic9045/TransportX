@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Vortice.Multimedia;
 using Vortice.XAudio2;
 
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Audio
 {

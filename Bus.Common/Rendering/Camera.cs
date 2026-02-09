@@ -11,7 +11,7 @@ using Vortice.XAudio2;
 using GdiSize = System.Drawing.Size;
 
 using Bus.Common.Bodies;
-using Bus.Common.Scenery;
+using Bus.Common.Spatial;
 
 namespace Bus.Common.Rendering
 {
