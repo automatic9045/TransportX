@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Bus.Common.Scenery.Networks;
+using Bus.Common.Network;
 
 namespace Bus.Common.Scripting.Commands
 {

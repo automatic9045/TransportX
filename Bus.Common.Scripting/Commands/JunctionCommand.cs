@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Network;
 using Bus.Common.Diagnostics;
 using Bus.Common.Scenery;
-using Bus.Common.Scenery.Networks;
 
-using Bus.Common.Extensions.Networks.Elements;
+using Bus.Common.Extensions.Network.Elements;
 
 namespace Bus.Common.Scripting.Commands
 {
@@ -20,7 +20,7 @@ namespace Bus.Common.Scripting.Commands
 
         public string Name
         {
-            get => Junction.DebugName ?? nameof(Extensions.Networks.Elements.Junction);
+            get => Junction.DebugName ?? nameof(Extensions.Network.Elements.Junction);
             set => Junction.DebugName = value;
         }
 

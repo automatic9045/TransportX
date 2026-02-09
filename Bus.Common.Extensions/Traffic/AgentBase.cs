@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Bodies;
+using Bus.Common.Network;
 using Bus.Common.Physics;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 
 namespace Bus.Common.Extensions.Traffic

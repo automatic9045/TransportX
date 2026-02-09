@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 using Bus.Common.Collections;
 using Bus.Common.Diagnostics;
+using Bus.Common.Network;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
-using Bus.Common.Scenery.Networks;
 
-using Bus.Common.Extensions.Networks.Elements;
+using Bus.Common.Extensions.Network.Elements;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bus.Common.Scripting.Commands

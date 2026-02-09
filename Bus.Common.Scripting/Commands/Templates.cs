@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Diagnostics;
-using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Scripting.Commands
 {

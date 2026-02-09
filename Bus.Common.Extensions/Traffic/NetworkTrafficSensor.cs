@@ -5,8 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Network;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 
 using Bus.Common.Extensions.Rendering;

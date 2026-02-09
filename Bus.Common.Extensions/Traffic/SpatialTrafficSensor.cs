@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 using Vortice.Mathematics;
 
+using Bus.Common.Network;
 using Bus.Common.Rendering;
 using Bus.Common.Scenery;
-using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 
 using Bus.Common.Extensions.Rendering;

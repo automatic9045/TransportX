@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Network;
 using Bus.Common.Scenery;
-using Bus.Common.Scenery.Networks;
 
-using Bus.Common.Extensions.Networks.Elements;
+using Bus.Common.Extensions.Network.Elements;
 
 namespace Bus.Common.Scripting.Commands
 {

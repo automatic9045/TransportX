@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Diagnostics;
-using Bus.Common.Scenery.Networks;
+using Bus.Common.Network;
 
 using Bus.Common.Extensions.Mathematics;
-using Bus.Common.Extensions.Networks.Elements;
-using Bus.Common.Extensions.Networks.Paths;
+using Bus.Common.Extensions.Network.Elements;
+using Bus.Common.Extensions.Network.Paths;
 
 namespace Bus.Common.Scripting.Commands
 {

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Bus.Common.Diagnostics;
-using Bus.Common.Scenery.Networks;
+using Bus.Common.Network;
 using Bus.Common.Scripting.Data;
 
 namespace Bus.Common.Scripting.Commands
@@ -39,7 +39,7 @@ namespace Bus.Common.Scripting.Commands
                 return CreateEmptyLayout();
             }
 
-            Data.Networks.LaneLayout? layoutData = XmlSerializer<Data.Networks.LaneLayout>.FromXml(fullPath, World.ErrorCollector);
+            Data.Network.LaneLayout? layoutData = XmlSerializer<Data.Network.LaneLayout>.FromXml(fullPath, World.ErrorCollector);
             if (layoutData is null) return CreateEmptyLayout();
 
             List<Lane> lanes = [];
@@ -47,7 +47,7 @@ namespace Bus.Common.Scripting.Commands
             {
                 for (int i = 0; i < layoutData.Lanes.Count; i++)
                 {
-                    Data.Networks.Lane laneData = layoutData.Lanes[i];
+                    Data.Network.Lane laneData = layoutData.Lanes[i];
                     World.ErrorCollector.ReportRange(laneData.Errors);
 
                     if (laneData.AllowedTraffic.Value is null) continue;

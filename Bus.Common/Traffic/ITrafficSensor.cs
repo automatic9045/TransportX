@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Bus.Common.Network;
 using Bus.Common.Rendering;
-using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Traffic
 {
