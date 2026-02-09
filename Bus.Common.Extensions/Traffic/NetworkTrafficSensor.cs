@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 
 using Bus.Common.Rendering;
-using Bus.Common.Scenery;
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 

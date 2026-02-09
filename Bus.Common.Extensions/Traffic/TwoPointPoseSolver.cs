@@ -11,17 +11,10 @@ using Bus.Common.Traffic;
 
 namespace Bus.Common.Extensions.Traffic
 {
-    public class TwoPointPoseSolver : IPoseSolver
+    public class TwoPointPoseSolver : LocatableObject, IPoseSolver
     {
         private readonly float FrontOffset;
         private readonly float RearOffset;
-
-        public int PlateX { get; private set; }
-        public int PlateZ { get; private set; }
-        public Pose Pose { get; private set; }
-        public Vector3 Velocity { get; private set; }
-
-        public event EventHandler? Moved;
 
         public TwoPointPoseSolver(float frontOffset, float rearOffset)
         {
@@ -70,12 +63,7 @@ namespace Bus.Common.Extensions.Traffic
             Vector3 up = Vector3.Normalize(Pose.TransformNormal(Vector3.UnitY, front) + Pose.TransformNormal(Vector3.UnitY, rear));
 
             Pose pose = Pose.CreateWorldLH(position, forward, up);
-
-            PlateX = pathView.Source.Owner.PlateX;
-            PlateZ = pathView.Source.Owner.PlateZ;
-            Pose = pose;
-
-            Moved?.Invoke(this, EventArgs.Empty);
+            Locate(pathView.Source.Owner, pose);
         }
     }
 }

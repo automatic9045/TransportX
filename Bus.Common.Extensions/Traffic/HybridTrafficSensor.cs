@@ -44,10 +44,10 @@ namespace Bus.Common.Extensions.Traffic
             }
         }
 
-        public HybridTrafficSensor(ILaneTracker laneTracker, IPoseSolver poseSolver, Func<ITrafficParticipant, bool> obstacleSkipCondition)
+        public HybridTrafficSensor(ILaneTracker laneTracker, ILocatable location, Func<ITrafficParticipant, bool> obstacleSkipCondition)
         {
-            NetworkSensor = new NetworkTrafficSensor(laneTracker, poseSolver);
-            SpatialSensor = new SpatialTrafficSensor(laneTracker, poseSolver,
+            NetworkSensor = new NetworkTrafficSensor(laneTracker, location);
+            SpatialSensor = new SpatialTrafficSensor(laneTracker, location,
                 obstacle => obstacle != NetworkSensor.Target && obstacleSkipCondition(obstacle));
 
             CurrentSensor = NetworkSensor;
