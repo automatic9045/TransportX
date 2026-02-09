@@ -9,6 +9,7 @@ namespace Bus.Sample.Vehicles
     internal static class Spec
     {
         public const float Width = 2.485f;
+        public const float Height = 3.045f;
         public const float FrontOverhang = 2.3f;
         public const float RearOverhang = 2.83f;
         public const float Wheelbase = 5.3f;

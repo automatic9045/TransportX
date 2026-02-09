@@ -79,29 +79,31 @@ namespace Bus.Common.Extensions.Traffic
 
                 Quaternion relativeRotation = obstacle.Pose.Orientation * Quaternion.Inverse(Location.Pose.Orientation);
                 Vector3 localRight = Vector3.Transform(Vector3.UnitX, relativeRotation) * obstacle.Width / 2;
+                Vector3 localUp = Vector3.Transform(Vector3.UnitY, relativeRotation) * obstacle.Height;
                 Vector3 localBack = Vector3.Transform(Vector3.UnitZ, relativeRotation) * obstacle.Length;
 
+                Vector3 p1 = localFront - localRight;
+                Vector3 p2 = localFront + localRight;
+                Vector3 p3 = localFront - localBack - localRight;
+                Vector3 p4 = localFront - localBack + localRight;
                 Span<Vector3> bboxPoints = [
-                     localFront - localRight,
-                    localFront + localRight,
-                    localFront - localBack - localRight,
-                    localFront - localBack + localRight,
+                    p1, p2, p3, p4,
+                    p1 + localUp, p2 + localUp, p3 + localUp, p4 + localUp,
                 ];
                 BoundingBox bbox = BoundingBox.CreateFromPoints(bboxPoints);
 
                 if (bbox.Max.Z < 0) continue;
+                if (bbox.Max.Y < 0 || LaneTracker.Height < bbox.Min.Y) continue;
 
                 float surfaceDistance = float.Max(0, bbox.Min.Z);
                 if (-LaneTracker.Width / 2 <= bbox.Max.X && bbox.Min.X <= LaneTracker.Width / 2 && surfaceDistance < minSurfaceDistance)
                 {
                     minSurfaceDistance = surfaceDistance;
 
-                    float dotDirection = Vector3.Dot(Location.Pose.Direction, obstacle.Pose.Direction);
-                    nearestObstacleDistance = 0 <= dotDirection ? bbox.Max.Z : bbox.Min.Z;
-
-                    float physicalLength = bbox.Max.Z - bbox.Min.Z;
+                    nearestObstacleDistance = 0 <= Vector3.Dot(Location.Pose.Direction, obstacle.Pose.Direction) ? bbox.Max.Z : bbox.Min.Z;
                     nearestObstacle = new ProjectedParticipant(
-                        LaneTracker.Heading, LaneTracker.S, Location.Pose.Direction, obstacle, nearestObstacleDistance, bbox.Max.X * 2, physicalLength);
+                        LaneTracker.Heading, LaneTracker.S, Location.Pose.Direction,
+                        obstacle, nearestObstacleDistance, bbox.Width, bbox.Height, bbox.Depth);
                 }
             }
 
@@ -159,6 +161,7 @@ namespace Bus.Common.Extensions.Traffic
             public readonly Vector3 Velocity => Source.Velocity;
 
             public readonly float Width { get; }
+            public readonly float Height { get; }
             public readonly float Length { get; }
 
             public readonly bool IsEnabled => true;
@@ -174,11 +177,13 @@ namespace Bus.Common.Extensions.Traffic
             }
 
             public ProjectedParticipant(
-                ParticipantDirection originHeading, float originS, Vector3 originDirection, ITrafficParticipant source, float offset, float width, float length)
+                ParticipantDirection originHeading, float originS, Vector3 originDirection,
+                ITrafficParticipant source, float offset, float width, float height, float length)
             {
                 Source = source;
 
                 Width = width;
+                Height = height;
                 Length = length;
 
                 float dotHeading = Vector3.Dot(originDirection, source.Pose.Direction);

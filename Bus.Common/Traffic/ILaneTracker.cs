@@ -11,6 +11,7 @@ namespace Bus.Common.Traffic
     public interface ILaneTracker
     {
         float Width { get; }
+        float Height { get; }
         float Length { get; }
 
         bool IsEnabled { get; }

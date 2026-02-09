@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,6 +11,7 @@ namespace Bus.Common.Traffic
     public interface ITrafficParticipant : ILocatable
     {
         float Width { get; }
+        float Height { get; }
         float Length { get; }
 
         bool IsEnabled { get; }

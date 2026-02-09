@@ -22,6 +22,7 @@ namespace Bus.Common.Extensions.Traffic
         public abstract IDriver Driver { get; }
 
         public float Width => LaneTracker.Width;
+        public float Height => LaneTracker.Height;
         public float Length => LaneTracker.Length;
 
         public bool IsEnabled => LaneTracker.IsEnabled;

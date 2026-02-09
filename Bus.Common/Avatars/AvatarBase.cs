@@ -39,7 +39,9 @@ namespace Bus.Common.Avatars
         public abstract Viewpoint BirdViewpoint { get; }
 
         public abstract float Width { get; }
+        public abstract float Height { get; }
         public abstract float Length { get; }
+
         public abstract bool IsEnabled { get; }
         public abstract ILanePath? Path { get; }
         public abstract ParticipantDirection Heading { get; }

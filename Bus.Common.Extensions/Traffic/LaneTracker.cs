@@ -17,6 +17,7 @@ namespace Bus.Common.Extensions.Traffic
         private readonly RingBuffer<LanePathView> PathViewHistory = [];
 
         public float Width { get; }
+        public float Height { get; }
         public float Length { get; }
 
         public bool IsEnabled { get; private set; } = false;
@@ -29,10 +30,11 @@ namespace Bus.Common.Extensions.Traffic
 
         public event EventHandler<PathChangedEventArgs>? PathChanged;
 
-        public LaneTracker(IRouteNavigator navigator, float width, float length)
+        public LaneTracker(IRouteNavigator navigator, float width, float height, float length)
         {
             Navigator = navigator;
             Width = width;
+            Height = height;
             Length = length;
         }
 
