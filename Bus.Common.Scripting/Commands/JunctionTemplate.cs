@@ -114,8 +114,7 @@ namespace Bus.Common.Scripting.Commands
             foreach (JunctionPathTemplate path in PathsKey)
             {
                 ILanePath compiled = path.Build(junction);
-                compiled.CreateDebugModel(World.DXHost.Device);
-                compiled.DebugModel!.Color = World.Commander.Network.LaneTraffic.GetGroupColor(compiled.AllowedTraffic);
+                compiled.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(compiled.AllowedTraffic);
             }
 
             foreach (LocatedModelTemplate model in Structures)

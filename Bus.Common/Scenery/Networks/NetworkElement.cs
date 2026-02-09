@@ -48,7 +48,7 @@ namespace Bus.Common.Scenery.Networks
             {
                 foreach (ILanePath path in Paths)
                 {
-                    if (path.DebugModel is not null) path.DrawDebug(context);
+                    path.Draw(context);
                 }
             }
         }

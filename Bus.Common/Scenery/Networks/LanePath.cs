@@ -21,6 +21,10 @@ namespace Bus.Common.Scenery.Networks
 
         protected readonly LaneWidth FromWidth;
 
+        protected Material? DebugSpineMaterial = null;
+        protected Material? DebugWingMaterial = null;
+        protected LanePathDebugModel? DebugModel = null;
+
         public NetworkElement Owner => From.Port.Owner;
         public LaneTrafficGroup AllowedTraffic => From.Definition.AllowedTraffic;
         public FlowDirections Directions => From.Definition.Directions.GetOpposition();
@@ -33,6 +37,7 @@ namespace Bus.Common.Scenery.Networks
 
         public abstract float Length { get; }
 
+        public Vector4 DebugColor { get; set; } = Vector4.One;
         public string? DebugName
         {
             get => field;
@@ -42,8 +47,6 @@ namespace Bus.Common.Scenery.Networks
                 DebugModel?.DebugName = value is null ? null : $"{value}_LanePath";
             }
         } = null;
-
-        public IDebugModel? DebugModel { get; protected set; } = null;
 
         protected LanePath(LanePin from, LanePin to)
         {
@@ -79,70 +82,71 @@ namespace Bus.Common.Scenery.Networks
             ParticipantsKey.Remove(participant);
         }
 
-        public virtual void CreateDebugModel(ID3D11Device device)
+        public void Draw(LocatedDrawContext context)
         {
-            if (DebugModel is not null) throw new InvalidOperationException("モデルは既に作成されています。");
+            if (context.Pass != RenderPass.Network) throw new InvalidOperationException();
 
-            int stepCount = int.Max(1, (int)float.Ceiling(Length));
-
-            List<Vertex> spineVertices = [];
-            List<int> spineIndices = [];
-
-            List<Vertex> wingVertices = [];
-            List<int> wingIndices = [];
-
-            int? prevSpineIndex = null;
-
-            for (int i = 0; i <= stepCount; i++)
+            if (DebugModel is null)
             {
-                float s = (i == stepCount) ? Length : (float)i;
+                int stepCount = int.Max(1, (int)float.Ceiling(Length));
 
-                Pose pose = GetLocalPose(s);
+                List<Vertex> spineVertices = [];
+                List<int> spineIndices = [];
 
-                int currentSpineIndex = spineVertices.Count;
-                spineVertices.Add(new Vertex(pose.Position, Vector4.One));
+                List<Vertex> wingVertices = [];
+                List<int> wingIndices = [];
 
-                if (prevSpineIndex.HasValue)
+                int? prevSpineIndex = null;
+
+                for (int i = 0; i <= stepCount; i++)
                 {
-                    spineIndices.Add(prevSpineIndex.Value);
-                    spineIndices.Add(currentSpineIndex);
+                    float s = (i == stepCount) ? Length : (float)i;
+
+                    Pose pose = GetLocalPose(s);
+
+                    int currentSpineIndex = spineVertices.Count;
+                    spineVertices.Add(new Vertex(pose.Position, Vector4.One));
+
+                    if (prevSpineIndex.HasValue)
+                    {
+                        spineIndices.Add(prevSpineIndex.Value);
+                        spineIndices.Add(currentSpineIndex);
+                    }
+                    prevSpineIndex = currentSpineIndex;
+
+                    if (SweepBack <= s)
+                    {
+                        float sWing = s - SweepBack;
+                        Pose wingPose = GetLocalPose(sWing);
+                        LaneWidth wingWidth = GetWidth(sWing);
+
+                        Vector3 wingRight = Pose.TransformNormal(Vector3.UnitX, wingPose);
+
+                        int leftIndex = wingVertices.Count;
+                        wingVertices.Add(new Vertex(wingPose.Position - wingRight * wingWidth.Left, Vector4.One));
+
+                        int rightIndex = wingVertices.Count;
+                        wingVertices.Add(new Vertex(wingPose.Position + wingRight * wingWidth.Right, Vector4.One));
+
+                        int tipIndex = wingVertices.Count;
+                        wingVertices.Add(new Vertex(pose.Position, Vector4.One));
+
+                        wingIndices.Add(leftIndex);
+                        wingIndices.Add(tipIndex);
+
+                        wingIndices.Add(rightIndex);
+                        wingIndices.Add(tipIndex);
+                    }
                 }
-                prevSpineIndex = currentSpineIndex;
 
-                if (SweepBack <= s)
-                {
-                    float sWing = s - SweepBack;
-                    Pose wingPose = GetLocalPose(sWing);
-                    LaneWidth wingWidth = GetWidth(sWing);
+                DebugSpineMaterial = new Material(default, []);
+                DebugWingMaterial = new Material(default, []);
 
-                    Vector3 wingRight = Pose.TransformNormal(Vector3.UnitX, wingPose);
+                Mesh spineMesh = Mesh.Create(context.DeviceContext.Device, spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
+                Mesh wingMesh = Mesh.Create(context.DeviceContext.Device, wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);
 
-                    int leftIndex = wingVertices.Count;
-                    wingVertices.Add(new Vertex(wingPose.Position - wingRight * wingWidth.Left, Vector4.One));
-
-                    int rightIndex = wingVertices.Count;
-                    wingVertices.Add(new Vertex(wingPose.Position + wingRight * wingWidth.Right, Vector4.One));
-
-                    int tipIndex = wingVertices.Count;
-                    wingVertices.Add(new Vertex(pose.Position, Vector4.One));
-
-                    wingIndices.Add(leftIndex);
-                    wingIndices.Add(tipIndex);
-
-                    wingIndices.Add(rightIndex);
-                    wingIndices.Add(tipIndex);
-                }
+                DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
             }
-
-            Mesh spineMesh = Mesh.Create(device, spineVertices.ToArray(), spineIndices.ToArray(), new Material(Vector4.One, []), PrimitiveTopology.LineList);
-            Mesh wingMesh = Mesh.Create(device, wingVertices.ToArray(), wingIndices.ToArray(), new Material(new(1, 1, 1, 0.3f), []), PrimitiveTopology.LineList);
-
-            DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
-        }
-
-        public void DrawDebug(LocatedDrawContext context)
-        {
-            if (DebugModel is null) throw new InvalidOperationException("デバッグモデルが作成されていません。");
 
             VertexConstantBuffer vertexBuffer = new()
             {
@@ -153,6 +157,8 @@ namespace Bus.Common.Scenery.Networks
             };
             context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
+            DebugSpineMaterial!.BaseColor = DebugColor;
+            DebugWingMaterial!.BaseColor = new Vector4(DebugColor.AsVector3(), DebugColor.W * 0.3f);
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }
     }

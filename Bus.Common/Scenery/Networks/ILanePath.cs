@@ -9,7 +9,7 @@ using Bus.Common.Traffic;
 
 namespace Bus.Common.Scenery.Networks
 {
-    public interface ILanePath : IDebugVisualizable
+    public interface ILanePath : IDebugDrawable
     {
         NetworkElement Owner { get; }
         LaneTrafficGroup AllowedTraffic { get; }

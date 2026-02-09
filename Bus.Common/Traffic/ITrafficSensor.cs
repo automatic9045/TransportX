@@ -9,7 +9,7 @@ using Bus.Common.Scenery.Networks;
 
 namespace Bus.Common.Traffic
 {
-    public interface ITrafficSensor : IDebugVisualizable
+    public interface ITrafficSensor : IDebugDrawable
     {
         ITrafficParticipant? Target { get; }
         bool IsTargetOncoming { get; }

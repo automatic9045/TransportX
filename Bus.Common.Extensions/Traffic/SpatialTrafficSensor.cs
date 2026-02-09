@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
 using Bus.Common.Rendering;
@@ -27,6 +26,7 @@ namespace Bus.Common.Extensions.Traffic
         private readonly Func<ITrafficParticipant, bool> ObstacleSkipCondition;
 
         private DynamicLineMesh? DebugMesh = null;
+        private WireframeDebugModel? DebugModel = null;
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
@@ -34,8 +34,7 @@ namespace Bus.Common.Extensions.Traffic
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
 
-        public IDebugModel? DebugModel { get; private set; } = null;
-
+        public Vector4 DebugColor { get; set; } = Vector4.One;
         public string? DebugName
         {
             get => field;
@@ -121,17 +120,17 @@ namespace Bus.Common.Extensions.Traffic
             }
         }
 
-        public void CreateDebugModel(ID3D11Device device)
+        public void Draw(LocatedDrawContext context)
         {
-            DebugMesh = new(device);
-            DebugModel = new WireframeDebugModel([DebugMesh]);
-            DebugName = DebugName;
-        }
-
-        public void DrawDebug(LocatedDrawContext context)
-        {
-            if (DebugMesh is null || DebugModel is null) throw new InvalidOperationException();
+            if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
             if (Target is null) return;
+
+            if (DebugModel is null)
+            {
+                DebugMesh = new DynamicLineMesh(context.DeviceContext.Device);
+                DebugModel = new WireframeDebugModel([DebugMesh]);
+                DebugName = DebugName;
+            }
 
             VertexConstantBuffer vertexBuffer = new()
             {
@@ -146,6 +145,7 @@ namespace Bus.Common.Extensions.Traffic
             Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
             Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.Pose.Orientation));
 
+            DebugMesh!.Material.BaseColor = DebugColor;
             DebugMesh.SetVector(context.DeviceContext, localDelta);
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }

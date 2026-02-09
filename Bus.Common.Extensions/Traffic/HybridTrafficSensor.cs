@@ -5,8 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
-
 using Bus.Common.Scenery.Networks;
 using Bus.Common.Traffic;
 using Bus.Common.Rendering;
@@ -24,7 +22,21 @@ namespace Bus.Common.Extensions.Traffic
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
 
-        public IDebugModel? DebugModel => throw new NotSupportedException();
+        public Vector4 NetworkDebugColor
+        {
+            get => NetworkSensor.DebugColor;
+            set => NetworkSensor.DebugColor = value;
+        }
+        public Vector4 SpatialDebugColor
+        {
+            get => SpatialSensor.DebugColor;
+            set => SpatialSensor.DebugColor = value;
+        }
+        Vector4 IDebugDrawable.DebugColor
+        {
+            get => NetworkDebugColor;
+            set => NetworkDebugColor = value;
+        }
 
         public string? DebugName
         {
@@ -73,18 +85,9 @@ namespace Bus.Common.Extensions.Traffic
             DistanceToTarget = CurrentSensor.DistanceToTarget;
         }
 
-        public void CreateDebugModel(ID3D11Device device)
+        public void Draw(LocatedDrawContext context)
         {
-            NetworkSensor.CreateDebugModel(device);
-            SpatialSensor.CreateDebugModel(device);
-
-            NetworkSensor.DebugModel!.Color = new Vector4(0, 1, 1, 1);
-            SpatialSensor.DebugModel!.Color = new Vector4(1, 0, 1, 1);
-        }
-
-        public void DrawDebug(LocatedDrawContext context)
-        {
-            CurrentSensor.DrawDebug(context);
+            CurrentSensor.Draw(context);
         }
     }
 }

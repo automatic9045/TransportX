@@ -88,8 +88,7 @@ namespace Bus.Common.Scripting.Commands
 
                 foreach (ILanePath path in spline.Paths)
                 {
-                    path.CreateDebugModel(World.DXHost.Device);
-                    path.DebugModel!.Color = World.Commander.Network.LaneTraffic.GetGroupColor(path.AllowedTraffic);
+                    path.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(path.AllowedTraffic);
                 }
             }
 
