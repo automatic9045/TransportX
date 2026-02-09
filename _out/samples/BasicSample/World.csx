@@ -1,4 +1,4 @@
-Avatar.Load("Bus.Sample.dll");
+Avatar.Load("TransportX.Sample.dll");
 Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
 
 Models.LoadList("Models.txt");

@@ -1,0 +1,92 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Text;
+using System.Threading.Tasks;
+
+using TransportX.Dependency;
+using TransportX.Diagnostics;
+using TransportX.Input;
+using TransportX.Physics;
+using TransportX.Rendering;
+
+namespace TransportX.Worlds
+{
+    public class WorldBuilder
+    {
+        public IWorldInfo Info { get; }
+
+        public required IDXHost DXHost { get; init; }
+        public required IDXClient DXClient { get; init; }
+        public required IPhysicsHost PhysicsHost { get; init; }
+        public required IErrorCollector ErrorCollector { get; init; }
+        public required PluginLoadContext GameContext { get; init; }
+        public required TimeManager TimeManager { get; init; }
+        public required InputManager InputManager { get; init; }
+        public required Camera Camera { get; init; }
+
+        public WorldBuilder(IWorldInfo info)
+        {
+            Info = info;
+        }
+
+        internal protected WorldBase Build()
+        {
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
+            GameContext.Children.Add(context);
+
+            Type[] worldTypes = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(WorldBase)))
+                .ToArray();
+
+            if (worldTypes.Length == 0)
+            {
+                string fileName = Path.GetFileName(Info.Path);
+                throw new ArgumentException($"{fileName} にはワールドが定義されていません。", nameof(Info));
+            }
+
+            Type worldType;
+            if (Info.Identifier is null)
+            {
+                if (worldTypes.Length == 1)
+                {
+                    worldType = worldTypes[0];
+                }
+                else
+                {
+                    string fileName = Path.GetFileName(Info.Path);
+                    throw new ArgumentException($"{fileName} には 2 つ以上のワールドが定義されています。", nameof(Info));
+                }
+            }
+            else
+            {
+                Type? type = null;
+                foreach (Type t in worldTypes)
+                {
+                    WorldIdentifierAttribute? identifierAttribute = t.GetCustomAttribute<WorldIdentifierAttribute>();
+                    if (identifierAttribute?.Identifier == Info.Identifier)
+                    {
+                        type = t;
+                    }
+                }
+
+                if (type is null)
+                {
+                    string fileName = Path.GetFileName(Info.Path);
+                    throw new ArgumentException($"{fileName} にはワールド '{Info.Identifier}' が定義されていません。", nameof(Info));
+                }
+                worldType = type;
+            }
+
+            ConstructorInfo constructor = worldType.GetConstructor([typeof(PluginLoadContext), typeof(WorldBuilder)])
+                ?? throw new ArgumentException($"{worldType.Name} にはパラメータが" +
+                $" {nameof(PluginLoadContext)}, {nameof(WorldBuilder)} のコンストラクタが定義されていません。", nameof(Info));
+
+            WorldBase world = (WorldBase)constructor.Invoke([context, this]);
+            return world;
+        }
+    }
+}

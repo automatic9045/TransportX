@@ -1,0 +1,35 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TransportX.Input
+{
+    public class SliderByKey : Slider
+    {
+        public KeyObserver Source { get; set; }
+        public float IncreaseSpeed { get; set; }
+        public float DecreaseSpeed { get; set; }
+        public bool Reverse { get; set; }
+
+        public SliderByKey(KeyObserver source, float increaseSpeed, float decreaseSpeed, float min = 0, float max = 1, bool reverse = false) : base(min, max)
+        {
+            Source = source;
+            IncreaseSpeed = increaseSpeed;
+            DecreaseSpeed = decreaseSpeed;
+            Reverse = reverse;
+        }
+
+        public override void Dispose()
+        {
+            Source.Dispose();
+        }
+
+        public override void Tick(TimeSpan elapsed)
+        {
+            float rate = Rate + (Reverse ^ Source.IsPressed ? IncreaseSpeed : -DecreaseSpeed) * (float)elapsed.TotalSeconds;
+            Rate = float.Max(Min, float.Min(rate, Max));
+        }
+    }
+}

@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <CommonOutputPath>$(MSBuildThisFileDirectory)_out\bin\$(Configuration)\</CommonOutputPath>
+  </PropertyGroup>
+</Project>
