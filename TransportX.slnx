@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="TransportX.Assets/TransportX.Assets.vcxproj" Id="53c7a347-1199-4980-a6fe-989ca024f810" />
+  <Project Path="TransportX.Extensions/TransportX.Extensions.csproj" />
+  <Project Path="TransportX.Player/TransportX.Player.csproj" />
+  <Project Path="TransportX.Sample/TransportX.Sample.csproj" />
+  <Project Path="TransportX.Scripting/TransportX.Scripting.csproj" />
+  <Project Path="TransportX/TransportX.csproj" />
+</Solution>
