@@ -23,15 +23,13 @@ namespace TransportX.Sample
         private static readonly string BaseDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Models");
 
 
-        private readonly ID3D11Device Device;
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation Simulation;
         private readonly IErrorCollector ErrorCollector;
         private readonly Vector4 DebugModelColor;
 
-        public ModelFactory(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector, Vector4 debugModelColor)
+        public ModelFactory(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector, Vector4 debugModelColor)
         {
-            Device = device;
             Context = context;
             Simulation = simulation;
             ErrorCollector = errorCollector;
@@ -46,7 +44,7 @@ namespace TransportX.Sample
 
         public Model NonCollision(string visualPath, bool makeLH)
         {
-            Model model = Model.Load(Device, Context, ErrorCollector, GetAbsolutePath(visualPath), makeLH);
+            Model model = Model.Load(Context, ErrorCollector, GetAbsolutePath(visualPath), makeLH);
             model.DebugName = Path.GetFileNameWithoutExtension(visualPath);
             return model;
         }
@@ -54,9 +52,9 @@ namespace TransportX.Sample
         public CollidableModel WithCollisionModel(
             string visualPath, bool makeVisualLH, string collisionPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
-            CollidableModel model = CollidableModel.Load(Device, Context, Simulation, ErrorCollector,
+            CollidableModel model = CollidableModel.Load(Context, Simulation, ErrorCollector,
                 GetAbsolutePath(visualPath), makeVisualLH, GetAbsolutePath(collisionPath), makeCollisionLH, material, isOpen);
-            model.CreateColliderDebugModel(Device);
+            model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(visualPath);
             return model;
@@ -64,8 +62,8 @@ namespace TransportX.Sample
 
         public CollidableModel WithBoundingBox(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithBoundingBox(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
-            model.CreateColliderDebugModel(Device);
+            CollidableModel model = CollidableModel.LoadWithBoundingBox(Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
+            model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
             return model;
@@ -73,8 +71,8 @@ namespace TransportX.Sample
 
         public CollidableModel WithConvexHull(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithConvexHull(Device, Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
-            model.CreateColliderDebugModel(Device);
+            CollidableModel model = CollidableModel.LoadWithConvexHull(Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
+            model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
             return model;
@@ -84,7 +82,7 @@ namespace TransportX.Sample
         {
             ColliderBase<Cylinder> collider = ColliderFactory.Cylinder(Simulation, shape, material, offset);
             CollidableModel model = new(baseModel, collider);
-            model.CreateColliderDebugModel(Device);
+            model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             return model;
         }

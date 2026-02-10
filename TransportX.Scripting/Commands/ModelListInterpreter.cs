@@ -40,7 +40,7 @@ namespace TransportX.Scripting.Commands
             BaseDirectory = baseDirectory;
             ModelPath = modelPath;
 
-            ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
+            ModelFactory = () => Model.Load(World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
         }
 
         public void ReadCommand(string commandText)
@@ -52,19 +52,19 @@ namespace TransportX.Scripting.Commands
             }
             else if (function.Signature == ModelListSignatures.NonCollision)
             {
-                ModelFactory = () => Model.Load(World.DXHost.Device, World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
+                ModelFactory = () => Model.Load(World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox1)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox2)
             {
                 ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel1)
             {
@@ -72,30 +72,26 @@ namespace TransportX.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(1);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, collisionModelPath, MakeLH, material, false);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel2)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, false);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel3)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, ModelPath, MakeLH, material, false);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel4)
             {
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, false);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.OpenModel1)
             {
@@ -103,30 +99,26 @@ namespace TransportX.Scripting.Commands
                 ColliderMaterial material = CreateMaterial(1);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, collisionModelPath, MakeLH, material, true);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel2)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, true);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel3)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, ModelPath, MakeLH, material, true);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel4)
             {
                 ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Device, World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector,
-                    ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, true);
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else
             {

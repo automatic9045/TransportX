@@ -10,6 +10,7 @@ using Vortice.Direct3D11;
 
 using TransportX.Diagnostics;
 using TransportX.Physics;
+using TransportX.Rendering.Importing;
 
 namespace TransportX.Rendering
 {
@@ -50,9 +51,9 @@ namespace TransportX.Rendering
             Textures = textures;
         }
 
-        public static Model Load(ID3D11Device device, ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
+        public static Model Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
         {
-            using AssimpModelFactory factory = new(device, context, null, errorCollector);
+            using ModelFactory factory = new(context, null, new AssimpImporter(errorCollector), errorCollector);
             Model model = factory.Load(visualModelPath, makeLH);
             return model;
         }
@@ -105,26 +106,26 @@ namespace TransportX.Rendering
         {
         }
 
-        public static CollidableModel Load(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
+        public static CollidableModel Load(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
-            using AssimpModelFactory factory = new(device, context, simulation, errorCollector);
+            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
             CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, makeVisualLH, collisionModelPath, makeCollisionLH, material, isOpen);
             return model;
         }
 
-        public static CollidableModel LoadWithBoundingBox(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
+        public static CollidableModel LoadWithBoundingBox(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeLH, ColliderMaterial material)
         {
-            using AssimpModelFactory factory = new(device, context, simulation, errorCollector);
+            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
             CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, makeLH, material);
             return model;
         }
 
-        public static CollidableModel LoadWithConvexHull(ID3D11Device device, ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
+        public static CollidableModel LoadWithConvexHull(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeLH, ColliderMaterial material)
         {
-            using AssimpModelFactory factory = new(device, context, simulation, errorCollector);
+            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
             CollidableModel model = factory.LoadWithConvexHull(visualModelPath, makeLH, material);
             return model;
         }

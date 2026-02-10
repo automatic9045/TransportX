@@ -14,6 +14,6 @@ namespace TransportX.Rendering
         public static extern int CreateWICTextureFromFile_(nint device, nint context, string fileName, out nint texture, out nint textureView, ulong maxSize = 0);
 
         [DllImport("TransportX.Assets.dll")]
-        public static extern int CreateWICTextureFromMemory_(nint device, nint context, byte[] wicData, int wicDataSize, out nint texture, out nint textureView, ulong maxSize = 0);
+        public static extern int CreateWICTextureFromMemory_(nint device, nint context, nint wicData, int wicDataSize, out nint texture, out nint textureView, ulong maxSize = 0);
     }
 }
