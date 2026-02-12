@@ -94,12 +94,12 @@ namespace TransportX.Rendering.Importing
                                 Exception? exception = Marshal.GetExceptionForHR(hr);
                                 ModelLoadError error = exception switch
                                 {
-                                    FileNotFoundException => new ModelLoadError(ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped,
+                                    FileNotFoundException => new ModelLoadError(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
                                         ErrorLevel.Error, $"テクスチャ '{filePath}' が見つかりません。", filePath)
                                     {
                                         Exception = exception,
                                     },
-                                    _ => new ModelLoadError(ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped,
+                                    _ => new ModelLoadError(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
                                         ErrorLevel.Error, $"テクスチャ '{filePath}' を読み込めませんでした。", filePath)
                                     {
                                         Exception = exception,
@@ -123,8 +123,8 @@ namespace TransportX.Rendering.Importing
                             }
                             catch (Exception ex)
                             {
-                                ModelLoadError error = new(ModelLoadErrorTypes.Visual | ModelLoadErrorTypes.Skipped, ErrorLevel.Error,
-                                    $"埋め込みテクスチャ '{textureRef.Key}' を読み込めませんでした。", textureRef.Key)
+                                ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
+                                    ErrorLevel.Error, $"埋め込みテクスチャ '{textureRef.Key}' を読み込めませんでした。", textureRef.Key)
                                 {
                                     Exception = ex,
                                 };

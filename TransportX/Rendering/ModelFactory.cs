@@ -147,8 +147,8 @@ namespace TransportX.Rendering
             Vector3 center = isOpen ? collisionMesh.ComputeOpenCenterOfMass() : collisionMesh.ComputeClosedCenterOfMass();
             if (float.IsNaN(center.X + center.Y + center.Z))
             {
-                ModelLoadError error = new ModelLoadError(
-                    ModelLoadErrorTypes.Collision | ModelLoadErrorTypes.Skipped, ErrorLevel.Error, "モデルの重心を特定できません。", collisionModelPath);
+                ModelLoadError error = new ModelLoadError(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Collision,
+                    ErrorLevel.Error, "モデルの重心を特定できません。", collisionModelPath);
                 ErrorCollector.Report(error);
                 center = Vector3.Zero;
             }

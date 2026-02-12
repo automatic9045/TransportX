@@ -174,8 +174,8 @@ namespace TransportX.Rendering.Importing
 
             Model ReportError(string message, Exception exception)
             {
-                ModelLoadErrorTypes errorTypes = ModelLoadErrorTypes.Critical | (isForVisual ? ModelLoadErrorTypes.Visual : ModelLoadErrorTypes.Collision);
-                ModelLoadError error = new(errorTypes, ErrorLevel.Error, message, path)
+                ModelLoadError.ErrorTarget target = isForVisual ? ModelLoadError.ErrorTarget.Visual : ModelLoadError.ErrorTarget.Collision;
+                ModelLoadError error = new(ModelLoadError.ErrorSource.Reference, target, ErrorLevel.Error, message, path)
                 {
                     Exception = exception,
                 };

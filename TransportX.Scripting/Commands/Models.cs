@@ -63,7 +63,7 @@ namespace TransportX.Scripting.Commands
                             ModelListInterpreter interpreter = new(World, parser, listDirectory, modelPath);
                             interpreter.ErrorReported += (sender, e) =>
                             {
-                                Error error = e.Error is ModelLoadError modelError && modelError.Types.HasFlag(ModelLoadErrorTypes.Critical)
+                                Error error = e.Error is ModelLoadError modelError && modelError.Source == ModelLoadError.ErrorSource.Reference
                                     ? modelError.ChangeSource(listPath, i + 1) : e.Error;
                                 World.ErrorCollector.Report(error);
                             };
