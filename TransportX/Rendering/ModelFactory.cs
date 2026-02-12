@@ -11,6 +11,7 @@ using BepuPhysics.Collidables;
 using CollisionMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
 using Vortice.Direct3D11;
+using Vortice.WIC;
 
 using TransportX.Diagnostics;
 using TransportX.Physics;
@@ -20,14 +21,16 @@ namespace TransportX.Rendering
 {
     internal class ModelFactory : IDisposable
     {
+        private readonly IWICImagingFactory WICFactory = new();
+
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation? Simulation;
-        private readonly Importing.IModelImporter Importer;
+        private readonly IModelImporter Importer;
         private readonly IErrorCollector ErrorCollector;
 
         public bool IsCollisionSupported => Simulation is not null;
 
-        public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, Importing.IModelImporter importer, IErrorCollector errorCollector)
+        public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, IModelImporter importer, IErrorCollector errorCollector)
         {
             Context = context;
             Simulation = simulation;
@@ -37,6 +40,7 @@ namespace TransportX.Rendering
 
         public void Dispose()
         {
+            WICFactory.Dispose();
             Importer.Dispose();
         }
 
@@ -45,7 +49,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, ErrorCollector);
+            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             return builder.Create(modelData, baseDirectory, visualModelPath);
         }
 
@@ -61,7 +65,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, ErrorCollector);
+            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
 
             Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
@@ -95,7 +99,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, ErrorCollector);
+            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
 
             Simulation!.BufferPool.Take(modelData.Meshes.Sum(mesh => mesh.Vertices.Length), out Buffer<Vector3> pointBuffer);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using Vortice.WIC;
 
 using TransportX.Diagnostics;
 
@@ -21,10 +23,14 @@ namespace TransportX.Rendering.Importing
         private readonly ID3D11DeviceContext Context;
         private readonly IErrorCollector ErrorCollector;
 
-        public ModelBuilder(ID3D11DeviceContext context, IErrorCollector errorCollector)
+        private readonly WICTextureFactory TextureFactory;
+
+        public ModelBuilder(ID3D11DeviceContext context, IWICImagingFactory wicFactory, IErrorCollector errorCollector)
         {
             Context = context;
             ErrorCollector = errorCollector;
+
+            TextureFactory = new WICTextureFactory(Context, wicFactory);
         }
 
         public unsafe Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
@@ -87,29 +93,27 @@ namespace TransportX.Rendering.Importing
                         case TextureReference.TextureType.File:
                         {
                             string filePath = Path.Combine(baseDirectory, textureRef.Key);
-
-                            int hr = NativeMethods.CreateWICTextureFromFile_(Context.Device.NativePointer, Context.NativePointer, filePath, out _, out nint textureView);
-                            if (hr != 0)
+                            try
                             {
-                                Exception? exception = Marshal.GetExceptionForHR(hr);
-                                ModelLoadError error = exception switch
+                                texture = TextureFactory.CreateFromFile(filePath);
+                            }
+                            catch (FileNotFoundException ex)
+                            {
+                                ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
+                                    ErrorLevel.Error, $"テクスチャ '{filePath}' が見つかりません。", filePath)
                                 {
-                                    FileNotFoundException => new ModelLoadError(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
-                                        ErrorLevel.Error, $"テクスチャ '{filePath}' が見つかりません。", filePath)
-                                    {
-                                        Exception = exception,
-                                    },
-                                    _ => new ModelLoadError(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
-                                        ErrorLevel.Error, $"テクスチャ '{filePath}' を読み込めませんでした。", filePath)
-                                    {
-                                        Exception = exception,
-                                    },
+                                    Exception = ex,
                                 };
                                 errorCollector.Report(error);
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                texture = new ID3D11ShaderResourceView(textureView);
+                                ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
+                                    ErrorLevel.Error, $"テクスチャ '{filePath}' を読み込めませんでした。", filePath)
+                                {
+                                    Exception = ex,
+                                };
+                                errorCollector.Report(error);
                             }
                             break;
                         }
@@ -147,45 +151,35 @@ namespace TransportX.Rendering.Importing
 
         private unsafe ID3D11ShaderResourceView LoadEmbeddedTexture(Texture texture)
         {
-            ReadOnlySpan<byte> data = texture.Data.Span;
-            fixed (byte* pData = data)
+            if (texture.IsCompressed)
             {
-                if (texture.IsCompressed)
+                return TextureFactory.CreateFromMemory(texture.Data.Span);
+            }
+            else
+            {
+                using MemoryHandle handle = texture.Data.Pin();
+
+                Texture2DDescription desc = new()
                 {
-                    int hr = NativeMethods.CreateWICTextureFromMemory_(Context.Device.NativePointer, Context.NativePointer, (nint)pData, data.Length, out _, out nint textureView);
-                    if (hr != 0)
-                    {
-                        Marshal.ThrowExceptionForHR(hr);
-                    }
+                    Width = (uint)texture.Width,
+                    Height = (uint)texture.Height,
+                    MipLevels = 0,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Default,
+                    Format = Format.B8G8R8A8_UNorm_SRgb,
+                    BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
+                    CPUAccessFlags = 0,
+                    MiscFlags = ResourceOptionFlags.GenerateMips,
+                };
 
-                    return new ID3D11ShaderResourceView(textureView);
-                }
-                else
-                {
-                    Texture2DDescription desc = new Texture2DDescription()
-                    {
-                        Width = (uint)texture.Width,
-                        Height = (uint)texture.Height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = new SampleDescription(1, 0),
-                        Usage = ResourceUsage.Default,
-                        Format = Format.B8G8R8A8_UNorm,
-                        BindFlags = BindFlags.ShaderResource,
-                        CPUAccessFlags = 0,
-                        MiscFlags = 0,
-                    };
+                ID3D11Texture2D baseTexture = Context.Device.CreateTexture2D(desc);
+                Context.UpdateSubresource(baseTexture, 0, null, (nint)handle.Pointer, (uint)(texture.Width * 4), 0);
 
-                    SubresourceData subresourceData = new SubresourceData()
-                    {
-                        DataPointer = (nint)pData,
-                        RowPitch = (uint)(texture.Width * 4),
-                        SlicePitch = (uint)data.Length,
-                    };
+                ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(baseTexture);
+                Context.GenerateMips(view);
 
-                    ID3D11Texture2D texture2D = Context.Device.CreateTexture2D(desc, subresourceData);
-                    return Context.Device.CreateShaderResourceView(texture2D);
-                }
+                return view;
             }
         }
     }
