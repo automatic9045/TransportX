@@ -25,29 +25,44 @@ namespace TransportX.Rendering
 
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation? Simulation;
-        private readonly IModelImporter Importer;
         private readonly IErrorCollector ErrorCollector;
+
+        private readonly IModelImporter AssimpImporter;
+        private readonly IModelImporter GltfImporter;
 
         public bool IsCollisionSupported => Simulation is not null;
 
-        public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, IModelImporter importer, IErrorCollector errorCollector)
+        public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, IErrorCollector errorCollector)
         {
             Context = context;
             Simulation = simulation;
-            Importer = importer;
             ErrorCollector = errorCollector;
+
+            AssimpImporter = new AssimpImporter(ErrorCollector);
+            GltfImporter = new GltfImporter(ErrorCollector);
         }
 
         public void Dispose()
         {
             WICFactory.Dispose();
-            Importer.Dispose();
+            AssimpImporter.Dispose();
+            GltfImporter.Dispose();
+        }
+
+        private IModelImporter SelectImporter(string modelPath)
+        {
+            string extension = Path.GetExtension(modelPath);
+            return extension switch
+            {
+                ".gltf" or ".glb" => GltfImporter,
+                _ => AssimpImporter,
+            };
         }
 
         public Model Load(string visualModelPath, bool makeLH)
         {
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
+            Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
             ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             return builder.Create(modelData, baseDirectory, visualModelPath);
@@ -63,7 +78,7 @@ namespace TransportX.Rendering
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
+            Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
             ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
@@ -97,7 +112,7 @@ namespace TransportX.Rendering
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
-            Importing.Model modelData = Importer.Import(visualModelPath, true, makeLH);
+            Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
             ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
@@ -134,7 +149,7 @@ namespace TransportX.Rendering
 
             Model baseModel = Load(visualModelPath, makeVisualLH);
 
-            Importing.Model collisionModelData = Importer.Import(collisionModelPath, false, makeCollisionLH);
+            Importing.Model collisionModelData = SelectImporter(collisionModelPath).Import(collisionModelPath, false, makeCollisionLH);
             Simulation!.BufferPool.Take(collisionModelData.Meshes.Sum(mesh => mesh.Indices.Length / 3), out Buffer<Triangle> triangles);
 
             int i = 0;

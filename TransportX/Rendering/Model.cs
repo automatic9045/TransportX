@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,7 +53,7 @@ namespace TransportX.Rendering
 
         public static Model Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
         {
-            using ModelFactory factory = new(context, null, new AssimpImporter(errorCollector), errorCollector);
+            using ModelFactory factory = new(context, null, errorCollector);
             Model model = factory.Load(visualModelPath, makeLH);
             return model;
         }
@@ -109,7 +109,7 @@ namespace TransportX.Rendering
         public static CollidableModel Load(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
-            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
+            using ModelFactory factory = new(context, simulation, errorCollector);
             CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, makeVisualLH, collisionModelPath, makeCollisionLH, material, isOpen);
             return model;
         }
@@ -117,7 +117,7 @@ namespace TransportX.Rendering
         public static CollidableModel LoadWithBoundingBox(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeLH, ColliderMaterial material)
         {
-            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
+            using ModelFactory factory = new(context, simulation, errorCollector);
             CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, makeLH, material);
             return model;
         }
@@ -125,7 +125,7 @@ namespace TransportX.Rendering
         public static CollidableModel LoadWithConvexHull(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
             string visualModelPath, bool makeLH, ColliderMaterial material)
         {
-            using ModelFactory factory = new(context, simulation, new AssimpImporter(errorCollector), errorCollector);
+            using ModelFactory factory = new(context, simulation, errorCollector);
             CollidableModel model = factory.LoadWithConvexHull(visualModelPath, makeLH, material);
             return model;
         }
