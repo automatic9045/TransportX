@@ -39,7 +39,8 @@ namespace TransportX.Rendering
             set
             {
                 field = value;
-                foreach (IMesh mesh in Meshes) mesh.Material.BaseColor = value;
+                Vector4 linearColor = field.ToLinear();
+                foreach (IMesh mesh in Meshes) mesh.Material.BaseColor = linearColor;
             }
         } = Vector4.One;
 

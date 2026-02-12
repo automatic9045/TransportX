@@ -57,15 +57,17 @@ namespace TransportX.Rendering.Importing
                 {
                     Material materialData = model.Materials[meshData.MaterialIndex];
 
+                    Vector4 linearBaseColor = materialData.BaseColor.ToLinear();
+
                     IErrorCollector textureErrorCollector = IErrorCollector.Default();
                     textureErrorCollector.Reported += (sender, e) =>
                     {
                         Error error = e.Error.ChangeSource(sourceLocation);
                         ErrorCollector.Report(error);
                     };
-
                     List<ID3D11ShaderResourceView> textures = LoadMaterialTextures(materialData, model.EmbeddedTextures, baseDirectory, textureErrorCollector);
-                    material = new(materialData.BaseColor, textures);
+
+                    material = new(linearBaseColor, textures);
                 }
 
                 meshes[i] = Rendering.Mesh.Create(Context.Device, vertices, meshData.Indices, material);

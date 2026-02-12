@@ -19,8 +19,10 @@ namespace TransportX.Network
             get => field;
             set
             {
-                field = SpineMesh.Material.BaseColor = value;
-                WingMesh.Material.BaseColor = new Vector4(value.AsVector3(), value.W * 0.3f);
+                field = value;
+                Vector4 linearColor = field.ToLinear();
+                SpineMesh.Material.BaseColor = linearColor;
+                WingMesh.Material.BaseColor = new Vector4(linearColor.AsVector3(), value.W * 0.3f);
             }
         } = Vector4.One;
 

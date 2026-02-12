@@ -157,8 +157,9 @@ namespace TransportX.Network
             };
             context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
 
-            DebugSpineMaterial!.BaseColor = DebugColor;
-            DebugWingMaterial!.BaseColor = new Vector4(DebugColor.AsVector3(), DebugColor.W * 0.3f);
+            Vector4 linearDebugColor = DebugColor.ToLinear();
+            DebugSpineMaterial!.BaseColor = linearDebugColor;
+            DebugWingMaterial!.BaseColor = new Vector4(linearDebugColor.AsVector3(), DebugColor.W * 0.3f);
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }
     }

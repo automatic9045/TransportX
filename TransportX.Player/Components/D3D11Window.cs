@@ -72,7 +72,7 @@ namespace TransportX.Components
                 BufferCount = 1,
                 Width = (uint)Size.Width,
                 Height = (uint)Size.Height,
-                Format = Format.R8G8B8A8_UNorm,
+                Format = Format.R8G8B8A8_UNorm_SRgb,
                 SampleDescription = new SampleDescription(1, 0),
                 SwapEffect = SwapEffect.Discard,
                 Scaling = Scaling.Stretch,

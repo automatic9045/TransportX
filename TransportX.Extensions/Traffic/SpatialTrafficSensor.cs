@@ -145,7 +145,7 @@ namespace TransportX.Extensions.Traffic
             Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
             Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.Pose.Orientation));
 
-            DebugMesh!.Material.BaseColor = DebugColor;
+            DebugMesh!.Material.BaseColor = DebugColor.ToLinear();
             DebugMesh.SetVector(context.DeviceContext, localDelta);
             DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
         }
