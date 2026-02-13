@@ -17,7 +17,7 @@ namespace TransportX.Traffic
         {
             Vector3 min = new(-participant.Width / 2, 0, -participant.Length);
             Vector3 max = new(participant.Width / 2, participant.Height, 0);
-            return WireframeDebugModel.CreateBoundingBox(device, new Material(Vector4.One, []), min, max);
+            return WireframeDebugModel.CreateBoundingBox(device, Material.Default(), min, max);
         }
     }
 }

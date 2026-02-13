@@ -35,7 +35,7 @@ namespace TransportX.Rendering.Importing
         public Model Import(string path, bool isForVisual, bool makeLH)
         {
             PostProcessSteps steps = PostProcessSteps.JoinIdenticalVertices | PostProcessSteps.Triangulate | PostProcessSteps.SortByPrimitiveType;
-            if (isForVisual) steps |= PostProcessSteps.GenerateNormals;
+            if (isForVisual) steps |= PostProcessSteps.GenerateNormals | PostProcessSteps.CalculateTangentSpace;
 
             if (makeLH)
             {
@@ -45,10 +45,11 @@ namespace TransportX.Rendering.Importing
 
             try
             {
-                byte[] dataf = File.ReadAllBytes(path);
-                using MemoryStream stream = new(dataf);
+                byte[] data = File.ReadAllBytes(path);
+                using MemoryStream stream = new(data);
                 string extension = Path.GetExtension(path).TrimStart('.');
                 Scene scene = Importer.ImportFileFromStream(stream, steps, extension);
+
 
                 Mesh[] meshes = new Mesh[scene.MeshCount];
                 for (int i = 0; i < meshes.Length; i++)
@@ -64,7 +65,8 @@ namespace TransportX.Rendering.Importing
                         indices.AddRange(face.Indices);
                     }
 
-                    Vector3[] normals = assimpMesh.Normals.ToArray();
+                    Vector3[]? normals = isForVisual ? assimpMesh.Normals.ToArray() : null;
+                    Vector3[]? tangents = isForVisual ? assimpMesh.Tangents.ToArray() : null;
 
                     Vector4[]? colors = null;
                     if (assimpMesh.HasVertexColors(0))
@@ -90,92 +92,208 @@ namespace TransportX.Rendering.Importing
                         Vertices = vertices,
                         Indices = indices.ToArray(),
                         Normals = normals,
+                        Tangents = tangents,
                         Colors = colors,
                         TextureCoords = textureCoords,
                         MaterialIndex = assimpMesh.MaterialIndex,
                     };
                 }
 
+
                 Material[] materials = new Material[scene.MaterialCount];
                 for (int i = 0; i < materials.Length; i++)
                 {
                     Assimp.Material assimpMaterial = scene.Materials[i];
 
-                    List<TextureReference> textureRefs = [];
-                    int textureCount = assimpMaterial.GetMaterialTextureCount(TextureType.Diffuse);
-                    for (int j = 0; j < textureCount; j++)
+                    if (isForVisual)
                     {
-                        if (assimpMaterial.GetMaterialTexture(TextureType.Diffuse, j, out TextureSlot slot))
+                        Vector4 baseColor;
+                        float metallic;
+                        float roughness;
+                        Vector3 emissive = Vector3.Zero;
+
+                        TextureReference? baseColorTexture = null;
+                        TextureReference? normalTexture = null;
+                        TextureReference? occlusionTexture = null;
+                        TextureReference? roughnessTexture = null;
+                        TextureReference? metallicTexture = null;
+                        TextureReference? emissiveTexture = null;
+
+                        if (assimpMaterial.IsPBRMaterial)
                         {
-                            if (scene.GetEmbeddedTexture(slot.FilePath) is not null)
+                            if (!assimpMaterial.TryGetBaseColor(out baseColor))
                             {
-                                textureRefs.Add(new TextureReference(TextureReference.TextureType.Embedded, slot.FilePath));
+                                baseColor = assimpMaterial.HasColorDiffuse ? assimpMaterial.ColorDiffuse : Vector4.One;
                             }
-                            else
+
+                            if (!assimpMaterial.TryGetMetallicFactor(out metallic))
                             {
-                                textureRefs.Add(new TextureReference(TextureReference.TextureType.File, slot.FilePath));
+                                metallic = 1;
                             }
+
+                            if (!assimpMaterial.TryGetRoughnessFactor(out roughness))
+                            {
+                                roughness = 1;
+                            }
+
+                            baseColorTexture = assimpMaterial.PBR.HasTextureBaseColor ? CreateTextureRef(assimpMaterial.PBR.TextureBaseColor)
+                                : assimpMaterial.HasTextureDiffuse ? CreateTextureRef(assimpMaterial.TextureDiffuse)
+                                : null;
+
+                            normalTexture = assimpMaterial.PBR.HasTextureNormalCamera ? CreateTextureRef(assimpMaterial.PBR.TextureNormalCamera)
+                                : assimpMaterial.HasTextureNormal ? CreateTextureRef(assimpMaterial.TextureNormal)
+                                : null;
+
+                            roughnessTexture = assimpMaterial.PBR.HasTextureRoughness ? CreateTextureRef(assimpMaterial.PBR.TextureRoughness)
+                                : null;
+
+                            metallicTexture = assimpMaterial.PBR.HasTextureMetalness ? CreateTextureRef(assimpMaterial.PBR.TextureMetalness)
+                                : null;
                         }
-                    }
+                        else
+                        {
+                            baseColor = assimpMaterial.HasColorDiffuse ? assimpMaterial.ColorDiffuse : Vector4.One;
 
-                    materials[i] = new Material()
-                    {
-                        Name = assimpMaterial.Name,
-                        BaseColor = assimpMaterial.ColorDiffuse,
-                        Textures = textureRefs.ToArray(),
-                    };
-                }
+                            metallic = 0;
 
-                Dictionary<string, Texture> embeddedTextures = [];
-                for (int i = 0; i < scene.TextureCount; i++)
-                {
-                    EmbeddedTexture assimpTexture = scene.Textures[i];
+                            roughness = 1;
+                            if (assimpMaterial.HasShininess)
+                            {
+                                if (0 < assimpMaterial.Shininess)
+                                {
+                                    roughness = float.Clamp(1 - (float.Sqrt(assimpMaterial.Shininess) * 0.1f), 0.05f, 1);
+                                }
+                            }
 
-                    byte[] data;
-                    int width = assimpTexture.Width;
-                    int height = assimpTexture.Height;
-                    string formatHint = assimpTexture.CompressedFormatHint;
+                            baseColorTexture = assimpMaterial.HasTextureDiffuse ? CreateTextureRef(assimpMaterial.TextureDiffuse)
+                                : null;
 
-                    if (assimpTexture.IsCompressed)
-                    {
-                        data = assimpTexture.CompressedData;
-                        width = 0;
-                        height = 0;
+                            normalTexture = assimpMaterial.HasTextureNormal ? CreateTextureRef(assimpMaterial.TextureNormal)
+                                : null;
+                        }
+
+                        occlusionTexture = assimpMaterial.HasTextureAmbientOcclusion ? CreateTextureRef(assimpMaterial.TextureAmbientOcclusion)
+                            : null;
+
+                        if (assimpMaterial.HasColorEmissive)
+                        {
+                            emissive = assimpMaterial.ColorEmissive.AsVector3();
+                        }
+
+                        emissiveTexture = assimpMaterial.HasTextureEmissive ? CreateTextureRef(assimpMaterial.TextureEmissive)
+                            : null;
+
+                        materials[i] = new Material()
+                        {
+                            Name = assimpMaterial.Name,
+
+                            BaseColor = baseColor,
+                            Metallic = metallic,
+                            Roughness = roughness,
+                            Emissive = emissive,
+
+                            BaseColorTexture = baseColorTexture,
+                            NormalTexture = normalTexture,
+                            OcclusionTexture = occlusionTexture,
+                            RoughnessTexture = roughnessTexture,
+                            MetallicTexture = metallicTexture,
+                            EmissiveTexture = emissiveTexture,
+                        };
                     }
                     else
                     {
-                        ReadOnlySpan<Texel> texelSpan = assimpTexture.NonCompressedData.AsSpan();
-                        data = MemoryMarshal.AsBytes(texelSpan).ToArray();
-                        formatHint = "argb8888";
-                    }
+                        materials[i] = new Material()
+                        {
+                            Name = assimpMaterial.Name,
 
-                    Texture texture = new Texture()
+                            BaseColor = Vector4.Zero,
+                            Metallic = 0,
+                            Roughness = 0,
+                            Emissive = Vector3.Zero,
+
+                            BaseColorTexture = null,
+                            NormalTexture = null,
+                            OcclusionTexture = null,
+                            RoughnessTexture = null,
+                            MetallicTexture = null,
+                            EmissiveTexture = null,
+                        };
+                    }
+                }
+
+                TextureReference? CreateTextureRef(TextureSlot slot)
+                {
+                    if (string.IsNullOrEmpty(slot.FilePath)) return null;
+
+                    if (scene.GetEmbeddedTexture(slot.FilePath) is not null)
                     {
-                        Key = $"*{i}",
-                        Data = data,
-                        Width = width,
-                        Height = height,
-                        FormatHint = formatHint,
-                    };
-                    embeddedTextures[texture.Key] = texture;
+                        return new TextureReference(TextureReference.TextureType.Embedded, slot.FilePath);
+                    }
+                    else
+                    {
+                        return new TextureReference(TextureReference.TextureType.File, slot.FilePath);
+                    }
+                }
+
+
+                Dictionary<string, Texture> embeddedTextures = [];
+                if (isForVisual)
+                {
+                    for (int i = 0; i < scene.TextureCount; i++)
+                    {
+                        EmbeddedTexture assimpTexture = scene.Textures[i];
+
+                        byte[] textureData;
+                        int width = assimpTexture.Width;
+                        int height = assimpTexture.Height;
+                        string formatHint = assimpTexture.CompressedFormatHint;
+
+                        if (assimpTexture.IsCompressed)
+                        {
+                            textureData = assimpTexture.CompressedData;
+                            width = 0;
+                            height = 0;
+                        }
+                        else
+                        {
+                            ReadOnlySpan<Texel> texelSpan = assimpTexture.NonCompressedData.AsSpan();
+                            textureData = MemoryMarshal.AsBytes(texelSpan).ToArray();
+                            formatHint = "argb8888";
+                        }
+
+                        Texture texture = new()
+                        {
+                            Key = $"*{i}",
+                            Data = textureData,
+                            Width = width,
+                            Height = height,
+                            FormatHint = formatHint,
+                        };
+                        embeddedTextures[texture.Key] = texture;
+
+                        if (!string.IsNullOrEmpty(assimpTexture.Filename) && !embeddedTextures.ContainsKey(assimpTexture.Filename))
+                        {
+                            embeddedTextures[assimpTexture.Filename] = texture;
+                        }
+                    }
                 }
 
                 return new Model(meshes, materials, embeddedTextures);
             }
             catch (FileNotFoundException ex)
             {
-                return ReportError($"3D モデル '{path}' が見つかりませんでした。", ex);
+                return ReportError(ModelLoadError.ErrorSource.Reference, ErrorLevel.Error, $"3D モデル '{path}' が見つかりませんでした。", ex);
             }
             catch (Exception ex)
             {
-                return ReportError($"3D モデル '{path}' を読み込めませんでした。", ex);
+                return ReportError(ModelLoadError.ErrorSource.Reference, ErrorLevel.Error, $"3D モデル '{path}' を読み込めませんでした。", ex);
             }
 
 
-            Model ReportError(string message, Exception exception)
+            Model ReportError(ModelLoadError.ErrorSource source, ErrorLevel level, string message, Exception exception)
             {
                 ModelLoadError.ErrorTarget target = isForVisual ? ModelLoadError.ErrorTarget.Visual : ModelLoadError.ErrorTarget.Collision;
-                ModelLoadError error = new(ModelLoadError.ErrorSource.Reference, target, ErrorLevel.Error, message, path)
+                ModelLoadError error = new(source, target, level, message, path)
                 {
                     Exception = exception,
                 };

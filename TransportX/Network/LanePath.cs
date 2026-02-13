@@ -6,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D;
-using Vortice.Direct3D11;
-using Vortice.Mathematics;
 
 using TransportX.Rendering;
 using TransportX.Traffic;
@@ -139,8 +137,8 @@ namespace TransportX.Network
                     }
                 }
 
-                DebugSpineMaterial = new Material(default, []);
-                DebugWingMaterial = new Material(default, []);
+                DebugSpineMaterial = Material.Default();
+                DebugWingMaterial = Material.Default();
 
                 Mesh spineMesh = Mesh.Create(context.DeviceContext.Device, spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
                 Mesh wingMesh = Mesh.Create(context.DeviceContext.Device, wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);

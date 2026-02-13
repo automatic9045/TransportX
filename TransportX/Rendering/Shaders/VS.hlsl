@@ -10,6 +10,7 @@ struct VS_IN
 {
     float4 Position : POSITION0;
     float4 Normal : NORMAL0;
+    float4 Tangent : TANGENT0;
     float4 Color : COLOR0;
     float2 TexCoord : TEXCOORD;
 };

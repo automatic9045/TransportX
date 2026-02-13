@@ -73,7 +73,7 @@ namespace TransportX.Physics.Colliders
                 indices[iIndex++] = baseIndexXZ + (i + 1) % SegmentCount;
             }
 
-            Material material = new(Vector4.One, []);
+            Material material = Rendering.Material.Default();
             Rendering.Mesh mesh = Rendering.Mesh.Create(device, vertices, indices, material, PrimitiveTopology.LineList);
             return new WireframeDebugModel([mesh]);
         }

@@ -11,16 +11,27 @@ namespace TransportX.Rendering
 {
     public class Material
     {
-        public static readonly Material Default = new(Vector4.One, []);
-
-
-        public Vector4 BaseColor { get; set; }
-        public List<ID3D11ShaderResourceView> Textures { get; }
-
-        public Material(Vector4 baseColor, List<ID3D11ShaderResourceView> textures)
+        public static Material Default() => new()
         {
-            BaseColor = baseColor;
-            Textures = textures;
+            BaseColor = Vector4.One,
+            Metallic = 0,
+            Roughness = 1,
+            Emissive = Vector3.Zero,
+        };
+
+
+        public required Vector4 BaseColor { get; set; }
+        public required float Metallic { get; set; }
+        public required float Roughness { get; set; }
+        public required Vector3 Emissive { get; set; }
+
+        public ID3D11ShaderResourceView? BaseColorTexture { get; set; } = null;
+        public ID3D11ShaderResourceView? NormalTexture { get; set; } = null;
+        public ID3D11ShaderResourceView? ORMTexture { get; set; } = null;
+        public ID3D11ShaderResourceView? EmissiveTexture { get; set; } = null;
+
+        public Material()
+        {
         }
     }
 }

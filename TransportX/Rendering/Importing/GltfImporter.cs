@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using GltfMaterial = SharpGLTF.Schema2.Material;
+using GltfTexture = SharpGLTF.Schema2.Texture;
 
 using TransportX.Diagnostics;
 
@@ -118,41 +119,129 @@ namespace TransportX.Rendering.Importing
                     }
 
 
-                    Vector3[] normals;
-                    if (primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor? normalAccessor))
+                    Vector2[]? textureCoords = null;
+                    if (isForVisual && primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor? texcoordAccessor))
                     {
-                        IAccessorArray<Vector3> rawNormals = normalAccessor.AsVector3Array();
-                        normals = new Vector3[rawNormals.Count];
-                        for (int i = 0; i < vertices.Length; i++)
+                        IAccessorArray<Vector2> rawTextureCoords = texcoordAccessor.AsVector2Array();
+                        textureCoords = rawTextureCoords.ToArray();
+                    }
+
+
+                    Vector3[]? normals = null;
+                    if (isForVisual)
+                    {
+                        if (primitive.VertexAccessors.TryGetValue("NORMAL", out Accessor? normalAccessor))
                         {
-                            Vector3 normal = Vector3.TransformNormal(rawNormals[i], transform);
-                            normal.Z = -normal.Z; // 左手系に変換
-                            normals[i] = normal;
+                            IAccessorArray<Vector3> rawNormals = normalAccessor.AsVector3Array();
+                            normals = new Vector3[rawNormals.Count];
+                            for (int i = 0; i < vertices.Length; i++)
+                            {
+                                Vector3 normal = Vector3.TransformNormal(rawNormals[i], transform);
+                                normal.Z = -normal.Z; // 左手系に変換
+                                normals[i] = normal;
+                            }
+                        }
+                        else
+                        {
+                            normals = new Vector3[vertices.Length];
+
+                            for (int i = 0; i < indices.Length; i += 3)
+                            {
+                                int index0 = indices[i];
+                                int index1 = indices[i + 1];
+                                int index2 = indices[i + 2];
+
+                                Vector3 edge01 = vertices[index1] - vertices[index0];
+                                Vector3 edge02 = vertices[index2] - vertices[index0];
+
+                                Vector3 faceNormal = Vector3.Cross(edge01, edge02);
+
+                                normals[index0] += faceNormal;
+                                normals[index1] += faceNormal;
+                                normals[index2] += faceNormal;
+                            }
+
+                            for (int i = 0; i < normals.Length; i++)
+                            {
+                                normals[i] = 1e-6f < normals[i].LengthSquared() ? Vector3.Normalize(normals[i]) : Vector3.UnitY;
+                            }
                         }
                     }
-                    else
+
+
+                    Vector3[]? tangents = null;
+                    if (isForVisual)
                     {
-                        normals = new Vector3[vertices.Length];
-
-                        for (int i = 0; i < indices.Length; i += 3)
+                        if (primitive.VertexAccessors.TryGetValue("TANGENT", out Accessor? tangentAccessor))
                         {
-                            int index0 = indices[i];
-                            int index1 = indices[i + 1];
-                            int index2 = indices[i + 2];
-
-                            Vector3 edge01 = vertices[index1] - vertices[index0];
-                            Vector3 edge02 = vertices[index2] - vertices[index0];
-
-                            Vector3 faceNormal = Vector3.Cross(edge01, edge02);
-
-                            normals[index0] += faceNormal;
-                            normals[index1] += faceNormal;
-                            normals[index2] += faceNormal;
+                            IAccessorArray<Vector4> rawTangents = tangentAccessor.AsVector4Array();
+                            tangents = new Vector3[rawTangents.Count];
+                            for (int i = 0; i < vertices.Length; i++)
+                            {
+                                Vector3 tangent = Vector3.TransformNormal(rawTangents[i].AsVector3(), transform);
+                                tangent.Z = -tangent.Z; // 左手系に変換
+                                tangents[i] = tangent;
+                            }
                         }
-
-                        for (int i = 0; i < normals.Length; i++)
+                        else
                         {
-                            normals[i] = 1e-6f < normals[i].LengthSquared() ? Vector3.Normalize(normals[i]) : Vector3.UnitY;
+                            tangents = new Vector3[vertices.Length];
+
+                            if (textureCoords is null)
+                            {
+                                Array.Fill(tangents, Vector3.UnitX);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < indices.Length; i += 3)
+                                {
+                                    int index0 = indices[i];
+                                    int index1 = indices[i + 1];
+                                    int index2 = indices[i + 2];
+
+                                    Vector3 vertex0 = vertices[index0];
+                                    Vector3 vertex1 = vertices[index1];
+                                    Vector3 vertex2 = vertices[index2];
+
+                                    Vector3 edge01 = vertex1 - vertex0;
+                                    Vector3 edge02 = vertex2 - vertex0;
+
+                                    Vector2 uv0 = textureCoords[index0];
+                                    Vector2 uv1 = textureCoords[index1];
+                                    Vector2 uv2 = textureCoords[index2];
+
+                                    Vector2 uvEdge01 = uv1 - uv0;
+                                    Vector2 uvEdge02 = uv2 - uv0;
+
+                                    float r = 1 / (uvEdge01.X * uvEdge02.Y - uvEdge02.X * uvEdge01.Y);
+                                    if (float.IsNaN(r) || float.IsInfinity(r)) r = 1;
+
+                                    Vector3 uDirection = new Vector3(
+                                        uvEdge02.Y * edge01.X - uvEdge01.Y * edge02.X,
+                                        uvEdge02.Y * edge01.Y - uvEdge01.Y * edge02.Y,
+                                        uvEdge02.Y * edge01.Z - uvEdge01.Y * edge02.Z) * r;
+
+                                    tangents[index0] += uDirection;
+                                    tangents[index1] += uDirection;
+                                    tangents[index2] += uDirection;
+                                }
+
+                                for (int i = 0; i < tangents.Length; i++)
+                                {
+                                    Vector3 n = normals![i];
+                                    Vector3 t = tangents[i];
+
+                                    Vector3 tangent = t - n * Vector3.Dot(n, t);
+                                    if (tangent.LengthSquared() < 1e-6f)
+                                    {
+                                        tangents[i] = Vector3.UnitX;
+                                    }
+                                    else
+                                    {
+                                        tangents[i] = Vector3.Normalize(tangent);
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -169,24 +258,13 @@ namespace TransportX.Rendering.Importing
                     }
 
 
-                    Vector2[]? textureCoords = null;
-                    if (isForVisual && primitive.VertexAccessors.TryGetValue("TEXCOORD_0", out Accessor? texcoordAccessor))
-                    {
-                        IAccessorArray<Vector2> rawTextureCoords = texcoordAccessor.AsVector2Array();
-                        textureCoords = new Vector2[rawTextureCoords.Count];
-                        for (int i = 0; i < textureCoords.Length; i++)
-                        {
-                            textureCoords[i] = new Vector2(rawTextureCoords[i].X, rawTextureCoords[i].Y); // UV 反転
-                        }
-                    }
-
-
                     return new Mesh()
                     {
                         Name = nodeName ?? primitive.LogicalParent.Name,
                         Vertices = vertices,
                         Indices = indices,
                         Normals = normals,
+                        Tangents = tangents,
                         Colors = colors,
                         TextureCoords = textureCoords,
                         MaterialIndex = primitive.Material?.LogicalIndex ?? -1,
@@ -199,55 +277,129 @@ namespace TransportX.Rendering.Importing
                 {
                     GltfMaterial gltfMaterial = modelRoot.LogicalMaterials[i];
 
-                    Vector4 baseColor = Vector4.One;
-                    MaterialChannel? pbr = gltfMaterial.FindChannel("BaseColor");
-                    if (pbr.HasValue)
+                    if (isForVisual)
                     {
-                        baseColor = (Vector4)pbr.Value.Parameters[0].Value;
+                        Vector4 baseColor = Vector4.One;
+                        TextureReference? baseColorTexture = null;
+                        MaterialChannel? baseColorChannel = gltfMaterial.FindChannel("BaseColor");
+                        if (baseColorChannel.HasValue)
+                        {
+                            baseColor = (Vector4)baseColorChannel.Value.Parameters[0].Value;
+                            baseColorTexture = CreateTextureRef(baseColorChannel.Value.Texture);
+                        }
+
+                        TextureReference? occlusionTexture = null;
+                        MaterialChannel? occlusionChannel = gltfMaterial.FindChannel("Occlusion");
+                        if (occlusionChannel.HasValue)
+                        {
+                            occlusionTexture = CreateTextureRef(occlusionChannel.Value.Texture);
+                        }
+
+                        float metallic = 1;
+                        float roughness = 1;
+                        TextureReference? metallicRoughnessTexture = null;
+                        MaterialChannel? metallicRoughnessChannel = gltfMaterial.FindChannel("MetallicRoughness");
+                        if (metallicRoughnessChannel.HasValue)
+                        {
+                            metallic = (float)metallicRoughnessChannel.Value.Parameters[0].Value;
+                            roughness = (float)metallicRoughnessChannel.Value.Parameters[1].Value;
+                            metallicRoughnessTexture = CreateTextureRef(metallicRoughnessChannel.Value.Texture);
+                        }
+
+                        TextureReference? normalTexture = null;
+                        MaterialChannel? normalChannel = gltfMaterial.FindChannel("Normal");
+                        if (normalChannel.HasValue)
+                        {
+                            normalTexture = CreateTextureRef(normalChannel.Value.Texture);
+                        }
+
+                        Vector3 emissive = Vector3.Zero;
+                        TextureReference? emissiveTexture = null;
+                        MaterialChannel? emissiveChannel = gltfMaterial.FindChannel("Emissive");
+                        if (emissiveChannel.HasValue)
+                        {
+                            emissive = (Vector3)emissiveChannel.Value.Parameters[0].Value;
+                            emissiveTexture = CreateTextureRef(emissiveChannel.Value.Texture);
+                        }
+
+                        materials[i] = new Material()
+                        {
+                            Name = gltfMaterial.Name,
+
+                            BaseColor = baseColor,
+                            Roughness = roughness,
+                            Metallic = metallic,
+                            Emissive = emissive,
+
+                            BaseColorTexture = baseColorTexture,
+                            NormalTexture = normalTexture,
+                            OcclusionTexture = occlusionTexture,
+                            RoughnessTexture = metallicRoughnessTexture,
+                            MetallicTexture = metallicRoughnessTexture,
+                            EmissiveTexture = emissiveTexture,
+                        };
+                    }
+                    else
+                    {
+                        materials[i] = new Material()
+                        {
+                            Name = gltfMaterial.Name,
+
+                            BaseColor = Vector4.Zero,
+                            Metallic = 0,
+                            Roughness = 0,
+                            Emissive = Vector3.Zero,
+
+                            BaseColorTexture = null,
+                            NormalTexture = null,
+                            OcclusionTexture = null,
+                            RoughnessTexture = null,
+                            MetallicTexture = null,
+                            EmissiveTexture = null,
+                        };
+                    }
+                }
+
+                TextureReference? CreateTextureRef(GltfTexture? texture)
+                {
+                    if (texture is null) return null;
+
+                    Image image = texture.PrimaryImage;
+                    if (image.Content.IsEmpty)
+                    {
+                        if (!string.IsNullOrEmpty(image.Content.SourcePath))
+                        {
+                            return new TextureReference(TextureReference.TextureType.File, image.Content.SourcePath);
+                        }
+                    }
+                    else
+                    {
+                        return new TextureReference(TextureReference.TextureType.Embedded, $"*{image.LogicalIndex}");
                     }
 
-                    List<TextureReference> textureRefs = [];
-                    if (pbr.HasValue && pbr.Value.Texture is not null)
-                    {
-                        Image gltfImage = pbr.Value.Texture.PrimaryImage;
-                        if (gltfImage.Content.IsEmpty)
-                        {
-                            if (gltfImage.Content.SourcePath != string.Empty)
-                            {
-                                textureRefs.Add(new TextureReference(TextureReference.TextureType.File, gltfImage.Content.SourcePath));
-                            }
-                        }
-                        else
-                        {
-                            textureRefs.Add(new TextureReference(TextureReference.TextureType.Embedded, $"*{gltfImage.LogicalIndex}"));
-                        }
-                    }
-
-                    materials[i] = new Material()
-                    {
-                        Name = gltfMaterial.Name,
-                        BaseColor = baseColor,
-                        Textures = textureRefs.ToArray(),
-                    };
+                    return null;
                 }
 
 
                 Dictionary<string, Texture> embeddedTextures = [];
-                foreach (Image gltfImage in modelRoot.LogicalImages)
+                if (isForVisual)
                 {
-                    if (gltfImage.Content.IsEmpty) continue;
-
-                    string key = $"*{gltfImage.LogicalIndex}";
-
-                    Texture texture = new()
+                    foreach (Image gltfImage in modelRoot.LogicalImages)
                     {
-                        Key = key,
-                        Data = gltfImage.Content.Content,
-                        Width = 0,
-                        Height = 0,
-                        FormatHint = gltfImage.Content.FileExtension,
-                    };
-                    embeddedTextures[key] = texture;
+                        if (gltfImage.Content.IsEmpty) continue;
+
+                        string key = $"*{gltfImage.LogicalIndex}";
+
+                        Texture texture = new()
+                        {
+                            Key = key,
+                            Data = gltfImage.Content.Content,
+                            Width = 0,
+                            Height = 0,
+                            FormatHint = gltfImage.Content.FileExtension,
+                        };
+                        embeddedTextures[key] = texture;
+                    }
                 }
 
 

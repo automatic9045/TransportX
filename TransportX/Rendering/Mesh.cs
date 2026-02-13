@@ -100,11 +100,11 @@ namespace TransportX.Rendering
             PixelConstantBuffer pixelBuffer = new()
             {
                 BaseColor = Material.BaseColor,
-                HasTexture = Material.Textures.Count,
+                HasTexture = Material.BaseColorTexture is not null ? 1 : 0,
             };
             context.DeviceContext.UpdateSubresource(pixelBuffer, context.PixelConstantBuffer);
 
-            context.DeviceContext.PSSetShaderResource(0, 0 < Material.Textures.Count ? Material.Textures[0] : null!);
+            context.DeviceContext.PSSetShaderResource(0, Material.BaseColorTexture!);
 
             context.DeviceContext.DrawIndexed(IndexBuffer.Description.ByteWidth / sizeof(uint), 0, 0);
         }
