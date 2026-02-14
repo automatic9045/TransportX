@@ -35,7 +35,7 @@ namespace TransportX
             }
 
             TimeSpan dt = elapsed - LastElapsed;
-            DeltaTime = dt == TimeSpan.Zero ? EpsilonTime : dt < LimitDeltaTime ? dt : LimitDeltaTime;
+            DeltaTime = dt < EpsilonTime ? EpsilonTime : dt < LimitDeltaTime ? dt : LimitDeltaTime;
             LastElapsed = elapsed;
 
             Elapsed.TryPeek(out TimeSpan firstElapsed);
