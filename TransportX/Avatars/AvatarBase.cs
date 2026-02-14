@@ -96,16 +96,15 @@ namespace TransportX.Avatars
 
             if (context.Pass == RenderPass.Traffic)
             {
-                VertexConstantBuffer vertexBuffer = new()
+                TransformBuffer transformData = new()
                 {
                     World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                     View = Matrix4x4.Transpose(context.View),
                     Projection = Matrix4x4.Transpose(context.Projection),
-                    Light = context.Light.AsVector4(),
                 };
-                context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+                context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
 
-                DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+                DebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
             }
         }
     }

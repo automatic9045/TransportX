@@ -12,20 +12,15 @@ namespace TransportX.Rendering
 {
     public readonly struct CameraDrawContext
     {
-        public ID3D11DeviceContext DeviceContext { get; }
-        public ID3D11Buffer VertexConstantBuffer { get; }
-        public ID3D11Buffer PixelConstantBuffer { get; }
-        public Size ClientSize { get; }
-        public Vector3 Light { get; }
+        public required ID3D11DeviceContext DeviceContext { get; init; }
+        public required ID3D11PixelShader PixelShader { get; init; }
+        public required ID3D11PixelShader DebugPixelShader { get; init; }
+        public required ID3D11Buffer TransformBuffer { get; init; }
+        public required ID3D11Buffer MaterialBuffer { get; init; }
+        public required Size ClientSize { get; init; }
 
-        public CameraDrawContext(ID3D11DeviceContext deviceContext,
-            ID3D11Buffer vertexConstantBuffer, ID3D11Buffer pixelConstantBuffer, Size clientSize, Vector3 light)
+        public CameraDrawContext()
         {
-            DeviceContext = deviceContext;
-            VertexConstantBuffer = vertexConstantBuffer;
-            PixelConstantBuffer = pixelConstantBuffer;
-            ClientSize = clientSize;
-            Light = light;
         }
     }
 }

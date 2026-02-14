@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
 using SharpGen.Runtime;
 using Vortice.D3DCompiler;
 using Vortice.Direct3D;
@@ -23,10 +25,18 @@ namespace TransportX.Rendering
             {
                 string source = sr.ReadToEnd();
 
-                Result result = Compiler.Compile(source, entryPoint, sourceName, profile, out Blob blob, out _);
+                Result result = Compiler.Compile(source, entryPoint, sourceName, profile, out Blob? blob, out Blob? errorBlob);
                 if (result.Failure)
                 {
-                    throw new Exception(result.Description);
+                    if (errorBlob is null)
+                    {
+                        throw new Exception(result.Description);
+                    }
+                    else
+                    {
+                        string errorMessage = Marshal.PtrToStringAnsi(errorBlob.BufferPointer)!;
+                        throw new Exception(errorMessage);
+                    }
                 }
 
                 return blob;

@@ -97,15 +97,15 @@ namespace TransportX.Spatial
                 {
                     if (Model.ColliderDebugModel is null) return;
 
-                    VertexConstantBuffer vertexBuffer = new()
+                    TransformBuffer transformData = new()
                     {
                         World = Matrix4x4.Transpose(Body.Pose.ToPose().ToMatrix4x4()),
                         View = Matrix4x4.Transpose(context.View),
                         Projection = Matrix4x4.Transpose(context.Projection),
                     };
-                    context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+                    context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
 
-                    Model.ColliderDebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+                    Model.ColliderDebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
                     break;
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ namespace TransportX.Rendering
 {
     public class Mesh : IMesh
     {
+        private readonly ID3D11ShaderResourceView?[] TextureViews;
+
         public ID3D11Buffer VertexBuffer { get; }
         public ID3D11Buffer IndexBuffer { get; }
         public Material Material { get; }
@@ -43,6 +46,13 @@ namespace TransportX.Rendering
             IndexBuffer = indexBuffer;
             Material = material;
             Topology = topology;
+
+            TextureViews = [
+                Material.BaseColorTexture,
+                Material.NormalTexture,
+                Material.ORMTexture,
+                Material.EmissiveTexture
+            ];
         }
 
         public static Mesh Create(ID3D11Device device, Vertex[] vertices, int[] indices, Material material,
@@ -97,16 +107,26 @@ namespace TransportX.Rendering
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
             context.DeviceContext.IASetPrimitiveTopology(Topology);
 
-            PixelConstantBuffer pixelBuffer = new()
+            MaterialBuffer materialData = new()
             {
                 BaseColor = Material.BaseColor,
-                HasTexture = Material.BaseColorTexture is not null ? 1 : 0,
-            };
-            context.DeviceContext.UpdateSubresource(pixelBuffer, context.PixelConstantBuffer);
+                Emissive = Material.Emissive,
+                Roughness = Material.Roughness,
+                Metallic = Material.Metallic,
 
-            context.DeviceContext.PSSetShaderResource(0, Material.BaseColorTexture!);
+                HasBaseTexture = BoolToInt32(Material.BaseColorTexture is not null),
+                HasNormalTexture = BoolToInt32(Material.NormalTexture is not null),
+                HasORMTexture = BoolToInt32(Material.ORMTexture is not null),
+                HasEmissiveTexture = BoolToInt32(Material.EmissiveTexture is not null),
+            };
+            context.DeviceContext.UpdateSubresource(materialData, context.MaterialBuffer);
+
+            context.DeviceContext.PSSetShaderResources(0, TextureViews!);
 
             context.DeviceContext.DrawIndexed(IndexBuffer.Description.ByteWidth / sizeof(uint), 0, 0);
+
+
+            int BoolToInt32(bool value) => value ? 1 : 0;
         }
     }
 }

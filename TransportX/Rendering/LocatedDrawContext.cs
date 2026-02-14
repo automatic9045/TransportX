@@ -14,12 +14,11 @@ namespace TransportX.Rendering
     public readonly struct LocatedDrawContext
     {
         public required ID3D11DeviceContext DeviceContext { get; init; }
-        public required ID3D11Buffer VertexConstantBuffer { get; init; }
-        public required ID3D11Buffer PixelConstantBuffer { get; init; }
+        public required ID3D11Buffer TransformBuffer { get; init; }
+        public required ID3D11Buffer MaterialBuffer { get; init; }
         public required PlateOffset PlateOffset { get; init; }
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
-        public Vector3 Light { get; init; } = Vector3.Zero;
         public RenderPass Pass { get; init; } = RenderPass.Normal;
 
         public LocatedDrawContext()

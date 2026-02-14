@@ -47,9 +47,9 @@ namespace TransportX.Rendering.Importing
                     vertices[j] = new Vertex()
                     {
                         Position = meshData.Vertices[j],
+                        Color = (meshData.Colors is null ? Vector4.One : meshData.Colors[j]).ToLinear(),
                         Normal = meshData.Normals is null ? throw new ArgumentException("法線情報が定義されていません。", nameof(model)) : meshData.Normals[j],
                         Tangent = meshData.Tangents is null ? throw new ArgumentException("接線情報が定義されていません。", nameof(model)) : meshData.Tangents[j],
-                        Color = (meshData.Colors is null ? Vector4.One : meshData.Colors[j]).ToLinear(),
                         TextureCoord = meshData.TextureCoords is null ? default : meshData.TextureCoords[j],
                     };
                 }

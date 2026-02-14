@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Rendering\Shaders\DebugPS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\VS.hlsl" />
   </ItemGroup>

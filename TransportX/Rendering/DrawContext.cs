@@ -11,14 +11,14 @@ namespace TransportX.Rendering
     public readonly struct DrawContext
     {
         public ID3D11DeviceContext DeviceContext { get; }
-        public ID3D11Buffer VertexConstantBuffer { get; }
-        public ID3D11Buffer PixelConstantBuffer { get; }
+        public ID3D11Buffer TransformBuffer { get; }
+        public ID3D11Buffer MaterialBuffer { get; }
 
-        public DrawContext(ID3D11DeviceContext deviceContext, ID3D11Buffer vertexConstantBuffer, ID3D11Buffer pixelConstantBuffer)
+        public DrawContext(ID3D11DeviceContext deviceContext, ID3D11Buffer transformBuffer, ID3D11Buffer materialBuffer)
         {
             DeviceContext = deviceContext;
-            VertexConstantBuffer = vertexConstantBuffer;
-            PixelConstantBuffer = pixelConstantBuffer;
+            TransformBuffer = transformBuffer;
+            MaterialBuffer = materialBuffer;
         }
     }
 }

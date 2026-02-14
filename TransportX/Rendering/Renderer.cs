@@ -16,7 +16,7 @@ namespace TransportX.Rendering
 {
     public class Renderer : IDisposable
     {
-        protected static readonly Vector3 Light = Vector3.Normalize(new Vector3(-1, -6, 2));
+        protected static readonly Vector3 RayDirection = Vector3.Normalize(new Vector3(-1, -6, 2));
 
 
         protected readonly IDXHost DXHost;
@@ -24,9 +24,11 @@ namespace TransportX.Rendering
 
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
+        protected readonly ID3D11PixelShader DebugPixelShader;
         protected readonly ID3D11InputLayout InputLayout;
-        protected readonly ID3D11Buffer VertexConstantBuffer;
-        protected readonly ID3D11Buffer PixelConstantBuffer;
+        protected readonly ID3D11Buffer TransformBuffer;
+        protected readonly ID3D11Buffer MaterialBuffer;
+        protected readonly ID3D11Buffer SceneBuffer;
         protected readonly ID3D11SamplerState TextureSamplerState;
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
@@ -41,9 +43,9 @@ namespace TransportX.Rendering
 
             InputElementDescription[] elements = [
                 new InputElementDescription("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
                 new InputElementDescription("NORMAL", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
                 new InputElementDescription("TANGENT", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
                 new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
             ];
 
@@ -52,25 +54,37 @@ namespace TransportX.Rendering
             Blob psBlob = ShaderFactory.CompileFromResource(DXHost.Device, "PS.hlsl", "main", "PS", "ps_5_0");
             PixelShader = DXHost.Device.CreatePixelShader(psBlob);
 
-            BufferDescription vertexBufferDesc = new BufferDescription()
+            Blob debugPsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
+            DebugPixelShader = DXHost.Device.CreatePixelShader(debugPsBlob);
+
+            BufferDescription transformBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.VertexConstantBuffer.Size,
+                ByteWidth = (uint)Rendering.TransformBuffer.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
-            VertexConstantBuffer = DXHost.Device.CreateBuffer(vertexBufferDesc);
+            TransformBuffer = DXHost.Device.CreateBuffer(transformBufferDesc);
 
-            BufferDescription pixelBufferDesc = new BufferDescription()
+            BufferDescription materialBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.PixelConstantBuffer.Size,
+                ByteWidth = (uint)Rendering.MaterialBuffer.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
-            PixelConstantBuffer = DXHost.Device.CreateBuffer(pixelBufferDesc);
+            MaterialBuffer = DXHost.Device.CreateBuffer(materialBufferDesc);
 
-            SamplerDescription samplerDesc = new SamplerDescription()
+            BufferDescription sceneBufferDesc = new()
+            {
+                Usage = ResourceUsage.Default,
+                ByteWidth = (uint)Rendering.SceneBuffer.Size,
+                BindFlags = BindFlags.ConstantBuffer,
+                CPUAccessFlags = 0,
+            };
+            SceneBuffer = DXHost.Device.CreateBuffer(sceneBufferDesc);
+
+            SamplerDescription samplerDesc = new()
             {
                 Filter = Filter.Anisotropic,
                 AddressU = TextureAddressMode.Wrap,
@@ -80,7 +94,6 @@ namespace TransportX.Rendering
                 MinLOD = 0,
                 MaxLOD = 2,
             };
-
             TextureSamplerState = DXHost.Device.CreateSamplerState(samplerDesc);
 
             RasterizerDescription rasterizerDesc = new RasterizerDescription()
@@ -123,9 +136,11 @@ namespace TransportX.Rendering
         {
             VertexShader.Dispose();
             PixelShader.Dispose();
+            DebugPixelShader.Dispose();
             InputLayout.Dispose();
-            VertexConstantBuffer.Dispose();
-            PixelConstantBuffer.Dispose();
+            TransformBuffer.Dispose();
+            MaterialBuffer.Dispose();
+            SceneBuffer.Dispose();
             TextureSamplerState.Dispose();
             RasterizerState.Dispose();
             BlendState.Dispose();
@@ -143,16 +158,33 @@ namespace TransportX.Rendering
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);
-            DXHost.Context.VSSetConstantBuffer(0, VertexConstantBuffer);
-            DXHost.Context.PSSetShader(PixelShader);
-            DXHost.Context.PSSetConstantBuffer(0, PixelConstantBuffer);
+            DXHost.Context.VSSetConstantBuffer(0, TransformBuffer);
+
+            DXHost.Context.PSSetConstantBuffer(0, MaterialBuffer);
+            DXHost.Context.PSSetConstantBuffer(1, SceneBuffer);
+
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
-            CameraDrawContext cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Vector3.Zero);
+            SceneBuffer sceneData = new()
+            {
+                ToLight = -RayDirection,
+                CameraPosition = camera.Pose.Position,
+            };
+            DXHost.Context.UpdateSubresource(sceneData, SceneBuffer);
+
+            CameraDrawContext cameraContext = new()
+            {
+                DeviceContext = DXHost.Context,
+                PixelShader = PixelShader,
+                DebugPixelShader = DebugPixelShader,
+                TransformBuffer = TransformBuffer,
+                MaterialBuffer = MaterialBuffer,
+                ClientSize = size,
+            };
+
             camera.DrawBackground(cameraContext, world.BackgroundModels);
             DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            cameraContext = new(DXHost.Context, VertexConstantBuffer, PixelConstantBuffer, size, Light);
             camera.DrawPlates(cameraContext, world.Plates);
             camera.DrawBodies(cameraContext, world.Bodies);
         }

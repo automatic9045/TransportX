@@ -146,19 +146,18 @@ namespace TransportX.Network
                 DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
             }
 
-            VertexConstantBuffer vertexBuffer = new()
+            TransformBuffer transformData = new()
             {
                 World = Matrix4x4.Transpose((Owner.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
-                Light = context.Light.AsVector4(),
             };
-            context.DeviceContext.UpdateSubresource(vertexBuffer, context.VertexConstantBuffer);
+            context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
 
             Vector4 linearDebugColor = DebugColor.ToLinear();
             DebugSpineMaterial!.BaseColor = linearDebugColor;
             DebugWingMaterial!.BaseColor = new Vector4(linearDebugColor.AsVector3(), DebugColor.W * 0.3f);
-            DebugModel.Draw(new(context.DeviceContext, context.VertexConstantBuffer, context.PixelConstantBuffer));
+            DebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
         }
     }
 }

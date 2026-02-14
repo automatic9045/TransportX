@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using GdiSize = System.Drawing.Size;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
 using Vortice.Mathematics;
 using Vortice.XAudio2;
-
-using GdiSize = System.Drawing.Size;
 
 using TransportX.Bodies;
 using TransportX.Spatial;
@@ -19,7 +19,7 @@ namespace TransportX.Rendering
     {
         private Matrix4x4 View = default;
 
-        public int DrawPlateCount { get; set; } = 2;
+        public int DrawPlateCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
@@ -47,15 +47,16 @@ namespace TransportX.Rendering
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
+            SetPixelShader(context, RenderPass.Normal);
+
             LocatedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
-                VertexConstantBuffer = context.VertexConstantBuffer,
-                PixelConstantBuffer = context.PixelConstantBuffer,
+                TransformBuffer = context.TransformBuffer,
+                MaterialBuffer = context.MaterialBuffer,
                 PlateOffset = PlateOffset.Identity,
                 View = View,
                 Projection = CreateProjection(context.ClientSize),
-                Light = context.Light,
             };
 
             foreach (LocatedModel model in models)
@@ -76,6 +77,8 @@ namespace TransportX.Rendering
 
             void Draw(RenderPass pass)
             {
+                SetPixelShader(context, pass);
+
                 for (int i = DrawPlateCount - 1; 0 <= i; i--)
                 {
                     for (int x = PlateX - i; x <= PlateX + i; x++)
@@ -88,12 +91,11 @@ namespace TransportX.Rendering
                                 LocatedDrawContext drawContext = new()
                                 {
                                     DeviceContext = context.DeviceContext,
-                                    VertexConstantBuffer = context.VertexConstantBuffer,
-                                    PixelConstantBuffer = context.PixelConstantBuffer,
+                                    TransformBuffer = context.TransformBuffer,
+                                    MaterialBuffer = context.MaterialBuffer,
                                     PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
                                     View = View,
                                     Projection = projection,
-                                    Light = context.Light,
                                     Pass = pass,
                                 };
                                 plate!.Draw(drawContext);
@@ -113,17 +115,17 @@ namespace TransportX.Rendering
                 LocatedDrawContext drawContext = new()
                 {
                     DeviceContext = context.DeviceContext,
-                    VertexConstantBuffer = context.VertexConstantBuffer,
-                    PixelConstantBuffer = context.PixelConstantBuffer,
+                    TransformBuffer = context.TransformBuffer,
+                    MaterialBuffer = context.MaterialBuffer,
                     PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
                     View = View,
                     Projection = projection,
-                    Light = context.Light,
                     Pass = RenderPass.Normal,
                 };
 
                 if (VisibleLayers.HasFlag(VisualLayers.Normal))
                 {
+                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
 
@@ -133,6 +135,7 @@ namespace TransportX.Rendering
                     {
                         Pass = RenderPass.Colliders,
                     };
+                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
 
@@ -142,6 +145,7 @@ namespace TransportX.Rendering
                     {
                         Pass = RenderPass.Traffic,
                     };
+                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
             }
@@ -152,6 +156,12 @@ namespace TransportX.Rendering
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
             return projection;
+        }
+
+        protected void SetPixelShader(in CameraDrawContext context, RenderPass pass)
+        {
+            ID3D11PixelShader shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
+            context.DeviceContext.PSSetShader(shader);
         }
 
 

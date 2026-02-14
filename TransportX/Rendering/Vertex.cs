@@ -15,9 +15,9 @@ namespace TransportX.Rendering
 
 
         public Vector3 Position;
+        public Vector4 Color;
         public Vector3 Normal;
         public Vector3 Tangent;
-        public Vector4 Color;
         public Vector2 TextureCoord;
         public float Padding;
 
