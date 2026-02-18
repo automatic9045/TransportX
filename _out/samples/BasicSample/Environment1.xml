@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<EnvironmentProfile DiffuseTexturePath="hello">
+    <DiffuseTexturePath>Models\IBL\DiffuseHDR.dds</DiffuseTexturePath>
+    <SpecularTexturePath>Models\IBL\SpecularHDR.dds</SpecularTexturePath>
+    <Intensity>0.4</Intensity>
+    <Saturation>0.3</Saturation>
+</EnvironmentProfile>

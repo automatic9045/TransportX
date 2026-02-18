@@ -60,6 +60,8 @@ tJunction.PutStructure("RoadDeadEnd1", 0, 0, 0);
 
 Background.Add("Background");
 
+Environment.SetDefault("Environment1.xml");
+
 Plates[-1, 0].PutStructure("Grass", 0, -0.01, 0);
 Plates[0, 0].PutStructure("Grass", 0, -0.01, 0);
 Plates[-1, 1].PutStructure("Grass", 0, -0.01, 0);
