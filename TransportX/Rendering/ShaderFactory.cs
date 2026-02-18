@@ -18,29 +18,33 @@ namespace TransportX.Rendering
     {
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
 
+        public static Stream? GetShaderStream(string name)
+        {
+            return Assembly.GetManifestResourceStream(typeof(ShaderFactory), $"Shaders.{name}");
+        }
+
         public static Blob CompileFromResource(ID3D11Device device, string fileName, string entryPoint, string sourceName, string profile)
         {
-            using (Stream s = Assembly.GetManifestResourceStream(typeof(ShaderFactory), $"Shaders.{fileName}")!)
-            using (StreamReader sr = new StreamReader(s))
+            using Stream s = GetShaderStream(fileName)!;
+            using StreamReader sr = new(s);
+
+            string source = sr.ReadToEnd();
+
+            Result result = Compiler.Compile(source, entryPoint, sourceName, profile, out Blob? blob, out Blob? errorBlob);
+            if (result.Failure)
             {
-                string source = sr.ReadToEnd();
-
-                Result result = Compiler.Compile(source, entryPoint, sourceName, profile, out Blob? blob, out Blob? errorBlob);
-                if (result.Failure)
+                if (errorBlob is null)
                 {
-                    if (errorBlob is null)
-                    {
-                        throw new Exception(result.Description);
-                    }
-                    else
-                    {
-                        string errorMessage = Marshal.PtrToStringAnsi(errorBlob.BufferPointer)!;
-                        throw new Exception(errorMessage);
-                    }
+                    throw new Exception(result.Description);
                 }
-
-                return blob;
+                else
+                {
+                    string errorMessage = Marshal.PtrToStringAnsi(errorBlob.BufferPointer)!;
+                    throw new Exception(errorMessage);
+                }
             }
+
+            return blob;
         }
     }
 }

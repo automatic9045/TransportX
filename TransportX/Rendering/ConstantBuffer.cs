@@ -47,15 +47,31 @@ namespace TransportX.Rendering
 
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct EnvironmentBuffer
+    {
+        internal static readonly int Size = Marshal.SizeOf<EnvironmentBuffer>();
+
+
+        public Vector3 LightDirection = Vector3.Zero;
+        public float LightIntensity = 1;
+        public float IBLIntensity = 1;
+        public float IBLSaturation = 1;
+        public Vector2 Padding;
+
+        public EnvironmentBuffer()
+        {
+        }
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct SceneBuffer
     {
         internal static readonly int Size = Marshal.SizeOf<SceneBuffer>();
 
 
-        public Vector3 ToLight = Vector3.Zero;
-        public float Padding1;
         public Vector3 CameraPosition = Vector3.Zero;
-        public float Padding2;
+        public float Padding;
 
         public SceneBuffer()
         {

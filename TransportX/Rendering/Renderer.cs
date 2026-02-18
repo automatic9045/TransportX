@@ -16,22 +16,29 @@ namespace TransportX.Rendering
 {
     public class Renderer : IDisposable
     {
-        protected static readonly Vector3 RayDirection = Vector3.Normalize(new Vector3(-1, -6, 2));
+        protected static readonly Vector3 LightDirection = Vector3.Normalize(new Vector3(-1, -6, -2));
 
 
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
 
         protected readonly ID3D11VertexShader VertexShader;
+        protected readonly ID3D11InputLayout InputLayout;
+
         protected readonly ID3D11PixelShader PixelShader;
         protected readonly ID3D11PixelShader DebugPixelShader;
-        protected readonly ID3D11InputLayout InputLayout;
+
         protected readonly ID3D11Buffer TransformBuffer;
         protected readonly ID3D11Buffer MaterialBuffer;
+        protected readonly ID3D11Buffer EnvironmentBuffer;
         protected readonly ID3D11Buffer SceneBuffer;
+
         protected readonly ID3D11SamplerState TextureSamplerState;
+        protected readonly ID3D11SamplerState BrdfSamplerState;
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
+
+        private readonly ID3D11ShaderResourceView BrdfLutTexture;
 
         public Renderer(IDXHost dxHost, IDXClient dxClient)
         {
@@ -75,6 +82,15 @@ namespace TransportX.Rendering
             };
             MaterialBuffer = DXHost.Device.CreateBuffer(materialBufferDesc);
 
+            BufferDescription environmentBufferDesc = new()
+            {
+                Usage = ResourceUsage.Default,
+                ByteWidth = (uint)Rendering.EnvironmentBuffer.Size,
+                BindFlags = BindFlags.ConstantBuffer,
+                CPUAccessFlags = 0,
+            };
+            EnvironmentBuffer = DXHost.Device.CreateBuffer(environmentBufferDesc);
+
             BufferDescription sceneBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
@@ -96,6 +112,18 @@ namespace TransportX.Rendering
             };
             TextureSamplerState = DXHost.Device.CreateSamplerState(samplerDesc);
 
+            SamplerDescription brdfSamplerDesc = new()
+            {
+                Filter = Filter.MinMagMipLinear,
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Clamp,
+                AddressW = TextureAddressMode.Clamp,
+                ComparisonFunc = ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue,
+            };
+            BrdfSamplerState = DXHost.Device.CreateSamplerState(brdfSamplerDesc);
+
             RasterizerDescription rasterizerDesc = new RasterizerDescription()
             {
                 AntialiasedLineEnable = false,
@@ -112,7 +140,7 @@ namespace TransportX.Rendering
 
             RasterizerState = DXHost.Device.CreateRasterizerState(rasterizerDesc);
 
-            BlendDescription blendDesc = new BlendDescription()
+            BlendDescription blendDesc = new()
             {
                 AlphaToCoverageEnable = false,
                 IndependentBlendEnable = false,
@@ -130,20 +158,29 @@ namespace TransportX.Rendering
             };
 
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
+
+            BrdfLutTexture = DDSTextureLoader.CreateFromMemory(DXHost.Device, ShaderFactory.GetShaderStream("Brdf.dds")!);
         }
 
         public void Dispose()
         {
             VertexShader.Dispose();
+            InputLayout.Dispose();
+
             PixelShader.Dispose();
             DebugPixelShader.Dispose();
-            InputLayout.Dispose();
+
             TransformBuffer.Dispose();
             MaterialBuffer.Dispose();
+            EnvironmentBuffer.Dispose();
             SceneBuffer.Dispose();
+
             TextureSamplerState.Dispose();
+            BrdfSamplerState.Dispose();
             RasterizerState.Dispose();
             BlendState.Dispose();
+
+            BrdfLutTexture.Dispose();
         }
 
         public void Draw(Camera camera, WorldBase world, System.Drawing.Size size)
@@ -161,16 +198,31 @@ namespace TransportX.Rendering
             DXHost.Context.VSSetConstantBuffer(0, TransformBuffer);
 
             DXHost.Context.PSSetConstantBuffer(0, MaterialBuffer);
-            DXHost.Context.PSSetConstantBuffer(1, SceneBuffer);
+            DXHost.Context.PSSetConstantBuffer(1, EnvironmentBuffer);
+            DXHost.Context.PSSetConstantBuffer(2, SceneBuffer);
 
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
             SceneBuffer sceneData = new()
             {
-                ToLight = -RayDirection,
                 CameraPosition = camera.Pose.Position,
             };
             DXHost.Context.UpdateSubresource(sceneData, SceneBuffer);
+
+            DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
+            DXHost.Context.PSSetSampler(1, BrdfSamplerState);
+
+            EnvironmentBuffer environmentData = new()
+            {
+                LightDirection = LightDirection,
+                LightIntensity = 2,
+                IBLIntensity = world.DefaultEnvironment.Intensity,
+                IBLSaturation = world.DefaultEnvironment.Saturation,
+            };
+            DXHost.Context.UpdateSubresource(environmentData, EnvironmentBuffer);
+
+            DXHost.Context.PSSetShaderResource(10, world.DefaultEnvironment.DiffuseTexture!);
+            DXHost.Context.PSSetShaderResource(11, world.DefaultEnvironment.SpecularTexture!);
 
             CameraDrawContext cameraContext = new()
             {

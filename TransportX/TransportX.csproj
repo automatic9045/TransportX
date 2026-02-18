@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Rendering\Shaders\Brdf.dds" />
     <EmbeddedResource Include="Rendering\Shaders\DebugPS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\VS.hlsl" />
@@ -19,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="AssimpNetter" Version="6.0.2.1" />
     <PackageReference Include="BepuPhysics" Version="2.4.0" />
+    <PackageReference Include="DirectXTexNet" Version="1.0.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.3" />
     <PackageReference Include="SharpGLTF.Core" Version="1.0.6" />
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.6" />

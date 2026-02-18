@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 
 using TransportX.Dependency;
+using TransportX.Rendering;
 using TransportX.Worlds;
 
 using TransportX.Scripting.Commands;
@@ -39,6 +40,9 @@ namespace TransportX.Scripting
                 .Distinct();
         }
 
+
+        public override EnvironmentProfile DefaultEnvironment => DefaultEnvironmentKey;
+        public EnvironmentProfile DefaultEnvironmentKey { get; set; } = EnvironmentProfile.Default;
 
         public override IModelCollection Models { get; } = new ModelCollection();
 

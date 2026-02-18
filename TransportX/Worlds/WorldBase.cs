@@ -34,11 +34,12 @@ namespace TransportX.Worlds
         public string Location { get; protected set; }
         public string BaseDirectory { get; protected set; }
 
+        public abstract EnvironmentProfile DefaultEnvironment { get; }
         public abstract IModelCollection Models { get; }
 
-        public List<LocatedModel> BackgroundModels { get; } = new List<LocatedModel>();
-        public PlateCollection Plates { get; } = new PlateCollection();
-        public BodyCollection Bodies { get; } = new BodyCollection();
+        public List<LocatedModel> BackgroundModels { get; } = [];
+        public PlateCollection Plates { get; } = new();
+        public BodyCollection Bodies { get; } = new();
 
         public AvatarBase? Avatar
         {

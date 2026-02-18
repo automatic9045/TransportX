@@ -10,38 +10,41 @@ namespace TransportX.Scripting.Commands
     {
         public ScriptWorld World { get; }
 
+        public Avatar Avatar { get; }
         public Background Background { get; }
         public Debug Debug { get; }
+        public WorldEnvironment Environment { get; }
         public Models Models { get; }
         public Plates Plates { get; }
         public Network Network { get; }
         public Triggers Triggers { get; }
-        public Avatar Avatar { get; }
 
         internal Commander(ScriptWorld world)
         {
             World = world;
 
+            Avatar = new Avatar(world);
             Background = new Background(world);
             Debug = new Debug(world);
+            Environment = new WorldEnvironment(world);
             Models = new Models(world);
             Plates = new Plates(world);
             Network = new Network(world);
             Triggers = new Triggers(world);
-            Avatar = new Avatar(world);
         }
 
         private protected Commander(Commander parent)
         {
             World = parent.World;
 
+            Avatar = parent.Avatar;
             Background = parent.Background;
             Debug = parent.Debug;
+            Environment = parent.Environment;
             Models = parent.Models;
             Plates = parent.Plates;
             Network = parent.Network;
             Triggers = parent.Triggers;
-            Avatar = parent.Avatar;
         }
 
         internal void Dispose()
