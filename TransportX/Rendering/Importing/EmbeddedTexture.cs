@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 
 namespace TransportX.Rendering.Importing
 {
-    internal readonly struct Texture
+    internal readonly struct EmbeddedTexture
     {
         public required readonly string Key { get; init; }
         public required readonly ReadOnlyMemory<byte> Data { get; init; }
-
+        public required readonly TextureFormat Format { get; init; }
         public required readonly int Width { get; init; }
         public required readonly int Height { get; init; }
-        public readonly bool IsCompressed => Width == 0 || Height == 0;
-
-        public required readonly string FormatHint { get; init; }
     }
 }

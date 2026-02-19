@@ -15,10 +15,12 @@ namespace TransportX.Scripting.Commands
     public class Environment
     {
         protected readonly ScriptWorld World;
+        private readonly DDSTextureFactory DDSFactory;
 
         private protected Environment(ScriptWorld world)
         {
             World = world;
+            DDSFactory = new DDSTextureFactory(World.DXHost.Device);
         }
 
         protected EnvironmentProfile? CreateEnvironment(string path)
@@ -52,7 +54,7 @@ namespace TransportX.Scripting.Commands
 
                 try
                 {
-                    return DDSTextureLoader.CreateFromFile(World.DXHost.Device, textureFullPath);
+                    return DDSFactory.CreateFromFile(textureFullPath);
                 }
                 catch (Exception ex)
                 {

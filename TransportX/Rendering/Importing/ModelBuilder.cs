@@ -23,7 +23,8 @@ namespace TransportX.Rendering.Importing
         private readonly IErrorCollector ErrorCollector;
 
         private readonly IWICImagingFactory WIC;
-        private readonly WICTextureFactory TextureFactory;
+        private readonly WICTextureFactory WICFactory;
+        private readonly DDSTextureFactory DDSFactory;
 
         public ModelBuilder(ID3D11DeviceContext context, IWICImagingFactory wic, IErrorCollector errorCollector)
         {
@@ -31,7 +32,8 @@ namespace TransportX.Rendering.Importing
             ErrorCollector = errorCollector;
 
             WIC = wic;
-            TextureFactory = new WICTextureFactory(Context, WIC);
+            WICFactory = new WICTextureFactory(Context, WIC);
+            DDSFactory = new DDSTextureFactory(Context.Device);
         }
 
         public unsafe Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
@@ -72,9 +74,9 @@ namespace TransportX.Rendering.Importing
                     ID3D11ShaderResourceView? normalTexture = materialData.NormalTexture.HasValue
                         ? LoadTexture(materialData.NormalTexture.Value, true, model.EmbeddedTextures, textureErrorCollector) : null;
 
-                    string keyO = materialData.OcclusionTexture.HasValue ? materialData.OcclusionTexture.Value.Key : "null";
-                    string keyR = materialData.RoughnessTexture.HasValue ? materialData.RoughnessTexture.Value.Key : "null";
-                    string keyM = materialData.MetallicTexture.HasValue ? materialData.MetallicTexture.Value.Key : "null";
+                    string? keyO = materialData.OcclusionTexture?.Key;
+                    string? keyR = materialData.RoughnessTexture?.Key;
+                    string? keyM = materialData.MetallicTexture?.Key;
                     string combinedKey = $"*orm|{keyO}|{keyR}|{keyM}";
 
                     ID3D11ShaderResourceView? ormTexture = null;
@@ -84,20 +86,7 @@ namespace TransportX.Rendering.Importing
                     }
                     else if (materialData.MetallicTexture.HasValue && keyO == keyR && keyR == keyM)
                     {
-                        TextureReference textureRef = materialData.MetallicTexture!.Value;
-                        if (textureRef.Type == TextureReference.TextureType.File)
-                        {
-                            string path = Path.Combine(baseDirectory, textureRef.Key);
-                            ormTexture = TextureFactory.CreateFromFile(path, true);
-                        }
-                        else
-                        {
-                            if (model.EmbeddedTextures.TryGetValue(textureRef.Key, out Texture texture))
-                            {
-                                ormTexture = TextureFactory.CreateFromMemory(texture.Data.Span, true);
-                            }
-                        }
-
+                        ormTexture = LoadTexture(materialData.MetallicTexture.Value, true, model.EmbeddedTextures, textureErrorCollector);
                         if (ormTexture is not null) LoadedTextures.Add(combinedKey, ormTexture);
                     }
                     else
@@ -127,36 +116,62 @@ namespace TransportX.Rendering.Importing
                             {
                                 try
                                 {
-                                    ormTexture = TextureFactory.CreateFromMerged(occlusionStream, roughnessStream, metallicStream, true);
+                                    ormTexture = WICFactory.CreateFromMerged(occlusionStream, roughnessStream, metallicStream, true);
                                     LoadedTextures.Add(combinedKey, ormTexture);
                                 }
                                 catch (Exception ex)
                                 {
                                     ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
-                                        $"PBR 金属感テクスチャ '{materialData.MetallicTexture?.Key}'、" +
-                                        $"粗さテクスチャ '{materialData.RoughnessTexture?.Key}' の合成に失敗しました。", sourceLocation)
+                                        $"PBR 遮蔽テクスチャ '{keyO}'、粗さテクスチャ '{keyR}'、金属感テクスチャ '{keyM}' の合成に失敗しました。", sourceLocation)
                                     {
                                         Exception = ex,
                                     };
-                                    ErrorCollector.Report(error);
+                                    textureErrorCollector.Report(error);
                                 }
                             }
 
 
-                            IWICStream CreateStream(TextureReference textureRef, IReadOnlyDictionary<string, Texture> embeddedTextures)
+                            IWICStream? CreateStream(TextureReference textureRef, IReadOnlyDictionary<string, EmbeddedTexture> embeddedTextures)
                             {
                                 IWICStream stream = WIC.CreateStream();
 
                                 if (textureRef.Type == TextureReference.TextureType.File)
                                 {
+                                    string extension = Path.GetExtension(textureRef.Key).ToLowerInvariant();
+                                    switch (extension)
+                                    {
+                                        case ".dds":
+                                        case ".tga":
+                                        case ".ktx":
+                                        case ".ktx2":
+                                            ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
+                                                $"{extension} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
+                                                $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
+                                            textureErrorCollector.Report(error);
+
+                                            stream.Dispose();
+                                            return null;
+                                    }
+
                                     string path = Path.Combine(baseDirectory, textureRef.Key);
                                     stream.Initialize(path, FileAccess.Read);
                                 }
                                 else if (textureRef.Type == TextureReference.TextureType.Embedded)
                                 {
-                                    if (embeddedTextures.TryGetValue(textureRef.Key, out Texture texture))
+                                    if (embeddedTextures.TryGetValue(textureRef.Key, out EmbeddedTexture texture))
                                     {
-                                        stream.Initialize(texture.Data.ToArray());
+                                        if (texture.Format != TextureFormat.WIC)
+                                        {
+                                            ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
+                                                $"{texture.Format} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
+                                                $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
+                                            textureErrorCollector.Report(error);
+
+                                            stream.Dispose();
+                                            return null;
+                                        }
+
+                                        stream.Initialize(texture.Data.Span);
                                     }
                                 }
 
@@ -193,7 +208,7 @@ namespace TransportX.Rendering.Importing
 
 
                 ID3D11ShaderResourceView? LoadTexture(
-                    TextureReference textureRef, bool isLinear, IReadOnlyDictionary<string, Texture> embeddedTextures, IErrorCollector errorCollector)
+                    TextureReference textureRef, bool isLinear, IReadOnlyDictionary<string, EmbeddedTexture> embeddedTextures, IErrorCollector errorCollector)
                 {
                     if (LoadedTextures.TryGetValue(textureRef.Key, out ID3D11ShaderResourceView? texture))
                     {
@@ -207,12 +222,16 @@ namespace TransportX.Rendering.Importing
                             string filePath = Path.Combine(baseDirectory, textureRef.Key);
                             try
                             {
-                                texture = TextureFactory.CreateFromFile(filePath, isLinear);
+                                texture = Path.GetExtension(filePath).ToLowerInvariant() switch
+                                {
+                                    ".dds" => DDSFactory.CreateFromFile(filePath),
+                                    _ => WICFactory.CreateFromFile(filePath, isLinear),
+                                };
                             }
                             catch (FileNotFoundException ex)
                             {
                                 ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
-                                    ErrorLevel.Error, $"テクスチャ '{filePath}' が見つかりません。", filePath)
+                                    ErrorLevel.Error, $"テクスチャファイル '{filePath}' が見つかりませんでした。", filePath)
                                 {
                                     Exception = ex,
                                 };
@@ -221,7 +240,7 @@ namespace TransportX.Rendering.Importing
                             catch (Exception ex)
                             {
                                 ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
-                                    ErrorLevel.Error, $"テクスチャ '{filePath}' を読み込めませんでした。", filePath)
+                                    ErrorLevel.Error, $"テクスチャファイル '{filePath}' を読み込めませんでした。", filePath)
                                 {
                                     Exception = ex,
                                 };
@@ -234,39 +253,45 @@ namespace TransportX.Rendering.Importing
                         {
                             try
                             {
-                                Texture embeddedTexture = embeddedTextures[textureRef.Key];
-                                if (embeddedTexture.IsCompressed)
+                                EmbeddedTexture embeddedTexture = embeddedTextures[textureRef.Key];
+                                switch (embeddedTexture.Format)
                                 {
-                                    texture = TextureFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear);
-                                }
-                                else
-                                {
-                                    unsafe
-                                    {
-                                        using MemoryHandle handle = embeddedTexture.Data.Pin();
-
-                                        Texture2DDescription desc = new()
+                                    case TextureFormat.Uncompressed:
+                                        unsafe
                                         {
-                                            Width = (uint)embeddedTexture.Width,
-                                            Height = (uint)embeddedTexture.Height,
-                                            MipLevels = 0,
-                                            ArraySize = 1,
-                                            SampleDescription = new SampleDescription(1, 0),
-                                            Usage = ResourceUsage.Default,
-                                            Format = isLinear ? Format.B8G8R8A8_UNorm : Format.B8G8R8A8_UNorm_SRgb,
-                                            BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-                                            CPUAccessFlags = 0,
-                                            MiscFlags = ResourceOptionFlags.GenerateMips,
-                                        };
+                                            using MemoryHandle handle = embeddedTexture.Data.Pin();
 
-                                        using ID3D11Texture2D baseTexture = Context.Device.CreateTexture2D(desc);
-                                        Context.UpdateSubresource(baseTexture, 0, null, (nint)handle.Pointer, (uint)embeddedTexture.Width * 4, 0);
+                                            Texture2DDescription desc = new()
+                                            {
+                                                Width = (uint)embeddedTexture.Width,
+                                                Height = (uint)embeddedTexture.Height,
+                                                MipLevels = 0,
+                                                ArraySize = 1,
+                                                SampleDescription = new SampleDescription(1, 0),
+                                                Usage = ResourceUsage.Default,
+                                                Format = isLinear ? Format.B8G8R8A8_UNorm : Format.B8G8R8A8_UNorm_SRgb,
+                                                BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
+                                                CPUAccessFlags = 0,
+                                                MiscFlags = ResourceOptionFlags.GenerateMips,
+                                            };
 
-                                        ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(baseTexture);
-                                        Context.GenerateMips(view);
+                                            using ID3D11Texture2D baseTexture = Context.Device.CreateTexture2D(desc);
+                                            Context.UpdateSubresource(baseTexture, 0, null, (nint)handle.Pointer, (uint)embeddedTexture.Width * 4, 0);
 
-                                        texture = view;
-                                    }
+                                            ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(baseTexture);
+                                            Context.GenerateMips(view);
+
+                                            texture = view;
+                                        }
+                                        break;
+
+                                    case TextureFormat.WIC:
+                                        texture = WICFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear);
+                                        break;
+
+                                    case TextureFormat.DDS:
+                                        texture = DDSFactory.CreateFromMemory(embeddedTexture.Data.Span);
+                                        break;
                                 }
                             }
                             catch (Exception ex)

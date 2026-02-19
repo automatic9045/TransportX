@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -159,7 +160,10 @@ namespace TransportX.Rendering
 
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
 
-            BrdfLutTexture = DDSTextureLoader.CreateFromMemory(DXHost.Device, ShaderFactory.GetShaderStream("Brdf.dds")!);
+            Stream brdfLutStream = ShaderFactory.GetShaderStream("Brdf.dds")!;
+            byte[] brdfLutData = new byte[brdfLutStream.Length];
+            brdfLutStream.ReadExactly(brdfLutData);
+            BrdfLutTexture = new DDSTextureFactory(DXHost.Device).CreateFromMemory(brdfLutData);
         }
 
         public void Dispose()

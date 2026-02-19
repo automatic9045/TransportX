@@ -10,9 +10,9 @@ namespace TransportX.Rendering.Importing
     {
         public readonly Mesh[] Meshes { get; }
         public readonly Material[] Materials { get; }
-        public readonly IReadOnlyDictionary<string, Texture> EmbeddedTextures { get; }
+        public readonly IReadOnlyDictionary<string, EmbeddedTexture> EmbeddedTextures { get; }
 
-        public Model(Mesh[] meshes, Material[] materials, IReadOnlyDictionary<string, Texture> embeddedTextures)
+        public Model(Mesh[] meshes, Material[] materials, IReadOnlyDictionary<string, EmbeddedTexture> embeddedTextures)
         {
             Meshes = meshes;
             Materials = materials;

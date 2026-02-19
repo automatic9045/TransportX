@@ -236,21 +236,27 @@ namespace TransportX.Rendering.Importing
                 }
 
 
-                Dictionary<string, Texture> embeddedTextures = [];
+                Dictionary<string, EmbeddedTexture> embeddedTextures = [];
                 if (isForVisual)
                 {
                     for (int i = 0; i < scene.TextureCount; i++)
                     {
-                        EmbeddedTexture assimpTexture = scene.Textures[i];
+                        Assimp.EmbeddedTexture assimpTexture = scene.Textures[i];
 
                         byte[] textureData;
-                        int width = assimpTexture.Width;
-                        int height = assimpTexture.Height;
-                        string formatHint = assimpTexture.CompressedFormatHint;
+                        int width, height;
+                        TextureFormat format;
 
                         if (assimpTexture.IsCompressed)
                         {
                             textureData = assimpTexture.CompressedData;
+
+                            format = textureData switch
+                            {
+                                _ when textureData.AsSpan().StartsWith("DDS "u8) => TextureFormat.DDS,
+                                _ => TextureFormat.WIC,
+                            };
+
                             width = 0;
                             height = 0;
                         }
@@ -258,16 +264,18 @@ namespace TransportX.Rendering.Importing
                         {
                             ReadOnlySpan<Texel> texelSpan = assimpTexture.NonCompressedData.AsSpan();
                             textureData = MemoryMarshal.AsBytes(texelSpan).ToArray();
-                            formatHint = "argb8888";
+                            format = TextureFormat.Uncompressed;
+                            width = assimpTexture.Width;
+                            height = assimpTexture.Height;
                         }
 
-                        Texture texture = new()
+                        EmbeddedTexture texture = new()
                         {
                             Key = $"*{i}",
                             Data = textureData,
+                            Format = format,
                             Width = width,
                             Height = height,
-                            FormatHint = formatHint,
                         };
                         embeddedTextures[texture.Key] = texture;
 
@@ -299,7 +307,7 @@ namespace TransportX.Rendering.Importing
                 };
                 ErrorCollector.Report(error);
 
-                return new Model([], [], new Dictionary<string, Texture>());
+                return new Model([], [], new Dictionary<string, EmbeddedTexture>());
             }
         }
     }

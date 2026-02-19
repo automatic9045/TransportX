@@ -120,9 +120,9 @@ namespace TransportX.Rendering.Importing
 
         public unsafe ID3D11ShaderResourceView CreateFromMerged(IWICStream? rStream, IWICStream? gStream, IWICStream? bStream, bool isLinear)
         {
-            using IWICBitmapSource bSource = bStream is null ? CreateSingleBitmap(255, 255, 255, 255) : LoadBitmap(bStream);
-            using IWICBitmapSource gSource = gStream is null ? CreateSingleBitmap(255, 255, 255, 255) : LoadBitmap(gStream);
-            using IWICBitmapSource rSource = rStream is null ? CreateSingleBitmap(255, 255, 255, 255) : LoadBitmap(rStream);
+            using IWICBitmapSource? bSource = bStream is null ? null : LoadBitmap(bStream);
+            using IWICBitmapSource? gSource = gStream is null ? null : LoadBitmap(gStream);
+            using IWICBitmapSource? rSource = rStream is null ? null : LoadBitmap(rStream);
 
             IWICBitmapSource LoadBitmap(IWICStream stream)
             {
@@ -132,23 +132,17 @@ namespace TransportX.Rendering.Importing
                 return WIC.CreateBitmapFromSource(frame, BitmapCreateCacheOption.CacheOnLoad);
             }
 
-            IWICBitmapSource CreateSingleBitmap(byte r, byte g, byte b, byte a)
-            {
-                byte[] pixel = [b, g, r, a];
-                fixed (byte* p = pixel)
-                {
-                    return WIC.CreateBitmapFromMemory(1, 1, PixelFormat.Format32bppBGRA, 4, 4, (nint)p);
-                }
-            }
+
+            uint width = 1;
+            uint height = 1;
+            if (bSource is not null) { width = uint.Max(width, (uint)bSource.Size.Width); height = uint.Max(height, (uint)bSource.Size.Height); }
+            if (gSource is not null) { width = uint.Max(width, (uint)gSource.Size.Width); height = uint.Max(height, (uint)gSource.Size.Height); }
+            if (rSource is not null) { width = uint.Max(width, (uint)rSource.Size.Width); height = uint.Max(height, (uint)rSource.Size.Height); }
 
 
-            uint width = (uint)int.Max(bSource.Size.Width, int.Max(gSource.Size.Width, rSource.Size.Width));
-            uint height = (uint)int.Max(bSource.Size.Height, int.Max(gSource.Size.Height, rSource.Size.Height));
-
-
-            using IWICBitmapSource bResized = ConvertAndResize(bSource, width, height);
-            using IWICBitmapSource gResized = ConvertAndResize(gSource, width, height);
-            using IWICBitmapSource rResized = ConvertAndResize(rSource, width, height);
+            using IWICBitmapSource? bResized = bSource is null ? null : ConvertAndResize(bSource, width, height);
+            using IWICBitmapSource? gResized = gSource is null ? null : ConvertAndResize(gSource, width, height);
+            using IWICBitmapSource? rResized = rSource is null ? null : ConvertAndResize(rSource, width, height);
 
             IWICBitmapSource ConvertAndResize(IWICBitmapSource source, uint width, uint height)
             {
@@ -167,36 +161,34 @@ namespace TransportX.Rendering.Importing
             uint stride = width * 4;
             uint bufferSize = stride * height;
 
-            byte* pB = (byte*)NativeMemory.Alloc(bufferSize);
-            byte* pG = (byte*)NativeMemory.Alloc(bufferSize);
-            byte* pR = (byte*)NativeMemory.Alloc(bufferSize);
+            byte* pB = bResized is null ? null : (byte*)NativeMemory.Alloc(bufferSize);
+            byte* pG = gResized is null ? null : (byte*)NativeMemory.Alloc(bufferSize);
+            byte* pR = rResized is null ? null : (byte*)NativeMemory.Alloc(bufferSize);
             byte* pResult = (byte*)NativeMemory.Alloc(bufferSize);
 
             try
             {
-                bResized.CopyPixels(stride, bufferSize, (nint)pB);
-                gResized.CopyPixels(stride, bufferSize, (nint)pG);
-                rResized.CopyPixels(stride, bufferSize, (nint)pR);
+                bResized?.CopyPixels(stride, bufferSize, (nint)pB);
+                gResized?.CopyPixels(stride, bufferSize, (nint)pG);
+                rResized?.CopyPixels(stride, bufferSize, (nint)pR);
 
+                byte* pb = pB;
+                byte* pg = pG;
+                byte* pr = pR;
+                byte* pd = pResult;
+
+                uint pixelCount = width * height;
+                for (int i = 0; i < pixelCount; i++)
                 {
-                    byte* pb = pB;
-                    byte* pg = pG;
-                    byte* pr = pR;
-                    byte* pd = pResult;
+                    pd[0] = pb != null ? pb[0] : (byte)255; // Metallic
+                    pd[1] = pg != null ? pg[1] : (byte)255; // Roughness
+                    pd[2] = pr != null ? pr[2] : (byte)255; // Occlusion
+                    pd[3] = 255;
 
-                    uint pixelCount = width * height;
-                    for (int i = 0; i < pixelCount; i++)
-                    {
-                        pd[0] = pb[0];
-                        pd[1] = pg[1];
-                        pd[2] = pr[2];
-                        pd[3] = 255;
-
-                        pb += 4;
-                        pg += 4;
-                        pr += 4;
-                        pd += 4;
-                    }
+                    if (pb != null) pb += 4;
+                    if (pg != null) pg += 4;
+                    if (pr != null) pr += 4;
+                    pd += 4;
                 }
 
                 ID3D11ShaderResourceView view = CreateShaderResourceView((nint)pResult, width, height, stride, bufferSize, isLinear);
@@ -204,10 +196,10 @@ namespace TransportX.Rendering.Importing
             }
             finally
             {
-                NativeMemory.Free(pB);
-                NativeMemory.Free(pG);
-                NativeMemory.Free(pR);
-                NativeMemory.Free(pResult);
+                if (pB is not null) NativeMemory.Free(pB);
+                if (pG is not null) NativeMemory.Free(pG);
+                if (pR is not null) NativeMemory.Free(pR);
+                if (pResult is not null) NativeMemory.Free(pResult);
             }
         }
 

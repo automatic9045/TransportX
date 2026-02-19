@@ -381,7 +381,7 @@ namespace TransportX.Rendering.Importing
                 }
 
 
-                Dictionary<string, Texture> embeddedTextures = [];
+                Dictionary<string, EmbeddedTexture> embeddedTextures = [];
                 if (isForVisual)
                 {
                     foreach (Image gltfImage in modelRoot.LogicalImages)
@@ -390,13 +390,19 @@ namespace TransportX.Rendering.Importing
 
                         string key = $"*{gltfImage.LogicalIndex}";
 
-                        Texture texture = new()
+                        TextureFormat format = gltfImage.Content switch
+                        {
+                            MemoryImage image when image.IsDds => TextureFormat.DDS,
+                            _ => TextureFormat.WIC,
+                        };
+
+                        EmbeddedTexture texture = new()
                         {
                             Key = key,
                             Data = gltfImage.Content.Content,
+                            Format = format,
                             Width = 0,
                             Height = 0,
-                            FormatHint = gltfImage.Content.FileExtension,
                         };
                         embeddedTextures[key] = texture;
                     }
@@ -414,7 +420,7 @@ namespace TransportX.Rendering.Importing
             Model Abort(string message, Exception exception)
             {
                 ReportError(ModelLoadError.ErrorSource.Reference, ErrorLevel.Error, message, exception);
-                return new Model([], [], new Dictionary<string, Texture>());
+                return new Model([], [], new Dictionary<string, EmbeddedTexture>());
             }
 
             void ReportError(ModelLoadError.ErrorSource source, ErrorLevel level, string message, Exception? exception = null)
