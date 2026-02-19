@@ -52,8 +52,6 @@ namespace TransportX.Rendering
         internal static readonly int Size = Marshal.SizeOf<EnvironmentBuffer>();
 
 
-        public Vector3 LightDirection = Vector3.Zero;
-        public float LightIntensity = 1;
         public float IBLIntensity = 1;
         public float IBLSaturation = 1;
         public Vector2 Padding;
@@ -71,7 +69,11 @@ namespace TransportX.Rendering
 
 
         public Vector3 CameraPosition = Vector3.Zero;
-        public float Padding;
+        public float Padding1;
+        public Vector3 LightColor = Vector3.Zero;
+        public float Padding2;
+        public Vector3 LightDirection = Vector3.Zero;
+        public float LightIntensity = 1;
 
         public SceneBuffer()
         {

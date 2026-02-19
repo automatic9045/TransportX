@@ -37,9 +37,11 @@ namespace TransportX.Worlds
         public abstract EnvironmentProfile DefaultEnvironment { get; }
         public abstract IModelCollection Models { get; }
 
+        public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
+
         public List<LocatedModel> BackgroundModels { get; } = [];
-        public PlateCollection Plates { get; } = new();
-        public BodyCollection Bodies { get; } = new();
+        public PlateCollection Plates { get; } = [];
+        public BodyCollection Bodies { get; } = [];
 
         public AvatarBase? Avatar
         {

@@ -26,8 +26,6 @@ cbuffer MaterialBuffer : register(b0)
 
 cbuffer EnvironmentBuffer : register(b1)
 {
-    float3 LightDirection;
-    float LightIntensity;
     float IBLIntensity;
     float IBLSaturation;
     float2 _Padding2;
@@ -37,6 +35,10 @@ cbuffer SceneBuffer : register(b2)
 {
     float3 CameraPosition;
     float _Padding3;
+    float3 LightColor;
+    float _Padding4;
+    float3 LightDirection;
+    float LightIntensity;
 }
 
 struct PS_IN
@@ -164,8 +166,7 @@ float4 main(PS_IN input) : SV_TARGET
     float3 specularRatio = f;
     float3 diffuseRatio = (float3(1.0, 1.0, 1.0) - specularRatio) * (1.0 - metallic);
 
-    float3 lightColor = float3(1.0, 1.0, 1.0) * LightIntensity;
-    float3 radianceOut = (diffuseRatio * baseColor.rgb / PI + specular) * lightColor * nDotL;
+    float3 radianceOut = (diffuseRatio * baseColor.rgb / PI + specular) * LightColor * LightIntensity * nDotL;
 
     float3 diffuseIBLRatio = (1.0 - FresnelSchlickRoughness(nDotV, baseReflectivity, roughness)) * (1.0 - metallic);
 

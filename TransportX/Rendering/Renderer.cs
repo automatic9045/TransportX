@@ -210,6 +210,9 @@ namespace TransportX.Rendering
             SceneBuffer sceneData = new()
             {
                 CameraPosition = camera.Pose.Position,
+                LightColor = world.DirectionalLight.Color.ToLinear(),
+                LightDirection = world.DirectionalLight.Direction,
+                LightIntensity = world.DirectionalLight.Intensity,
             };
             DXHost.Context.UpdateSubresource(sceneData, SceneBuffer);
 
@@ -218,8 +221,6 @@ namespace TransportX.Rendering
 
             EnvironmentBuffer environmentData = new()
             {
-                LightDirection = LightDirection,
-                LightIntensity = 2,
                 IBLIntensity = world.DefaultEnvironment.Intensity,
                 IBLSaturation = world.DefaultEnvironment.Saturation,
             };

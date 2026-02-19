@@ -76,5 +76,10 @@ namespace TransportX.Scripting
             Commander.Triggers.Tick(elapsed);
             base.Tick(elapsed);
         }
+
+        internal void SetDirectionalLight(Worlds.DirectionalLight value)
+        {
+            DirectionalLight = value;
+        }
     }
 }

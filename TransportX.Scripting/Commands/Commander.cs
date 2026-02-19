@@ -13,6 +13,7 @@ namespace TransportX.Scripting.Commands
         public Avatar Avatar { get; }
         public Background Background { get; }
         public Debug Debug { get; }
+        public DirectionalLight DirectionalLight { get; }
         public WorldEnvironment Environment { get; }
         public Models Models { get; }
         public Plates Plates { get; }
@@ -26,6 +27,7 @@ namespace TransportX.Scripting.Commands
             Avatar = new Avatar(world);
             Background = new Background(world);
             Debug = new Debug(world);
+            DirectionalLight = new DirectionalLight(world);
             Environment = new WorldEnvironment(world);
             Models = new Models(world);
             Plates = new Plates(world);
@@ -40,6 +42,7 @@ namespace TransportX.Scripting.Commands
             Avatar = parent.Avatar;
             Background = parent.Background;
             Debug = parent.Debug;
+            DirectionalLight = parent.DirectionalLight;
             Environment = parent.Environment;
             Models = parent.Models;
             Plates = parent.Plates;
