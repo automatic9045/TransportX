@@ -79,4 +79,23 @@ namespace TransportX.Rendering
         {
         }
     }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PostProcessConstants
+    {
+        internal static readonly int Size = Marshal.SizeOf<PostProcessConstants>();
+
+
+        public float BloomThreshold;
+        public float BloomIntensity;
+        public float BloomScatter;
+        public float BloomSoftKnee;
+        public Vector3 BloomTint;
+        public float Padding;
+
+        public PostProcessConstants()
+        {
+        }
+    }
 }

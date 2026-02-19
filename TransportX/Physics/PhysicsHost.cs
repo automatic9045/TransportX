@@ -23,7 +23,7 @@ namespace TransportX.Physics
             BufferPool bufferPool = new BufferPool();
             NarrowPhaseCallbacks narrowPhaseCallbacks = new NarrowPhaseCallbacks(Groups, Materials);
             Simulation = Simulation.Create(bufferPool, narrowPhaseCallbacks, new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
-            ThreadDispatcher = new ThreadDispatcher(Environment.ProcessorCount);
+            ThreadDispatcher = new ThreadDispatcher(System.Environment.ProcessorCount);
         }
 
         internal static PhysicsHost Create()

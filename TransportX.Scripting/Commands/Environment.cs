@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 
 using TransportX.Diagnostics;
+using TransportX.Environment;
 using TransportX.Rendering;
+
+using TransportX.Extensions.Utilities;
 
 namespace TransportX.Scripting.Commands
 {
@@ -29,12 +32,25 @@ namespace TransportX.Scripting.Commands
             Data.Environment.EnvironmentProfile? data = Data.XmlSerializer<Data.Environment.EnvironmentProfile>.FromXml(fullPath, World.ErrorCollector);
             if (data is null) return null;
 
+            World.ErrorCollector.ReportRange(data.Errors);
+
             EnvironmentProfile environment = new()
             {
-                DiffuseTexture = LoadTexture(data.DiffuseTexturePath.Value, "拡散光マップファイル"),
-                SpecularTexture = LoadTexture(data.SpecularTexturePath.Value, "反射光マップファイル"),
-                Intensity = data.Intensity.Value,
-                Saturation = data.Saturation.Value,
+                IBL = new IBL()
+                {
+                    DiffuseTexture = LoadTexture(data.IBL.DiffuseTexturePath.Value, "拡散光マップファイル"),
+                    SpecularTexture = LoadTexture(data.IBL.SpecularTexturePath.Value, "反射光マップファイル"),
+                    Intensity = data.IBL.Intensity.Value,
+                    Saturation = data.IBL.Saturation.Value,
+                },
+                Bloom = new Bloom()
+                {
+                    Threshold = data.Bloom.Threshold.Value,
+                    Intensity = data.Bloom.Intensity.Value,
+                    Scatter = data.Bloom.Scatter.Value,
+                    SoftKnee = data.Bloom.SoftKnee.Value,
+                    Tint = data.Bloom.Tint.Value.ToVector3(),
+                },
             };
 
             return environment;

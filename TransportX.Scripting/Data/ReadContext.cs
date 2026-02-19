@@ -45,103 +45,125 @@ namespace TransportX.Scripting.Data
                 return field;
             }
 
-            private void SetToField<T>(FieldInfo field, string source, string displayName, IXmlLineInfo lineInfo)
+            private bool TryParseStandardValue<T>(string source, out T result)
             {
-                Type type = field.FieldType.GenericTypeArguments[0];
+                Type type = typeof(T);
                 if (type == typeof(string))
                 {
-                    field.SetValue(Source, CreateValue((string?)source, lineInfo));
+                    result = (T)(object)source;
+                    return true;
                 }
                 else if (type == typeof(int))
                 {
-                    if (int.TryParse(source, CultureInfo.InvariantCulture, out int value))
+                    if (int.TryParse(source, CultureInfo.InvariantCulture, out int intValue))
                     {
-                        field.SetValue(Source, CreateValue(value, lineInfo));
-                    }
-                    else
-                    {
-                        ReportInvalidValueError(displayName, source);
+                        result = (T)(object)intValue;
+                        return true;
                     }
                 }
                 else if (type == typeof(float))
                 {
-                    if (float.TryParse(source, CultureInfo.InvariantCulture, out float value))
+                    if (float.TryParse(source, CultureInfo.InvariantCulture, out float floatValue))
                     {
-                        field.SetValue(Source, CreateValue(value, lineInfo));
-                    }
-                    else
-                    {
-                        ReportInvalidValueError(displayName, source);
+                        result = (T)(object)floatValue;
+                        return true;
                     }
                 }
                 else if (type.IsEnum)
                 {
-                    if (Enum.TryParse(type, source, out object? value))
+                    if (Enum.TryParse(type, source, out object? enumValue) && enumValue is not null)
                     {
-                        field.SetValue(Source, CreateValue((T)value, lineInfo));
+                        result = (T)enumValue;
+                        return true;
                     }
-                    else
-                    {
-                        ReportInvalidValueError(displayName, source);
-                    }
+                }
+
+                result = default!;
+                return false;
+            }
+
+            private void SetToField<T>(FieldInfo field, string source, string displayName, IXmlLineInfo lineInfo)
+            {
+                if (TryParseStandardValue<T>(source, out T result))
+                {
+                    field.SetValue(Source, CreateValue(result, lineInfo));
                 }
                 else
                 {
-                    throw new NotSupportedException($"型 {type} はサポートされません。");
+                    ReportInvalidValueError(displayName, source);
                 }
             }
 
-            public void ReadAttribute<T>(string elementName, string? displayName = null, bool isRequired = false)
+            public void ReadAttribute<TSource, TTarget>(string elementName, Converter<TSource, TTarget> converter, string? displayName = null, bool isRequired = false)
             {
                 displayName ??= elementName;
 
-                string? source = Reader.GetAttribute(elementName);
-                if (source is null)
+                string? sourceString = Reader.GetAttribute(elementName);
+                if (sourceString is null)
                 {
                     if (isRequired) ReportValueNotDefinedError(displayName);
                     return;
                 }
 
-                FieldInfo field = GetField<T>(elementName);
-                SetToField<T>(field, source, displayName, (IXmlLineInfo)Reader);
+                FieldInfo field = GetField<TTarget>(elementName);
+
+                if (TryParseStandardValue(sourceString, out TSource parsedSource))
+                {
+                    try
+                    {
+                        TTarget targetValue = converter(parsedSource);
+                        field.SetValue(Source, CreateValue(targetValue, (IXmlLineInfo)Reader));
+                    }
+                    catch
+                    {
+                        ReportInvalidValueError(displayName, sourceString);
+                    }
+                }
+                else
+                {
+                    ReportInvalidValueError(displayName, sourceString);
+                }
+            }
+
+            public void ReadAttribute<T>(string elementName, string? displayName = null, bool isRequired = false)
+            {
+                ReadAttribute<T, T>(elementName, x => x, displayName, isRequired);
+            }
+
+            public void AddElement<TSource, TTarget>(string elementName, Converter<TSource, TTarget> converter, string? displayName = null, bool isRequired = false)
+            {
+                displayName ??= elementName;
+
+                FieldInfo field = GetField<TTarget>(elementName);
+
+                Action<IXmlLineInfo> readAction = lineInfo =>
+                {
+                    string sourceString = Reader.ReadElementContentAsString();
+
+                    if (TryParseStandardValue<TSource>(sourceString, out TSource parsedSource))
+                    {
+                        try
+                        {
+                            TTarget targetValue = converter(parsedSource);
+                            field.SetValue(Source, CreateValue(targetValue, lineInfo));
+                        }
+                        catch
+                        {
+                            ReportInvalidValueError(displayName, sourceString);
+                        }
+                    }
+                    else
+                    {
+                        ReportInvalidValueError(displayName, sourceString);
+                    }
+                };
+
+                ReadElementActions[elementName] = new ReadElementAction(readAction, displayName, isRequired);
             }
 
             public void AddElement<T>(string elementName, string? displayName = null, bool isRequired = false)
             {
-                displayName ??= elementName;
-
-                FieldInfo field = GetField<T>(elementName);
-                Type type = typeof(T);
-
-                Action<IXmlLineInfo> readAction;
-                if (typeof(IXmlSerializable).IsAssignableFrom(type))
-                {
-                    readAction = lineInfo =>
-                    {
-                        IXmlSerializable instance = (IXmlSerializable)Activator.CreateInstance<T>()!;
-                        instance.ReadXml(Reader);
-                        field.SetValue(Source, CreateValue(instance, lineInfo));
-                    };
-                }
-                else if (type == typeof(string) || type.IsPrimitive || type.IsEnum)
-                {
-                    readAction = lineInfo =>
-                    {
-                        string value = Reader.ReadElementContentAsString();
-                        SetToField<T>(field, value, displayName, lineInfo);
-                    };
-                }
-                else
-                {
-                    readAction = lineInfo =>
-                    {
-                        XmlSerializer serializer = SerializerCache.GetOrAdd(type, t => new XmlSerializer(t));
-                        object? result = serializer.Deserialize(Reader);
-                        field.SetValue(Source, CreateValue((T)result!, lineInfo));
-                    };
-                }
-
-                ReadElementActions[elementName] = new(readAction, displayName, isRequired);
+                AddElement<T, T>(elementName, x => x, displayName, isRequired);
             }
 
             internal void ParseElements()

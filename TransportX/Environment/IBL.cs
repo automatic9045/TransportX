@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
-namespace TransportX.Rendering
+namespace TransportX.Environment
 {
-    public class EnvironmentProfile : IDisposable
+    public class IBL : IDisposable
     {
-        public static readonly EnvironmentProfile Default = new()
+        public static readonly IBL Default = new()
         {
             DiffuseTexture = null,
             SpecularTexture = null,
@@ -24,7 +24,7 @@ namespace TransportX.Rendering
         public required float Intensity { get; init; }
         public required float Saturation { get; init; }
 
-        public EnvironmentProfile()
+        public IBL()
         {
         }
 

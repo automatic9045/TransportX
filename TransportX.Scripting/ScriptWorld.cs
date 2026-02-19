@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 
 using TransportX.Dependency;
+using TransportX.Environment;
 using TransportX.Rendering;
 using TransportX.Worlds;
 

@@ -11,6 +11,7 @@ using TransportX.Avatars;
 using TransportX.Bodies;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
+using TransportX.Environment;
 using TransportX.Input;
 using TransportX.Rendering;
 using TransportX.Physics;

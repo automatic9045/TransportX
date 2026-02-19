@@ -12,14 +12,14 @@ namespace TransportX.Rendering
 {
     public class PostProcessingBuffer : IDisposable
     {
+        public const int BloomMipCount = 5;
+
         private readonly ID3D11DeviceContext Context;
         private readonly ID3D11DepthStencilView DepthStencil;
 
-        private readonly ID3D11Texture2D HDRTexture;
-        private readonly ID3D11RenderTargetView HDRRenderTarget;
-
         public System.Drawing.Size Size { get; }
-        public ID3D11ShaderResourceView HDRShaderResource { get; }
+        public RenderTexture HdrBuffer { get; }
+        public IReadOnlyList<RenderTexture> BloomMips { get; }
 
         public PostProcessingBuffer(ID3D11DeviceContext context, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
         {
@@ -27,7 +27,7 @@ namespace TransportX.Rendering
             DepthStencil = depthStencil;
             Size = size;
 
-            Texture2DDescription hdrDesc = new()
+            Texture2DDescription desc = new()
             {
                 Width = (uint)size.Width,
                 Height = (uint)size.Height,
@@ -38,22 +38,41 @@ namespace TransportX.Rendering
                 Usage = ResourceUsage.Default,
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
             };
-            HDRTexture = Context.Device.CreateTexture2D(hdrDesc);
-            HDRRenderTarget = Context.Device.CreateRenderTargetView(HDRTexture);
-            HDRShaderResource = Context.Device.CreateShaderResourceView(HDRTexture);
+
+            HdrBuffer = new RenderTexture(Context.Device, desc);
+
+            RenderTexture[] bloomMips = new RenderTexture[BloomMipCount];
+            uint mipWidth = (uint)size.Width / 2;
+            uint mipHeight = (uint)size.Height / 2;
+
+            for (int i = 0; i < BloomMipCount; i++)
+            {
+                desc.Width = uint.Max(1, mipWidth);
+                desc.Height = uint.Max(1, mipHeight);
+
+                bloomMips[i] = new RenderTexture(Context.Device, desc);
+
+                mipWidth /= 2;
+                mipHeight /= 2;
+            }
+
+            BloomMips = bloomMips;
         }
 
         public void Dispose()
         {
-            HDRTexture.Dispose();
-            HDRRenderTarget.Dispose();
-            HDRShaderResource.Dispose();
+            HdrBuffer.Dispose();
+
+            for (int i = 0; i < BloomMipCount; i++)
+            {
+                BloomMips[i].Dispose();
+            }
         }
 
         public void Initialize()
         {
-            Context.OMSetRenderTargets(HDRRenderTarget, DepthStencil);
-            Context.ClearRenderTargetView(HDRRenderTarget, Colors.Gray);
+            Context.OMSetRenderTargets(HdrBuffer.RenderTargetView, DepthStencil);
+            Context.ClearRenderTargetView(HdrBuffer.RenderTargetView, Colors.Gray);
             Context.ClearDepthStencilView(DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
         }
     }

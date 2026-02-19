@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
-using Vortice.Mathematics;
 
+using TransportX.Environment;
 using TransportX.Worlds;
 
 namespace TransportX.Rendering
@@ -145,7 +145,7 @@ namespace TransportX.Rendering
 
             BlendDescription blendDesc = new()
             {
-                AlphaToCoverageEnable = false,
+                AlphaToCoverageEnable = true,
                 IndependentBlendEnable = false,
             };
             blendDesc.RenderTarget[0] = new RenderTargetBlendDescription()
@@ -159,7 +159,6 @@ namespace TransportX.Rendering
                 BlendOperationAlpha = BlendOperation.Add,
                 RenderTargetWriteMask = ColorWriteEnable.All,
             };
-
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
 
             PostProcess = new PostProcessingPipeline(DXHost.Context);
@@ -226,15 +225,17 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
             DXHost.Context.PSSetSampler(1, BrdfSamplerState);
 
+            EnvironmentProfile environment = world.DefaultEnvironment;
+
             EnvironmentBuffer environmentData = new()
             {
-                IBLIntensity = world.DefaultEnvironment.Intensity,
-                IBLSaturation = world.DefaultEnvironment.Saturation,
+                IBLIntensity = environment.IBL.Intensity,
+                IBLSaturation = environment.IBL.Saturation,
             };
             DXHost.Context.UpdateSubresource(environmentData, EnvironmentBuffer);
 
-            DXHost.Context.PSSetShaderResource(10, world.DefaultEnvironment.DiffuseTexture!);
-            DXHost.Context.PSSetShaderResource(11, world.DefaultEnvironment.SpecularTexture!);
+            DXHost.Context.PSSetShaderResource(10, environment.IBL.DiffuseTexture!);
+            DXHost.Context.PSSetShaderResource(11, environment.IBL.SpecularTexture!);
 
 
             CameraDrawContext cameraContext = new()
@@ -254,7 +255,7 @@ namespace TransportX.Rendering
             camera.DrawBodies(cameraContext, world.Bodies);
 
 
-            PostProcess.RenderTo(DXClient.RenderTarget);
+            PostProcess.RenderTo(DXClient.RenderTarget, environment);
         }
     }
 }

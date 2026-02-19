@@ -14,10 +14,21 @@ namespace TransportX.Rendering
             return new Vector4(float.Pow(srgbColor.X, 2.2f), float.Pow(srgbColor.Y, 2.2f), float.Pow(srgbColor.Z, 2.2f), srgbColor.W);
         }
 
+        public static Vector3 ToLinear(this Vector3 srgbColor)
+        {
+            return new Vector3(float.Pow(srgbColor.X, 2.2f), float.Pow(srgbColor.Y, 2.2f), float.Pow(srgbColor.Z, 2.2f));
+        }
+
         public static Vector4 ToSrgb(this Vector4 linearColor)
         {
             float power = 1.0f / 2.2f;
             return new Vector4(float.Pow(linearColor.X, power), float.Pow(linearColor.Y, power), float.Pow(linearColor.Z, power), linearColor.W);
+        }
+
+        public static Vector3 ToSrgb(this Vector3 linearColor)
+        {
+            float power = 1.0f / 2.2f;
+            return new Vector3(float.Pow(linearColor.X, power), float.Pow(linearColor.Y, power), float.Pow(linearColor.Z, power));
         }
     }
 }
