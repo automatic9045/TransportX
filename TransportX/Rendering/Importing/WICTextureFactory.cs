@@ -9,6 +9,8 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.WIC;
 
+using TransportX.Diagnostics;
+
 namespace TransportX.Rendering.Importing
 {
     internal class WICTextureFactory
@@ -22,7 +24,7 @@ namespace TransportX.Rendering.Importing
             WIC = wic;
         }
 
-        public ID3D11ShaderResourceView Create(IWICBitmapDecoder decoder, bool isLinear)
+        public ID3D11ShaderResourceView Create(IWICBitmapDecoder decoder, bool isLinear, IErrorCollector errorCollector)
         {
             using IWICBitmapFrameDecode frame = decoder.GetFrame(0);
             IWICBitmapSource source = frame;
@@ -36,13 +38,25 @@ namespace TransportX.Rendering.Importing
                 colorContexts = frame.TryGetColorContexts(WIC);
                 if (!isLinear && colorContexts is not null && 1 <= colorContexts.Length)
                 {
-                    destColorContext = WIC.CreateColorContext();
-                    destColorContext.InitializeFromExifColorSpace(1); // sRGB
+                    try
+                    {
 
-                    colorTransformer = WIC.CreateColorTransformer();
-                    colorTransformer.Initialize(frame, colorContexts[0], destColorContext, PixelFormat.Format32bppBGRA);
+                        destColorContext = WIC.CreateColorContext();
+                        destColorContext.InitializeFromExifColorSpace(1); // sRGB
 
-                    source = colorTransformer;
+                        colorTransformer = WIC.CreateColorTransformer();
+                        colorTransformer.Initialize(frame, colorContexts[0], destColorContext, PixelFormat.Format32bppBGRA);
+
+                        source = colorTransformer;
+                    }
+                    catch (Exception ex)
+                    {
+                        Error error = new(ErrorLevel.Warning, "カラープロファイルの適用に失敗しました。正しくない色で描画される可能性があります。", null)
+                        {
+                            Exception = ex,
+                        };
+                        errorCollector.Report(error);
+                    }
                 }
 
                 using IWICFormatConverter converter = WIC.CreateFormatConverter();
@@ -104,18 +118,18 @@ namespace TransportX.Rendering.Importing
             }
         }
 
-        public ID3D11ShaderResourceView CreateFromFile(string filePath, bool isLinear)
+        public ID3D11ShaderResourceView CreateFromFile(string filePath, bool isLinear, IErrorCollector errorCollector)
         {
             using IWICBitmapDecoder decoder = WIC.CreateDecoderFromFileName(filePath);
-            return Create(decoder, isLinear);
+            return Create(decoder, isLinear, errorCollector);
         }
 
-        public ID3D11ShaderResourceView CreateFromMemory(ReadOnlySpan<byte> data, bool isLinear)
+        public ID3D11ShaderResourceView CreateFromMemory(ReadOnlySpan<byte> data, bool isLinear, IErrorCollector errorCollector)
         {
             using IWICStream stream = WIC.CreateStream();
             stream.Initialize(data);
             using IWICBitmapDecoder decoder = WIC.CreateDecoderFromStream(stream);
-            return Create(decoder, isLinear);
+            return Create(decoder, isLinear, errorCollector);
         }
 
         public unsafe ID3D11ShaderResourceView CreateFromMerged(IWICStream? rStream, IWICStream? gStream, IWICStream? bStream, bool isLinear)

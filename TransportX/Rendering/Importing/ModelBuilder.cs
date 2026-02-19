@@ -222,10 +222,17 @@ namespace TransportX.Rendering.Importing
                             string filePath = Path.Combine(baseDirectory, textureRef.Key);
                             try
                             {
+                                IErrorCollector textureErrorCollector = IErrorCollector.Default();
+                                textureErrorCollector.Reported += (sender, e) =>
+                                {
+                                    Error error = e.Error.ChangeSource(filePath);
+                                    errorCollector.Report(error);
+                                };
+
                                 texture = Path.GetExtension(filePath).ToLowerInvariant() switch
                                 {
                                     ".dds" => DDSFactory.CreateFromFile(filePath),
-                                    _ => WICFactory.CreateFromFile(filePath, isLinear),
+                                    _ => WICFactory.CreateFromFile(filePath, isLinear, textureErrorCollector),
                                 };
                             }
                             catch (FileNotFoundException ex)
@@ -286,7 +293,14 @@ namespace TransportX.Rendering.Importing
                                         break;
 
                                     case TextureFormat.WIC:
-                                        texture = WICFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear);
+                                        IErrorCollector textureErrorCollector = IErrorCollector.Default();
+                                        textureErrorCollector.Reported += (sender, e) =>
+                                        {
+                                            Error error = e.Error.ChangeSource(sourceLocation);
+                                            errorCollector.Report(error);
+                                        };
+
+                                        texture = WICFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear, textureErrorCollector);
                                         break;
 
                                     case TextureFormat.DDS:
@@ -297,7 +311,7 @@ namespace TransportX.Rendering.Importing
                             catch (Exception ex)
                             {
                                 ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual,
-                                    ErrorLevel.Error, $"埋め込みテクスチャ '{textureRef.Key}' を読み込めませんでした。", textureRef.Key)
+                                    ErrorLevel.Error, $"埋め込みテクスチャ '{textureRef.Key}' を読み込めませんでした。", sourceLocation)
                                 {
                                     Exception = ex,
                                 };

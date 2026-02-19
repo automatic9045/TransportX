@@ -17,6 +17,18 @@ namespace TransportX.Rendering.Importing
 {
     internal class GltfImporter : IModelImporter
     {
+        private static readonly byte[] DummyPngData = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+            0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+            0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41,
+            0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+            0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00,
+            0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+            0x42, 0x60, 0x82,
+        ];
+
         private readonly IErrorCollector ErrorCollector;
 
         public GltfImporter(IErrorCollector errorCollector)
@@ -37,7 +49,25 @@ namespace TransportX.Rendering.Importing
                 ModelRoot modelRoot;
                 try
                 {
-                    modelRoot = ModelRoot.Load(path);
+                    string baseDirectory = Path.GetDirectoryName(path)!;
+                    string modelFileName = Path.GetFileName(path);
+                    ReadContext context = ReadContext.Create(assetPath =>
+                    {
+                        string assetFullPath = Path.GetFullPath(Path.Combine(baseDirectory, assetPath));
+                        if (File.Exists(assetFullPath))
+                        {
+                            return File.ReadAllBytes(assetFullPath);
+                        }
+                        else
+                        {
+                            if (assetPath == modelFileName) throw new FileNotFoundException();
+
+                            ReportError(ModelLoadError.ErrorSource.Data, ErrorLevel.Error, $"テクスチャファイル '{assetFullPath}' が見つかりませんでした。");
+                            return DummyPngData;
+                        }
+                    });
+
+                    modelRoot = ModelRoot.Load(modelFileName, context);
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -59,12 +89,15 @@ namespace TransportX.Rendering.Importing
                 {
                     Matrix4x4 transform = node.LocalMatrix * parentTransform;
 
-                    foreach (MeshPrimitive primitive in node.Mesh.Primitives)
+                    if (node.Mesh is not null)
                     {
-                        Mesh? meshData = CreateMesh(primitive, node.Name, transform);
-                        if (meshData is not null)
+                        foreach (MeshPrimitive primitive in node.Mesh.Primitives)
                         {
-                            meshes.Add(meshData.Value);
+                            Mesh? meshData = CreateMesh(primitive, node.Name, transform);
+                            if (meshData is not null)
+                            {
+                                meshes.Add(meshData.Value);
+                            }
                         }
                     }
 
@@ -387,6 +420,7 @@ namespace TransportX.Rendering.Importing
                     foreach (Image gltfImage in modelRoot.LogicalImages)
                     {
                         if (gltfImage.Content.IsEmpty) continue;
+                        if (gltfImage.Content.Content.Span.SequenceEqual(DummyPngData)) continue;
 
                         string key = $"*{gltfImage.LogicalIndex}";
 
