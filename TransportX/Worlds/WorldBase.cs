@@ -34,9 +34,9 @@ namespace TransportX.Worlds
         public string Location { get; protected set; }
         public string BaseDirectory { get; protected set; }
 
-        public abstract EnvironmentProfile DefaultEnvironment { get; }
         public abstract IModelCollection Models { get; }
 
+        public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
         public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
 
         public List<LocatedModel> BackgroundModels { get; } = [];
@@ -71,6 +71,9 @@ namespace TransportX.Worlds
             foreach (LocatedModel model in BackgroundModels) (model as CollidableLocatedModel)?.Dispose();
             Plates.Dispose();
             Bodies.Dispose();
+
+            DefaultEnvironment.Dispose();
+
             Models.Dispose();
         }
 

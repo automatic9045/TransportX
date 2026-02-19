@@ -78,7 +78,8 @@ namespace TransportX.Scripting.Commands
             EnvironmentProfile? environment = CreateEnvironment(path);
             if (environment is null) return;
 
-            World.DefaultEnvironmentKey = environment;
+            World.DefaultEnvironment?.Dispose();
+            World.SetDefaultEnvironment(environment);
         }
     }
 }

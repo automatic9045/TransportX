@@ -41,9 +41,6 @@ namespace TransportX.Scripting
         }
 
 
-        public override EnvironmentProfile DefaultEnvironment => DefaultEnvironmentKey;
-        public EnvironmentProfile DefaultEnvironmentKey { get; set; } = EnvironmentProfile.Default;
-
         public override IModelCollection Models { get; } = new ModelCollection();
 
         public string ScriptPath { get; }
@@ -75,6 +72,11 @@ namespace TransportX.Scripting
         {
             Commander.Triggers.Tick(elapsed);
             base.Tick(elapsed);
+        }
+
+        internal void SetDefaultEnvironment(EnvironmentProfile value)
+        {
+            DefaultEnvironment = value;
         }
 
         internal void SetDirectionalLight(Worlds.DirectionalLight value)
