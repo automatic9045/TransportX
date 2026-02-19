@@ -8,13 +8,13 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Scripting.Data
 {
-    public class XmlValue<T>
+    public readonly struct XmlValue<T>
     {
-        public T Value { get; }
+        public readonly T Value { get; }
 
-        public string? Location { get; }
-        public int LineNumber { get; }
-        public int LinePosition { get; }
+        public readonly string? Location { get; }
+        public readonly int LineNumber { get; }
+        public readonly int LinePosition { get; }
 
         public XmlValue(T value, string? location, int lineNumber, int linePosition)
         {
@@ -26,6 +26,11 @@ namespace TransportX.Scripting.Data
 
         public XmlValue(T value) : this(value, null, 0, 0)
         {
+        }
+
+        public XmlValue() : this(default!)
+        {
+            if (default(T) is null) throw new InvalidOperationException();
         }
 
         public Error CreateError(string message, ErrorLevel level = ErrorLevel.Error, Exception? exception = null)
