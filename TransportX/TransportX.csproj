@@ -13,6 +13,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Rendering\Shaders\Brdf.dds" />
     <EmbeddedResource Include="Rendering\Shaders\DebugPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Shaders\PostProcessPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Shaders\PostProcessVS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\VS.hlsl" />
   </ItemGroup>

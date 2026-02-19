@@ -39,6 +39,8 @@ namespace TransportX.Rendering
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
 
+        protected readonly PostProcessingPipeline PostProcess;
+
         private readonly ID3D11ShaderResourceView BrdfLutTexture;
 
         public Renderer(IDXHost dxHost, IDXClient dxClient)
@@ -160,6 +162,8 @@ namespace TransportX.Rendering
 
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
 
+            PostProcess = new PostProcessingPipeline(DXHost.Context);
+
             Stream brdfLutStream = ShaderFactory.GetShaderStream("Brdf.dds")!;
             byte[] brdfLutData = new byte[brdfLutStream.Length];
             brdfLutStream.ReadExactly(brdfLutData);
@@ -184,18 +188,21 @@ namespace TransportX.Rendering
             RasterizerState.Dispose();
             BlendState.Dispose();
 
+            PostProcess.Dispose();
+
             BrdfLutTexture.Dispose();
         }
 
         public void Draw(Camera camera, WorldBase world, System.Drawing.Size size)
         {
+            if (DXClient.DepthStencil is null) throw new InvalidOperationException();
+            if (DXClient.RenderTarget is null) throw new InvalidOperationException();
+
+            PostProcess.Setup(DXClient.DepthStencil, size);
+
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);
             DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
-
-            DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, Colors.Gray);
-            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
-
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);
@@ -229,6 +236,7 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetShaderResource(10, world.DefaultEnvironment.DiffuseTexture!);
             DXHost.Context.PSSetShaderResource(11, world.DefaultEnvironment.SpecularTexture!);
 
+
             CameraDrawContext cameraContext = new()
             {
                 DeviceContext = DXHost.Context,
@@ -244,6 +252,9 @@ namespace TransportX.Rendering
 
             camera.DrawPlates(cameraContext, world.Plates);
             camera.DrawBodies(cameraContext, world.Bodies);
+
+
+            PostProcess.RenderTo(DXClient.RenderTarget);
         }
     }
 }

@@ -95,16 +95,6 @@ float GeometrySmith(float nDotV, float nDotL, float roughness)
     return geometryLight * geometryView;
 }
 
-float3 ACESFilm(float3 x)
-{
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
-    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
-}
-
 float4 main(PS_IN input) : SV_TARGET
 {
     float4 baseColor = BaseColor * input.Color;
@@ -186,7 +176,5 @@ float4 main(PS_IN input) : SV_TARGET
     float3 ambient = (diffuseIBLRatio * diffuseIBL + specularIBL) * occlusion * IBLIntensity;
 
     float3 color = ambient + radianceOut + emissive;
-    color = ACESFilm(color);
-
     return float4(color, baseColor.a);
 }
