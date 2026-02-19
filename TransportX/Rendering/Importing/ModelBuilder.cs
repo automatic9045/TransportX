@@ -192,7 +192,7 @@ namespace TransportX.Rendering.Importing
 
                     material = new Rendering.Material()
                     {
-                        BaseColor = materialData.BaseColor.ToLinear(),
+                        BaseColor = materialData.BaseColor,
                         Metallic = materialData.Metallic,
                         Roughness = materialData.Roughness,
                         Emissive = materialData.Emissive,

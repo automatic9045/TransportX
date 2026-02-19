@@ -72,7 +72,12 @@ namespace TransportX.Rendering.Importing
                     if (assimpMesh.HasVertexColors(0))
                     {
                         List<Vector4> channel = assimpMesh.VertexColorChannels[0];
-                        colors = channel.ToArray();
+
+                        colors = new Vector4[channel.Count];
+                        for (int j = 0; i < colors.Length; j++)
+                        {
+                            colors[j] = channel[j].ToLinear();
+                        }
                     }
 
                     Vector2[]? textureCoords = null;
@@ -110,7 +115,7 @@ namespace TransportX.Rendering.Importing
                         Vector4 baseColor;
                         float metallic;
                         float roughness;
-                        Vector3 emissive = Vector3.Zero;
+                        Vector4 emissive = Vector4.Zero;
 
                         TextureReference? baseColorTexture = null;
                         TextureReference? normalTexture = null;
@@ -177,7 +182,7 @@ namespace TransportX.Rendering.Importing
 
                         if (assimpMaterial.HasColorEmissive)
                         {
-                            emissive = assimpMaterial.ColorEmissive.AsVector3();
+                            emissive = assimpMaterial.ColorEmissive;
                         }
 
                         emissiveTexture = assimpMaterial.HasTextureEmissive ? CreateTextureRef(assimpMaterial.TextureEmissive)
@@ -187,10 +192,10 @@ namespace TransportX.Rendering.Importing
                         {
                             Name = assimpMaterial.Name,
 
-                            BaseColor = baseColor,
+                            BaseColor = baseColor.ToLinear(),
                             Metallic = metallic,
                             Roughness = roughness,
-                            Emissive = emissive,
+                            Emissive = emissive.ToLinear().AsVector3(),
 
                             BaseColorTexture = baseColorTexture,
                             NormalTexture = normalTexture,
