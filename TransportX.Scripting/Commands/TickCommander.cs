@@ -8,11 +8,10 @@ namespace TransportX.Scripting.Commands
 {
     public class TickCommander : Commander
     {
-        public TimeSpan Elapsed { get; }
+        public TimeSpan Elapsed { get; internal set; } = TimeSpan.Zero;
 
-        internal TickCommander(Commander parent, TimeSpan elapsed) : base(parent)
+        internal TickCommander(Commander parent) : base(parent)
         {
-            Elapsed = elapsed;
         }
     }
 }

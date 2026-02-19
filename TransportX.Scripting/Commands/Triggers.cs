@@ -12,6 +12,7 @@ namespace TransportX.Scripting.Commands
     public class Triggers
     {
         private readonly ScriptWorld World;
+        private TickCommander? TickCommander = null;
 
         private event Action<Commander>? DisposeEvent;
         private event Action<TickCommander>? TickEvent;
@@ -50,8 +51,9 @@ namespace TransportX.Scripting.Commands
 
         internal void Tick(TimeSpan elapsed)
         {
-            TickCommander commander = new TickCommander(World.Commander, elapsed);
-            TickEvent?.Invoke(commander);
+            TickCommander ??= new TickCommander(World.Commander);
+            TickCommander.Elapsed = elapsed;
+            TickEvent?.Invoke(TickCommander);
         }
     }
 }
