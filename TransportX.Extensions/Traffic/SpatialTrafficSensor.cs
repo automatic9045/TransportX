@@ -132,13 +132,13 @@ namespace TransportX.Extensions.Traffic
                 DebugName = DebugName;
             }
 
-            TransformBuffer transformData = new()
+            TransformConstants transformConstants = new()
             {
                 World = Matrix4x4.Transpose((Location.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
             };
-            context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
+            context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
 
             float lengthShift = IsTargetOncoming ? 0 : Target.Length;
             Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;

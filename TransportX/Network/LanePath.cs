@@ -146,13 +146,13 @@ namespace TransportX.Network
                 DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
             }
 
-            TransformBuffer transformData = new()
+            TransformConstants transformConstants = new()
             {
                 World = Matrix4x4.Transpose((Owner.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
             };
-            context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
+            context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
 
             Vector4 linearDebugColor = DebugColor.ToLinear();
             DebugSpineMaterial!.BaseColor = linearDebugColor;

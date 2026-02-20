@@ -69,11 +69,11 @@ namespace TransportX.Extensions.Rendering
             context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Unsafe.SizeOf<Vertex>(), 0);
             context.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.LineList);
 
-            MaterialBuffer materialData = new()
+            MaterialConstants materialConstants = new()
             {
                 BaseColor = Material.BaseColor,
             };
-            context.DeviceContext.UpdateSubresource(materialData, context.MaterialBuffer);
+            context.DeviceContext.UpdateSubresource(materialConstants, context.MaterialBuffer);
 
             context.DeviceContext.PSSetShaderResource(0, null!);
 

@@ -70,7 +70,7 @@ namespace TransportX.Rendering
             BufferDescription transformBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.TransformBuffer.Size,
+                ByteWidth = (uint)Rendering.TransformConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -79,7 +79,7 @@ namespace TransportX.Rendering
             BufferDescription materialBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.MaterialBuffer.Size,
+                ByteWidth = (uint)Rendering.MaterialConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -88,7 +88,7 @@ namespace TransportX.Rendering
             BufferDescription environmentBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.EnvironmentBuffer.Size,
+                ByteWidth = (uint)Rendering.EnvironmentConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -97,7 +97,7 @@ namespace TransportX.Rendering
             BufferDescription sceneBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.SceneBuffer.Size,
+                ByteWidth = (uint)Rendering.SceneConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -213,26 +213,26 @@ namespace TransportX.Rendering
 
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
 
-            SceneBuffer sceneData = new()
+            SceneConstants sceneConstants = new()
             {
                 CameraPosition = camera.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity,
             };
-            DXHost.Context.UpdateSubresource(sceneData, SceneBuffer);
+            DXHost.Context.UpdateSubresource(sceneConstants, SceneBuffer);
 
             DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
             DXHost.Context.PSSetSampler(1, BrdfSamplerState);
 
             EnvironmentProfile environment = world.DefaultEnvironment;
 
-            EnvironmentBuffer environmentData = new()
+            EnvironmentConstants environmentConstants = new()
             {
                 IBLIntensity = environment.IBL.Intensity,
                 IBLSaturation = environment.IBL.Saturation,
             };
-            DXHost.Context.UpdateSubresource(environmentData, EnvironmentBuffer);
+            DXHost.Context.UpdateSubresource(environmentConstants, EnvironmentBuffer);
 
             DXHost.Context.PSSetShaderResource(10, environment.IBL.DiffuseTexture!);
             DXHost.Context.PSSetShaderResource(11, environment.IBL.SpecularTexture!);

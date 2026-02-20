@@ -110,13 +110,13 @@ namespace TransportX.Extensions.Traffic
                     DebugModel.Color = DebugColor;
                 }
 
-                TransformBuffer transformData = new()
+                TransformConstants transformConstants = new()
                 {
                     World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                     View = Matrix4x4.Transpose(context.View),
                     Projection = Matrix4x4.Transpose(context.Projection),
                 };
-                context.DeviceContext.UpdateSubresource(transformData, context.TransformBuffer);
+                context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
 
                 DebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
             }

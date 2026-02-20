@@ -107,7 +107,7 @@ namespace TransportX.Rendering
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
             context.DeviceContext.IASetPrimitiveTopology(Topology);
 
-            MaterialBuffer materialData = new()
+            MaterialConstants materialConstants = new()
             {
                 BaseColor = Material.BaseColor,
                 Emissive = Material.Emissive,
@@ -119,7 +119,7 @@ namespace TransportX.Rendering
                 HasORMTexture = BoolToInt32(Material.ORMTexture is not null),
                 HasEmissiveTexture = BoolToInt32(Material.EmissiveTexture is not null),
             };
-            context.DeviceContext.UpdateSubresource(materialData, context.MaterialBuffer);
+            context.DeviceContext.UpdateSubresource(materialConstants, context.MaterialBuffer);
 
             context.DeviceContext.PSSetShaderResources(0, TextureViews!);
 

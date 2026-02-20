@@ -9,25 +9,25 @@ using System.Threading.Tasks;
 namespace TransportX.Rendering
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct TransformBuffer
+    public struct TransformConstants
     {
-        internal static readonly int Size = Marshal.SizeOf<TransformBuffer>();
+        internal static readonly int Size = Marshal.SizeOf<TransformConstants>();
 
 
         public Matrix4x4 World;
         public Matrix4x4 View;
         public Matrix4x4 Projection;
 
-        public TransformBuffer()
+        public TransformConstants()
         {
         }
     }
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct MaterialBuffer
+    public struct MaterialConstants
     {
-        internal static readonly int Size = Marshal.SizeOf<MaterialBuffer>();
+        internal static readonly int Size = Marshal.SizeOf<MaterialConstants>();
 
 
         public Vector4 BaseColor = Vector4.One;
@@ -40,32 +40,32 @@ namespace TransportX.Rendering
         public int HasEmissiveTexture = 0;
         public Vector3 Padding;
 
-        public MaterialBuffer()
+        public MaterialConstants()
         {
         }
     }
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct EnvironmentBuffer
+    public struct EnvironmentConstants
     {
-        internal static readonly int Size = Marshal.SizeOf<EnvironmentBuffer>();
+        internal static readonly int Size = Marshal.SizeOf<EnvironmentConstants>();
 
 
         public float IBLIntensity = 1;
         public float IBLSaturation = 1;
         public Vector2 Padding;
 
-        public EnvironmentBuffer()
+        public EnvironmentConstants()
         {
         }
     }
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SceneBuffer
+    public struct SceneConstants
     {
-        internal static readonly int Size = Marshal.SizeOf<SceneBuffer>();
+        internal static readonly int Size = Marshal.SizeOf<SceneConstants>();
 
 
         public Vector3 CameraPosition = Vector3.Zero;
@@ -75,7 +75,7 @@ namespace TransportX.Rendering
         public Vector3 LightDirection = Vector3.Zero;
         public float LightIntensity = 1;
 
-        public SceneBuffer()
+        public SceneConstants()
         {
         }
     }
