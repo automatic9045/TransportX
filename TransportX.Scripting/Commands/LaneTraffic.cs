@@ -6,7 +6,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Diagnostics;
 using TransportX.Network;
+
+using TransportX.Extensions.Utilities;
 
 namespace TransportX.Scripting.Commands
 {
@@ -48,9 +51,19 @@ namespace TransportX.Scripting.Commands
 
         public LaneTrafficGroup AddGroup(string key, LaneTrafficGroup group, string debugColor)
         {
+            Color color = Color.White;
+            try
+            {
+                color = ColorTranslator.FromHtml(debugColor);
+            }
+            catch
+            {
+                ScriptError error = new(ErrorLevel.Error, $"カラーコード '{debugColor}' は無効です。");
+                World.ErrorCollector.Report(error);
+            }
+
             GroupsKey.Add(key, group);
-            Color color = ColorTranslator.FromHtml(debugColor);
-            GroupColors.Add(group, new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f));
+            GroupColors.Add(group, color.ToVector4());
             return group;
         }
 
