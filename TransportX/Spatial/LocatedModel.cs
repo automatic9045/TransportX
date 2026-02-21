@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Mathematics;
+
 using TransportX.Rendering;
 
 namespace TransportX.Spatial
@@ -42,9 +44,13 @@ namespace TransportX.Spatial
         {
             if (context.Pass != RenderPass.Normal) return;
 
+            Matrix4x4 world = (Pose * context.PlateOffset.Pose).ToMatrix4x4();
+            BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
+            if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
+
             TransformConstants transformConstants = new()
             {
-                World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                World = Matrix4x4.Transpose(world),
                 View = Matrix4x4.Transpose(context.View),
                 Projection = Matrix4x4.Transpose(context.Projection),
             };

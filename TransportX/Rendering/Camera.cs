@@ -47,6 +47,9 @@ namespace TransportX.Rendering
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
+            Matrix4x4 projection = CreateProjection(context.ClientSize);
+            BoundingFrustum frustum = new(View * projection);
+
             SetPixelShader(context, RenderPass.Normal);
 
             LocatedDrawContext drawContext = new()
@@ -56,7 +59,8 @@ namespace TransportX.Rendering
                 MaterialBuffer = context.MaterialBuffer,
                 PlateOffset = PlateOffset.Identity,
                 View = View,
-                Projection = CreateProjection(context.ClientSize),
+                Projection = projection,
+                Frustum = frustum,
             };
 
             foreach (LocatedModel model in models)
@@ -69,6 +73,7 @@ namespace TransportX.Rendering
         public void DrawPlates(CameraDrawContext context, PlateCollection plates)
         {
             Matrix4x4 projection = CreateProjection(context.ClientSize);
+            BoundingFrustum frustum = new(View * projection);
 
             if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(RenderPass.Normal);
             if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(RenderPass.Colliders);
@@ -96,6 +101,7 @@ namespace TransportX.Rendering
                                     PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
                                     View = View,
                                     Projection = projection,
+                                    Frustum = frustum,
                                     Pass = pass,
                                 };
                                 plate!.Draw(drawContext);
@@ -109,6 +115,7 @@ namespace TransportX.Rendering
         public void DrawBodies(CameraDrawContext context, IEnumerable<RigidBody> bodies)
         {
             Matrix4x4 projection = CreateProjection(context.ClientSize);
+            BoundingFrustum frustum = new(View * projection);
 
             foreach (RigidBody body in bodies)
             {
@@ -120,6 +127,7 @@ namespace TransportX.Rendering
                     PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
                     View = View,
                     Projection = projection,
+                    Frustum = frustum,
                     Pass = RenderPass.Normal,
                 };
 

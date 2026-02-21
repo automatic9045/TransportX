@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Diagnostics;
 using TransportX.Physics;
-using TransportX.Rendering.Importing;
 
 namespace TransportX.Rendering
 {
@@ -22,8 +21,9 @@ namespace TransportX.Rendering
         };
 
 
-        public IEnumerable<IMesh> VisualMeshes { get; }
-        public IEnumerable<ID3D11ShaderResourceView> Textures { get; }
+        public BoundingBox BoundingBox { get; }
+        public IReadOnlyList<IMesh> VisualMeshes { get; }
+        public IReadOnlyList<ID3D11ShaderResourceView> Textures { get; }
 
         public virtual string? DebugName
         {
@@ -31,24 +31,32 @@ namespace TransportX.Rendering
             set
             {
                 field = value;
-                foreach (IMesh mesh in VisualMeshes) mesh.DebugName = value;
+                for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = value;
 
                 if (value is null)
                 {
-                    foreach (ID3D11ShaderResourceView texture in Textures) texture.DebugName = null;
+                    for (int i = 0; i < Textures.Count; i++) Textures[i].DebugName = null;
                 }
                 else
                 {
 
-                    foreach (ID3D11ShaderResourceView texture in Textures) texture.DebugName = $"{value}_ShaderResourceView";
+                    for (int i = 0; i < Textures.Count; i++) Textures[i].DebugName = $"{value}_ShaderResourceView";
                 }
             }
         } = null;
 
-        public Model(IEnumerable<IMesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures)
+        public Model(IReadOnlyList<IMesh> visualMeshes, IReadOnlyList<ID3D11ShaderResourceView> textures)
         {
             VisualMeshes = visualMeshes;
             Textures = textures;
+
+            BoundingBox boundingBox = VisualMeshes.Count == 0 ? default : VisualMeshes[0].BoundingBox;
+            for (int i = 1; i < VisualMeshes.Count; i++)
+            {
+                boundingBox = BoundingBox.CreateMerged(boundingBox, VisualMeshes[i].BoundingBox);
+            }
+
+            BoundingBox = boundingBox;
         }
 
         public static Model Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
@@ -60,22 +68,22 @@ namespace TransportX.Rendering
 
         public virtual void Dispose()
         {
-            foreach (ID3D11ShaderResourceView texture in Textures)
+            for (int i = 0; i < Textures.Count; i++)
             {
-                texture.Dispose();
+                Textures[i].Dispose();
             }
 
-            foreach (IMesh mesh in VisualMeshes)
+            for (int i = 0; i < VisualMeshes.Count; i++)
             {
-                mesh.Dispose();
+                VisualMeshes[i].Dispose();
             }
         }
 
         public void Draw(DrawContext context)
         {
-            foreach (IMesh mesh in VisualMeshes)
+            for (int i = 0; i < VisualMeshes.Count; i++)
             {
-                mesh.Draw(context);
+                VisualMeshes[i].Draw(context);
             }
         }
     }
@@ -92,7 +100,7 @@ namespace TransportX.Rendering
             set => ColliderDebugModel?.DebugName = base.DebugName = value;
         }
 
-        public CollidableModel(IEnumerable<IMesh> visualMeshes, IEnumerable<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
+        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, IReadOnlyList<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
         {
             Collider = collider;
         }

@@ -83,25 +83,8 @@ namespace TransportX.Rendering
             ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
             Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
 
-            Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
-            foreach (Importing.Mesh mesh in modelData.Meshes)
-            {
-                foreach (Vector3 vertex in mesh.Vertices)
-                {
-                    if (vertex.X < min.X) min.X = vertex.X;
-                    if (vertex.Y < min.Y) min.Y = vertex.Y;
-                    if (vertex.Z < min.Z) min.Z = vertex.Z;
-
-                    if (max.X < vertex.X) max.X = vertex.X;
-                    if (max.Y < vertex.Y) max.Y = vertex.Y;
-                    if (max.Z < vertex.Z) max.Z = vertex.Z;
-                }
-            }
-
-            Box box = new Box(max.X - min.X, max.Y - min.Y, max.Z - min.Z);
-            Vector3 center = (min + max) / 2;
-            Pose colliderOffset = new(center);
+            Box box = new(baseModel.BoundingBox.Width, baseModel.BoundingBox.Height, baseModel.BoundingBox.Depth);
+            Pose colliderOffset = new(baseModel.BoundingBox.Center);
             ColliderBase<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
 
             return new CollidableModel(baseModel, collider);

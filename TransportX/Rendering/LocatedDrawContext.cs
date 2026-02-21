@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Spatial;
 
@@ -19,6 +20,7 @@ namespace TransportX.Rendering
         public required PlateOffset PlateOffset { get; init; }
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
+        public required BoundingFrustum Frustum { get; init; }
         public RenderPass Pass { get; init; } = RenderPass.Normal;
 
         public LocatedDrawContext()

@@ -21,7 +21,9 @@ namespace TransportX.Rendering
         protected static ID3D11RasterizerState? RasterizerState = null;
 
 
-        protected readonly IEnumerable<IMesh> Meshes;
+        protected readonly IReadOnlyList<IMesh> Meshes;
+
+        public BoundingBox BoundingBox { get; }
 
         public virtual string? DebugName
         {
@@ -44,10 +46,18 @@ namespace TransportX.Rendering
             }
         } = Vector4.One;
 
-        public WireframeDebugModel(IEnumerable<IMesh> meshes)
+        public WireframeDebugModel(IReadOnlyList<IMesh> meshes)
         {
             ReferenceCount++;
             Meshes = meshes;
+
+            BoundingBox boundingBox = Meshes.Count == 0 ? default : Meshes[0].BoundingBox;
+            for (int i = 1; i < Meshes.Count; i++)
+            {
+                boundingBox = BoundingBox.CreateMerged(boundingBox, Meshes[i].BoundingBox);
+            }
+
+            BoundingBox = boundingBox;
         }
 
         public static WireframeDebugModel CreateBoundingBox(ID3D11Device device, Material material, Vector3 min, Vector3 max)

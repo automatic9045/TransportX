@@ -330,7 +330,7 @@ namespace TransportX.Rendering.Importing
                 }
             }
 
-            return new Rendering.Model(meshes, LoadedTextures.Values);
+            return new Rendering.Model(meshes, LoadedTextures.Values.ToArray());
         }
     }
 }

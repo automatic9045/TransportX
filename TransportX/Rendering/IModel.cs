@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Physics;
 
@@ -12,6 +13,7 @@ namespace TransportX.Rendering
 {
     public interface IModel : IDisposable
     {
+        BoundingBox BoundingBox { get; }
         public string? DebugName { get; set; }
 
         void Draw(DrawContext context);

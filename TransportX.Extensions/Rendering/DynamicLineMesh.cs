@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Rendering;
 
@@ -15,7 +16,9 @@ namespace TransportX.Extensions.Rendering
 {
     public class DynamicLineMesh : IMesh
     {
-        public ID3D11Buffer VertexBuffer { get; }
+        private readonly ID3D11Buffer VertexBuffer;
+
+        public BoundingBox BoundingBox { get; private set; } = new(Vector3.Zero, Vector3.Zero);
         public Material Material { get; }
 
         public string? DebugName
@@ -62,6 +65,8 @@ namespace TransportX.Extensions.Rendering
                 vertices.CopyTo(dest);
             }
             context.Unmap(VertexBuffer, 0);
+
+            BoundingBox = BoundingBox.CreateFromPoints([Vector3.Zero, vector]);
         }
 
         public void Draw(DrawContext context)
