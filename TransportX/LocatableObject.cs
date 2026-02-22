@@ -37,21 +37,18 @@ namespace TransportX
             Locate(plateX, plateZ, position);
         }
 
-        protected PlateOffset Locate(int plateX, int plateZ, Pose pose, bool normalize)
+        protected PlateOffset Locate(int plateX, int plateZ, Pose pose)
         {
-            PlateOffset plateOffset = PlateOffset.Identity;
-            if (normalize)
-            {
-                int dx = GetPlateDelta(pose.Position.X);
-                int dz = GetPlateDelta(pose.Position.Z);
+            int dx = GetPlateDelta(pose.Position.X);
+            int dz = GetPlateDelta(pose.Position.Z);
 
-                pose = new(pose.Position - new Vector3(dx, 0, dz) * Plate.Size, pose.Orientation);
+            pose = new(pose.Position - new Vector3(dx, 0, dz) * Plate.Size, pose.Orientation);
 
-                plateX += dx;
-                plateZ += dz;
+            plateX += dx;
+            plateZ += dz;
 
-                plateOffset = new PlateOffset(dx, dz);
-            }
+            PlateOffset plateOffset = new(dx, dz);
+            if (PlateX == plateX && PlateZ == plateZ && Pose == pose) return plateOffset;
 
             PlateX = plateX;
             PlateZ = plateZ;
@@ -66,11 +63,6 @@ namespace TransportX
             {
                 return (int)float.Floor(delta / Plate.Size);
             }
-        }
-
-        protected PlateOffset Locate(int plateX, int plateZ, Pose pose)
-        {
-            return Locate(plateX, plateZ, pose, true);
         }
 
         protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 transform)

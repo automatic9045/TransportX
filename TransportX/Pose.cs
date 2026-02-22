@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TransportX
 {
-    public readonly struct Pose
+    public readonly struct Pose : IEquatable<Pose>
     {
         public static readonly Pose Identity = new Pose(Vector3.Zero);
 
@@ -35,6 +35,18 @@ namespace TransportX
 
         public Pose(float x, float y, float z) : this(x, y, z, Quaternion.Identity)
         {
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Pose a, in Pose b)
+        {
+            return a.Position == b.Position && a.Orientation == b.Orientation;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Pose a, in Pose b)
+        {
+            return a.Position != b.Position || a.Orientation != b.Orientation;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,5 +121,9 @@ namespace TransportX
             result.Translation = Position;
             return result;
         }
+
+        public bool Equals(Pose other) => this == other;
+        public override bool Equals(object? obj) => obj is Pose other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(Position, Orientation);
     }
 }
