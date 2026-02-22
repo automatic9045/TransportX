@@ -79,7 +79,7 @@ namespace TransportX.Rendering
             }
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(in DrawContext context)
         {
             for (int i = 0; i < VisualMeshes.Count; i++)
             {

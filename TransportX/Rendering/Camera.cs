@@ -43,10 +43,10 @@ namespace TransportX.Rendering
             Locate(Viewpoints.Current.Source, Viewpoints.Current.Pose);
         }
 
-        public void DrawBackground(CameraDrawContext context, IEnumerable<LocatedModel> models)
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
+        public void DrawBackground(in CameraDrawContext context, IEnumerable<LocatedModel> models)
             Matrix4x4 projection = CreateProjection(context.ClientSize);
             BoundingFrustum frustum = new(View * projection);
 
@@ -70,17 +70,17 @@ namespace TransportX.Rendering
             }
         }
 
-        public void DrawPlates(CameraDrawContext context, PlateCollection plates)
+        public void DrawPlates(in CameraDrawContext context, PlateCollection plates)
         {
             Matrix4x4 projection = CreateProjection(context.ClientSize);
             BoundingFrustum frustum = new(View * projection);
 
-            if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(RenderPass.Normal);
-            if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(RenderPass.Colliders);
-            if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(RenderPass.Network);
+            if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(context, RenderPass.Normal);
+            if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
+            if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(context, RenderPass.Network);
 
 
-            void Draw(RenderPass pass)
+            void Draw(in CameraDrawContext context, RenderPass pass)
             {
                 SetPixelShader(context, pass);
 
@@ -112,7 +112,7 @@ namespace TransportX.Rendering
             }
         }
 
-        public void DrawBodies(CameraDrawContext context, IEnumerable<RigidBody> bodies)
+        public void DrawBodies(in CameraDrawContext context, IEnumerable<RigidBody> bodies)
         {
             Matrix4x4 projection = CreateProjection(context.ClientSize);
             BoundingFrustum frustum = new(View * projection);

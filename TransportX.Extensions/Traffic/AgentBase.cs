@@ -97,7 +97,7 @@ namespace TransportX.Extensions.Traffic
             Locate(PoseSolver);
         }
 
-        public override void Draw(LocatedDrawContext context)
+        public override void Draw(in LocatedDrawContext context)
         {
             base.Draw(context);
 

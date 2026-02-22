@@ -85,7 +85,7 @@ namespace TransportX.Spatial
             }
         }
 
-        public override void Draw(LocatedDrawContext context)
+        public override void Draw(in LocatedDrawContext context)
         {
             switch (context.Pass)
             {

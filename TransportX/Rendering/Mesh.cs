@@ -109,7 +109,7 @@ namespace TransportX.Rendering
             IndexBuffer.Dispose();
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(in DrawContext context)
         {
             context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Vertex.Size, 0);
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);

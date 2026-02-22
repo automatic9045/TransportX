@@ -85,7 +85,7 @@ namespace TransportX.Extensions.Traffic
             DistanceToTarget = CurrentSensor.DistanceToTarget;
         }
 
-        public void Draw(LocatedDrawContext context)
+        public void Draw(in LocatedDrawContext context)
         {
             CurrentSensor.Draw(context);
         }

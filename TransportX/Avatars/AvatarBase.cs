@@ -90,7 +90,7 @@ namespace TransportX.Avatars
 
         public abstract bool Spawn(ILanePath path, ParticipantDirection heading, float s);
 
-        public override void Draw(LocatedDrawContext context)
+        public override void Draw(in LocatedDrawContext context)
         {
             base.Draw(context);
 

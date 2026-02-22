@@ -94,7 +94,7 @@ namespace TransportX.Extensions.Traffic
             }
         }
 
-        public void Draw(LocatedDrawContext context)
+        public void Draw(in LocatedDrawContext context)
         {
             if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
             if (Target is null) return;

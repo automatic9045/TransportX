@@ -104,7 +104,7 @@ namespace TransportX.Rendering
             }
         }
 
-        public virtual void Draw(DrawContext context)
+        public virtual void Draw(in DrawContext context)
         {
             if (TargetDevice != context.DeviceContext.Device)
             {

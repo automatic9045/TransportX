@@ -16,7 +16,7 @@ namespace TransportX.Rendering
         BoundingBox BoundingBox { get; }
         public string? DebugName { get; set; }
 
-        void Draw(DrawContext context);
+        void Draw(in DrawContext context);
     }
 
 

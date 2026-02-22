@@ -80,7 +80,7 @@ namespace TransportX.Network
             ParticipantsKey.Remove(participant);
         }
 
-        public void Draw(LocatedDrawContext context)
+        public void Draw(in LocatedDrawContext context)
         {
             if (context.Pass != RenderPass.Network) throw new InvalidOperationException();
 

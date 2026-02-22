@@ -69,7 +69,7 @@ namespace TransportX.Extensions.Rendering
             BoundingBox = BoundingBox.CreateFromPoints([Vector3.Zero, vector]);
         }
 
-        public void Draw(DrawContext context)
+        public void Draw(in DrawContext context)
         {
             context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Unsafe.SizeOf<Vertex>(), 0);
             context.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.LineList);

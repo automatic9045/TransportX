@@ -40,7 +40,7 @@ namespace TransportX.Spatial
         {
         }
 
-        public virtual void Draw(LocatedDrawContext context)
+        public virtual void Draw(in LocatedDrawContext context)
         {
             if (context.Pass != RenderPass.Normal) return;
 

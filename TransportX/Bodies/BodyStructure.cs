@@ -131,7 +131,7 @@ namespace TransportX.Bodies
             }
         }
 
-        public void Draw(LocatedDrawContext context)
+        public void Draw(in LocatedDrawContext context)
         {
             foreach (LocatedModel model in Items) model.Draw(context);
         }

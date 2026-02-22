@@ -14,6 +14,6 @@ namespace TransportX.Rendering
         Material Material { get; }
         string? DebugName { get; set; }
 
-        void Draw(DrawContext context);
+        void Draw(in DrawContext context);
     }
 }

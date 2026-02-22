@@ -38,7 +38,7 @@ namespace TransportX.Network
             foreach (ILanePath path in Paths) path.Dispose();
         }
 
-        public void Draw(LocatedDrawContext context)
+        public void Draw(in LocatedDrawContext context)
         {
             foreach (LocatedModel model in Models)
             {

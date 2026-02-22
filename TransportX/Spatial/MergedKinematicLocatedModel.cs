@@ -82,7 +82,7 @@ namespace TransportX.Spatial
             Model.Dispose();
         }
 
-        public override void Draw(LocatedDrawContext context)
+        public override void Draw(in LocatedDrawContext context)
         {
             foreach (LocatedModel child in Children)
             {
