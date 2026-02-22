@@ -132,13 +132,11 @@ namespace TransportX.Extensions.Traffic
                 DebugName = DebugName;
             }
 
-            TransformConstants transformConstants = new()
+            InstanceData instanceData = new()
             {
                 World = Matrix4x4.Transpose((Location.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
-                View = Matrix4x4.Transpose(context.View),
-                Projection = Matrix4x4.Transpose(context.Projection),
             };
-            context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
+            context.UpdateSingleInstanceBuffer(instanceData);
 
             float lengthShift = IsTargetOncoming ? 0 : Target.Length;
             Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
@@ -146,7 +144,14 @@ namespace TransportX.Extensions.Traffic
 
             DebugMesh!.Material.BaseColor = DebugColor.ToLinear();
             DebugMesh.SetVector(context.DeviceContext, localDelta);
-            DebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
+
+            DebugModel.Draw(new DrawContext()
+            {
+                DeviceContext = context.DeviceContext,
+                InstanceBuffer = context.SingleInstanceBuffer,
+                InstanceCount = 1,
+                MaterialBuffer = context.MaterialBuffer,
+            });
         }
 
 

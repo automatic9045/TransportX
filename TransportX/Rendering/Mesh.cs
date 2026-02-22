@@ -111,7 +111,9 @@ namespace TransportX.Rendering
 
         public void Draw(in DrawContext context)
         {
-            context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Vertex.Size, 0);
+            context.DeviceContext.IASetVertexBuffers(0, 2,
+                [VertexBuffer, context.InstanceBuffer], [(uint)Vertex.Size, (uint)InstanceData.Size], [0, 0]);
+
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
             context.DeviceContext.IASetPrimitiveTopology(Topology);
 
@@ -131,7 +133,8 @@ namespace TransportX.Rendering
 
             context.DeviceContext.PSSetShaderResources(0, TextureViews!);
 
-            context.DeviceContext.DrawIndexed(IndexBuffer.Description.ByteWidth / sizeof(uint), 0, 0);
+            uint indexCount = IndexBuffer.Description.ByteWidth / sizeof(uint);
+            context.DeviceContext.DrawIndexedInstanced(indexCount, (uint)context.InstanceCount, 0, 0, 0);
 
 
             static int BoolToInt32(bool value) => value ? 1 : 0;

@@ -24,12 +24,12 @@ namespace TransportX.Rendering
         protected readonly IDXClient DXClient;
 
         protected readonly ID3D11VertexShader VertexShader;
-        protected readonly ID3D11InputLayout InputLayout;
-
         protected readonly ID3D11PixelShader PixelShader;
         protected readonly ID3D11PixelShader DebugPixelShader;
 
-        protected readonly ID3D11Buffer TransformBuffer;
+        protected readonly ID3D11InputLayout InputLayout;
+
+        protected readonly ID3D11Buffer SingleInstanceBuffer;
         protected readonly ID3D11Buffer MaterialBuffer;
         protected readonly ID3D11Buffer EnvironmentBuffer;
         protected readonly ID3D11Buffer SceneBuffer;
@@ -48,18 +48,9 @@ namespace TransportX.Rendering
             DXHost = dxHost;
             DXClient = dxClient;
 
+
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
-
-            InputElementDescription[] elements = [
-                new InputElementDescription("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("NORMAL", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("TANGENT", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
-                new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
-            ];
-
-            InputLayout = DXHost.Device.CreateInputLayout(elements, vsBlob.AsSpan());
 
             Blob psBlob = ShaderFactory.CompileFromResource(DXHost.Device, "PS.hlsl", "main", "PS", "ps_5_0");
             PixelShader = DXHost.Device.CreatePixelShader(psBlob);
@@ -67,19 +58,37 @@ namespace TransportX.Rendering
             Blob debugPsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
             DebugPixelShader = DXHost.Device.CreatePixelShader(debugPsBlob);
 
-            BufferDescription transformBufferDesc = new()
+
+            InputElementDescription[] elements = [
+                new InputElementDescription("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("COLOR", 0, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("NORMAL", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("TANGENT", 0, Format.R32G32B32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+                new InputElementDescription("TEXCOORD", 0, Format.R32G32_Float, InputElementDescription.AppendAligned, 0, InputClassification.PerVertexData, 0),
+
+                new InputElementDescription("WORLD", 0, Format.R32G32B32A32_Float, 0, 1, InputClassification.PerInstanceData, 1),
+                new InputElementDescription("WORLD", 1, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                new InputElementDescription("WORLD", 2, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                new InputElementDescription("WORLD", 3, Format.R32G32B32A32_Float, InputElementDescription.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+            ];
+
+            InputLayout = DXHost.Device.CreateInputLayout(elements, vsBlob.AsSpan());
+
+
+            BufferDescription singleInstanceDesc = new()
             {
-                Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.TransformConstants.Size,
-                BindFlags = BindFlags.ConstantBuffer,
-                CPUAccessFlags = 0,
+                Usage = ResourceUsage.Dynamic,
+                ByteWidth = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Matrix4x4>(),
+                BindFlags = BindFlags.VertexBuffer,
+                CPUAccessFlags = CpuAccessFlags.Write,
+                MiscFlags = 0,
             };
-            TransformBuffer = DXHost.Device.CreateBuffer(transformBufferDesc);
+            SingleInstanceBuffer = DXHost.Device.CreateBuffer(singleInstanceDesc);
 
             BufferDescription materialBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.MaterialConstants.Size,
+                ByteWidth = (uint)MaterialConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -88,7 +97,7 @@ namespace TransportX.Rendering
             BufferDescription environmentBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.EnvironmentConstants.Size,
+                ByteWidth = (uint)EnvironmentConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
@@ -97,11 +106,12 @@ namespace TransportX.Rendering
             BufferDescription sceneBufferDesc = new()
             {
                 Usage = ResourceUsage.Default,
-                ByteWidth = (uint)Rendering.SceneConstants.Size,
+                ByteWidth = (uint)SceneConstants.Size,
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
             SceneBuffer = DXHost.Device.CreateBuffer(sceneBufferDesc);
+
 
             SamplerDescription samplerDesc = new()
             {
@@ -140,7 +150,6 @@ namespace TransportX.Rendering
                 ScissorEnable = false,
                 SlopeScaledDepthBias = 0,
             };
-
             RasterizerState = DXHost.Device.CreateRasterizerState(rasterizerDesc);
 
             BlendDescription blendDesc = new()
@@ -172,12 +181,12 @@ namespace TransportX.Rendering
         public void Dispose()
         {
             VertexShader.Dispose();
-            InputLayout.Dispose();
-
             PixelShader.Dispose();
             DebugPixelShader.Dispose();
 
-            TransformBuffer.Dispose();
+            InputLayout.Dispose();
+
+            SingleInstanceBuffer.Dispose();
             MaterialBuffer.Dispose();
             EnvironmentBuffer.Dispose();
             SceneBuffer.Dispose();
@@ -205,16 +214,24 @@ namespace TransportX.Rendering
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);
-            DXHost.Context.VSSetConstantBuffer(0, TransformBuffer);
+            DXHost.Context.VSSetConstantBuffer(0, SceneBuffer);
 
             DXHost.Context.PSSetConstantBuffer(0, MaterialBuffer);
             DXHost.Context.PSSetConstantBuffer(1, EnvironmentBuffer);
             DXHost.Context.PSSetConstantBuffer(2, SceneBuffer);
 
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
+            DXHost.Context.PSSetSampler(1, BrdfSamplerState);
+
+            DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
+
+
+            camera.UpdateProjection(size);
 
             SceneConstants sceneConstants = new()
             {
+                View = Matrix4x4.Transpose(camera.View),
+                Projection = Matrix4x4.Transpose(camera.Projection),
                 CameraPosition = camera.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
@@ -222,11 +239,7 @@ namespace TransportX.Rendering
             };
             DXHost.Context.UpdateSubresource(sceneConstants, SceneBuffer);
 
-            DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
-            DXHost.Context.PSSetSampler(1, BrdfSamplerState);
-
             EnvironmentProfile environment = world.DefaultEnvironment;
-
             EnvironmentConstants environmentConstants = new()
             {
                 IBLIntensity = environment.IBL.Intensity,
@@ -243,9 +256,8 @@ namespace TransportX.Rendering
                 DeviceContext = DXHost.Context,
                 PixelShader = PixelShader,
                 DebugPixelShader = DebugPixelShader,
-                TransformBuffer = TransformBuffer,
+                SingleInstanceBuffer = SingleInstanceBuffer,
                 MaterialBuffer = MaterialBuffer,
-                ClientSize = size,
             };
 
             camera.DrawBackground(cameraContext, world.BackgroundModels);

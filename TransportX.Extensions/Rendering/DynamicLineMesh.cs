@@ -71,7 +71,9 @@ namespace TransportX.Extensions.Rendering
 
         public void Draw(in DrawContext context)
         {
-            context.DeviceContext.IASetVertexBuffer(0, VertexBuffer, (uint)Unsafe.SizeOf<Vertex>(), 0);
+            context.DeviceContext.IASetVertexBuffers(0, 2,
+                [VertexBuffer, context.InstanceBuffer], [(uint)Vertex.Size, (uint)InstanceData.Size], [0, 0]);
+
             context.DeviceContext.IASetPrimitiveTopology(PrimitiveTopology.LineList);
 
             MaterialConstants materialConstants = new()

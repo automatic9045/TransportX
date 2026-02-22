@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using Vortice.Mathematics;
 
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -97,15 +98,23 @@ namespace TransportX.Spatial
                 {
                     if (Model.ColliderDebugModel is null) return;
 
-                    TransformConstants transformConstants = new()
-                    {
-                        World = Matrix4x4.Transpose(Body.Pose.ToPose().ToMatrix4x4()),
-                        View = Matrix4x4.Transpose(context.View),
-                        Projection = Matrix4x4.Transpose(context.Projection),
-                    };
-                    context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
+                    Matrix4x4 world = Body.Pose.ToPose().ToMatrix4x4();
+                    BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
+                    if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
-                    Model.ColliderDebugModel.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
+                    InstanceData instanceData = new()
+                    {
+                        World = Matrix4x4.Transpose(world),
+                    };
+                    context.UpdateSingleInstanceBuffer(instanceData);
+
+                    Model.ColliderDebugModel.Draw(new DrawContext()
+                    {
+                        DeviceContext = context.DeviceContext,
+                        InstanceBuffer = context.SingleInstanceBuffer,
+                        InstanceCount = 1,
+                        MaterialBuffer = context.MaterialBuffer,
+                    });
                     break;
                 }
             }

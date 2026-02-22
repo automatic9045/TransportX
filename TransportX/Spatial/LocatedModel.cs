@@ -48,15 +48,19 @@ namespace TransportX.Spatial
             BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
             if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
-            TransformConstants transformConstants = new()
+            InstanceData instanceData = new()
             {
                 World = Matrix4x4.Transpose(world),
-                View = Matrix4x4.Transpose(context.View),
-                Projection = Matrix4x4.Transpose(context.Projection),
             };
-            context.DeviceContext.UpdateSubresource(transformConstants, context.TransformBuffer);
+            context.UpdateSingleInstanceBuffer(instanceData);
 
-            Model.Draw(new(context.DeviceContext, context.TransformBuffer, context.MaterialBuffer));
+            Model.Draw(new DrawContext()
+            {
+                DeviceContext = context.DeviceContext,
+                InstanceBuffer = context.SingleInstanceBuffer,
+                InstanceCount = 1,
+                MaterialBuffer = context.MaterialBuffer,
+            });
         }
     }
 }

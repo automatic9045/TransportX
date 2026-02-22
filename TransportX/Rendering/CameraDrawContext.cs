@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,9 +13,8 @@ namespace TransportX.Rendering
         public required ID3D11DeviceContext DeviceContext { get; init; }
         public required ID3D11PixelShader PixelShader { get; init; }
         public required ID3D11PixelShader DebugPixelShader { get; init; }
-        public required ID3D11Buffer TransformBuffer { get; init; }
+        public required ID3D11Buffer SingleInstanceBuffer { get; init; }
         public required ID3D11Buffer MaterialBuffer { get; init; }
-        public required Size ClientSize { get; init; }
 
         public CameraDrawContext()
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,15 +11,13 @@ namespace TransportX.Rendering
 {
     public readonly struct DrawContext
     {
-        public ID3D11DeviceContext DeviceContext { get; }
-        public ID3D11Buffer TransformBuffer { get; }
-        public ID3D11Buffer MaterialBuffer { get; }
+        public required ID3D11DeviceContext DeviceContext { get; init; }
+        public required ID3D11Buffer InstanceBuffer { get; init; }
+        public required int InstanceCount { get; init; }
+        public required ID3D11Buffer MaterialBuffer { get; init; }
 
-        public DrawContext(ID3D11DeviceContext deviceContext, ID3D11Buffer transformBuffer, ID3D11Buffer materialBuffer)
+        public DrawContext()
         {
-            DeviceContext = deviceContext;
-            TransformBuffer = transformBuffer;
-            MaterialBuffer = materialBuffer;
         }
     }
 }

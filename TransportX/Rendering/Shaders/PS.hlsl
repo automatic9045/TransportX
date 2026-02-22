@@ -33,6 +33,8 @@ cbuffer EnvironmentBuffer : register(b1)
 
 cbuffer SceneBuffer : register(b2)
 {
+    float4x4 View;
+    float4x4 Projection;
     float3 CameraPosition;
     float _Padding3;
     float3 LightColor;

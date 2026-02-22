@@ -9,22 +9,6 @@ using System.Threading.Tasks;
 namespace TransportX.Rendering
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct TransformConstants
-    {
-        internal static readonly int Size = Marshal.SizeOf<TransformConstants>();
-
-
-        public Matrix4x4 World;
-        public Matrix4x4 View;
-        public Matrix4x4 Projection;
-
-        public TransformConstants()
-        {
-        }
-    }
-
-
-    [StructLayout(LayoutKind.Sequential)]
     public struct MaterialConstants
     {
         internal static readonly int Size = Marshal.SizeOf<MaterialConstants>();
@@ -68,6 +52,8 @@ namespace TransportX.Rendering
         internal static readonly int Size = Marshal.SizeOf<SceneConstants>();
 
 
+        public Matrix4x4 View;
+        public Matrix4x4 Projection;
         public Vector3 CameraPosition = Vector3.Zero;
         public float Padding1;
         public Vector3 LightColor = Vector3.Zero;

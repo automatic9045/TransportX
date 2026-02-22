@@ -17,13 +17,15 @@ namespace TransportX.Rendering
 {
     public class Camera : LocatableObject
     {
-        private Matrix4x4 View = default;
-
         public int DrawPlateCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
 
         public VisualLayers VisibleLayers { get; set; } = VisualLayers.Normal;
+
+        public Matrix4x4 View { get; protected set; } = default;
+        public Matrix4x4 Projection { get; protected set; } = default;
+        public BoundingFrustum Frustum { get; protected set; } = default;
 
         public Camera() : base()
         {
@@ -38,29 +40,33 @@ namespace TransportX.Rendering
             };
         }
 
-        public void UpdateLocation()
+        public void UpdateView()
         {
             Locate(Viewpoints.Current.Source, Viewpoints.Current.Pose);
         }
 
+        public void UpdateProjection(GdiSize clientSize)
         {
-            if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
+            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
+                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
+            Frustum = new(View * Projection);
+        }
 
         public void DrawBackground(in CameraDrawContext context, IEnumerable<LocatedModel> models)
-            Matrix4x4 projection = CreateProjection(context.ClientSize);
-            BoundingFrustum frustum = new(View * projection);
+        {
+            if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
             SetPixelShader(context, RenderPass.Normal);
 
             LocatedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
-                TransformBuffer = context.TransformBuffer,
+                SingleInstanceBuffer = context.SingleInstanceBuffer,
                 MaterialBuffer = context.MaterialBuffer,
                 PlateOffset = PlateOffset.Identity,
                 View = View,
-                Projection = projection,
-                Frustum = frustum,
+                Projection = Projection,
+                Frustum = Frustum,
             };
 
             foreach (LocatedModel model in models)
@@ -72,9 +78,6 @@ namespace TransportX.Rendering
 
         public void DrawPlates(in CameraDrawContext context, PlateCollection plates)
         {
-            Matrix4x4 projection = CreateProjection(context.ClientSize);
-            BoundingFrustum frustum = new(View * projection);
-
             if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(context, RenderPass.Normal);
             if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
             if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(context, RenderPass.Network);
@@ -96,12 +99,12 @@ namespace TransportX.Rendering
                                 LocatedDrawContext drawContext = new()
                                 {
                                     DeviceContext = context.DeviceContext,
-                                    TransformBuffer = context.TransformBuffer,
+                                    SingleInstanceBuffer = context.SingleInstanceBuffer,
                                     MaterialBuffer = context.MaterialBuffer,
                                     PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
                                     View = View,
-                                    Projection = projection,
-                                    Frustum = frustum,
+                                    Projection = Projection,
+                                    Frustum = Frustum,
                                     Pass = pass,
                                 };
                                 plate!.Draw(drawContext);
@@ -114,20 +117,17 @@ namespace TransportX.Rendering
 
         public void DrawBodies(in CameraDrawContext context, IEnumerable<RigidBody> bodies)
         {
-            Matrix4x4 projection = CreateProjection(context.ClientSize);
-            BoundingFrustum frustum = new(View * projection);
-
             foreach (RigidBody body in bodies)
             {
                 LocatedDrawContext drawContext = new()
                 {
                     DeviceContext = context.DeviceContext,
-                    TransformBuffer = context.TransformBuffer,
+                    SingleInstanceBuffer = context.SingleInstanceBuffer,
                     MaterialBuffer = context.MaterialBuffer,
                     PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
                     View = View,
-                    Projection = projection,
-                    Frustum = frustum,
+                    Projection = Projection,
+                    Frustum = Frustum,
                     Pass = RenderPass.Normal,
                 };
 
@@ -157,13 +157,6 @@ namespace TransportX.Rendering
                     body.Draw(drawContext);
                 }
             }
-        }
-
-        protected Matrix4x4 CreateProjection(GdiSize clientSize)
-        {
-            Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
-            return projection;
         }
 
         protected void SetPixelShader(in CameraDrawContext context, RenderPass pass)

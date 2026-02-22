@@ -11,7 +11,7 @@ namespace TransportX.Rendering
     [StructLayout(LayoutKind.Sequential)]
     public struct Vertex
     {
-        internal static readonly int Size = Marshal.SizeOf<Vertex>();
+        public static readonly int Size = Marshal.SizeOf<Vertex>();
 
 
         public Vector3 Position;
