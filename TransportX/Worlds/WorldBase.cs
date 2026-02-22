@@ -115,20 +115,19 @@ namespace TransportX.Worlds
             }
         }
 
-        public virtual void SetCameraPosition()
-        {
-            Plates.SetCameraPosition(Camera);
-            Bodies.SetCameraPosition(Camera);
-        }
-
         public virtual void SubTick(TimeSpan elapsed)
         {
             Bodies.SubTick(elapsed, Camera);
+            Camera.UpdateView();
+            Plates.SetCameraPosition(Camera);
+            Bodies.SetCameraPosition(Camera);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
             Bodies.Tick(elapsed);
+            Plates.SetCameraPosition(Camera);
+            Bodies.SetCameraPosition(Camera);
         }
 
         public virtual AvatarBase CreateAvatar(string path, string? identifier)

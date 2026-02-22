@@ -93,8 +93,6 @@ namespace TransportX
         {
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
             World.SubTick(elapsed);
-            Camera.UpdateView();
-            World.SetCameraPosition();
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
