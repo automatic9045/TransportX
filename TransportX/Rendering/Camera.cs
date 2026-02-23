@@ -38,7 +38,7 @@ namespace TransportX.Rendering
 
         public void UpdateView()
         {
-            Locate(Viewpoints.Current.Source, Viewpoints.Current.Pose);
+            Locate(Viewpoints.Current);
 
             Listener.OrientFront = Pose.Direction;
             Listener.OrientTop = Pose.Up;
