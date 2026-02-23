@@ -114,15 +114,7 @@ namespace TransportX.Extensions.Traffic
                 {
                     World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
                 };
-                context.UpdateSingleInstanceBuffer(instanceData);
-
-                DebugModel.Draw(new DrawContext()
-                {
-                    DeviceContext = context.DeviceContext,
-                    InstanceBuffer = context.SingleInstanceBuffer,
-                    InstanceCount = 1,
-                    MaterialBuffer = context.MaterialBuffer,
-                });
+                context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
             }
         }
     }

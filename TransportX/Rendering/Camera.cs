@@ -17,6 +17,11 @@ namespace TransportX.Rendering
 {
     public class Camera : LocatableObject
     {
+        private static readonly RenderPass[] AllPasses = Enum.GetValues<RenderPass>();
+
+
+        protected readonly RenderQueue RenderQueue = new RenderQueue();
+
         public int DrawPlateCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; } = new ViewpointSet();
@@ -29,20 +34,18 @@ namespace TransportX.Rendering
 
         public Camera() : base()
         {
-            Moved += (sender, e) =>
-            {
-                Listener.OrientFront = Pose.Direction;
-                Listener.OrientTop = Pose.Up;
-                Listener.Position = Pose.Position;
-                Listener.Velocity = Velocity;
-
-                View = Pose.Inverse(Pose).ToMatrix4x4();
-            };
         }
 
         public void UpdateView()
         {
             Locate(Viewpoints.Current.Source, Viewpoints.Current.Pose);
+
+            Listener.OrientFront = Pose.Direction;
+            Listener.OrientTop = Pose.Up;
+            Listener.Position = Pose.Position;
+            Listener.Velocity = Velocity;
+
+            View = Pose.Inverse(Pose).ToMatrix4x4();
         }
 
         public void UpdateProjection(GdiSize clientSize)
@@ -56,13 +59,10 @@ namespace TransportX.Rendering
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
-            SetPixelShader(context, RenderPass.Normal);
-
             LocatedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
-                SingleInstanceBuffer = context.SingleInstanceBuffer,
-                MaterialBuffer = context.MaterialBuffer,
+                RenderQueue = RenderQueue,
                 PlateOffset = PlateOffset.Identity,
                 View = View,
                 Projection = Projection,
@@ -74,6 +74,8 @@ namespace TransportX.Rendering
                 model.Pose = new Pose(Pose.Position);
                 model.Draw(drawContext);
             }
+
+            Flush(context);
         }
 
         public void DrawPlates(in CameraDrawContext context, PlateCollection plates)
@@ -82,11 +84,11 @@ namespace TransportX.Rendering
             if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
             if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(context, RenderPass.Network);
 
+            Flush(context);
+
 
             void Draw(in CameraDrawContext context, RenderPass pass)
             {
-                SetPixelShader(context, pass);
-
                 for (int i = DrawPlateCount - 1; 0 <= i; i--)
                 {
                     for (int x = PlateX - i; x <= PlateX + i; x++)
@@ -99,8 +101,7 @@ namespace TransportX.Rendering
                                 LocatedDrawContext drawContext = new()
                                 {
                                     DeviceContext = context.DeviceContext,
-                                    SingleInstanceBuffer = context.SingleInstanceBuffer,
-                                    MaterialBuffer = context.MaterialBuffer,
+                                    RenderQueue = RenderQueue,
                                     PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
                                     View = View,
                                     Projection = Projection,
@@ -122,8 +123,7 @@ namespace TransportX.Rendering
                 LocatedDrawContext drawContext = new()
                 {
                     DeviceContext = context.DeviceContext,
-                    SingleInstanceBuffer = context.SingleInstanceBuffer,
-                    MaterialBuffer = context.MaterialBuffer,
+                    RenderQueue = RenderQueue,
                     PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
                     View = View,
                     Projection = Projection,
@@ -133,7 +133,6 @@ namespace TransportX.Rendering
 
                 if (VisibleLayers.HasFlag(VisualLayers.Normal))
                 {
-                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
 
@@ -143,7 +142,6 @@ namespace TransportX.Rendering
                     {
                         Pass = RenderPass.Colliders,
                     };
-                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
 
@@ -153,16 +151,30 @@ namespace TransportX.Rendering
                     {
                         Pass = RenderPass.Traffic,
                     };
-                    SetPixelShader(context, drawContext.Pass);
                     body.Draw(drawContext);
                 }
             }
+
+            Flush(context);
         }
 
-        protected void SetPixelShader(in CameraDrawContext context, RenderPass pass)
+        protected void Flush(in CameraDrawContext context)
         {
-            ID3D11PixelShader shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
-            context.DeviceContext.PSSetShader(shader);
+            foreach (RenderPass pass in AllPasses)
+            {
+                ID3D11PixelShader shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
+                context.DeviceContext.PSSetShader(shader);
+
+                RenderQueue.Render(pass, new DrawContext()
+                {
+                    DeviceContext = context.DeviceContext,
+                    InstanceBuffer = context.InstanceBuffer,
+                    InstanceCount = 0,
+                    MaterialBuffer = context.MaterialBuffer,
+                });
+            }
+
+            RenderQueue.Clear();
         }
 
 

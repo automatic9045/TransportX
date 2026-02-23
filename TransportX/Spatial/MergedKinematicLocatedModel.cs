@@ -19,12 +19,12 @@ namespace TransportX.Spatial
 {
     public class MergedKinematicLocatedModel : KinematicLocatedModel
     {
-        protected readonly List<InstancedGroup> Groups;
+        protected readonly IReadOnlyList<LocatedModel> Children;
 
-        protected MergedKinematicLocatedModel(Simulation simulation, ICollidableModel physicsWrapper, BodyHandle handle, List<InstancedGroup> groups)
+        protected MergedKinematicLocatedModel(Simulation simulation, ICollidableModel physicsWrapper, BodyHandle handle, List<LocatedModel> children)
             : base(simulation, physicsWrapper, handle, Pose.Identity)
         {
-            Groups = groups;
+            Children = children;
         }
 
         public static MergedKinematicLocatedModel Create(ID3D11Device device, IPhysicsHost physicsHost, IReadOnlyList<KinematicLocatedModelTemplate> sources)
@@ -34,6 +34,7 @@ namespace TransportX.Spatial
             int totalTriangles = sources.Sum(m => m.Model.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
             physicsHost.Simulation.BufferPool.Take(totalTriangles, out Buffer<Triangle> combinedTriangles);
 
+            List<LocatedModel> children = [];
             int writeIndex = 0;
             for (int i = 0; i < sources.Count; i++)
             {
@@ -58,6 +59,9 @@ namespace TransportX.Spatial
                     physicsHost.Simulation.BufferPool.Return(ref combinedTriangles);
                     throw new NotSupportedException("メッシュ以外のコライダーを結合することはできません。");
                 }
+
+                LocatedModel visualChild = new(source.Model, source.Pose);
+                children.Add(visualChild);
             }
 
             ColliderMesh newMesh = new(combinedTriangles, Vector3.One, physicsHost.Simulation.BufferPool);
@@ -75,99 +79,37 @@ namespace TransportX.Spatial
             BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
             physicsHost.SetMaterial(handle, material);
 
-
-            IEnumerable<IGrouping<IModel, KinematicLocatedModelTemplate>> groupedSources = sources.GroupBy(x => x.Model);
-            List<InstancedGroup> groups = [];
-            foreach (IGrouping<IModel, KinematicLocatedModelTemplate> group in groupedSources)
-            {
-                Pose[] poses = group.Select(x => x.Pose).ToArray();
-                groups.Add(new InstancedGroup(device, group.Key, poses));
-            }
-
-            return new MergedKinematicLocatedModel(physicsHost.Simulation, physicsWrapper, handle, groups);
+            return new MergedKinematicLocatedModel(physicsHost.Simulation, physicsWrapper, handle, children);
         }
 
         public override void Dispose()
         {
             base.Dispose();
             Model.Dispose();
-            for (int i = 0; i < Groups.Count; i++) Groups[i].Dispose();
         }
 
         public override void Draw(in LocatedDrawContext context)
         {
             if (context.Pass == RenderPass.Normal)
             {
-                Pose mergedPose = Pose * context.PlateOffset.Pose;
-
-                for (int i = 0; i < Groups.Count; i++)
+                for (int i = 0; i < Children.Count; i++)
                 {
-                    InstancedGroup group = Groups[i];
+                    LocatedModel child = Children[i];
+                    child.Pose = child.BasePose * Pose;
 
-                    int visibleCount = 0;
-                    for (int j = 0; j < group.LocalPoses.Count; j++)
+                    Matrix4x4 world = (child.Pose * context.PlateOffset.Pose).ToMatrix4x4();
+                    BoundingBox worldBox = BoundingBox.Transform(child.Model.BoundingBox, world);
+                    if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) continue;
+
+                    InstanceData instanceData = new()
                     {
-                        Matrix4x4 world = (group.LocalPoses[j] * mergedPose).ToMatrix4x4();
-                        BoundingBox worldBox = BoundingBox.Transform(group.Model.BoundingBox, world);
-
-                        if (context.Frustum.Contains(worldBox) != ContainmentType.Disjoint)
-                        {
-                            group.MappedData[visibleCount] = new InstanceData()
-                            {
-                                World = Matrix4x4.Transpose(world),
-                            };
-                            visibleCount++;
-                        }
-                    }
-
-                    if (0 < visibleCount)
-                    {
-                        ReadOnlySpan<InstanceData> visibleInstances = new(group.MappedData, 0, visibleCount);
-                        context.UpdateInstanceBuffer(group.InstanceBuffer, visibleInstances);
-
-                        group.Model.Draw(new DrawContext()
-                        {
-                            DeviceContext = context.DeviceContext,
-                            InstanceBuffer = group.InstanceBuffer,
-                            InstanceCount = visibleCount,
-                            MaterialBuffer = context.MaterialBuffer,
-                        });
-                    }
+                        World = Matrix4x4.Transpose(world),
+                    };
+                    context.RenderQueue.Submit(context.Pass, child.Model, instanceData);
                 }
             }
 
             base.Draw(context);
-        }
-
-
-        protected class InstancedGroup : IDisposable
-        {
-            public IModel Model { get; }
-            public ID3D11Buffer InstanceBuffer { get; }
-            public IReadOnlyList<Pose> LocalPoses { get; }
-            public InstanceData[] MappedData { get; }
-
-            public InstancedGroup(ID3D11Device device, IModel model, IReadOnlyList<Pose> localPoses)
-            {
-                Model = model;
-                LocalPoses = localPoses;
-                MappedData = new InstanceData[localPoses.Count];
-
-                BufferDescription desc = new()
-                {
-                    Usage = ResourceUsage.Dynamic,
-                    ByteWidth = (uint)(InstanceData.Size * localPoses.Count),
-                    BindFlags = BindFlags.VertexBuffer,
-                    CPUAccessFlags = CpuAccessFlags.Write,
-                    MiscFlags = 0,
-                };
-                InstanceBuffer = device.CreateBuffer(desc);
-            }
-
-            public void Dispose()
-            {
-                InstanceBuffer.Dispose();
-            }
         }
     }
 }

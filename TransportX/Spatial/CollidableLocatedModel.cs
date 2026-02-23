@@ -106,15 +106,7 @@ namespace TransportX.Spatial
                     {
                         World = Matrix4x4.Transpose(world),
                     };
-                    context.UpdateSingleInstanceBuffer(instanceData);
-
-                    Model.ColliderDebugModel.Draw(new DrawContext()
-                    {
-                        DeviceContext = context.DeviceContext,
-                        InstanceBuffer = context.SingleInstanceBuffer,
-                        InstanceCount = 1,
-                        MaterialBuffer = context.MaterialBuffer,
-                    });
+                    context.RenderQueue.Submit(context.Pass, Model.ColliderDebugModel, instanceData);
                     break;
                 }
             }

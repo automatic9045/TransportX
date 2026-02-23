@@ -29,7 +29,7 @@ namespace TransportX.Rendering
 
         protected readonly ID3D11InputLayout InputLayout;
 
-        protected readonly ID3D11Buffer SingleInstanceBuffer;
+        protected readonly ID3D11Buffer InstanceBuffer;
         protected readonly ID3D11Buffer MaterialBuffer;
         protected readonly ID3D11Buffer EnvironmentBuffer;
         protected readonly ID3D11Buffer SceneBuffer;
@@ -75,15 +75,15 @@ namespace TransportX.Rendering
             InputLayout = DXHost.Device.CreateInputLayout(elements, vsBlob.AsSpan());
 
 
-            BufferDescription singleInstanceDesc = new()
+            BufferDescription instanceBufferDesc = new()
             {
                 Usage = ResourceUsage.Dynamic,
-                ByteWidth = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Matrix4x4>(),
+                ByteWidth = (uint)InstanceData.Size * 65536,
                 BindFlags = BindFlags.VertexBuffer,
                 CPUAccessFlags = CpuAccessFlags.Write,
                 MiscFlags = 0,
             };
-            SingleInstanceBuffer = DXHost.Device.CreateBuffer(singleInstanceDesc);
+            InstanceBuffer = DXHost.Device.CreateBuffer(instanceBufferDesc);
 
             BufferDescription materialBufferDesc = new()
             {
@@ -186,7 +186,7 @@ namespace TransportX.Rendering
 
             InputLayout.Dispose();
 
-            SingleInstanceBuffer.Dispose();
+            InstanceBuffer.Dispose();
             MaterialBuffer.Dispose();
             EnvironmentBuffer.Dispose();
             SceneBuffer.Dispose();
@@ -250,13 +250,12 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetShaderResource(10, environment.IBL.DiffuseTexture!);
             DXHost.Context.PSSetShaderResource(11, environment.IBL.SpecularTexture!);
 
-
             CameraDrawContext cameraContext = new()
             {
                 DeviceContext = DXHost.Context,
                 PixelShader = PixelShader,
                 DebugPixelShader = DebugPixelShader,
-                SingleInstanceBuffer = SingleInstanceBuffer,
+                InstanceBuffer = InstanceBuffer,
                 MaterialBuffer = MaterialBuffer,
             };
 
