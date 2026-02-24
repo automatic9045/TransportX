@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D;
 
+using TransportX.Components;
 using TransportX.Rendering;
 using TransportX.Traffic;
 
@@ -29,6 +30,8 @@ namespace TransportX.Network
 
         public LanePin From { get; }
         public LanePin To { get; }
+
+        public IComponentCollection Components { get; } = new ComponentCollection();
 
         private readonly List<ITrafficParticipant> ParticipantsKey = [];
         public IReadOnlyList<ITrafficParticipant> Participants => ParticipantsKey;

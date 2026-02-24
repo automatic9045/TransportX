@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Rendering;
 using TransportX.Traffic;
 
@@ -18,6 +19,8 @@ namespace TransportX.Network
         LanePin From { get; }
         LanePin To { get; }
         float Length { get; }
+
+        IComponentCollection Components { get; }
 
         IReadOnlyList<ITrafficParticipant> Participants { get; }
 
