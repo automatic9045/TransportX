@@ -36,7 +36,7 @@ namespace TransportX.Scripting.Commands
         private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
         public WidthPointList Width { get; }
 
-        public IComponentCollection Components { get; } = new ComponentCollection();
+        public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
         public JunctionPathTemplate(ScriptWorld world, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
         {

@@ -20,7 +20,7 @@ namespace TransportX.Network
         LanePin To { get; }
         float Length { get; }
 
-        IComponentCollection Components { get; }
+        IComponentCollection<IComponent> Components { get; }
 
         IReadOnlyList<ITrafficParticipant> Participants { get; }
 

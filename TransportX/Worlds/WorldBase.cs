@@ -9,6 +9,7 @@ using BepuPhysics;
 
 using TransportX.Avatars;
 using TransportX.Bodies;
+using TransportX.Components;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Environment;
@@ -44,6 +45,9 @@ namespace TransportX.Worlds
         public PlateCollection Plates { get; } = [];
         public BodyCollection Bodies { get; } = [];
 
+        private readonly WorldComponentCollection ComponentsKey = [];
+        public IComponentCollection<IWorldComponent> Components => ComponentsKey;
+
         public AvatarBase? Avatar
         {
             get => Camera.Viewpoints.AttachedTo;
@@ -69,6 +73,8 @@ namespace TransportX.Worlds
 
         public virtual void Dispose()
         {
+            ComponentsKey.Dispose();
+
             foreach (LocatedModel model in BackgroundModels) (model as CollidableLocatedModel)?.Dispose();
             Plates.Dispose();
             Bodies.Dispose();
@@ -81,6 +87,7 @@ namespace TransportX.Worlds
         public virtual void OnStart()
         {
             Validate();
+            ComponentsKey.OnStart();
         }
 
         protected virtual void Validate()
@@ -117,6 +124,7 @@ namespace TransportX.Worlds
 
         public virtual void SubTick(TimeSpan elapsed)
         {
+            ComponentsKey.SubTick(elapsed);
             Bodies.SubTick(elapsed, Camera);
             Camera.UpdateView();
             Plates.SetCameraPosition(Camera);
@@ -125,6 +133,7 @@ namespace TransportX.Worlds
 
         public virtual void Tick(TimeSpan elapsed)
         {
+            ComponentsKey.Tick(elapsed);
             Bodies.Tick(elapsed);
             Plates.SetCameraPosition(Camera);
             Bodies.SetCameraPosition(Camera);

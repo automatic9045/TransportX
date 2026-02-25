@@ -31,7 +31,7 @@ namespace TransportX.Network
         public LanePin From { get; }
         public LanePin To { get; }
 
-        public IComponentCollection Components { get; } = new ComponentCollection();
+        public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
         private readonly List<ITrafficParticipant> ParticipantsKey = [];
         public IReadOnlyList<ITrafficParticipant> Participants => ParticipantsKey;

@@ -8,15 +8,22 @@ using System.Threading.Tasks;
 
 namespace TransportX.Components
 {
-    public class ComponentCollection : IComponentCollection
+    public class ComponentCollection<TBase> : IComponentCollection<TBase> where TBase : class, IComponent
     {
-        private readonly ConcurrentDictionary<Type, IComponent> Components = [];
+        private readonly ConcurrentDictionary<Type, TBase> Components = [];
 
         public int Count => Components.Count;
 
-        public bool TryGet<T>(out T component) where T : class, IComponent
+        public event EventHandler<ComponentEventArgs<TBase>>? Added;
+        public event EventHandler<ComponentEventArgs<TBase>>? Removed;
+
+        public ComponentCollection()
         {
-            if (Components.TryGetValue(typeof(T), out IComponent? baseComponent))
+        }
+
+        public bool TryGet<T>(out T component) where T : class, TBase
+        {
+            if (Components.TryGetValue(typeof(T), out TBase? baseComponent))
             {
                 component = (T)baseComponent;
                 return true;
@@ -26,25 +33,27 @@ namespace TransportX.Components
             return false;
         }
 
-        public T Get<T>() where T : class, IComponent
+        public T Get<T>() where T : class, TBase
         {
             return TryGet(out T component) ? component
                 : throw new KeyNotFoundException($"コンポーネント '{typeof(T)}' は登録されていません。");
         }
 
-        private void AddUnchecked(Type type, IComponent component)
+        private void AddUnchecked(Type type, TBase component)
         {
             if (!Components.TryAdd(type, component))
             {
                 throw new InvalidOperationException($"コンポーネント '{type}' は既に登録されています。");
             }
+
+            Added?.Invoke(this, new ComponentEventArgs<TBase>(component));
         }
 
-        public void Add(Type type, IComponent component)
+        public void Add(Type type, TBase component)
         {
-            if (type.IsValueType || !typeof(IComponent).IsAssignableFrom(type))
+            if (type.IsValueType || !typeof(TBase).IsAssignableFrom(type))
             {
-                throw new InvalidOperationException($"型 '{type}' は {typeof(IComponent)} を実装する参照型ではありません。");
+                throw new InvalidOperationException($"型 '{type}' は {typeof(TBase)} を実装する参照型ではありません。");
             }
 
             Type componentType = component.GetType();
@@ -56,30 +65,38 @@ namespace TransportX.Components
             AddUnchecked(type, component);
         }
 
-        public void Add<T>(T component) where T : class, IComponent
+        public void Add<T>(T component) where T : class, TBase
         {
             AddUnchecked(typeof(T), component);
         }
 
         public bool Remove(Type type)
         {
-            return Components.TryRemove(type, out _);
+            if (Components.TryRemove(type, out TBase? compoennt))
+            {
+                Removed?.Invoke(this, new ComponentEventArgs<TBase>(compoennt));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        public bool Remove<T>() where T : class, IComponent
+        public bool Remove<T>() where T : class, TBase
         {
             return Remove(typeof(T));
         }
 
-        public void AddTo(IComponentCollection dest)
+        public void AddTo(IComponentCollection<TBase> dest)
         {
-            foreach ((Type type, IComponent component) in Components)
+            foreach ((Type type, TBase component) in Components)
             {
                 dest.Add(type, component);
             }
         }
 
-        public IEnumerator<IComponent> GetEnumerator() => Components.Values.GetEnumerator();
+        public IEnumerator<TBase> GetEnumerator() => Components.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
