@@ -4,6 +4,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="TransportX.Domains.RoadTraffic/TransportX.Domains.RoadTraffic.csproj" />
   <Project Path="TransportX.Extensions/TransportX.Extensions.csproj" />
   <Project Path="TransportX.Player/TransportX.Player.csproj" />
   <Project Path="TransportX.Sample/TransportX.Sample.csproj" />
