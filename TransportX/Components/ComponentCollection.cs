@@ -32,17 +32,51 @@ namespace TransportX.Components
                 : throw new KeyNotFoundException($"コンポーネント '{typeof(T)}' は登録されていません。");
         }
 
+        private void AddUnchecked(Type type, IComponent component)
+        {
+            if (!Components.TryAdd(type, component))
+            {
+                throw new InvalidOperationException($"コンポーネント '{type}' は既に登録されています。");
+            }
+        }
+
+        public void Add(Type type, IComponent component)
+        {
+            if (type.IsValueType || !typeof(IComponent).IsAssignableFrom(type))
+            {
+                throw new InvalidOperationException($"型 '{type}' は {typeof(IComponent)} を実装する参照型ではありません。");
+            }
+
+            Type componentType = component.GetType();
+            if (!type.IsAssignableFrom(componentType))
+            {
+                throw new ArgumentException($"{nameof(component)} パラメータの型 '{componentType}' は '{type}' と互換性がありません。", nameof(component));
+            }
+
+            AddUnchecked(type, component);
+        }
+
         public void Add<T>(T component) where T : class, IComponent
         {
-            if (!Components.TryAdd(typeof(T), component))
-            {
-                throw new InvalidOperationException($"コンポーネント '{typeof(T)}' は既に登録されています。");
-            }
+            AddUnchecked(typeof(T), component);
+        }
+
+        public bool Remove(Type type)
+        {
+            return Components.TryRemove(type, out _);
         }
 
         public bool Remove<T>() where T : class, IComponent
         {
-            return Components.TryRemove(typeof(T), out _);
+            return Remove(typeof(T));
+        }
+
+        public void AddTo(IComponentCollection dest)
+        {
+            foreach ((Type type, IComponent component) in Components)
+            {
+                dest.Add(type, component);
+            }
         }
 
         public IEnumerator<IComponent> GetEnumerator() => Components.Values.GetEnumerator();

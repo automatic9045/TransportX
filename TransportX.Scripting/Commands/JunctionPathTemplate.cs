@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 
@@ -34,6 +35,8 @@ namespace TransportX.Scripting.Commands
 
         private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
         public WidthPointList Width { get; }
+
+        public IComponentCollection Components { get; } = new ComponentCollection();
 
         public JunctionPathTemplate(ScriptWorld world, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
         {
@@ -155,6 +158,8 @@ namespace TransportX.Scripting.Commands
                 if (!IsFinalized) BezierToEnd();
                 path = new CompositeLanePath(from, to, Curves, Width.Items);
             }
+
+            Components.AddTo(path.Components);
 
             junction.Wire(path);
             return path;
