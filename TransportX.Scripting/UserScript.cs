@@ -65,12 +65,12 @@ namespace TransportX.Scripting
                 }
             }
 
-            string scriptText;
+            string rawScriptText;
             try
             {
                 UTF8Encoding strictUtf8 = new(false, true);
                 using StreamReader reader = new(filePath, strictUtf8, true);
-                scriptText = reader.ReadToEnd();
+                rawScriptText = reader.ReadToEnd();
             }
             catch (DecoderFallbackException ex)
             {
@@ -80,7 +80,7 @@ namespace TransportX.Scripting
                     Exception = ex,
                 };
                 errorCollector.Report(error);
-                scriptText = string.Empty;
+                rawScriptText = string.Empty;
             }
             catch (Exception ex)
             {
@@ -89,9 +89,10 @@ namespace TransportX.Scripting
                     Exception = ex,
                 };
                 errorCollector.Report(error);
-                scriptText = string.Empty;
+                rawScriptText = string.Empty;
             }
 
+            string scriptText = rawScriptText.Replace("#load \"__Editor.csx\"", null, StringComparison.OrdinalIgnoreCase);
             Script<TResult> script = CSharpScript.Create<TResult>(scriptText, options, typeof(TCommander));
 
             ImmutableArray<Diagnostic> diagnostics = script.Compile();
