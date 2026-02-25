@@ -3,7 +3,7 @@
     <Title>サンプルワールド</Title>
     <Description>動作確認用のワールドです。</Description>
     <Author>automatic9045</Author>
-    <Path>$(bin)\TransportX.Scripting.dll</Path>
+    <Path>$(bin)TransportX.Scripting.dll</Path>
     <Args>
         <Arg>BasicSample\World.csx</Arg>
     </Args>

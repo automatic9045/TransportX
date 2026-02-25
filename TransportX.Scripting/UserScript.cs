@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,8 +13,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
+using TransportX.Dependency;
 using TransportX.Diagnostics;
-using TransportX.Scripting.Commands;
+using TransportX.IO;
+
+using TransportX.Scripting.Data.Scripts;
 
 namespace TransportX.Scripting
 {
@@ -26,14 +30,69 @@ namespace TransportX.Scripting
             Script = script;
         }
 
-        public static UserScript<TCommander, TResult> FromFile(string filePath, IErrorCollector errorCollector, bool setErrorAsFatal)
+        public static UserScript<TCommander, TResult> FromFile(PluginLoadContext context, string filePath, IErrorCollector errorCollector, bool setErrorAsFatal)
         {
-            Script<TResult> script;
-            using (FileStream file = new(filePath, FileMode.Open))
+            string manifestPath = Path.ChangeExtension(filePath, ".manifest.xml");
+            ScriptManifest manifest = !Path.Exists(manifestPath) ? new()
+                : Data.XmlSerializer<ScriptManifest>.FromXml(manifestPath, errorCollector) ?? new();
+
+            ScriptOptions options = ScriptOptionFactory.Default.WithFilePath(filePath);
+            string localBaseDirectory = Path.GetDirectoryName(filePath)!;
+            foreach (Data.Scripts.Dependency dependency in manifest.Dependencies)
             {
-                ScriptOptions options = ScriptWorld.ScriptOptions.WithFilePath(filePath);
-                script = CSharpScript.Create<TResult>(file, options, typeof(TCommander));
+                errorCollector.ReportRange(dependency.Errors);
+
+                string assemblyPath = Path.GetFullPath(Path.Combine(localBaseDirectory, PathMacros.Expand(dependency.Path.Value)));
+                if (!File.Exists(assemblyPath))
+                {
+                    Error error = new(ErrorLevel.Error, $"依存関係 '{assemblyPath}' が見つかりませんでした。", manifestPath);
+                    errorCollector.Report(error);
+                    continue;
+                }
+
+                try
+                {
+                    Assembly assembly = context.LoadFromAssemblyPath(assemblyPath);
+                    options = options.AddReferencesAndImports(assembly);
+                }
+                catch (Exception ex)
+                {
+                    Error error = new(ErrorLevel.Error, $"依存関係 '{assemblyPath}' が読み込めませんでした。", manifestPath)
+                    {
+                        Exception = ex,
+                    };
+                    errorCollector.Report(error);
+                }
             }
+
+            string scriptText;
+            try
+            {
+                UTF8Encoding strictUtf8 = new(false, true);
+                using StreamReader reader = new(filePath, strictUtf8, true);
+                scriptText = reader.ReadToEnd();
+            }
+            catch (DecoderFallbackException ex)
+            {
+                Error error = new(setErrorAsFatal ? ErrorLevel.Fatal : ErrorLevel.Error,
+                    "サポートされない文字コードです。Shift-JIS 等で保存されている可能性があります。文字化けを防ぐため、ファイルを UTF-8 で保存し直してください。", filePath)
+                {
+                    Exception = ex,
+                };
+                errorCollector.Report(error);
+                scriptText = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Error error = new(setErrorAsFatal ? ErrorLevel.Fatal : ErrorLevel.Error, $"スクリプトファイル '{filePath}' を読み込めませんでした。", filePath)
+                {
+                    Exception = ex,
+                };
+                errorCollector.Report(error);
+                scriptText = string.Empty;
+            }
+
+            Script<TResult> script = CSharpScript.Create<TResult>(scriptText, options, typeof(TCommander));
 
             ImmutableArray<Diagnostic> diagnostics = script.Compile();
             foreach (Diagnostic diagnostic in diagnostics)

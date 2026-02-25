@@ -29,7 +29,7 @@ namespace TransportX.Scripting.Commands
 
         public void OnDispose(string scriptPath)
         {
-            UserScript<Commander, object> script = UserScript<Commander, object>.FromFile(scriptPath, World.ErrorCollector, false);
+            UserScript<Commander, object> script = UserScript<Commander, object>.FromFile(World.WorldContext, scriptPath, World.ErrorCollector, false);
             OnDispose(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
         }
 
@@ -40,7 +40,7 @@ namespace TransportX.Scripting.Commands
 
         public void OnTick(string scriptPath)
         {
-            UserScript<TickCommander, object> script = UserScript<TickCommander, object>.FromFile(scriptPath, World.ErrorCollector, false);
+            UserScript<TickCommander, object> script = UserScript<TickCommander, object>.FromFile(World.WorldContext, scriptPath, World.ErrorCollector, false);
             OnTick(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
         }
 

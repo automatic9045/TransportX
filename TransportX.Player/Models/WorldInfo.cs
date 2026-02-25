@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
+using TransportX.IO;
 using TransportX.Worlds;
 
 namespace TransportX.Models
@@ -22,7 +23,7 @@ namespace TransportX.Models
         public string Path
         {
             get => field;
-            set => field = ExpandMacros(value);
+            set => field = PathMacros.Expand(value);
         } = string.Empty;
 
         public string? Identifier { get; set; } = null;
@@ -30,7 +31,7 @@ namespace TransportX.Models
         public string GamePath
         {
             get => field;
-            set => field = ExpandMacros(value);
+            set => field = PathMacros.Expand(value);
         } = typeof(IWorldInfo).Assembly.Location;
 
         [XmlArrayItem("Arg")]
@@ -40,12 +41,6 @@ namespace TransportX.Models
         public string InfoPath { get; private set; } = string.Empty;
         [XmlIgnore]
         IReadOnlyList<string> IWorldInfo.Args => Args;
-
-        private string ExpandMacros(string pathWithMacros)
-        {
-            string binDirectory = System.IO.Path.GetDirectoryName(typeof(WorldInfo).Assembly.Location)!;
-            return pathWithMacros.Replace("$(bin)", binDirectory);
-        }
 
         internal void Serialize(string path)
         {

@@ -45,7 +45,7 @@ namespace TransportX.Scripting.Data
                 return field;
             }
 
-            private bool TryParseStandardValue<T>(string source, out T result)
+            private static bool TryParseStandardValue<T>(string source, out T result)
             {
                 Type type = typeof(T);
                 if (type == typeof(string))
@@ -80,18 +80,6 @@ namespace TransportX.Scripting.Data
 
                 result = default!;
                 return false;
-            }
-
-            private void SetToField<T>(FieldInfo field, string source, string displayName, IXmlLineInfo lineInfo)
-            {
-                if (TryParseStandardValue<T>(source, out T result))
-                {
-                    field.SetValue(Source, CreateValue(result, lineInfo));
-                }
-                else
-                {
-                    ReportInvalidValueError(displayName, source);
-                }
             }
 
             public void ReadAttribute<TSource, TTarget>(string elementName, Converter<TSource, TTarget> converter, string? displayName = null, bool isRequired = false)
