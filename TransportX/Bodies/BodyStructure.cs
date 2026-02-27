@@ -22,7 +22,8 @@ namespace TransportX.Bodies
 
         public LocatedModel this[int index] => Items[index];
         public int Count => Items.Count;
-        public IEnumerator<LocatedModel> GetEnumerator() => Items.GetEnumerator();
+        public List<LocatedModel>.Enumerator GetEnumerator() => Items.GetEnumerator();
+        IEnumerator<LocatedModel> IEnumerable<LocatedModel>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
