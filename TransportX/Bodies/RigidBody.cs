@@ -26,8 +26,10 @@ namespace TransportX.Bodies
 
             Moved += (sender, e) =>
             {
-                LocatedModel? rootModel = Structure.RootModel;
-                if (rootModel is not null && rootModel is not DynamicLocatedModel) rootModel.Pose = Pose;
+                foreach (LocatedModel model in Structure)
+                {
+                    if (model is not DynamicLocatedModel) model.Pose = model.BasePose * Pose;
+                }
             };
         }
 
