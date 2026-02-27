@@ -45,10 +45,7 @@ namespace TransportX.Rendering.Importing
 
             try
             {
-                byte[] data = File.ReadAllBytes(path);
-                using MemoryStream stream = new(data);
-                string extension = Path.GetExtension(path).TrimStart('.');
-                Scene scene = Importer.ImportFileFromStream(stream, steps, extension);
+                Scene scene = Importer.ImportFile(path, steps);
 
 
                 Mesh[] meshes = new Mesh[scene.MeshCount];
