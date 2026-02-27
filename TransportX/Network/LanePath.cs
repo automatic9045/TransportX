@@ -156,7 +156,7 @@ namespace TransportX.Network
 
             Vector4 linearDebugColor = DebugColor.ToLinear();
             DebugSpineMaterial!.BaseColor = linearDebugColor;
-            DebugWingMaterial!.BaseColor = new Vector4(linearDebugColor.AsVector3(), DebugColor.W * 0.3f);
+            DebugWingMaterial!.BaseColor = new Vector4(linearDebugColor.AsVector3(), DebugColor.W * 0.1f);
 
             context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
         }
