@@ -64,7 +64,25 @@ namespace TransportX.Network
             DebugModel?.Dispose();
         }
 
-        public abstract Pose GetLocalPose(float at);
+        public Pose GetLocalPose(float at)
+        {
+            if (at < 0)
+            {
+                Pose start = GetLocalPoseCore(0);
+                Vector3 forward = Pose.TransformNormal(Vector3.UnitZ, start);
+                return Pose.CreateWorldLH(start.Position + forward * at, forward, start.Up);
+            }
+            if (Length < at)
+            {
+                Pose end = GetLocalPoseCore(Length);
+                Vector3 forward = Pose.TransformNormal(Vector3.UnitZ, end);
+                return Pose.CreateWorldLH(end.Position + forward * (at - Length), forward, end.Up);
+            }
+
+            return GetLocalPoseCore(at);
+        }
+
+        protected abstract Pose GetLocalPoseCore(float at);
 
         public Pose GetPose(float at)
         {

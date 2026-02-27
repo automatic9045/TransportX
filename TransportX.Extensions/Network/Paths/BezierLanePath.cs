@@ -21,7 +21,7 @@ namespace TransportX.Extensions.Network.Paths
             Curve = new BezierPoseCurve(Pose.CreateRotationY(float.Pi) * from.LocalPose, to.LocalPose);
         }
 
-        public override Pose GetLocalPose(float at) => Curve.GetPose(at);
+        protected override Pose GetLocalPoseCore(float at) => Curve.GetPose(at);
 
         public override LaneWidth GetWidth(float at)
         {

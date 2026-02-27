@@ -23,7 +23,7 @@ namespace TransportX.Extensions.Network.Paths
             Length = ParentSpline.Length; // TODO: 正確に計算するようにする
         }
 
-        public override Pose GetLocalPose(float at)
+        protected override Pose GetLocalPoseCore(float at)
         {
             return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
         }

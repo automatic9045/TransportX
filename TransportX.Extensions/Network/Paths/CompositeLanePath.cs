@@ -42,7 +42,7 @@ namespace TransportX.Extensions.Network.Paths
             WidthPoints = widthPoints.ToArray();
         }
 
-        public override Pose GetLocalPose(float at)
+        protected override Pose GetLocalPoseCore(float at)
         {
             if (at <= 0) return Curves[0].From;
             if (Length <= at) return Curves[^1].To;
