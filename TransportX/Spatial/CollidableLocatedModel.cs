@@ -43,7 +43,7 @@ namespace TransportX.Spatial
             set
             {
                 Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose).ToRigidPose();
+                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose).Validated().ToRigidPose();
             }
         }
 

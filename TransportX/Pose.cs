@@ -10,7 +10,7 @@ namespace TransportX
 {
     public readonly struct Pose : IEquatable<Pose>
     {
-        public static readonly Pose Identity = new Pose(Vector3.Zero);
+        public static readonly Pose Identity = new(Vector3.Zero);
 
 
         public readonly Vector3 Position { get; }
@@ -23,6 +23,10 @@ namespace TransportX
         {
             Position = position;
             Orientation = orientation;
+
+#if DEBUG
+            Validated();
+#endif
         }
 
         public Pose(Vector3 position) : this(position, Quaternion.Identity)
@@ -120,6 +124,26 @@ namespace TransportX
             Matrix4x4 result = Matrix4x4.CreateFromQuaternion(Orientation);
             result.Translation = Position;
             return result;
+        }
+
+        public Pose Validated()
+        {
+            if (!float.IsFinite(Position.X) || !float.IsFinite(Position.Y) || !float.IsFinite(Position.Z))
+            {
+                throw new InvalidOperationException($"{nameof(Position)} に NaN または Infinity の成分があります。");
+            }
+
+            if (!float.IsFinite(Orientation.X) || !float.IsFinite(Orientation.Y) || !float.IsFinite(Orientation.Z) || !float.IsFinite(Orientation.W))
+            {
+                throw new InvalidOperationException($"{nameof(Orientation)} に NaN または Infinity の成分があります。");
+            }
+
+            if (1e-3f < float.Abs(Orientation.LengthSquared() - 1))
+            {
+                throw new InvalidOperationException($"{nameof(Orientation)} の絶対値が 1 から大幅に離れています。");
+            }
+
+            return this;
         }
 
         public bool Equals(Pose other) => this == other;
