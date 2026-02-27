@@ -28,6 +28,7 @@ namespace TransportX.Spatial
         public Pose BasePoseInverse { get; private set; }
 
         public virtual Pose Pose { get; set; } = Pose.Identity;
+        public bool IsVisible { get; set; } = true;
 
         protected LocatedModel(IModel model, Pose basePose, bool setPose)
         {
@@ -42,6 +43,7 @@ namespace TransportX.Spatial
 
         public virtual void Draw(in LocatedDrawContext context)
         {
+            if (!IsVisible) return;
             if (context.Pass != RenderPass.Normal) return;
 
             Matrix4x4 world = (Pose * context.PlateOffset.Pose).ToMatrix4x4();

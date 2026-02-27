@@ -90,7 +90,7 @@ namespace TransportX.Spatial
 
         public override void Draw(in LocatedDrawContext context)
         {
-            if (context.Pass == RenderPass.Normal)
+            if (IsVisible && context.Pass == RenderPass.Normal)
             {
                 for (int i = 0; i < Children.Count; i++)
                 {
