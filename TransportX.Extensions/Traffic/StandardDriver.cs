@@ -78,7 +78,7 @@ namespace TransportX.Extensions.Traffic
             float acceleration = float.Min(cruiseAcceleration, brakeAcceleration);
             if (float.Abs(speed) < 1e-3f && acceleration < 0)
             {
-                acceleration = 0; 
+                acceleration = 0;
             }
 
             CurrentAcceleration = acceleration * direction;

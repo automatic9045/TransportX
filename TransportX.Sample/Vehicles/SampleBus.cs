@@ -45,6 +45,7 @@ namespace TransportX.Sample.Vehicles
         public override float Width => Spec.Width;
         public override float Height => Spec.Height;
         public override float Length => Spec.Length;
+
         public override bool IsEnabled => true;
         public override ILanePath? Path => null;
         public override ParticipantDirection Heading => ParticipantDirection.Forward;
