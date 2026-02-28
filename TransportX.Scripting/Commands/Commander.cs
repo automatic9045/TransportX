@@ -12,6 +12,7 @@ namespace TransportX.Scripting.Commands
 
         public Avatar Avatar { get; }
         public Background Background { get; }
+        public Components Components { get; }
         public Debug Debug { get; }
         public DirectionalLight DirectionalLight { get; }
         public WorldEnvironment Environment { get; }
@@ -26,6 +27,7 @@ namespace TransportX.Scripting.Commands
 
             Avatar = new Avatar(world);
             Background = new Background(world);
+            Components = new Components(world);
             Debug = new Debug(world);
             DirectionalLight = new DirectionalLight(world);
             Environment = new WorldEnvironment(world);
@@ -41,6 +43,7 @@ namespace TransportX.Scripting.Commands
 
             Avatar = parent.Avatar;
             Background = parent.Background;
+            Components = parent.Components;
             Debug = parent.Debug;
             DirectionalLight = parent.DirectionalLight;
             Environment = parent.Environment;
@@ -53,6 +56,11 @@ namespace TransportX.Scripting.Commands
         internal void Dispose()
         {
             Triggers.Dispose();
+        }
+
+        public T Component<T>() where T : class, IWorldComponentCommand
+        {
+            return Components.Get<T>();
         }
     }
 }
