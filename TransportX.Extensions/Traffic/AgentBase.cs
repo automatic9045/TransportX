@@ -15,8 +15,8 @@ namespace TransportX.Extensions.Traffic
 {
     public abstract class AgentBase : RigidBody, ITrafficParticipant
     {
-        private ILaneTracker? SubscribedLocomotion = null;
-        private IDebugModel? DebugModel = null;
+        private ILaneTracker? SubscribedTracker = null;
+        private WireframeDebugModel? DebugModel = null;
 
         public abstract IRouteNavigator Navigator { get; }
         public abstract ILaneTracker LaneTracker { get; }
@@ -34,7 +34,7 @@ namespace TransportX.Extensions.Traffic
         public float S => LaneTracker.S;
         public float SVelocity => LaneTracker.SVelocity;
 
-        public IEnumerable<ITrafficParticipant> Obstacles { get; set; } = [];
+        public IEnumerable<ITrafficParticipant> Obstacles { get; }
 
         protected Vector4 DebugColor
         {
@@ -42,14 +42,16 @@ namespace TransportX.Extensions.Traffic
             set => DebugModel?.Color = field = value;
         } = new Vector4(0, 0, 1, 1);
 
-        protected AgentBase(IPhysicsHost physicsHost) : base(physicsHost)
+        protected AgentBase(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles) : base(physicsHost)
         {
+            Obstacles = obstacles;
         }
 
         public override void Dispose()
         {
             base.Dispose();
             DebugModel?.Dispose();
+            Sensor.Dispose();
         }
 
         public bool Spawn(ILanePath path, ParticipantDirection heading, float s)
@@ -57,10 +59,10 @@ namespace TransportX.Extensions.Traffic
             FlowDirections direction = heading == ParticipantDirection.Forward ? FlowDirections.Out : FlowDirections.In;
             if (!path.Directions.HasFlag(direction)) throw new ArgumentException("進行方向が進路の方向と一致しません。", nameof(heading));
 
-            if (SubscribedLocomotion is null)
+            if (SubscribedTracker is null)
             {
                 LaneTracker.PathChanged += OnPathChanged;
-                SubscribedLocomotion = LaneTracker;
+                SubscribedTracker = LaneTracker;
             }
 
             LaneTracker.Initialize(path, heading, s);
@@ -80,7 +82,7 @@ namespace TransportX.Extensions.Traffic
         {
             if (!IsEnabled) return;
             if (Path is null) throw new InvalidOperationException();
-            if (SubscribedLocomotion != LaneTracker) throw new NotSupportedException($"実行中に {nameof(LaneTracker)} プロパティの値を変更することはできません。");
+            if (SubscribedTracker != LaneTracker) throw new NotSupportedException($"実行中に {nameof(LaneTracker)} プロパティの値を変更することはできません。");
 
             Sensor.Tick(Navigator.PlannedRoute, Obstacles, elapsed);
             Driver.Tick(elapsed);

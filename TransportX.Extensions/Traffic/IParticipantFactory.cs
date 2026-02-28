@@ -10,8 +10,8 @@ namespace TransportX.Extensions.Traffic
 {
     public interface IParticipantFactory
     {
-        float Length { get; }
+        ParticipantSpec Spec { get; }
 
-        ITrafficParticipant Create();
+        ITrafficParticipant Create(in TrafficSpawnContext context);
     }
 }

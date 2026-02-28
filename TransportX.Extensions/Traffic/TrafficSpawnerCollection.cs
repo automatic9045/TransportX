@@ -10,31 +10,34 @@ namespace TransportX.Extensions.Traffic
 {
     public class TrafficSpawnerCollection
     {
-        private readonly List<TrafficSpawner> Items = [];
+        private readonly List<ITrafficSpawner> Items = [];
 
         public TrafficSpawnerCollection()
         {
         }
 
-        public void Register(TrafficSpawner spawner)
+        public void Register(ITrafficSpawner spawner)
         {
             Items.Add(spawner);
         }
 
         public void Initialize(IEnumerable<NetworkElement> network)
         {
-            IEnumerable<ILanePath> paths = network.SelectMany(element => element.Paths);
+            ILanePath[] paths = network
+                .SelectMany(element => element.Paths)
+                .ToArray();
 
-            IEnumerable<NetworkPort> sourcePorts = network
+            NetworkPort[] sourcePorts = network
                 .SelectMany(element => element.Ports)
-                .Where(port => !port.IsConnected);
+                .Where(port => !port.IsConnected)
+                .ToArray();
 
-            foreach (TrafficSpawner item in Items) item.Initialize(paths, sourcePorts);
+            foreach (ITrafficSpawner item in Items) item.Initialize(paths, sourcePorts);
         }
 
         public void Tick(TimeSpan elapsed)
         {
-            foreach (TrafficSpawner item in Items) item.Tick(elapsed);
+            foreach (ITrafficSpawner item in Items) item.Tick(elapsed);
         }
     }
 }

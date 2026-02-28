@@ -10,26 +10,34 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public class TrafficSpawner
+    public class RandomTrafficSpawner : ITrafficSpawner
     {
         private readonly ConcurrentDictionary<IParticipantFactory, List<ITrafficParticipant>> Participants = [];
 
         private readonly LaneTrafficType Type;
-        private readonly float DefaultDensity;
+        private readonly TrafficSpawnContext Context;
 
-        private IReadOnlyList<(ILanePath Path, ParticipantDirection Heading)> SourcePaths = [];
+        private readonly float Density;
+        private readonly float AssumedSpeed;
+
+        private (ILanePath Path, ParticipantDirection Heading)[] SourcePaths = [];
         private TimeSpan SinceLastSpawn = TimeSpan.Zero;
 
-        public List<IParticipantFactory> ParticipantFactories { get; } = [];
+        public IList<IParticipantFactory> ParticipantFactories { get; } = [];
 
-        public TrafficSpawner(LaneTrafficType type, float defaultDensity)
+        public RandomTrafficSpawner(LaneTrafficType type, in TrafficSpawnContext context, float density, float assumedSpeed)
         {
             Type = type;
-            DefaultDensity = defaultDensity;
+            Context = context;
+
+            Density = density;
+            AssumedSpeed = float.Max(1e-3f, assumedSpeed);
         }
 
         public void Initialize(IEnumerable<ILanePath> paths, IEnumerable<NetworkPort> sourcePorts)
         {
+            if (Density <= 1e-6f) return;
+
             IReadOnlyList<ILanePath> targetPaths = paths
                 .Where(path => path.AllowedTraffic.Contains(Type))
                 .ToArray();
@@ -40,7 +48,7 @@ namespace TransportX.Extensions.Traffic
                 while (s < path.Length)
                 {
                     float u = 1 - Random.Shared.NextSingle();
-                    float gap = -float.Log(u) / DefaultDensity;
+                    float gap = -float.Log(u) / Density;
                     s += gap;
 
                     if (path.Length <= s) break;
@@ -69,15 +77,17 @@ namespace TransportX.Extensions.Traffic
 
         public void Tick(TimeSpan elapsed)
         {
+            if (Density <= 1e-6f) return;
+
             SinceLastSpawn += elapsed;
 
-            float spawnInterval = 1 / (DefaultDensity * 100);
+            float spawnInterval = 1 / (Density * AssumedSpeed);
             if (spawnInterval < SinceLastSpawn.TotalSeconds)
             {
                 SinceLastSpawn = TimeSpan.Zero;
-                if (SourcePaths.Count == 0) return;
+                if (SourcePaths.Length == 0) return;
 
-                (ILanePath path, ParticipantDirection heading) = SourcePaths[Random.Shared.Next(SourcePaths.Count)];
+                (ILanePath path, ParticipantDirection heading) = SourcePaths[Random.Shared.Next(SourcePaths.Length)];
                 TrySpawnAt(path, heading, heading == ParticipantDirection.Backward ? path.Length : 0);
             }
         }
@@ -86,7 +96,9 @@ namespace TransportX.Extensions.Traffic
         {
             IParticipantFactory factory = ParticipantFactories[Random.Shared.Next(ParticipantFactories.Count)];
 
-            bool isOccupied = path.Participants.Any(p => float.Abs(p.S - s) < factory.Length);
+            if (path.GetWidth(s).Total < factory.Spec.Width) return null;
+
+            bool isOccupied = path.Participants.Any(p => float.Abs(p.S - s) < factory.Spec.Length);
             if (isOccupied) return null;
 
             ITrafficParticipant participant;
@@ -95,7 +107,7 @@ namespace TransportX.Extensions.Traffic
             ITrafficParticipant? disabledParticipant = participants.FirstOrDefault(p => !p.IsEnabled);
             if (participants.Count == 0 || disabledParticipant is null)
             {
-                participant = factory.Create();
+                participant = factory.Create(Context);
                 participants.Add(participant);
             }
             else
