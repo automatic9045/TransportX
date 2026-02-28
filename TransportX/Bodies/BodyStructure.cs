@@ -110,6 +110,26 @@ namespace TransportX.Bodies
             return Attach(model, position.ToPose());
         }
 
+        public LocatedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, Pose pose)
+        {
+            return model is ICollidableModel collidable ? AttachKinematic(collidable, group, pose) : Attach(model, pose);
+        }
+
+        public LocatedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, SixDoF position)
+        {
+            return AttachKinematicOrNonCollision(model, group, position.ToPose());
+        }
+
+        public LocatedModel AttachKinematicOrNonCollision(IModel model, Pose pose)
+        {
+            return AttachKinematicOrNonCollision(model, DefaultGroup, pose);
+        }
+
+        public LocatedModel AttachKinematicOrNonCollision(IModel model, SixDoF position)
+        {
+            return AttachKinematicOrNonCollision(model, position.ToPose());
+        }
+
         public void Dispose()
         {
             foreach (LocatedModel model in Items)

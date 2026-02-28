@@ -32,5 +32,10 @@ namespace TransportX.Domains.RoadTraffic.Network
                 _ => throw new NotSupportedException(),
             };
         }
+
+        public float GetDeflection(bool reverse)
+        {
+            return reverse ? Backward : Forward;
+        }
     }
 }

@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+using TransportX.Network;
+using TransportX.Physics;
+using TransportX.Rendering;
+using TransportX.Spatial;
+using TransportX.Traffic;
+
+using TransportX.Extensions.Traffic;
+
+using TransportX.Domains.RoadTraffic.Network;
+
+namespace TransportX.Domains.RoadTraffic.Traffic
+{
+    public class Car : AgentBase
+    {
+        private const float FrontWheelOffset = -0.7f;
+        private const float RearWheelOffset = -3.2f;
+
+        internal new const float Width = 1.8f;
+        internal new const float Height = 1.5f;
+        internal new const float Length = 3.6f;
+
+
+        private readonly float Acceleration = Random.Shared.NextSingle() * 2 + 2; // 2～4
+        private readonly float BlinkerDistance = Random.Shared.NextSingle() * 20 + 20; // 20～40
+
+        private readonly Blinker LeftBlinker;
+        private readonly Blinker RightBlinker;
+
+        public override IRouteNavigator Navigator { get; }
+        public override ILaneTracker LaneTracker { get; }
+        public override IPoseSolver PoseSolver { get; }
+        public override ITrafficSensor Sensor { get; }
+        public override IDriver Driver { get; }
+
+        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles, IModel model, IModel blinkerLModel, IModel blinkerRModel) : base(physicsHost, obstacles)
+        {
+            Navigator = new RandomRouteNavigator();
+            LaneTracker = new LaneTracker(Navigator, Width, Height, Length);
+            PoseSolver = new TwoPointPoseSolver(FrontWheelOffset, RearWheelOffset);
+            Sensor = new HybridTrafficSensor(LaneTracker, PoseSolver, obstacle => obstacle == this)
+            {
+                NetworkDebugColor = new Vector4(0, 1, 1, 1),
+                SpatialDebugColor = new Vector4(1, 0, 1, 1),
+            };
+            Driver = new StandardDriver(LaneTracker, Sensor, Acceleration, 5, 15, 2, 2);
+
+            Structure.AttachKinematicOrNonCollision(model, Pose.Identity);
+            LocatedModel blinkerL = Structure.Attach(blinkerLModel, Pose.Identity);
+            LocatedModel blinkerR = Structure.Attach(blinkerRModel, Pose.Identity);
+
+            TimeSpan blinkerPeriod = TimeSpan.FromSeconds(0.8f);
+            LeftBlinker = new Blinker(blinkerL, blinkerPeriod);
+            RightBlinker = new Blinker(blinkerR, blinkerPeriod);
+        }
+
+        public override void Tick(TimeSpan elapsed)
+        {
+            base.Tick(elapsed);
+            if (!IsEnabled) return;
+
+            float deflection = 0;
+            if (Path!.Components.TryGet<PathDeflectionComponent>(out PathDeflectionComponent? component))
+            {
+                deflection = component.GetDeflection(Heading);
+            }
+            else
+            {
+                float distance = Path.Length - new LanePathView(Path, Heading).ToViewS(S);
+                foreach (LanePathView planned in Navigator.PlannedRoute)
+                {
+                    if (BlinkerDistance < distance) break;
+
+                    if (planned.Source.Components.TryGet<PathDeflectionComponent>(out component))
+                    {
+                        deflection = component.GetDeflection(planned.Reverse);
+                        break;
+                    }
+
+                    distance += planned.Source.Length;
+                }
+            }
+
+            LeftBlinker.IsActive = deflection <= -0.5f;
+            RightBlinker.IsActive = 0.5f <= deflection;
+
+            LeftBlinker.Tick(elapsed);
+            RightBlinker.Tick(elapsed);
+        }
+
+        public override void Draw(in LocatedDrawContext context)
+        {
+            base.Draw(context);
+            if (IsEnabled && context.Pass == RenderPass.Traffic) Sensor.Draw(context);
+        }
+    }
+}
