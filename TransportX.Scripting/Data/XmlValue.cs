@@ -42,5 +42,10 @@ namespace TransportX.Scripting.Data
                 Exception = exception,
             };
         }
+
+        public override string? ToString()
+        {
+            return Value?.ToString();
+        }
     }
 }

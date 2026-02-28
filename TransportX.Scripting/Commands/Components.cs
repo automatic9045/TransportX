@@ -19,13 +19,13 @@ namespace TransportX.Scripting.Commands
             World = world;
         }
 
-        public T Get<T>() where T : class, IWorldComponentCommand
+        public T Get<T>() where T : class, IWorldInstantiable<T>, IWorldComponentCommand
         {
             T instance = (T)Instances.GetOrAdd(typeof(T), type =>
             {
                 try
                 {
-                    T component = (T)Activator.CreateInstance(type, World)!;
+                    T component = T.Create(World);
                     World.Components.Add(component.Source.GetType(), component.Source);
                     return component;
                 }

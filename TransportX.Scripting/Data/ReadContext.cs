@@ -17,9 +17,6 @@ namespace TransportX.Scripting.Data
     {
         public class ReadContext
         {
-            private static readonly ConcurrentDictionary<Type, XmlSerializer> SerializerCache = [];
-
-
             private readonly XmlSerializable Source;
             private readonly Dictionary<string, ReadElementAction> ReadElementActions = [];
 
@@ -40,7 +37,7 @@ namespace TransportX.Scripting.Data
                 FieldInfo field = Source.Fields[elementName];
 
                 Type type = field.FieldType.GenericTypeArguments[0];
-                if (type != typeof(T)) throw new InvalidOperationException("型引数がフィールドの型と一致しません。");
+                if (type != typeof(T)) throw new InvalidOperationException($"フィールド '{elementName}' に型 '{typeof(T).Name}' を代入できません。");
 
                 return field;
             }
@@ -123,8 +120,10 @@ namespace TransportX.Scripting.Data
                 displayName ??= elementName;
 
                 FieldInfo field = GetField<TTarget>(elementName);
+                ReadElementActions[elementName] = new ReadElementAction(Read, displayName, isRequired);
 
-                Action<IXmlLineInfo> readAction = lineInfo =>
+
+                void Read(IXmlLineInfo lineInfo)
                 {
                     string sourceString = Reader.ReadElementContentAsString();
 
@@ -144,14 +143,46 @@ namespace TransportX.Scripting.Data
                     {
                         ReportInvalidValueError(displayName, sourceString);
                     }
-                };
+                }
 
-                ReadElementActions[elementName] = new ReadElementAction(readAction, displayName, isRequired);
             }
 
             public void AddElement<T>(string elementName, string? displayName = null, bool isRequired = false)
             {
                 AddElement<T, T>(elementName, x => x, displayName, isRequired);
+            }
+
+            public void AddSerializedElement<T>(string elementName, string? displayName = null, bool isRequired = false)
+            {
+                displayName ??= elementName;
+
+                FieldInfo? field = Source.GetType().GetField(elementName) ?? throw new InvalidOperationException($"フィールド '{elementName}' が見つかりません。");
+                if (!field.FieldType.IsAssignableFrom(typeof(T)))
+                {
+                    throw new InvalidOperationException($"フィールド '{elementName}' に型 '{typeof(T).Name}' を代入できません。");
+                }
+
+                ReadElementActions[elementName] = new ReadElementAction(Read, displayName, isRequired);
+
+
+                void Read(IXmlLineInfo lineInfo)
+                {
+                    try
+                    {
+                        XmlSerializer serializer = SerializerCache.GetOrAdd((typeof(T), elementName),
+                            key => new XmlSerializer(key.Type, new XmlRootAttribute(key.ElementName)));
+
+                        using XmlReader subReader = Reader.ReadSubtree();
+                        subReader.MoveToContent();
+
+                        T deserializedObject = (T)serializer.Deserialize(subReader)!;
+                        field.SetValue(Source, deserializedObject);
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportError($"{displayName}の値は無効です。", ex);
+                    }
+                }
             }
 
             internal void ParseElements()
@@ -210,11 +241,12 @@ namespace TransportX.Scripting.Data
                 return new XmlValue<T>(value, Location, lineInfo.LineNumber, lineInfo.LinePosition);
             }
 
-            private void ReportError(string message)
+            private void ReportError(string message, Exception? exception = null)
             {
                 IXmlLineInfo lineInfo = (IXmlLineInfo)Reader;
                 Error error = new(ErrorLevel.Error, message, Location)
                 {
+                    Exception = exception,
                     LineNumber = lineInfo.LineNumber,
                     LinePosition = lineInfo.LinePosition,
                 };

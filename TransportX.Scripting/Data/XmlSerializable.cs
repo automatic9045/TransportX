@@ -6,10 +6,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-
-using Microsoft.CodeAnalysis;
 
 using TransportX.Diagnostics;
 
@@ -18,12 +17,16 @@ namespace TransportX.Scripting.Data
     public abstract partial class XmlSerializable : IXmlSerializable
     {
         private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, FieldInfo>> FieldCache = [];
+        private static readonly ConcurrentDictionary<(Type Type, string ElementName), XmlSerializer> SerializerCache = [];
 
+
+        private readonly IReadOnlyDictionary<string, FieldInfo> Fields;
+
+        protected bool PreserveFullElement { get; set; } = false;
+        public XElement? FullElement { get; private set; } = null;
 
         protected readonly List<Error> ErrorsKey = [];
         public IReadOnlyList<Error> Errors => ErrorsKey;
-
-        private readonly IReadOnlyDictionary<string, FieldInfo> Fields;
 
         public XmlSerializable()
         {
@@ -40,22 +43,71 @@ namespace TransportX.Scripting.Data
         public void ReadXml(XmlReader reader)
         {
             reader.MoveToContent();
-            bool isEmpty = reader.IsEmptyElement;
 
-            Uri uri = new(reader.BaseURI);
-            string location = uri.IsFile ? uri.LocalPath : reader.BaseURI;
-
-            ReadContext context = new(this, reader, isEmpty, location);
-            ReadXml(context);
-
-            context.ParseElements();
-            if (!isEmpty && reader.NodeType == XmlNodeType.EndElement)
+            string location = string.IsNullOrEmpty(reader.BaseURI) ? string.Empty : reader.BaseURI;
+            if (!string.IsNullOrEmpty(location))
             {
-                reader.ReadEndElement();
+                if (Uri.TryCreate(location, UriKind.Absolute, out Uri? uri) && uri.IsFile)
+                {
+                    location = uri.LocalPath;
+                }
+            }
+
+            if (PreserveFullElement)
+            {
+                XElement fullElement;
+                using (XmlReader subReader = reader.ReadSubtree())
+                {
+                    subReader.MoveToContent();
+                    fullElement = XElement.Load(subReader, LoadOptions.SetLineInfo);
+                }
+
+                reader.Read();
+
+                using (XmlReader elementReader = fullElement.CreateReader())
+                {
+                    elementReader.MoveToContent();
+                    ProcessReader(elementReader, location);
+                }
+
+                FullElement = fullElement;
+            }
+            else
+            {
+                ProcessReader(reader, location);
+            }
+
+
+            void ProcessReader(XmlReader currentReader, string location)
+            {
+                bool isEmpty = currentReader.IsEmptyElement;
+
+                ReadContext context = new(this, currentReader, isEmpty, location);
+                ReadXml(context);
+
+                context.ParseElements();
+
+                if (!isEmpty && currentReader.NodeType == XmlNodeType.EndElement)
+                {
+                    currentReader.ReadEndElement();
+                }
             }
         }
 
         protected abstract void ReadXml(ReadContext context);
         public abstract void WriteXml(XmlWriter writer);
+
+        protected static void WriteSerializedElement<T>(XmlWriter writer, string elementName, T value)
+        {
+            if (value is null) return;
+
+            XmlSerializer serializer = SerializerCache.GetOrAdd((typeof(T), elementName),
+                key => new XmlSerializer(key.Type, new XmlRootAttribute(key.ElementName)));
+
+            XmlSerializerNamespaces emptyNamespaces = new();
+            emptyNamespaces.Add(string.Empty, string.Empty);
+
+            serializer.Serialize(writer, value, emptyNamespaces);
+        }
     }
 }
