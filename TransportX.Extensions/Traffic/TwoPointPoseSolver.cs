@@ -58,7 +58,8 @@ namespace TransportX.Extensions.Traffic
                 }
             }
 
-            Vector3 forward = Vector3.Normalize(front.Position - rear.Position);
+            Vector3 diff = front.Position - rear.Position;
+            Vector3 forward = diff.LengthSquared() < 1e-6f ? Pose.TransformNormal(Vector3.UnitZ, rear) : Vector3.Normalize(diff);
             Vector3 position = rear.Position - forward * RearOffset;
             Vector3 up = Vector3.Normalize(Pose.TransformNormal(Vector3.UnitY, front) + Pose.TransformNormal(Vector3.UnitY, rear));
 
