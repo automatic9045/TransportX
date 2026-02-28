@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Diagnostics;
 using TransportX.Rendering;
+using TransportX.Worlds;
 
-namespace TransportX.Worlds
+namespace TransportX.Scripting
 {
-    public class ModelCollection : Dictionary<string, IModel>, IModelCollection
+    internal class ScriptModelCollection : ScriptDictionary<string, IModel>, IModelCollection
     {
-        public ModelCollection()
+        public ScriptModelCollection(IErrorCollector errorCollector) : base(errorCollector, "モデル", key => Model.Empty())
         {
         }
 

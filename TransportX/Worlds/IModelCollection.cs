@@ -10,14 +10,5 @@ namespace TransportX.Worlds
 {
     public interface IModelCollection : IDictionary<string, IModel>, IDisposable
     {
-        void IDisposable.Dispose()
-        {
-            foreach (IModel model in Values)
-            {
-                model.Dispose();
-            }
-
-            GC.SuppressFinalize(this);
-        }
     }
 }
