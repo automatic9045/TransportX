@@ -15,15 +15,17 @@ namespace TransportX.Physics
         private readonly CollidableProperty<ColliderGroupHandle> Groups = new CollidableProperty<ColliderGroupHandle>();
         private readonly CollidableProperty<ColliderMaterial> Materials = new CollidableProperty<ColliderMaterial>();
 
+        private ThreadDispatcher ThreadDispatcherKey;
+
         public Simulation Simulation { get; }
-        public IThreadDispatcher ThreadDispatcher { get; }
+        public IThreadDispatcher ThreadDispatcher => ThreadDispatcherKey;
 
         protected PhysicsHost()
         {
             BufferPool bufferPool = new BufferPool();
             NarrowPhaseCallbacks narrowPhaseCallbacks = new NarrowPhaseCallbacks(Groups, Materials);
             Simulation = Simulation.Create(bufferPool, narrowPhaseCallbacks, new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
-            ThreadDispatcher = new ThreadDispatcher(System.Environment.ProcessorCount);
+            ThreadDispatcherKey = new ThreadDispatcher(System.Environment.ProcessorCount);
         }
 
         internal static PhysicsHost Create()
@@ -33,6 +35,8 @@ namespace TransportX.Physics
 
         public void Dispose()
         {
+            ThreadDispatcherKey.Dispose();
+
             Groups.Dispose();
             Materials.Dispose();
 

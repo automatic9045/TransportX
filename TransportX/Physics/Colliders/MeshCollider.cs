@@ -19,8 +19,8 @@ namespace TransportX.Physics.Colliders
     {
         public bool IsOpen { get; }
 
-        public MeshCollider(ColliderMesh shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset, bool isOpen)
-            : base(shape, shapeIndex, material, offset)
+        public MeshCollider(Simulation simulation, ColliderMesh shape, ColliderMaterial material, Pose offset, bool isOpen)
+            : base(simulation, shape, material, offset)
         {
             IsOpen = isOpen;
         }

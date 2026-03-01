@@ -12,7 +12,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Physics
 {
-    public interface ICollider
+    public interface ICollider : IDisposable
     {
         IShape Shape { get; }
         TypedIndex ShapeIndex { get; }

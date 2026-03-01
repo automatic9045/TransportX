@@ -19,8 +19,8 @@ namespace TransportX.Physics.Colliders
         private const int SegmentCount = 16;
 
 
-        public CylinderCollider(Cylinder shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            : base(shape, shapeIndex, material, offset)
+        public CylinderCollider(Simulation simulation, Cylinder shape, ColliderMaterial material, Pose offset)
+            : base(simulation, shape, material, offset)
         {
         }
 

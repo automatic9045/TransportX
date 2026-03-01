@@ -14,6 +14,8 @@ namespace TransportX.Physics
 {
     public abstract class ColliderBase<TShape> : ICollider where TShape : unmanaged, IShape
     {
+        protected readonly Simulation Simulation;
+
         public TShape Shape { get; }
         IShape ICollider.Shape => Shape;
         public TypedIndex ShapeIndex { get; }
@@ -21,13 +23,19 @@ namespace TransportX.Physics
         public Pose Offset { get; }
         public Pose OffsetInverse { get; }
 
-        public ColliderBase(TShape shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
+        public ColliderBase(Simulation simulation, TShape shape, ColliderMaterial material, Pose offset)
         {
+            Simulation = simulation;
             Shape = shape;
-            ShapeIndex = shapeIndex;
+            ShapeIndex = simulation.Shapes.Add(shape);
             Material = material;
             Offset = offset;
             OffsetInverse = Pose.Inverse(Offset);
+        }
+
+        public virtual void Dispose()
+        {
+            Simulation.Shapes.RemoveAndDispose(ShapeIndex, Simulation.BufferPool);
         }
 
         public abstract BodyInertia ComputeInertia(float mass);

@@ -17,8 +17,8 @@ namespace TransportX.Physics.Colliders
 {
     public class ConvexHullCollider : ColliderBase<ConvexHull>
     {
-        public ConvexHullCollider(ConvexHull shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            : base(shape, shapeIndex, material, offset)
+        public ConvexHullCollider(Simulation simulation, ConvexHull shape, ColliderMaterial material, Pose offset)
+            : base(simulation, shape, material, offset)
         {
         }
 

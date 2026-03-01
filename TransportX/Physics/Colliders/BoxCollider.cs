@@ -16,8 +16,8 @@ namespace TransportX.Physics.Colliders
 {
     public class BoxCollider : ColliderBase<Box>
     {
-        public BoxCollider(Box shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            : base(shape, shapeIndex, material, offset)
+        public BoxCollider(Simulation simulation, Box shape, ColliderMaterial material, Pose offset)
+            : base(simulation, shape, material, offset)
         {
         }
 

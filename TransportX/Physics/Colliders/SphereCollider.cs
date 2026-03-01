@@ -19,8 +19,8 @@ namespace TransportX.Physics.Colliders
         private const int SegmentCount = 16;
 
 
-        public SphereCollider(Sphere shape, TypedIndex shapeIndex, ColliderMaterial material, Pose offset)
-            : base(shape, shapeIndex, material, offset)
+        public SphereCollider(Simulation simulation, Sphere shape, ColliderMaterial material, Pose offset)
+            : base(simulation, shape, material, offset)
         {
         }
 
