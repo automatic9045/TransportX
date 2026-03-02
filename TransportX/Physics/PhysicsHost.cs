@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using BepuPhysics.Collidables;
 using BepuUtilities;
 using BepuUtilities.Memory;
 
@@ -15,7 +17,7 @@ namespace TransportX.Physics
         private readonly CollidableProperty<ColliderGroupHandle> Groups = new CollidableProperty<ColliderGroupHandle>();
         private readonly CollidableProperty<ColliderMaterial> Materials = new CollidableProperty<ColliderMaterial>();
 
-        private ThreadDispatcher ThreadDispatcherKey;
+        private readonly ThreadDispatcher ThreadDispatcherKey;
 
         private bool IsDisposed = false;
 
@@ -42,11 +44,43 @@ namespace TransportX.Physics
 
             ThreadDispatcherKey.Dispose();
 
-            Groups.Dispose();
-            Materials.Dispose();
+            int bodyCount = Enumerable.Range(0, Simulation.Bodies.HandleToLocation.Length)
+                .Select(i => new BodyHandle(i))
+                .Count(Simulation.Bodies.BodyExists);
+            if (0 < bodyCount)
+            {
+                throw new Exception($"正常に解放されていない動的物理モデルを {bodyCount} 個検出しました。これはメモリリークの原因となります。");
+            }
+
+            int staticCount = Enumerable.Range(0, Simulation.Statics.HandleToIndex.Length)
+                .Select(i => new StaticHandle(i))
+                .Count(Simulation.Statics.StaticExists);
+            if (0 < staticCount)
+            {
+                throw new Exception($"正常に解放されていない静的物理モデルを {staticCount} 個検出しました。これはメモリリークの原因となります。");
+            }
+
+            FieldInfo idPoolField = typeof(ShapeBatch).GetField("idPool", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            for (int i = 0; i < Simulation.Shapes.RegisteredTypeSpan; i++)
+            {
+                ShapeBatch? batch = (ShapeBatch?)Simulation.Shapes[i];
+                if (batch is null) continue;
+
+                IdPool idPool = (IdPool)idPoolField.GetValue(batch)!;
+                int allocatedCount = idPool.HighestPossiblyClaimedId + 1 - idPool.AvailableIdCount;
+                if (0 < allocatedCount)
+                {
+                    throw new Exception($"正常に解放されていない形状データをバッチ {batch.GetType()} から {allocatedCount} 個検出しました。" +
+                        $"これはメモリリークの原因となります。");
+                }
+            }
 
             BufferPool bufferPool = Simulation.BufferPool;
             Simulation.Dispose();
+
+            Groups.Dispose();
+            Materials.Dispose();
+
             bufferPool.Clear();
         }
 
