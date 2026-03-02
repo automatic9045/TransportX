@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,11 @@ namespace TransportX.Components
         private readonly ConcurrentDictionary<Type, TBase> Components = [];
 
         public int Count => Components.Count;
+
+        public IEnumerable<Type> Keys => Components.Keys;
+        public IEnumerable<TBase> Values => Components.Values;
+
+        public TBase this[Type key] => Components[key];
 
         public event EventHandler<ComponentEventArgs<TBase>>? Added;
         public event EventHandler<ComponentEventArgs<TBase>>? Removed;
@@ -88,15 +94,9 @@ namespace TransportX.Components
             return Remove(typeof(T));
         }
 
-        public void AddTo(IComponentCollection<TBase> dest)
-        {
-            foreach ((Type type, TBase component) in Components)
-            {
-                dest.Add(type, component);
-            }
-        }
-
-        public IEnumerator<TBase> GetEnumerator() => Components.Values.GetEnumerator();
+        public bool ContainsKey(Type key) => Components.ContainsKey(key);
+        public bool TryGetValue(Type key, [MaybeNullWhen(false)] out TBase value) => Components.TryGetValue(key, out value);
+        public IEnumerator<KeyValuePair<Type, TBase>> GetEnumerator()=> Components.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

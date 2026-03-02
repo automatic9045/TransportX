@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Components;
+using TransportX.Diagnostics;
+using TransportX.Network;
 using TransportX.Traffic;
+
+using TransportX.Scripting;
 
 namespace TransportX.Domains.RoadTraffic.Network
 {
-    public class PathDeflectionComponent : IComponent
+    public class PathDeflectionComponent : ITemplateComponent<ILanePath>
     {
         public float Forward { get; }
         public float Backward { get; }
@@ -21,6 +24,11 @@ namespace TransportX.Domains.RoadTraffic.Network
 
             Forward = forward;
             Backward = backward;
+        }
+
+        void ITemplateComponent<ILanePath>.Build(ILanePath path, IErrorCollector errorCollector)
+        {
+            path.Components.Add(this);
         }
 
         public float GetDeflection(ParticipantDirection direction)

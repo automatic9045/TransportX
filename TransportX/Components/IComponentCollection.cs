@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TransportX.Components
 {
-    public interface IComponentCollection<TBase> : IReadOnlyCollection<TBase> where TBase : class, IComponent
+    public interface IComponentCollection<TBase> : IReadOnlyDictionary<Type, TBase> where TBase : class, IComponent
     {
         T? Get<T>() where T : class, TBase;
         bool TryGet<T>([MaybeNullWhen(false)] out T component) where T : class, TBase;
@@ -17,7 +17,5 @@ namespace TransportX.Components
 
         bool Remove(Type type);
         bool Remove<T>() where T : class, TBase;
-
-        void AddTo(IComponentCollection<TBase> dest);
     }
 }

@@ -64,5 +64,15 @@ namespace TransportX.Scripting
         {
             Exception = exception;
         }
+
+        public static ScriptError CreateFrom(Error source)
+        {
+            ScriptError error = new(source.Level, source.Message, source.StackTrace)
+            {
+                Code = source.Code,
+                Exception = source.Exception,
+            };
+            return error;
+        }
     }
 }

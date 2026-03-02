@@ -110,16 +110,32 @@ namespace TransportX.Scripting.Commands
         {
             Junction junction = new(plateX, plateZ, pose, Ports);
 
+            List<(JunctionPathTemplate, ILanePath)> paths = new(PathsKey.Count);
             foreach (JunctionPathTemplate path in PathsKey)
             {
-                ILanePath compiled = path.Build(junction);
-                compiled.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(compiled.AllowedTraffic);
+                ILanePath built = path.Build(junction);
+                built.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(built.AllowedTraffic);
+                paths.Add((path, built));
             }
 
             foreach (LocatedModelTemplate model in Structures)
             {
                 LocatedModel structure = model.Build(localPose => localPose * junction.Pose);
                 junction.AddStructure(structure);
+            }
+
+            IErrorCollector componentErrorCollector = IErrorCollector.Default();
+            componentErrorCollector.Reported += (sender, e) =>
+            {
+                ScriptError error = ScriptError.CreateFrom(e.Error);
+                World.ErrorCollector.Report(error);
+            };
+            foreach ((JunctionPathTemplate template, ILanePath built) in paths)
+            {
+                foreach (ITemplateComponent<ILanePath> component in template.Components.Values)
+                {
+                    component.Build(built, componentErrorCollector);
+                }
             }
 
             return junction;
