@@ -14,6 +14,7 @@ using TransportX.Traffic;
 using TransportX.Extensions.Traffic;
 
 using TransportX.Domains.RoadTraffic.Network;
+using TransportX.Domains.RoadTraffic.Traffic.Sensors;
 
 namespace TransportX.Domains.RoadTraffic.Traffic
 {
@@ -44,11 +45,22 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             Navigator = new RandomRouteNavigator();
             LaneTracker = new LaneTracker(Navigator, Width, Height, Length);
             PoseSolver = new TwoPointPoseSolver(FrontWheelOffset, RearWheelOffset);
-            Sensor = new HybridTrafficSensor(LaneTracker, PoseSolver, obstacle => obstacle == this)
+
+
+            NetworkTrafficSensor networkSensor = new(LaneTracker, PoseSolver)
             {
-                NetworkDebugColor = new Vector4(0, 1, 1, 1),
-                SpatialDebugColor = new Vector4(1, 0, 1, 1),
+                DebugColor = new Vector4(0, 1, 1, 1),
             };
+            PriorityTrafficSensor prioritySensor = new(LaneTracker, PoseSolver)
+            {
+                DebugColor = new Vector4(1, 1, 0, 1),
+            };
+            SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, obstacle => obstacle != networkSensor.Target && obstacle == this)
+            {
+                DebugColor = new Vector4(1, 0, 1, 1),
+            };
+            Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, prioritySensor]);
+
             Driver = new StandardDriver(LaneTracker, Sensor, Acceleration, 5, 15, 2, 2);
 
             Structure.AttachKinematicOrNonCollision(model, Pose.Identity);

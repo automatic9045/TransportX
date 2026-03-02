@@ -23,5 +23,12 @@ namespace TransportX.Domains.RoadTraffic.Commands
         {
             return Deflection(template, forward, -forward);
         }
+
+        public static JunctionPathTemplate Yield(this JunctionPathTemplate template, params string[] priorityPathKey)
+        {
+            YieldTemplateComponent component = new(priorityPathKey);
+            template.Components.Add(component);
+            return template;
+        }
     }
 }
