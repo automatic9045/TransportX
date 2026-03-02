@@ -17,6 +17,8 @@ namespace TransportX.Physics
 
         private ThreadDispatcher ThreadDispatcherKey;
 
+        private bool IsDisposed = false;
+
         public Simulation Simulation { get; }
         public IThreadDispatcher ThreadDispatcher => ThreadDispatcherKey;
 
@@ -35,6 +37,9 @@ namespace TransportX.Physics
 
         public void Dispose()
         {
+            if (IsDisposed) throw new InvalidOperationException();
+            IsDisposed = true;
+
             ThreadDispatcherKey.Dispose();
 
             Groups.Dispose();

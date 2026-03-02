@@ -16,6 +16,8 @@ namespace TransportX.Physics
     {
         protected readonly Simulation Simulation;
 
+        private bool IsDisposed = false;
+
         public TShape Shape { get; }
         IShape ICollider.Shape => Shape;
         public TypedIndex ShapeIndex { get; }
@@ -35,6 +37,9 @@ namespace TransportX.Physics
 
         public virtual void Dispose()
         {
+            if (IsDisposed) throw new InvalidOperationException();
+            IsDisposed = true;
+
             Simulation.Shapes.RemoveAndDispose(ShapeIndex, Simulation.BufferPool);
         }
 

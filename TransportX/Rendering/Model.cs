@@ -21,6 +21,8 @@ namespace TransportX.Rendering
         };
 
 
+        private bool IsDisposed = false;
+
         public BoundingBox BoundingBox { get; }
         public IReadOnlyList<IMesh> VisualMeshes { get; }
         public IReadOnlyList<ID3D11ShaderResourceView> Textures { get; }
@@ -68,6 +70,9 @@ namespace TransportX.Rendering
 
         public virtual void Dispose()
         {
+            if (IsDisposed) throw new InvalidOperationException();
+            IsDisposed = true;
+
             for (int i = 0; i < Textures.Count; i++)
             {
                 Textures[i].Dispose();
