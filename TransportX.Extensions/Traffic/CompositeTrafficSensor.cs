@@ -22,6 +22,7 @@ namespace TransportX.Extensions.Traffic
         public ITrafficParticipant? Target => CurrentSensor.Target;
         public bool IsTargetOncoming => CurrentSensor.IsTargetOncoming;
         public float DistanceToTarget => CurrentSensor.DistanceToTarget;
+        public float StopMargin => CurrentSensor.StopMargin;
 
         Vector4 IDebugDrawable.DebugColor
         {

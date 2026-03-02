@@ -16,6 +16,7 @@ namespace TransportX.Traffic
         ITrafficParticipant? Target { get; }
         bool IsTargetOncoming { get; }
         float DistanceToTarget { get; }
+        float StopMargin { get; }
 
         string? DebugName { get; set; }
 

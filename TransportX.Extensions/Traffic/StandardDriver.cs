@@ -19,14 +19,14 @@ namespace TransportX.Extensions.Traffic
         private readonly float MinDeceleration;
         private readonly float MaxDeceleration;
 
-        private readonly float StopMargin;
+        private readonly float DefaultStopMargin;
         private readonly float TimeHeadway;
 
         public float CurrentAcceleration { get; private set; } = 0;
         float IDriver.Acceleration => CurrentAcceleration;
 
         public StandardDriver(ILaneTracker laneTracker, ITrafficSensor sensor,
-            float acceleration, float minDeceleration, float maxDeceleration, float stopMargin, float timeHeadway)
+            float acceleration, float minDeceleration, float maxDeceleration, float defaultStopMargin, float timeHeadway)
         {
             LaneTracker = laneTracker;
             Sensor = sensor;
@@ -35,7 +35,7 @@ namespace TransportX.Extensions.Traffic
             MinDeceleration = minDeceleration;
             MaxDeceleration = maxDeceleration;
 
-            StopMargin = stopMargin;
+            DefaultStopMargin = defaultStopMargin;
             TimeHeadway = timeHeadway;
         }
 
@@ -54,7 +54,8 @@ namespace TransportX.Extensions.Traffic
             if (Sensor.Target is not null)
             {
                 float nextOffset = Sensor.IsTargetOncoming ? 0 : Sensor.Target.Length;
-                float effectiveDistance = Sensor.DistanceToTarget - nextOffset - StopMargin;
+                float stopMargin = float.IsNaN(Sensor.StopMargin) ? DefaultStopMargin : Sensor.StopMargin;
+                float effectiveDistance = Sensor.DistanceToTarget - nextOffset - stopMargin;
                 if (1 < float.Abs(speed)) effectiveDistance -= float.Max(0, speed) * TimeHeadway;
                 if (effectiveDistance <= 0)
                 {
