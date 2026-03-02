@@ -27,12 +27,12 @@ namespace TransportX.Spatial
             Children = children;
         }
 
-        public static MergedKinematicLocatedModel Create(ID3D11Device device, IPhysicsHost physicsHost, IReadOnlyList<KinematicLocatedModelTemplate> sources)
+        public static MergedKinematicLocatedModel Create(IPhysicsHost physicsHost, IReadOnlyList<KinematicLocatedModelTemplate> sources)
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
-            int totalTriangles = sources.Sum(m => m.Model.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
-            physicsHost.Simulation.BufferPool.Take(totalTriangles, out Buffer<Triangle> combinedTriangles);
+            int triangleCount = sources.Sum(m => m.Model.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
+            physicsHost.Simulation.BufferPool.Take(triangleCount, out Buffer<Triangle> combinedTriangles);
 
             List<LocatedModel> children = [];
             int writeIndex = 0;
@@ -62,6 +62,11 @@ namespace TransportX.Spatial
 
                 LocatedModel visualChild = new(source.Model, source.Pose);
                 children.Add(visualChild);
+            }
+
+            for (int i = triangleCount; i < combinedTriangles.Length; i++)
+            {
+                combinedTriangles[i] = new Triangle();
             }
 
             ColliderMesh newMesh = new(combinedTriangles, Vector3.One, physicsHost.Simulation.BufferPool);

@@ -64,7 +64,7 @@ namespace TransportX.Extensions.Network.Elements
 
             if (0 < modelsToMerge.Count)
             {
-                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(Device, PhysicsHost, modelsToMerge);
+                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
                 mergedModel.Model.CreateColliderDebugModel(Device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
