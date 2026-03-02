@@ -12,8 +12,6 @@ using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
-using TransportX.Extensions.Rendering;
-
 namespace TransportX.Extensions.Traffic
 {
     public class SpatialTrafficSensor : ITrafficSensor
@@ -24,9 +22,7 @@ namespace TransportX.Extensions.Traffic
         private readonly ILaneTracker LaneTracker;
         private readonly ILocatable Location;
         private readonly Func<ITrafficParticipant, bool> ObstacleSkipCondition;
-
-        private DynamicLineMesh? DebugMesh = null;
-        private WireframeDebugModel? DebugModel = null;
+        private readonly TrafficSensorDebugVisual DebugVisual;
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
@@ -34,11 +30,15 @@ namespace TransportX.Extensions.Traffic
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
 
-        public Vector4 DebugColor { get; set; } = Vector4.One;
+        public Vector4 DebugColor
+        {
+            get => DebugVisual.DebugColor;
+            set => DebugVisual.DebugColor = value;
+        }
         public string? DebugName
         {
-            get => field;
-            set => DebugModel?.DebugName = field = value;
+            get => DebugVisual.DebugName;
+            set => DebugVisual.DebugName = value;
         }
 
         public SpatialTrafficSensor(ILaneTracker laneTracker, ILocatable location, Func<ITrafficParticipant, bool> obstacleSkipCondition)
@@ -46,14 +46,16 @@ namespace TransportX.Extensions.Traffic
             LaneTracker = laneTracker;
             Location = location;
             ObstacleSkipCondition = obstacleSkipCondition;
+
+            DebugVisual = new TrafficSensorDebugVisual(Location);
         }
 
         public void Dispose()
         {
-            DebugModel?.Dispose();
+            DebugVisual.Dispose();
         }
 
-        public void Tick(IEnumerable<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
         {
             if (!LaneTracker.IsEnabled || LaneTracker.Path is null) throw new InvalidOperationException();
 
@@ -123,28 +125,10 @@ namespace TransportX.Extensions.Traffic
         public void Draw(in LocatedDrawContext context)
         {
             if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
-            if (Target is null) return;
 
-            if (DebugModel is null)
-            {
-                DebugMesh = new DynamicLineMesh(context.DeviceContext.Device, Material.Default());
-                DebugModel = new WireframeDebugModel([DebugMesh]);
-                DebugName = DebugName;
-            }
-
-            InstanceData instanceData = new()
-            {
-                World = Matrix4x4.Transpose((Location.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
-            };
-
-            float lengthShift = IsTargetOncoming ? 0 : Target.Length;
-            Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
-            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.Pose.Orientation));
-
-            DebugMesh!.Material.BaseColor = DebugColor.ToLinear();
-            DebugMesh.SetVector(context.DeviceContext, localDelta);
-
-            context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
+            DebugVisual.Target = Target;
+            DebugVisual.IsTargetOncoming = IsTargetOncoming;
+            DebugVisual.Draw(context);
         }
 
 

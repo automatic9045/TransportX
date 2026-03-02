@@ -9,41 +9,42 @@ using TransportX.Network;
 using TransportX.Rendering;
 using TransportX.Traffic;
 
-using TransportX.Extensions.Rendering;
-
 namespace TransportX.Extensions.Traffic
 {
     public class NetworkTrafficSensor : ITrafficSensor
     {
         private readonly ILaneTracker LaneTracker;
-        private readonly ILocatable Location;
+        private readonly TrafficSensorDebugVisual DebugVisual;
 
-        private DynamicLineMesh? DebugMesh = null;
-        private WireframeDebugModel? DebugModel = null;
+        public float MaxDistance { get; set; } = float.MaxValue;
 
         public ITrafficParticipant? Target { get; private set; } = null;
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
 
-        public Vector4 DebugColor { get; set; } = Vector4.One;
+        public Vector4 DebugColor
+        {
+            get => DebugVisual.DebugColor;
+            set => DebugVisual.DebugColor = value;
+        }
         public string? DebugName
         {
-            get => field;
-            set => DebugModel?.DebugName = field = value;
+            get => DebugVisual.DebugName;
+            set => DebugVisual.DebugName = value;
         }
 
         public NetworkTrafficSensor(ILaneTracker laneTracker, ILocatable location)
         {
             LaneTracker = laneTracker;
-            Location = location;
+            DebugVisual = new TrafficSensorDebugVisual(location);
         }
 
         public void Dispose()
         {
-            DebugModel?.Dispose();
+            DebugVisual?.Dispose();
         }
 
-        public void Tick(IEnumerable<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
         {
             if (!LaneTracker.IsEnabled || LaneTracker.Path is null) throw new InvalidOperationException();
 
@@ -63,6 +64,8 @@ namespace TransportX.Extensions.Traffic
                 distance = pathView.ToViewS(LaneTracker.Path.Length - LaneTracker.S);
                 foreach (LanePathView view in plannedRoute)
                 {
+                    if (MaxDistance < distance) break;
+
                     next = view.Source.Participants
                         .OrderBy(participant => view.ToViewS(participant.S))
                         .FirstOrDefault();
@@ -80,7 +83,7 @@ namespace TransportX.Extensions.Traffic
                 }
             }
 
-            if (next is null)
+            if (next is null || MaxDistance < distance)
             {
                 Target = null;
                 IsTargetOncoming = false;
@@ -97,28 +100,10 @@ namespace TransportX.Extensions.Traffic
         public void Draw(in LocatedDrawContext context)
         {
             if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
-            if (Target is null) return;
 
-            if (DebugModel is null)
-            {
-                DebugMesh = new DynamicLineMesh(context.DeviceContext.Device, Material.Default());
-                DebugModel = new WireframeDebugModel([DebugMesh]);
-                DebugName = DebugName;
-            }
-
-            InstanceData instanceData = new()
-            {
-                World = Matrix4x4.Transpose((Location.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
-            };
-
-            float lengthShift = IsTargetOncoming ? 0 : Target.Length;
-            Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
-            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.Pose.Orientation));
-
-            DebugMesh!.Material.BaseColor = DebugColor.ToLinear();
-            DebugMesh.SetVector(context.DeviceContext, localDelta);
-
-            context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
+            DebugVisual.Target = Target;
+            DebugVisual.IsTargetOncoming = IsTargetOncoming;
+            DebugVisual.Draw(context);
         }
     }
 }
