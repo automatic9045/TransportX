@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Input;
 
 using TransportX.Dependency;
-using TransportX.Diagnostics;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -68,6 +67,9 @@ namespace TransportX
 
             PhysicsHost.Dispose();
             Renderer.Dispose();
+
+            DXHost.Context.ClearState();
+            DXHost.Context.Flush();
         }
 
         public virtual void Draw(System.Drawing.Size clientSize)
