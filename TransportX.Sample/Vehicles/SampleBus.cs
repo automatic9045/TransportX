@@ -56,9 +56,9 @@ namespace TransportX.Sample.Vehicles
         {
             ResetKey = InputManager.ObserveKey(Key.R);
 
-            ModelFactory modelFactory = new ModelFactory(DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
-            SoundFactory soundFactory = new SoundFactory(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
-            BusModels = ModelSet.Create(PhysicsHost.Simulation, Structure, modelFactory);
+            ModelFactory modelFactory = new(DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
+            SoundFactory soundFactory = new(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
+            BusModels = new ModelSet(PhysicsHost.Simulation, Structure, modelFactory);
             Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, Pose.Direction))];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);

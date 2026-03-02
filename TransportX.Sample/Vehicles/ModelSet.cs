@@ -19,81 +19,83 @@ namespace TransportX.Sample.Vehicles
 {
     internal class ModelSet : IDisposable
     {
-        public required DynamicLocatedModel Body { get; init; }
+        private readonly List<IDisposable> Disposables = [];
 
-        public required DynamicLocatedModel AxleF { get; init; }
-        public required DynamicLocatedModel AxleR { get; init; }
+        public DynamicLocatedModel Body { get; }
 
-        public required DynamicLocatedModel WheelFL { get; init; }
-        public required DynamicLocatedModel WheelFR { get; init; }
-        public required DynamicLocatedModel WheelRL { get; init; }
-        public required DynamicLocatedModel WheelRR { get; init; }
+        public DynamicLocatedModel AxleF { get; }
+        public DynamicLocatedModel AxleR { get; }
 
-        public required Constraint<Hinge> AxleToWheelFL { get; init; }
-        public required Constraint<Hinge> AxleToWheelFR { get; init; }
+        public DynamicLocatedModel WheelFL { get; }
+        public DynamicLocatedModel WheelFR { get; }
+        public DynamicLocatedModel WheelRL { get; }
+        public DynamicLocatedModel WheelRR { get; }
 
-        public required Constraint<AngularAxisMotor> PowerMotorRL { get; init; }
-        public required Constraint<AngularAxisMotor> PowerMotorRR { get; init; }
+        public Constraint<Hinge> AxleToWheelFL { get; }
+        public Constraint<Hinge> AxleToWheelFR { get; }
 
-        public required Constraint<AngularAxisMotor> BrakeMotorFL { get; init; }
-        public required Constraint<AngularAxisMotor> BrakeMotorFR { get; init; }
-        public required Constraint<AngularAxisMotor> BrakeMotorRL { get; init; }
-        public required Constraint<AngularAxisMotor> BrakeMotorRR { get; init; }
+        public Constraint<AngularAxisMotor> PowerMotorRL { get; }
+        public Constraint<AngularAxisMotor> PowerMotorRR { get; }
 
-        private ModelSet()
-        {
-        }
+        public Constraint<AngularAxisMotor> BrakeMotorFL { get; }
+        public Constraint<AngularAxisMotor> BrakeMotorFR { get; }
+        public Constraint<AngularAxisMotor> BrakeMotorRL { get; }
+        public Constraint<AngularAxisMotor> BrakeMotorRR { get; }
 
-        public static ModelSet Create(Simulation simulation, BodyStructure structure, ModelFactory modelFactory)
+        public ModelSet(Simulation simulation, BodyStructure structure, ModelFactory modelFactory)
         {
             ColliderMaterial bodyMaterial = new(0.6f, 2, new SpringSettings(30, 1));
             ColliderMaterial wheelMaterial = new(1, 0.5f, new SpringSettings(30, 1));
 
             CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, bodyMaterial);
+            Disposables.Add(bodyModel);
             Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb", true);
             Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb", true);
 
-            DynamicLocatedModel body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
+            Body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 
             Pose wheelRotation = Pose.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
 
 
-            Cylinder axleFShape = new Cylinder(0.1f, 2.103f);
+            Cylinder axleFShape = new(0.1f, 2.103f);
             ColliderBase<Cylinder> axleFCollider = ColliderFactory.Cylinder(simulation, axleFShape, default, wheelRotation);
-            CollidableModel axleFModel = new CollidableModel(axleFCollider);
+            CollidableModel axleFModel = new(axleFCollider);
+            Disposables.Add(axleFModel);
 
-            Cylinder axleRShape = new Cylinder(0.1f, 1.81f);
+            Cylinder axleRShape = new(0.1f, 1.81f);
             ColliderBase<Cylinder> axleRCollider = ColliderFactory.Cylinder(simulation, axleRShape, default, wheelRotation);
-            CollidableModel axleRModel = new CollidableModel(axleRCollider);
+            CollidableModel axleRModel = new(axleRCollider);
+            Disposables.Add(axleRModel);
 
-            DynamicLocatedModel axleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));
-            DynamicLocatedModel axleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
+            AxleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));
+            AxleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
 
 
-
-            Cylinder wheelFShape = new Cylinder(0.48f, 0.277f);
+            Cylinder wheelFShape = new(0.48f, 0.277f);
             CollidableModel wheelFLModel = modelFactory.WithCylinder(wheelFLModelBase, wheelFShape, wheelMaterial, wheelRotation);
+            Disposables.Add(wheelFLModel);
 
-            Cylinder wheelRShape = new Cylinder(0.48f, 0.57f);
+            Cylinder wheelRShape = new(0.48f, 0.57f);
             CollidableModel wheelRLModel = modelFactory.WithCylinder(wheelRLModelBase, wheelRShape, wheelMaterial, wheelRotation);
+            Disposables.Add(wheelRLModel);
 
-            DynamicLocatedModel wheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
-            DynamicLocatedModel wheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));
-            DynamicLocatedModel wheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -7.226f));
-            DynamicLocatedModel wheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -7.226f, 0, float.Pi, 0));
+            WheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
+            WheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));
+            WheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -7.226f));
+            WheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -7.226f, 0, float.Pi, 0));
 
 
-            Constraint<Hinge> axleToWheelFL = ConnectAxleToWheel(axleF, wheelFL);
-            Constraint<Hinge> axleToWheelFR = ConnectAxleToWheel(axleF, wheelFR);
-            ConnectAxleToWheel(axleR, wheelRL);
-            ConnectAxleToWheel(axleR, wheelRR);
+            AxleToWheelFL = ConnectAxleToWheel(AxleF, WheelFL);
+            AxleToWheelFR = ConnectAxleToWheel(AxleF, WheelFR);
+            ConnectAxleToWheel(AxleR, WheelRL);
+            ConnectAxleToWheel(AxleR, WheelRR);
 
             Constraint<Hinge> ConnectAxleToWheel(DynamicLocatedModel axle, DynamicLocatedModel wheel)
             {
                 Pose baseToAxle = axle.BaseToCollider;
                 Pose baseToWheel = wheel.BaseToCollider;
                 Pose wheelToBase = wheel.ColliderToBase;
-                Hinge hinge = new Hinge()
+                Hinge hinge = new()
                 {
                     LocalOffsetA = (wheelToBase * baseToAxle).Position,
                     LocalOffsetB = Vector3.Zero,
@@ -107,8 +109,8 @@ namespace TransportX.Sample.Vehicles
             }
 
 
-            ConnectBodyToAxle(body, axleF, 7);
-            ConnectBodyToAxle(body, axleR, 5);
+            ConnectBodyToAxle(Body, AxleF, 7);
+            ConnectBodyToAxle(Body, AxleR, 5);
 
             void ConnectBodyToAxle(DynamicLocatedModel body, DynamicLocatedModel axle, float springFrequency)
             {
@@ -121,7 +123,7 @@ namespace TransportX.Sample.Vehicles
                 Vector3 springOffsetInAxle = Pose.TransformNormal(Vector3.UnitX, baseToAxle);
                 Vector3 springDirectionInBody = Pose.TransformNormal(Vector3.UnitY, baseToBody);
 
-                PointOnLineServo track = new PointOnLineServo()
+                PointOnLineServo track = new()
                 {
                     LocalOffsetA = axleInBody,
                     LocalOffsetB = Vector3.Zero,
@@ -131,7 +133,7 @@ namespace TransportX.Sample.Vehicles
                 };
                 simulation.Solver.Add(body.Handle, axle.Handle, track);
 
-                LinearAxisServo springL = new LinearAxisServo()
+                LinearAxisServo springL = new()
                 {
                     LocalPlaneNormal = springDirectionInBody,
                     TargetOffset = 0,
@@ -142,7 +144,7 @@ namespace TransportX.Sample.Vehicles
                 };
                 simulation.Solver.Add(body.Handle, axle.Handle, springL);
 
-                LinearAxisServo springR = new LinearAxisServo()
+                LinearAxisServo springR = new()
                 {
                     LocalPlaneNormal = springDirectionInBody,
                     TargetOffset = 0,
@@ -153,7 +155,7 @@ namespace TransportX.Sample.Vehicles
                 };
                 simulation.Solver.Add(body.Handle, axle.Handle, springR);
 
-                AngularHinge stabilizer = new AngularHinge()
+                AngularHinge stabilizer = new()
                 {
                     LocalHingeAxisA = Pose.TransformNormal(Vector3.UnitZ, baseToBody),
                     LocalHingeAxisB = Pose.TransformNormal(Vector3.UnitZ, baseToAxle),
@@ -163,17 +165,17 @@ namespace TransportX.Sample.Vehicles
             }
 
 
-            Constraint<AngularAxisMotor> powerMotorRL = AddMotor(axleR, wheelRL);
-            Constraint<AngularAxisMotor> powerMotorRR = AddMotor(axleR, wheelRR);
+            PowerMotorRL = AddMotor(AxleR, WheelRL);
+            PowerMotorRR = AddMotor(AxleR, WheelRR);
 
-            Constraint<AngularAxisMotor> brakeMotorFL = AddMotor(axleF, wheelFL);
-            Constraint<AngularAxisMotor> brakeMotorFR = AddMotor(axleF, wheelFR);
-            Constraint<AngularAxisMotor> brakeMotorRL = AddMotor(axleR, wheelRL);
-            Constraint<AngularAxisMotor> brakeMotorRR = AddMotor(axleR, wheelRR);
+            BrakeMotorFL = AddMotor(AxleF, WheelFL);
+            BrakeMotorFR = AddMotor(AxleF, WheelFR);
+            BrakeMotorRL = AddMotor(AxleR, WheelRL);
+            BrakeMotorRR = AddMotor(AxleR, WheelRR);
 
             Constraint<AngularAxisMotor> AddMotor(DynamicLocatedModel axle, DynamicLocatedModel wheel)
             {
-                AngularAxisMotor motor = new AngularAxisMotor()
+                AngularAxisMotor motor = new()
                 {
                     LocalAxisA = Pose.TransformNormal(-Vector3.UnitX, axle.BaseToCollider),
                     TargetVelocity = 0,
@@ -183,38 +185,14 @@ namespace TransportX.Sample.Vehicles
                 ConstraintHandle handle = simulation.Solver.Add(axle.Handle, wheel.Handle, motor);
                 return new Constraint<AngularAxisMotor>(simulation, handle);
             }
-
-
-            return new ModelSet()
-            {
-                Body = body,
-
-                AxleF = axleF,
-                AxleR = axleR,
-
-                WheelFL = wheelFL,
-                WheelFR = wheelFR,
-                WheelRL = wheelRL,
-                WheelRR = wheelRR,
-
-                AxleToWheelFL = axleToWheelFL,
-                AxleToWheelFR = axleToWheelFR,
-
-                PowerMotorRL = powerMotorRL,
-                PowerMotorRR = powerMotorRR,
-
-                BrakeMotorFL = brakeMotorFL,
-                BrakeMotorFR = brakeMotorFR,
-                BrakeMotorRL = brakeMotorRL,
-                BrakeMotorRR = brakeMotorRR,
-            };
         }
 
         public void Dispose()
         {
-            Body.Model.Dispose();
-            WheelFL.Model.Dispose();
-            WheelRL.Model.Dispose();
+            foreach (IDisposable disposable in Disposables)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }
