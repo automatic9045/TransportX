@@ -18,7 +18,6 @@ using Vortice.Mathematics;
 using TransportX.Components;
 using TransportX.Models;
 
-using TransportX;
 using TransportX.Dependency;
 using TransportX.Worlds;
 
@@ -105,7 +104,17 @@ namespace TransportX.ViewModels
             PerGameDisposables?.Dispose();
             oldGameContext?.Unload();
             Game = null;
-            GC.Collect();
+
+            // !!! .NET Runtime のバグ回避のため !!!
+            // 参考: https://github.com/dotnet/runtime/issues/123930
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            }
 
             GameLoader loader = new GameLoader(dxHost, dxClient);
             IGame game;
