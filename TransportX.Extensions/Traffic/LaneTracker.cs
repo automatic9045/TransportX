@@ -69,11 +69,12 @@ namespace TransportX.Extensions.Traffic
                 PathViewHistory.Add(pathView);
 
                 float totalHistoryLength = PathViewHistory.Sum(view => view.Source.Length);
-                while (Length < totalHistoryLength && 0 < PathViewHistory.Count)
+                while (0 < PathViewHistory.Count)
                 {
-                    totalHistoryLength -= PathViewHistory[PathViewHistory.Count - 1].Source.Length;
-                    if (totalHistoryLength <= Length) break;
+                    float oldestLength = PathViewHistory[PathViewHistory.Count - 1].Source.Length;
+                    if (totalHistoryLength - oldestLength < Length) break;
 
+                    totalHistoryLength -= oldestLength;
                     PathViewHistory.RemoveOldest();
                 }
 
