@@ -56,7 +56,7 @@ namespace TransportX.Extensions.Network.Elements
                 LanePin inletPin = Inlet.Pins[i];
                 LanePin outletPin = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
 
-                BezierSplineLanePath path = new(inletPin, outletPin);
+                BezierSplineLanePath path = new(FormattableString.Invariant($"{i}"), inletPin, outletPin);
                 inletPin.Wire(path);
                 outletPin.Wire(path);
                 PathsKey.Add(path);

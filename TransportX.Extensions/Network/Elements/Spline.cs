@@ -43,7 +43,7 @@ namespace TransportX.Extensions.Network.Elements
                 LanePin inletPin = Inlet.Pins[i];
                 LanePin outletPin = Outlet.Pins[Inlet.Layout.Lanes.Count - 1 - i];
 
-                SplineLanePath path = new(inletPin, outletPin);
+                SplineLanePath path = new(FormattableString.Invariant($"{i}"), inletPin, outletPin);
                 inletPin.Wire(path);
                 outletPin.Wire(path);
                 PathsKey.Add(path);

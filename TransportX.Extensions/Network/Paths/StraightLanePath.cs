@@ -16,7 +16,7 @@ namespace TransportX.Extensions.Network.Paths
 
         public override float Length => Curve.Length;
 
-        public StraightLanePath(LanePin from, LanePin to) : base(from, to)
+        public StraightLanePath(string name, LanePin from, LanePin to) : base(name, from, to)
         {
             Curve = new LinearPoseCurve(Pose.CreateRotationY(float.Pi) * from.LocalPose, to.LocalPose);
         }

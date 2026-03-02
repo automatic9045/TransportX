@@ -20,7 +20,7 @@ namespace TransportX.Extensions.Network.Paths
         public override float Length => TotalLengths[^1];
         public IReadOnlyList<WidthPoint> WidthPoints { get; }
 
-        public CompositeLanePath(LanePin from, LanePin to, IEnumerable<PoseCurveBase> curves, IEnumerable<WidthPoint> widthPoints) : base(from, to)
+        public CompositeLanePath(string name, LanePin from, LanePin to, IEnumerable<PoseCurveBase> curves, IEnumerable<WidthPoint> widthPoints) : base(name, from, to)
         {
             Curves = curves.ToArray();
             if (Curves.Count == 0) throw new ArgumentException("パスを構成するには少なくとも 1 つの曲線が必要です。", nameof(curves));

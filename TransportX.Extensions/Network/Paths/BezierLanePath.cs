@@ -16,7 +16,7 @@ namespace TransportX.Extensions.Network.Paths
 
         public override float Length => Curve.Length;
 
-        public BezierLanePath(LanePin from, LanePin to) : base(from, to)
+        public BezierLanePath(string name, LanePin from, LanePin to) : base(name, from, to)
         {
             Curve = new BezierPoseCurve(Pose.CreateRotationY(float.Pi) * from.LocalPose, to.LocalPose);
         }

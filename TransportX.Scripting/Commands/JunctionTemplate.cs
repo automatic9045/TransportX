@@ -51,12 +51,12 @@ namespace TransportX.Scripting.Commands
             return null;
         }
 
-        public JunctionPathTemplate Wire(string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
+        public JunctionPathTemplate Wire(string key, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
         {
             if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(World);
             if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(World);
 
-            JunctionPathTemplate path = new(World, fromPort, fromPinIndex, toPort, toPinIndex);
+            JunctionPathTemplate path = new(World, key, fromPort, fromPinIndex, toPort, toPinIndex);
             PathsKey.Add(path);
 
             return path;

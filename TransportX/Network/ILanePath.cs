@@ -12,6 +12,8 @@ namespace TransportX.Network
 {
     public interface ILanePath : IDebugDrawable
     {
+        string Name { get; }
+
         NetworkElement Owner { get; }
         LaneTrafficGroup AllowedTraffic { get; }
         FlowDirections Directions { get; }

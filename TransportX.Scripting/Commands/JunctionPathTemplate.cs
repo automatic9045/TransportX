@@ -18,11 +18,12 @@ namespace TransportX.Scripting.Commands
     public class JunctionPathTemplate
     {
         private static PortDefinition EmptyPort() => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity);
-        internal static JunctionPathTemplate Empty(ScriptWorld world) => new(world, EmptyPort(), 0, EmptyPort(), 0);
+        internal static JunctionPathTemplate Empty(ScriptWorld world) => new(world, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
 
 
         private readonly ScriptWorld World;
 
+        private readonly string Key;
         private readonly PortDefinition FromPort;
         private readonly int FromPinIndex;
         private readonly PortDefinition ToPort;
@@ -38,10 +39,11 @@ namespace TransportX.Scripting.Commands
 
         public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public JunctionPathTemplate(ScriptWorld world, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
+        public JunctionPathTemplate(ScriptWorld world, string key, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
         {
             World = world;
 
+            Key = key;
             FromPort = fromPort;
             FromPinIndex = fromPinIndex;
             ToPort = toPort;
@@ -151,12 +153,12 @@ namespace TransportX.Scripting.Commands
             ILanePath path;
             if (Curves.Count == 0 && Width.Items.Count == 0)
             {
-                path = new BezierLanePath(from, to);
+                path = new BezierLanePath(Key, from, to);
             }
             else
             {
                 if (!IsFinalized) BezierToEnd();
-                path = new CompositeLanePath(from, to, Curves, Width.Items);
+                path = new CompositeLanePath(Key, from, to, Curves, Width.Items);
             }
 
             Components.AddTo(path.Components);

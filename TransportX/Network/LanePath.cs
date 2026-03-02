@@ -24,6 +24,8 @@ namespace TransportX.Network
         protected Material? DebugWingMaterial = null;
         protected LanePathDebugModel? DebugModel = null;
 
+        public string Name { get; }
+
         public NetworkElement Owner => From.Port.Owner;
         public LaneTrafficGroup AllowedTraffic => From.Definition.AllowedTraffic;
         public FlowDirections Directions => From.Definition.Directions.GetOpposition();
@@ -49,11 +51,12 @@ namespace TransportX.Network
             }
         } = null;
 
-        protected LanePath(LanePin from, LanePin to)
+        protected LanePath(string name, LanePin from, LanePin to)
         {
             // TODO: Kind、Directionsの検証
             if (from.Port.Owner != to.Port.Owner) throw new ArgumentException($"同一 {nameof(NetworkElement)} 内のピンを指定する必要があります。", nameof(to));
 
+            Name = name;
             From = from;
             To = to;
             FromWidth = LaneWidth.Opposition(From.Definition.Width);

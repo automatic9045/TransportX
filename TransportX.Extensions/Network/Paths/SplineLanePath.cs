@@ -17,7 +17,7 @@ namespace TransportX.Extensions.Network.Paths
 
         public override float Length => ParentSpline.Length;
 
-        public SplineLanePath(LanePin from, LanePin to) : base(from, to)
+        public SplineLanePath(string name, LanePin from, LanePin to) : base(name, from, to)
         {
             ParentSpline = from.Port.Owner as Spline ?? throw new ArgumentException($"親が {nameof(Spline)} の進路端子である必要があります。", nameof(from));
         }

@@ -17,7 +17,7 @@ namespace TransportX.Extensions.Network.Paths
 
         public override float Length { get; }
 
-        public BezierSplineLanePath(LanePin from, LanePin to) : base(from, to)
+        public BezierSplineLanePath(string name, LanePin from, LanePin to) : base(name, from, to)
         {
             ParentSpline = from.Port.Owner as BezierSpline ?? throw new ArgumentException($"親が {nameof(BezierSpline)} の進路端子である必要があります。", nameof(from));
             Length = ParentSpline.Length; // TODO: 正確に計算するようにする
