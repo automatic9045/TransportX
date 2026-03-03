@@ -11,13 +11,13 @@ using TransportX.Scripting;
 
 using TransportX.Domains.RoadTraffic.Network;
 
-namespace TransportX.Domains.RoadTraffic.Commands
+namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
 {
-    internal class YieldTemplateComponent : ITemplateComponent<ILanePath>
+    internal class Yield : ITemplateComponent<ILanePath>
     {
         public IReadOnlyList<string> PriorityPathKeys { get; }
 
-        public YieldTemplateComponent(IReadOnlyList<string> priorityPathKeys)
+        public Yield(IReadOnlyList<string> priorityPathKeys)
         {
             PriorityPathKeys = priorityPathKeys;
         }

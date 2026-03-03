@@ -61,6 +61,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
             float totalLength = LaneTracker.Path.Length - new LanePathView(LaneTracker.Path, LaneTracker.Heading).ToViewS(LaneTracker.S);
             ITrafficParticipant? next = null;
+
             foreach (LanePathView view in plannedRoute)
             {
                 if (MaxDistance < totalLength) break;

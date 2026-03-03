@@ -8,9 +8,9 @@ using TransportX.Scripting.Commands;
 
 using TransportX.Domains.RoadTraffic.Network;
 
-namespace TransportX.Domains.RoadTraffic.Commands
+namespace TransportX.Domains.RoadTraffic.Scripting.Commands
 {
-    public static class JunctionPathExtensions
+    public static class JunctionPathTemplateExtensions
     {
         public static JunctionPathTemplate Deflection(this JunctionPathTemplate template, double forward, double backward)
         {
@@ -26,7 +26,7 @@ namespace TransportX.Domains.RoadTraffic.Commands
 
         public static JunctionPathTemplate Yield(this JunctionPathTemplate template, params string[] priorityPathKey)
         {
-            YieldTemplateComponent component = new(priorityPathKey);
+            Templates.Yield component = new(priorityPathKey);
             template.Components.Add(component);
             return template;
         }

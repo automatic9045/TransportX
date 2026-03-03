@@ -16,7 +16,7 @@ using TransportX.Scripting.Components;
 
 using TransportX.Domains.RoadTraffic.Traffic;
 
-namespace TransportX.Domains.RoadTraffic.Commands
+namespace TransportX.Domains.RoadTraffic.Scripting
 {
     public class CarTemplate : ITrafficAgentTemplate, IWorldInstantiable<CarTemplate>
     {
