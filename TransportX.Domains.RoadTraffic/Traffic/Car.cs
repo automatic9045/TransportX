@@ -28,8 +28,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         internal new const float Length = 3.6f;
 
 
-        private readonly float Acceleration = Random.Shared.NextSingle() * 2 + 2; // 2～4
-        private readonly float BlinkerDistance = Random.Shared.NextSingle() * 20 + 20; // 20～40
+        private readonly float BlinkerDistance;
 
         private readonly Blinker LeftBlinker;
         private readonly Blinker RightBlinker;
@@ -40,7 +39,8 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override ITrafficSensor Sensor { get; }
         public override IDriver Driver { get; }
 
-        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles, IModel model, IModel blinkerLModel, IModel blinkerRModel) : base(physicsHost, obstacles)
+        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles,
+            IModel model, IModel blinkerLModel, IModel blinkerRModel, CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
         {
             Navigator = new RandomRouteNavigator();
             LaneTracker = new LaneTracker(Navigator, Width, Height, Length);
@@ -61,7 +61,8 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             };
             Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, prioritySensor]);
 
-            Driver = new StandardDriver(LaneTracker, Sensor, Acceleration, 5, 15, 2, 2);
+            Driver = new CarDriver(Navigator, LaneTracker, Sensor, spec, personality);
+            BlinkerDistance = 40 - personality.Factor * 20; // 20～40
 
             Structure.AttachKinematicOrNonCollision(model, Pose.Identity);
             LocatedModel blinkerL = Structure.Attach(blinkerLModel, Pose.Identity);
