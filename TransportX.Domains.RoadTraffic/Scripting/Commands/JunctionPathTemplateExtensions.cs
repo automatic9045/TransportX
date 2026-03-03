@@ -24,6 +24,13 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
             return Deflection(template, forward, -forward);
         }
 
+        public static JunctionPathTemplate SpeedLimit(this JunctionPathTemplate template, double maxSpeed)
+        {
+            SpeedLimitComponent component = new((float)maxSpeed);
+            template.Components.Add(component);
+            return template;
+        }
+
         public static JunctionPathTemplate Yield(this JunctionPathTemplate template, params string[] priorityPathKey)
         {
             Templates.Yield component = new(priorityPathKey);

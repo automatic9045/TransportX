@@ -45,6 +45,10 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             float speed = LaneTracker.SVelocity * direction;
 
             float maxSpeed = Spec.MaxSpeed;
+            if (LaneTracker.Path.Components.TryGet<SpeedLimitComponent>(out SpeedLimitComponent? speedLimit))
+            {
+                maxSpeed = float.Min(maxSpeed, speedLimit.MaxSpeed);
+            }
 
             float cruiseAcceleration = speed < maxSpeed ? DriverAcceleration
                 : maxSpeed < speed ? -DriverDeceleration
