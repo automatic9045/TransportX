@@ -165,6 +165,14 @@ namespace TransportX.Scripting.Commands
             return path;
         }
 
+        internal void BuildComponents(ILanePath parent, IErrorCollector errorCollector)
+        {
+            foreach (ITemplateComponent<ILanePath> component in Components.Values)
+            {
+                component.Build(parent, errorCollector);
+            }
+        }
+
 
         public class WidthPointList
         {

@@ -14,6 +14,7 @@ namespace TransportX.Components
 
         void Add(Type type, TBase component);
         void Add<T>(T component) where T : class, TBase;
+        T GetOrAdd<T>(Func<T> componentFactory) where T : class, TBase;
 
         bool Remove(Type type);
         bool Remove<T>() where T : class, TBase;

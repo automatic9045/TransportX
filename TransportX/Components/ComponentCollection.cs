@@ -45,6 +45,11 @@ namespace TransportX.Components
                 : throw new KeyNotFoundException($"コンポーネント '{typeof(T)}' は登録されていません。");
         }
 
+        private void InvokeAdded(TBase component)
+        {
+            Added?.Invoke(this, new ComponentEventArgs<TBase>(component));
+        }
+
         private void AddUnchecked(Type type, TBase component)
         {
             if (!Components.TryAdd(type, component))
@@ -52,7 +57,7 @@ namespace TransportX.Components
                 throw new InvalidOperationException($"コンポーネント '{type}' は既に登録されています。");
             }
 
-            Added?.Invoke(this, new ComponentEventArgs<TBase>(component));
+            InvokeAdded(component);
         }
 
         public void Add(Type type, TBase component)
@@ -74,6 +79,16 @@ namespace TransportX.Components
         public void Add<T>(T component) where T : class, TBase
         {
             AddUnchecked(typeof(T), component);
+        }
+
+        public T GetOrAdd<T>(Func<T> componentFactory) where T : class, TBase
+        {
+            return (T)Components.GetOrAdd(typeof(T), _ =>
+            {
+                T component = componentFactory();
+                InvokeAdded(component);
+                return component;
+            });
         }
 
         public bool Remove(Type type)

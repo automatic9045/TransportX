@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 using TransportX.Rendering;
@@ -23,6 +24,10 @@ namespace TransportX.Scripting.Commands
         public CurveList Curves { get; }
         public GradientList Gradients { get; }
         public CantList Cants { get; }
+
+        public IComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>> Components { get; }
+            = new ComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>>();
+        public IErrorCollector ErrorCollector => World.ErrorCollector;
 
         public string Name
         {
@@ -90,6 +95,17 @@ namespace TransportX.Scripting.Commands
                 {
                     path.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(path.AllowedTraffic);
                 }
+            }
+
+            IErrorCollector componentErrorCollector = IErrorCollector.Default();
+            componentErrorCollector.Reported += (sender, e) =>
+            {
+                ScriptError error = ScriptError.CreateFrom(e.Error);
+                World.ErrorCollector.Report(error);
+            };
+            foreach (ITemplateComponent<IReadOnlyList<SplineBase>> component in Components.Values)
+            {
+                component.Build(splines, componentErrorCollector);
             }
 
             return new SplineCommand(World, splines);

@@ -61,21 +61,23 @@ namespace TransportX.Scripting.Commands
 
         public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)
         {
-            SplineFactory splineFactory;
-            if (templateKey is null)
+            SplineFactory? splineFactory = null;
+            SplineTemplate? template = null;
+            if (templateKey is not null)
             {
-                splineFactory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort);
+                template = World.Commander.Network.Templates.GetSpline(templateKey);
+                if (template is not null)
+                {
+                    splineFactory = template.Build(X, Z, pose, sourcePort);
+                }
             }
-            else
-            {
-                SplineTemplate? template = World.Commander.Network.Templates.GetSpline(templateKey);
-                splineFactory = template is null
-                    ? new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort)
-                    : template.Build(X, Z, pose, sourcePort);
-            }
+            splineFactory ??= new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort);
             splineFactory.DebugName = CreateSplineDebugName(templateKey);
 
-            return new SplineFactoryCommand(World, splineFactory);
+            SplineFactoryCommand factoryCommand = new(World, splineFactory);
+            template?.CopyComponentsTo(factoryCommand);
+
+            return factoryCommand;
         }
 
         public SplineFactoryCommand BeginSpline(Pose pose)

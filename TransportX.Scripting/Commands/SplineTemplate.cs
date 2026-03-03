@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 using TransportX.Rendering;
@@ -19,8 +20,12 @@ namespace TransportX.Scripting.Commands
 
         public LaneLayout OutletLayout { get; }
 
-        private readonly List<SplineStructure> StructuresKey = new();
+        private readonly List<SplineStructure> StructuresKey = [];
         public IReadOnlyList<SplineStructure> Structures => StructuresKey;
+
+        public IComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>> Components { get; }
+            = new ComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>>();
+        public IErrorCollector ErrorCollector => World.ErrorCollector;
 
         internal SplineTemplate(ScriptWorld world, string outletLayoutKey)
         {
@@ -61,9 +66,17 @@ namespace TransportX.Scripting.Commands
 
         internal SplineFactory Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
         {
-            SplineFactory factory = new SplineFactory(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, pose, OutletLayout, sourcePort);
+            SplineFactory factory = new(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, pose, OutletLayout, sourcePort);
             factory.PutStructures(Structures);
             return factory;
+        }
+
+        internal void CopyComponentsTo(SplineFactoryCommand factoryCommand)
+        {
+            foreach ((Type type, ITemplateComponent<IReadOnlyList<SplineBase>> component) in Components)
+            {
+                factoryCommand.Components.Add(type, component);
+            }
         }
     }
 }

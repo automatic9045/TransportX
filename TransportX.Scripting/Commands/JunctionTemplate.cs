@@ -132,10 +132,7 @@ namespace TransportX.Scripting.Commands
             };
             foreach ((JunctionPathTemplate template, ILanePath built) in paths)
             {
-                foreach (ITemplateComponent<ILanePath> component in template.Components.Values)
-                {
-                    component.Build(built, componentErrorCollector);
-                }
+                template.BuildComponents(built, componentErrorCollector);
             }
 
             return junction;
