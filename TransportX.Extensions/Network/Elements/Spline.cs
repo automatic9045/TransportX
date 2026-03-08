@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
+using TransportX.Components;
 using TransportX.Network;
 using TransportX.Physics;
 
@@ -25,6 +26,8 @@ namespace TransportX.Extensions.Network.Elements
 
         private readonly List<ILanePath> PathsKey = [];
         public override IReadOnlyList<ILanePath> Paths => PathsKey;
+
+        public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
         public Spline(ID3D11Device device,IPhysicsHost physicsHost,int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments)
             : base(device, physicsHost, plateX, plateZ, pose)

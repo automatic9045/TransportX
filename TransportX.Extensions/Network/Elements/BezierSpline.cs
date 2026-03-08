@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
+using TransportX.Components;
 using TransportX.Network;
 using TransportX.Physics;
 
@@ -29,6 +30,8 @@ namespace TransportX.Extensions.Network.Elements
         public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
         public override float Length => CenterCurve.Length;
+
+        public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
         public BezierSpline(ID3D11Device device, IPhysicsHost physicsHost,
             int plateX, int plateZ, Pose fromPose, Pose toPose, LaneLayout outletLayout, float handleScale = 0.5f)

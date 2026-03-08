@@ -5,11 +5,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Network;
 using TransportX.Collections;
 using TransportX.Spatial;
-
-using TransportX.Extensions.Network.Paths;
 
 namespace TransportX.Extensions.Network.Elements
 {
@@ -22,6 +21,8 @@ namespace TransportX.Extensions.Network.Elements
 
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
+
+        public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
         public Junction(int plateX, int plateZ, Pose pose, IEnumerable<PortDefinition> ports) : base(plateX, plateZ, pose)
         {

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Collections;
+using TransportX.Components;
 using TransportX.Rendering;
 using TransportX.Spatial;
 
@@ -16,7 +17,7 @@ namespace TransportX.Network
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<ILanePath> Paths { get; }
         public abstract IReadOnlyList<LocatedModel> Models { get; }
-
+        public abstract IComponentCollection<IComponent> Components { get; }
 
         public string? DebugName
         {
