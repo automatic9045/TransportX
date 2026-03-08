@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Network;
 using TransportX.Worlds;
 
@@ -26,7 +27,7 @@ namespace TransportX.Extensions.Traffic
             Spawners.Initialize(network);
         }
 
-        public void Tick(TimeSpan elapsed)
+        public void Tick(TimeSpan elapsed, DateTime now)
         {
             Spawners.Tick(elapsed);
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Network;
 using TransportX.Rendering;
 
@@ -31,6 +32,19 @@ namespace TransportX.Spatial
         {
             foreach (LocatedModel model in Models) (model as CollidableLocatedModel)?.Dispose();
             foreach (NetworkElement element in Network) element.Dispose();
+        }
+
+        public void RegisterComponents(ComponentEngine engine)
+        {
+            foreach (NetworkElement element in Network)
+            {
+                engine.Register(element.Components);
+
+                foreach (ILanePath lanePath in element.Paths)
+                {
+                    engine.Register(lanePath.Components);
+                }
+            }
         }
 
         public void SetFromCamera(PlateOffset fromCamera)

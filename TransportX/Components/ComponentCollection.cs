@@ -23,6 +23,21 @@ namespace TransportX.Components
         public event EventHandler<ComponentEventArgs<TBase>>? Added;
         public event EventHandler<ComponentEventArgs<TBase>>? Removed;
 
+        protected event EventHandler<ComponentEventArgs<IComponent>>? NonGenericAdded;
+        protected event EventHandler<ComponentEventArgs<IComponent>>? NonGenericRemoved;
+
+        event EventHandler<ComponentEventArgs<IComponent>>? IComponentCollection.Added
+        {
+            add => NonGenericAdded += value;
+            remove => NonGenericAdded -= value;
+        }
+
+        event EventHandler<ComponentEventArgs<IComponent>>? IComponentCollection.Removed
+        {
+            add => NonGenericRemoved += value;
+            remove => NonGenericRemoved -= value;
+        }
+
         public ComponentCollection()
         {
         }
@@ -48,6 +63,7 @@ namespace TransportX.Components
         private void InvokeAdded(TBase component)
         {
             Added?.Invoke(this, new ComponentEventArgs<TBase>(component));
+            NonGenericAdded?.Invoke(this, new ComponentEventArgs<IComponent>(component));
         }
 
         private void AddUnchecked(Type type, TBase component)
@@ -93,9 +109,10 @@ namespace TransportX.Components
 
         public bool Remove(Type type)
         {
-            if (Components.TryRemove(type, out TBase? compoennt))
+            if (Components.TryRemove(type, out TBase? component))
             {
-                Removed?.Invoke(this, new ComponentEventArgs<TBase>(compoennt));
+                Removed?.Invoke(this, new ComponentEventArgs<TBase>(component));
+                NonGenericRemoved?.Invoke(this, new ComponentEventArgs<IComponent>(component));
                 return true;
             }
             else
@@ -111,7 +128,7 @@ namespace TransportX.Components
 
         public bool ContainsKey(Type key) => Components.ContainsKey(key);
         public bool TryGetValue(Type key, [MaybeNullWhen(false)] out TBase value) => Components.TryGetValue(key, out value);
-        public IEnumerator<KeyValuePair<Type, TBase>> GetEnumerator()=> Components.GetEnumerator();
+        public IEnumerator<KeyValuePair<Type, TBase>> GetEnumerator() => Components.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

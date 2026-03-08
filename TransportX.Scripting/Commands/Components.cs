@@ -12,14 +12,14 @@ namespace TransportX.Scripting.Commands
     public class Components
     {
         private readonly ScriptWorld World;
-        private readonly ConcurrentDictionary<Type, IWorldComponentCommand> Instances = [];
+        private readonly ConcurrentDictionary<Type, IComponentCommand> Instances = [];
 
         internal Components(ScriptWorld world)
         {
             World = world;
         }
 
-        public T Get<T>() where T : class, IWorldInstantiable<T>, IWorldComponentCommand
+        public T Get<T>() where T : class, IWorldInstantiable<T>, IComponentCommand
         {
             T instance = (T)Instances.GetOrAdd(typeof(T), type =>
             {

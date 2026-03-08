@@ -58,7 +58,7 @@ namespace TransportX.Scripting.Commands
             Triggers.Dispose();
         }
 
-        public T Component<T>() where T : class, IWorldInstantiable<T>, IWorldComponentCommand
+        public T Component<T>() where T : class, IWorldInstantiable<T>, IComponentCommand
         {
             return Components.Get<T>();
         }

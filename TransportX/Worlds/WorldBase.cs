@@ -45,8 +45,8 @@ namespace TransportX.Worlds
         public PlateCollection Plates { get; } = [];
         public BodyCollection Bodies { get; } = [];
 
-        private readonly WorldComponentCollection ComponentsKey = [];
-        public IComponentCollection<IWorldComponent> Components => ComponentsKey;
+        public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
+        public ComponentEngine ComponentEngine { get; } = new();
 
         public AvatarBase? Avatar
         {
@@ -69,11 +69,13 @@ namespace TransportX.Worlds
 
             Location = builder.Info.Path;
             BaseDirectory = Path.GetDirectoryName(Location)!;
+
+            ComponentEngine.Register(Components);
         }
 
         public virtual void Dispose()
         {
-            ComponentsKey.Dispose();
+            ComponentEngine.Dispose();
 
             foreach (LocatedModel model in BackgroundModels) (model as CollidableLocatedModel)?.Dispose();
             Plates.Dispose();
@@ -87,7 +89,8 @@ namespace TransportX.Worlds
         public virtual void OnStart()
         {
             Validate();
-            ComponentsKey.OnStart();
+            Plates.RegisterComponents(ComponentEngine);
+            ComponentEngine.OnStart();
         }
 
         protected virtual void Validate()
@@ -124,7 +127,7 @@ namespace TransportX.Worlds
 
         public virtual void SubTick(TimeSpan elapsed)
         {
-            ComponentsKey.SubTick(elapsed);
+            ComponentEngine.SubTick(elapsed);
             Bodies.SubTick(elapsed, Camera);
             Camera.UpdateView();
             Plates.SetCameraPosition(Camera);
@@ -133,7 +136,7 @@ namespace TransportX.Worlds
 
         public virtual void Tick(TimeSpan elapsed)
         {
-            ComponentsKey.Tick(elapsed);
+            ComponentEngine.Tick(elapsed, TimeManager.Now);
             Bodies.Tick(elapsed);
             Plates.SetCameraPosition(Camera);
             Bodies.SetCameraPosition(Camera);

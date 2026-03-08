@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Worlds;
+using TransportX.Components;
 
 namespace TransportX.Scripting
 {
-    public interface IWorldComponentCommand
+    public interface IComponentCommand
     {
-        IWorldComponent Source { get; }
+        IComponent Source { get; }
     }
 }

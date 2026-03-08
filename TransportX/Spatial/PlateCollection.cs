@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
+using TransportX.Components;
 
 namespace TransportX.Spatial
 {
@@ -27,6 +27,14 @@ namespace TransportX.Spatial
         public void Dispose()
         {
             foreach (Plate plate in this) plate.Dispose();
+        }
+
+        public void RegisterComponents(ComponentEngine engine)
+        {
+            foreach (Plate plate in this)
+            {
+                plate.RegisterComponents(engine);
+            }
         }
 
         public void SetCameraPosition(ILocatable camera)

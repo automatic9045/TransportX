@@ -7,8 +7,21 @@ using System.Threading.Tasks;
 
 namespace TransportX.Components
 {
-    public interface IComponentCollection<TBase> : IReadOnlyDictionary<Type, TBase> where TBase : class, IComponent
+    public interface IComponentCollection
     {
+        IEnumerable<IComponent> Items { get; }
+
+        event EventHandler<ComponentEventArgs<IComponent>>? Added;
+        event EventHandler<ComponentEventArgs<IComponent>>? Removed;
+    }
+
+    public interface IComponentCollection<TBase> : IComponentCollection, IReadOnlyDictionary<Type, TBase> where TBase : class, IComponent
+    {
+        IEnumerable<IComponent> IComponentCollection.Items => Values;
+
+        new event EventHandler<ComponentEventArgs<TBase>>? Added;
+        new event EventHandler<ComponentEventArgs<TBase>>? Removed;
+
         T? Get<T>() where T : class, TBase;
         bool TryGet<T>([MaybeNullWhen(false)] out T component) where T : class, TBase;
 

@@ -5,20 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
-using TransportX.Worlds;
-
-using TransportX.Collections;
 
 using TransportX.Extensions.Traffic;
 
 using TransportX.Scripting.Data;
-using TransportX.Traffic;
 
 namespace TransportX.Scripting.Components
 {
-    public class TrafficAgents : IWorldInstantiable<TrafficAgents>, IWorldComponentCommand
+    public class TrafficAgents : IWorldInstantiable<TrafficAgents>, IComponentCommand
     {
         private readonly ScriptWorld World;
 
@@ -28,7 +25,7 @@ namespace TransportX.Scripting.Components
         private readonly TrafficSpawnContext SpawnContext;
 
         public TrafficSpawnerComponent Source { get; }
-        IWorldComponent IWorldComponentCommand.Source => Source;
+        IComponent IComponentCommand.Source => Source;
 
         public TrafficAgents(ScriptWorld world)
         {
