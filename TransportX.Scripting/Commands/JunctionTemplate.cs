@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Collections;
+using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 using TransportX.Rendering;
@@ -17,8 +18,6 @@ namespace TransportX.Scripting.Commands
 {
     public class JunctionTemplate
     {
-        private readonly ScriptWorld World;
-
         private readonly KeyedList<string, PortDefinition> PortsKey = new KeyedList<string, PortDefinition>(item => item.Name);
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
@@ -27,6 +26,9 @@ namespace TransportX.Scripting.Commands
 
         private readonly List<LocatedModelTemplate> StructuresKey = [];
         public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
+
+        public ScriptWorld World { get; }
+        public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
         internal JunctionTemplate(ScriptWorld world)
         {
@@ -53,10 +55,10 @@ namespace TransportX.Scripting.Commands
 
         public JunctionPathTemplate Wire(string key, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
         {
-            if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(World);
-            if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(World);
+            if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(World, this);
+            if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(World, this);
 
-            JunctionPathTemplate path = new(World, key, fromPort, fromPinIndex, toPort, toPinIndex);
+            JunctionPathTemplate path = new(World, this, key, fromPort, fromPinIndex, toPort, toPinIndex);
             PathsKey.Add(path);
 
             return path;
@@ -133,6 +135,10 @@ namespace TransportX.Scripting.Commands
             foreach ((JunctionPathTemplate template, ILanePath built) in paths)
             {
                 template.BuildComponents(built, componentErrorCollector);
+            }
+            foreach (ITemplateComponent<Junction> component in Components.Values)
+            {
+                component.Build(junction, componentErrorCollector);
             }
 
             return junction;

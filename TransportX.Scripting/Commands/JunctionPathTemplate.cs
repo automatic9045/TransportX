@@ -18,10 +18,8 @@ namespace TransportX.Scripting.Commands
     public class JunctionPathTemplate
     {
         private static PortDefinition EmptyPort() => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity);
-        internal static JunctionPathTemplate Empty(ScriptWorld world) => new(world, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
+        internal static JunctionPathTemplate Empty(ScriptWorld world, JunctionTemplate parent) => new(world, parent, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
 
-
-        private readonly ScriptWorld World;
 
         private readonly string Key;
         private readonly PortDefinition FromPort;
@@ -37,11 +35,14 @@ namespace TransportX.Scripting.Commands
         private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
         public WidthPointList Width { get; }
 
+        public ScriptWorld World { get; }
+        public JunctionTemplate Parent { get; }
         public IComponentCollection<ITemplateComponent<ILanePath>> Components { get; } = new ComponentCollection<ITemplateComponent<ILanePath>>();
 
-        public JunctionPathTemplate(ScriptWorld world, string key, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
+        public JunctionPathTemplate(ScriptWorld world, JunctionTemplate parent, string key, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
         {
             World = world;
+            Parent = parent;
 
             Key = key;
             FromPort = fromPort;

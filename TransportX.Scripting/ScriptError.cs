@@ -11,7 +11,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Scripting
 {
-    internal class ScriptError : Error
+    public class ScriptError : Error
     {
         public static string? DefaultLocation { get; set; } = null;
 

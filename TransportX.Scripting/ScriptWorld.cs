@@ -18,7 +18,7 @@ namespace TransportX.Scripting
         public override IModelCollection Models { get; }
 
         public string ScriptPath { get; }
-        internal Commander Commander { get; }
+        public Commander Commander { get; }
 
         public ScriptWorld(PluginLoadContext context, WorldBuilder builder) : base(context, builder)
         {

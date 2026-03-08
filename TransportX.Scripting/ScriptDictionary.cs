@@ -11,7 +11,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Scripting
 {
-    internal class ScriptDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyScriptDictionary<TKey, TValue> where TKey : notnull
+    public class ScriptDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyScriptDictionary<TKey, TValue> where TKey : notnull
     {
         private readonly Dictionary<TKey, TValue> Source = [];
         private ICollection<KeyValuePair<TKey, TValue>> SourceAsCollection => Source;
