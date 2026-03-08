@@ -21,6 +21,8 @@ namespace TransportX
         public double Fps { get; private set; } = 0;
         public TimeSpan DeltaTime { get; private set; } = EpsilonTime;
 
+        public DateTime Now { get; set; } = DateTime.Now;
+
         public TimeManager()
         {
         }
@@ -36,6 +38,7 @@ namespace TransportX
 
             TimeSpan dt = elapsed - LastElapsed;
             DeltaTime = dt < EpsilonTime ? EpsilonTime : dt < LimitDeltaTime ? dt : LimitDeltaTime;
+            Now += DeltaTime;
             LastElapsed = elapsed;
 
             Elapsed.TryPeek(out TimeSpan firstElapsed);
