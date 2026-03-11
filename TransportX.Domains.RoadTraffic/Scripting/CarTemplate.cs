@@ -50,7 +50,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting
                 MaxAcceleration = maxAcceleration / 3.6f,
 
                 MinDeceleration = float.Min(minDeceleration, maxDeceleration) / 3.6f,
-                MaxDeceleration = minDeceleration / 3.6f,
+                MaxDeceleration = maxDeceleration / 3.6f,
 
                 MaxSpeed = maxSpeed / 3.6f,
                 MaxReverseSpeed = maxReverseSpeed / 3.6f,
