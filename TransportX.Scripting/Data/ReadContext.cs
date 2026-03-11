@@ -66,6 +66,14 @@ namespace TransportX.Scripting.Data
                         return true;
                     }
                 }
+                else if (type == typeof(double))
+                {
+                    if (double.TryParse(source, CultureInfo.InvariantCulture, out double floatValue))
+                    {
+                        result = (T)(object)floatValue;
+                        return true;
+                    }
+                }
                 else if (type.IsEnum)
                 {
                     if (Enum.TryParse(type, source, out object? enumValue) && enumValue is not null)
@@ -162,26 +170,64 @@ namespace TransportX.Scripting.Data
                     throw new InvalidOperationException($"フィールド '{elementName}' に型 '{typeof(T).Name}' を代入できません。");
                 }
 
-                ReadElementActions[elementName] = new ReadElementAction(Read, displayName, isRequired);
+                ReadElementActions[elementName] = new ReadElementAction(
+                    _ => ReadSerializedElementCore<T>(elementName, displayName, obj => field.SetValue(Source, obj)),
+                    displayName, isRequired);
+            }
 
+            public void AddSerializedListElement<TItem>(string elementName, string listFieldName, string? displayName = null, bool isRequired = false)
+            {
+                displayName ??= elementName;
 
-                void Read(IXmlLineInfo lineInfo)
+                FieldInfo? field = Source.GetType().GetField(listFieldName) ?? throw new InvalidOperationException($"フィールド '{listFieldName}' が見つかりません。");
+
+                if (!typeof(IList<TItem>).IsAssignableFrom(field.FieldType))
                 {
-                    try
-                    {
-                        XmlSerializer serializer = SerializerCache.GetOrAdd((typeof(T), elementName),
-                            key => new XmlSerializer(key.Type, new XmlRootAttribute(key.ElementName)));
+                    throw new InvalidOperationException($"フィールド '{listFieldName}' に '{typeof(TItem).Name}' のリストを代入できません。");
+                }
 
-                        using XmlReader subReader = Reader.ReadSubtree();
+                IList<TItem>? list = (IList<TItem>?)field.GetValue(Source);
+                if (list is null)
+                {
+                    list = [];
+                    field.SetValue(Source, list);
+                }
+
+                ReadElementActions[elementName] = new ReadElementAction(
+                    _ => ReadSerializedElementCore<TItem>(elementName, displayName, obj => list.Add(obj)),
+                    displayName, isRequired);
+            }
+
+            private void ReadSerializedElementCore<T>(string elementName, string displayName, Action<T> onSuccess)
+            {
+                try
+                {
+                    XmlSerializer serializer = SerializerCache.GetOrAdd((typeof(T), elementName),
+                        key => new XmlSerializer(key.Type, new XmlRootAttribute(key.ElementName)));
+
+                    bool wasEmpty = Reader.IsEmptyElement;
+                    using (XmlReader subReader = Reader.ReadSubtree())
+                    {
                         subReader.MoveToContent();
 
-                        T deserializedObject = (T)serializer.Deserialize(subReader)!;
-                        field.SetValue(Source, deserializedObject);
+                        if (serializer.Deserialize(subReader) is T deserializedObject)
+                        {
+                            onSuccess(deserializedObject);
+                        }
                     }
-                    catch (Exception ex)
+
+                    if (wasEmpty)
                     {
-                        ReportError($"{displayName}の値は無効です。", ex);
+                        Reader.Read();
                     }
+                    else if (Reader.NodeType == XmlNodeType.EndElement)
+                    {
+                        Reader.ReadEndElement();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportError($"{displayName}の値は無効です。", ex);
                 }
             }
 
@@ -205,8 +251,8 @@ namespace TransportX.Scripting.Data
 
                         if (ReadElementActions.TryGetValue(localName, out ReadElementAction? action))
                         {
-                            LineInfoSnapshot lineInfoSnapshot = new((IXmlLineInfo)Reader);
-                            action.Invoke(lineInfoSnapshot);
+                            IXmlLineInfo lineInfo = (IXmlLineInfo)Reader;
+                            action.Invoke(lineInfo);
                         }
                         else
                         {

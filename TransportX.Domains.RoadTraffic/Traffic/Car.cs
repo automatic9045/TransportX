@@ -51,15 +51,19 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             {
                 DebugColor = new Vector4(0, 1, 1, 1),
             };
-            PriorityTrafficSensor prioritySensor = new(LaneTracker, PoseSolver)
-            {
-                DebugColor = new Vector4(1, 1, 0, 1),
-            };
             SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, obstacle => obstacle != networkSensor.Target && obstacle == this)
             {
                 DebugColor = new Vector4(1, 0, 1, 1),
             };
-            Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, prioritySensor]);
+            SignalSensor signalSensor = new(LaneTracker, PoseSolver)
+            {
+                DebugColor = new Vector4(1, 1, 0, 1),
+            };
+            PriorityTrafficSensor prioritySensor = new(LaneTracker, PoseSolver)
+            {
+                DebugColor = new Vector4(1, 1, 0, 1),
+            };
+            Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, signalSensor, prioritySensor]);
 
             Driver = new CarDriver(Navigator, LaneTracker, Sensor, spec, personality);
             BlinkerDistance = 40 - personality.Factor * 20; // 20～40

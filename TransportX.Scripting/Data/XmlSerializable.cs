@@ -109,5 +109,13 @@ namespace TransportX.Scripting.Data
 
             serializer.Serialize(writer, value, emptyNamespaces);
         }
+
+        protected static void WriteSerializedListElements<T>(XmlWriter writer, string elementName, IReadOnlyList<T> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                WriteSerializedElement(writer, elementName, list[i]);
+            }
+        }
     }
 }

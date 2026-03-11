@@ -17,6 +17,8 @@ namespace TransportX.Spatial
         public new ICollidableModel Model { get; }
         public Pose ColliderToBase => Model.Collider.Offset * Pose;
 
+        public override event EventHandler<TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>>? Built;
+
         public KinematicLocatedModelTemplate(IPhysicsHost physicsHost, ICollidableModel model, Pose pose) : base(model, pose)
         {
             PhysicsHost = physicsHost;
@@ -32,7 +34,9 @@ namespace TransportX.Spatial
         public KinematicLocatedModel BuildKinematic(Converter<Pose, Pose> poseConverter)
         {
             Pose pose = poseConverter(Pose);
-            return KinematicLocatedModel.Create(PhysicsHost, Model, pose);
+            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, Model, pose);
+            Built?.Invoke(this, new TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>(this, locatedModel));
+            return locatedModel;
         }
 
         public override LocatedModel Build(Converter<Pose, Pose> poseConverter) => BuildKinematic(poseConverter);

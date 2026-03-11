@@ -60,7 +60,7 @@ namespace TransportX.Spatial
                     throw new NotSupportedException("メッシュ以外のコライダーを結合することはできません。");
                 }
 
-                LocatedModel visualChild = new(source.Model, source.Pose);
+                LocatedModel visualChild = source.BuildVisual(pose => pose);
                 children.Add(visualChild);
             }
 
@@ -99,18 +99,7 @@ namespace TransportX.Spatial
             {
                 for (int i = 0; i < Children.Count; i++)
                 {
-                    LocatedModel child = Children[i];
-                    child.Pose = child.BasePose * Pose;
-
-                    Matrix4x4 world = (child.Pose * context.PlateOffset.Pose).ToMatrix4x4();
-                    BoundingBox worldBox = BoundingBox.Transform(child.Model.BoundingBox, world);
-                    if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) continue;
-
-                    InstanceData instanceData = new()
-                    {
-                        World = Matrix4x4.Transpose(world),
-                    };
-                    context.RenderQueue.Submit(context.Pass, child.Model, instanceData);
+                    Children[i].Draw(context);
                 }
             }
 
