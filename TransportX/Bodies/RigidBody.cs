@@ -24,7 +24,7 @@ namespace TransportX.Bodies
         {
             Structure = new BodyStructure(physicsHost);
 
-            Moved += (sender, e) =>
+            Moved += _ =>
             {
                 foreach (LocatedModel model in Structure)
                 {

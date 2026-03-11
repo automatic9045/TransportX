@@ -17,7 +17,7 @@ namespace TransportX
             Parent = parent;
             Offset = offset;
 
-            Parent.Moved += (sender, e) => Update();
+            Parent.Moved += _ => Update();
             Update();
 
 

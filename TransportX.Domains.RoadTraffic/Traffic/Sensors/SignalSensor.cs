@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using TransportX.Network;
 using TransportX.Rendering;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 using TransportX.Extensions.Traffic;
@@ -104,7 +105,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             public readonly float S { get; }
             public readonly float SVelocity => 0;
 
-            public event EventHandler? Moved
+            public event Action<PlateOffset>? Moved
             {
                 add => throw new NotSupportedException();
                 remove => throw new NotSupportedException();

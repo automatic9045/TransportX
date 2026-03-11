@@ -18,7 +18,7 @@ namespace TransportX
 
         sealed Vector3 PositionInWorld => Pose.Position + new Vector3(PlateX, 0, PlateZ) * Plate.Size; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
 
-        event EventHandler? Moved;
+        event Action<PlateOffset>? Moved;
 
         sealed PlateOffset GetPlateOffset(ILocatable to)
         {

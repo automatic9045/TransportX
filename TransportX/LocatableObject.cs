@@ -21,7 +21,7 @@ namespace TransportX
 
         public virtual Vector3 Velocity => Vector3.Zero;
 
-        public event EventHandler? Moved;
+        public event Action<PlateOffset>? Moved;
 
         public LocatableObject(int plateX, int plateZ, Pose pose)
         {
@@ -54,7 +54,7 @@ namespace TransportX
             PlateZ = plateZ;
             Pose = pose;
 
-            Moved?.Invoke(this, EventArgs.Empty);
+            Moved?.Invoke(plateOffset);
 
             return plateOffset;
 

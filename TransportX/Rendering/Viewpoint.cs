@@ -154,7 +154,7 @@ namespace TransportX.Rendering
             Source = source;
             Offset = offset;
 
-            Source.Moved += (sender, e) => UpdateLocation();
+            Source.Moved += _ => UpdateLocation();
             UpdateLocation();
 
 
@@ -202,7 +202,7 @@ namespace TransportX.Rendering
             Translator = new Translator(initialDistance);
             Rotator = new Rotator(initialAngle);
 
-            Source.Moved += (sender, e) => UpdateLocation();
+            Source.Moved += _ => UpdateLocation();
             UpdateLocation();
 
 

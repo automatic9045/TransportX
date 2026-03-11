@@ -152,7 +152,7 @@ namespace TransportX.Extensions.Traffic
             public readonly float S { get; }
             public readonly float SVelocity { get; }
 
-            public event EventHandler? Moved
+            public event Action<PlateOffset>? Moved
             {
                 add => throw new NotSupportedException();
                 remove => throw new NotSupportedException();
