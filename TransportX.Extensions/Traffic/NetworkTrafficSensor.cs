@@ -55,14 +55,19 @@ namespace TransportX.Extensions.Traffic
                 .OrderBy(participant => pathView.ToViewS(participant.S))
                 .FirstOrDefault(participant => pathView.ToViewS(LaneTracker.S) < pathView.ToViewS(participant.S));
             bool isOncoming = next is not null && LaneTracker.Heading != next.Heading;
+
             float distance;
+            float surfaceDistance;
             if (next is not null)
             {
                 distance = pathView.ToViewS(next.S) - pathView.ToViewS(LaneTracker.S);
+                surfaceDistance = isOncoming ? distance : distance - next.Length;
             }
             else
             {
                 distance = pathView.ToViewS(LaneTracker.Path.Length - LaneTracker.S);
+                surfaceDistance = float.MaxValue;
+
                 foreach (LanePathView view in plannedRoute)
                 {
                     if (MaxDistance < distance) break;
@@ -71,20 +76,23 @@ namespace TransportX.Extensions.Traffic
                         .OrderBy(participant => view.ToViewS(participant.S))
                         .FirstOrDefault();
 
-                    if (next is not null)
+                    if (next is null)
                     {
-                        isOncoming = (next.Heading == ParticipantDirection.Forward) == view.Reverse;
-                        distance += view.ToViewS(next.S);
-                        break;
+                        distance += view.Source.Length;
                     }
                     else
                     {
-                        distance += view.Source.Length;
+                        isOncoming = (next.Heading == ParticipantDirection.Forward) == view.Reverse;
+                        distance += view.ToViewS(next.S);
+                        surfaceDistance = isOncoming ? distance : distance - next.Length;
+
+                        if (MaxDistance < surfaceDistance) next = null;
+                        break;
                     }
                 }
             }
 
-            if (next is null || MaxDistance < distance)
+            if (next is null || MaxDistance < surfaceDistance)
             {
                 Target = null;
                 IsTargetOncoming = false;
@@ -94,7 +102,7 @@ namespace TransportX.Extensions.Traffic
             {
                 Target = next;
                 IsTargetOncoming = isOncoming;
-                DistanceToTarget = distance;
+                DistanceToTarget = surfaceDistance;
             }
         }
 

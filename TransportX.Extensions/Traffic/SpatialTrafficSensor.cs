@@ -119,7 +119,7 @@ namespace TransportX.Extensions.Traffic
             {
                 Target = nearestObstacle;
                 IsTargetOncoming = LaneTracker.Heading != nearestObstacle.Heading;
-                DistanceToTarget = nearestObstacleDistance;
+                DistanceToTarget = minSurfaceDistance;
             }
         }
 

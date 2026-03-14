@@ -12,21 +12,19 @@ namespace TransportX.Domains.RoadTraffic.Traffic
 {
     public class CarDriver : IDriver
     {
-        private readonly IRouteNavigator Navigator;
         private readonly ILaneTracker LaneTracker;
         private readonly ITrafficSensor Sensor;
 
-        private float DriverAcceleration;
-        private float DriverDeceleration;
+        private readonly float DriverAcceleration;
+        private readonly float DriverDeceleration;
 
         public CarSpec Spec { get; }
         public DriverPersonality Personality { get; }
 
         public float Acceleration { get; private set; } = 0;
 
-        public CarDriver(IRouteNavigator navigator, ILaneTracker laneTracker, ITrafficSensor sensor, CarSpec spec, DriverPersonality personality)
+        public CarDriver(ILaneTracker laneTracker, ITrafficSensor sensor, CarSpec spec, DriverPersonality personality)
         {
-            Navigator = navigator;
             LaneTracker = laneTracker;
             Sensor = sensor;
 
@@ -57,9 +55,8 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             float brakeAcceleration = float.MaxValue;
             if (Sensor.Target is not null)
             {
-                float nextOffset = Sensor.IsTargetOncoming ? 0 : Sensor.Target.Length;
                 float stopMargin = float.IsNaN(Sensor.StopMargin) ? Personality.DefaultStopMargin : Sensor.StopMargin;
-                float effectiveDistance = Sensor.DistanceToTarget - nextOffset - stopMargin;
+                float effectiveDistance = Sensor.DistanceToTarget - stopMargin;
                 if (1 < float.Abs(speed)) effectiveDistance -= float.Max(0, speed) * Personality.TimeHeadway;
                 if (effectiveDistance <= 0)
                 {

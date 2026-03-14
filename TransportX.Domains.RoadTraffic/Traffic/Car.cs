@@ -65,7 +65,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             };
             Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, signalSensor, prioritySensor]);
 
-            Driver = new CarDriver(Navigator, LaneTracker, Sensor, spec, personality);
+            Driver = new CarDriver(LaneTracker, Sensor, spec, personality);
             BlinkerDistance = 40 - personality.Factor * 20; // 20～40
 
             Structure.AttachKinematicOrNonCollision(model, Pose.Identity);
