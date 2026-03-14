@@ -17,7 +17,7 @@ using TransportX.Sample.Vehicles.Powertrain.Physics;
 
 namespace TransportX.Sample.Vehicles.Powertrain
 {
-    internal class PowertrainSet : IDisposable
+    internal class PowertrainSet
     {
         private readonly Simulation Simulation;
 
@@ -29,7 +29,7 @@ namespace TransportX.Sample.Vehicles.Powertrain
         public DriveWheel RightWheel { get; }
         public ASR ASR { get; }
 
-        public PowertrainSet(InterfaceSet interfaces, SoundFactory soundFactory,
+        public PowertrainSet(InterfaceSet interfaces,
             DynamicLocatedModel wheelRL, DynamicLocatedModel wheelRR, Constraint<AngularAxisMotor> motorRL, Constraint<AngularAxisMotor> motorRR)
         {
             Shaft engineToClutch = new Shaft(3);
@@ -42,7 +42,7 @@ namespace TransportX.Sample.Vehicles.Powertrain
 
             Actuator clutchActuator = new();
 
-            Engine = new Engine(interfaces.Throttle, engineToClutch, soundFactory);
+            Engine = new Engine(interfaces.Throttle, engineToClutch);
             //Clutch = new FrictionClutch(interfaces.Clutch, engineToClutch, clutchToTransmission);
             //Transmission = new MT(interfaces.MTShifter, clutchToTransmission, transmissionToDifferential);
             Clutch = new FluidClutch(clutchActuator, engineToClutch, clutchToTransmission);
@@ -68,11 +68,6 @@ namespace TransportX.Sample.Vehicles.Powertrain
             Simulation.AddModule(RightWheel);
         }
 
-        public void Dispose()
-        {
-            Engine.Audio.Dispose();
-        }
-
         public void Tick(TimeSpan elapsed)
         {
             LeftWheel.Pull();
@@ -91,11 +86,6 @@ namespace TransportX.Sample.Vehicles.Powertrain
 
             LeftWheel.Push();
             RightWheel.Push();
-        }
-
-        public void UpdateSound(Camera camera)
-        {
-            Engine.UpdateSound(camera);
         }
     }
 }

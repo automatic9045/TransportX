@@ -23,6 +23,8 @@ namespace TransportX.Sample.Vehicles.Doors
 
         private readonly DoorAnimator Animator;
 
+        public bool IsOpen => Animator.IsOpen;
+
         public PocketDoor(DoorSwitch doorSwitch, LocatedModel model)
         {
             DoorSwitch = doorSwitch;

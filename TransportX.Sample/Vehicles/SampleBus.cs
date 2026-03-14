@@ -19,6 +19,7 @@ using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
+using TransportX.Sample.Vehicles.Audio;
 using TransportX.Sample.Vehicles.Doors;
 using TransportX.Sample.Vehicles.Input;
 using TransportX.Sample.Vehicles.Interfaces;
@@ -36,6 +37,8 @@ namespace TransportX.Sample.Vehicles
 
         private readonly BifoldDoor FrontDoor;
         private readonly PocketDoor RearDoor;
+
+        private readonly AudioSet Audios;
 
         private readonly KeyObserver ResetKey;
 
@@ -65,10 +68,12 @@ namespace TransportX.Sample.Vehicles
             BusModels = new ModelSet(PhysicsHost.Simulation, Structure, modelFactory);
             Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, Pose.Direction))];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
-            Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
+            Powertrain = new PowertrainSet(Interfaces, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
 
             FrontDoor = new BifoldDoor(Interfaces.DoorSwitch, BusModels.FrontDoor1, BusModels.FrontDoor2);
             RearDoor = new PocketDoor(Interfaces.DoorSwitch, BusModels.RearDoor);
+
+            Audios = new AudioSet(soundFactory, Powertrain.Engine, FrontDoor, RearDoor);
 
             DriverViewpoint = new DriverViewpoint(this, new SixDoF(0.67f, 1.8f, -1.3f));
             BirdViewpoint = new BirdViewpoint(this, new SixDoF(0, 2, -3), 20, new Vector2(0.3f, 0));
@@ -78,7 +83,7 @@ namespace TransportX.Sample.Vehicles
         {
             base.Dispose();
             BusModels.Dispose();
-            Powertrain.Dispose();
+            Audios.Dispose();
         }
 
         public override bool Spawn(ILanePath path, ParticipantDirection heading, float s)
@@ -101,7 +106,8 @@ namespace TransportX.Sample.Vehicles
             base.SubTick(elapsed);
 
             Powertrain.Tick(elapsed);
-            Powertrain.UpdateSound(Camera);
+
+            Audios.UpdateSound(Camera);
 
 
             float wheelRate = Interfaces.SteeringWheel.Rate / Spec.MaxSteeringWheelAngle;

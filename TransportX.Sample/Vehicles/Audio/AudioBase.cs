@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using TransportX.Audio;
 using TransportX.Rendering;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules.Audio
+namespace TransportX.Sample.Vehicles.Audio
 {
-    internal abstract class AudioModuleBase : IDisposable
+    internal abstract class AudioBase : IDisposable
     {
         public abstract void Dispose();
         public abstract void UpdateSound(Camera camera);

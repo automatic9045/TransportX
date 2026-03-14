@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using TransportX.Rendering;
 
 using TransportX.Sample.Mathematics;
+using TransportX.Sample.Vehicles.Audio;
 using TransportX.Sample.Vehicles.Interfaces;
-using TransportX.Sample.Vehicles.Powertrain.Modules.Audio;
 using TransportX.Sample.Vehicles.Powertrain.Physics;
 
 namespace TransportX.Sample.Vehicles.Powertrain.Modules
@@ -33,17 +33,14 @@ namespace TransportX.Sample.Vehicles.Powertrain.Modules
         public IEnumerable<IConstraint> Constraints { get; } = [];
 
         public ECU ECU { get; }
-        public EngineAudio Audio { get; }
 
         public float AngularVelocity => Output.AngularVelocity;
         public float Rpm => Output.Rpm;
 
-        public Engine(Pedal throttlePedal, Shaft output, SoundFactory soundFactory)
+        public Engine(Pedal throttlePedal, Shaft output)
         {
             Output = output;
-
             ECU = new ECU(throttlePedal);
-            Audio = new EngineAudio(this, soundFactory);
         }
 
         public void Tick(TimeSpan elapsed)
@@ -66,11 +63,6 @@ namespace TransportX.Sample.Vehicles.Powertrain.Modules
             if (float.Sign(oldAngularVelocity) != float.Sign(Output.AngularVelocity)) Output.AngularVelocity = 0;
 
             Output.Torque = driveTorque + frictionTorque;
-        }
-
-        public void UpdateSound(Camera camera)
-        {
-            Audio.UpdateSound(camera);
         }
     }
 }

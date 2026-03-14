@@ -49,11 +49,7 @@ namespace TransportX.Sample.Vehicles.Doors
 
         private readonly DoorAnimator Animator;
 
-        public bool IsOpen
-        {
-            get => Animator.IsOpen;
-            set => Animator.IsOpen = value;
-        }
+        public bool IsOpen => Animator.IsOpen;
 
         public BifoldDoor(DoorSwitch doorSwitch, LocatedModel door1Model, LocatedModel door2Model)
         {

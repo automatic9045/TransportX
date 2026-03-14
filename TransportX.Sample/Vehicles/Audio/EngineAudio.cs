@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using TransportX.Audio;
 using TransportX.Rendering;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules.Audio
+using TransportX.Sample.Vehicles.Powertrain.Modules;
+
+namespace TransportX.Sample.Vehicles.Audio
 {
-    internal class EngineAudio : AudioModuleBase
+    internal class EngineAudio : AudioBase
     {
         private readonly Engine Engine;
 
@@ -18,7 +20,7 @@ namespace TransportX.Sample.Vehicles.Powertrain.Modules.Audio
 
         public float IdlingVolume { get; private set; } = 0;
 
-        public EngineAudio(Engine engine, SoundFactory soundFactory)
+        public EngineAudio(SoundFactory soundFactory, Engine engine)
         {
             Engine = engine;
 
@@ -30,9 +32,9 @@ namespace TransportX.Sample.Vehicles.Powertrain.Modules.Audio
             {
                 Sound3D sound = soundFactory.FromFile3D(filePath, new(0, 0, -10));
 
-                sound.Emitter.CurveDistanceScaler = 100;
-                sound.Emitter.InnerRadius = 10;
-                sound.Emitter.InnerRadiusAngle = float.Pi / 4;
+                sound.Emitter.CurveDistanceScaler = 40;
+                sound.Emitter.InnerRadius = 1;
+                sound.Emitter.InnerRadiusAngle = 0;
 
                 return sound;
             }
