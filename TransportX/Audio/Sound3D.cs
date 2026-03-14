@@ -34,6 +34,12 @@ namespace TransportX.Audio
                 ChannelCount = 1,
                 CurveDistanceScaler = 1,
                 DopplerScaler = 1,
+                VolumeCurve = [
+                    new CurvePoint() { Distance = 0, DspSetting = 1 },
+                    new CurvePoint() { Distance = 0.1f, DspSetting = 0.3f },
+                    new CurvePoint() { Distance = 0.5f, DspSetting = 0.1f },
+                    new CurvePoint() { Distance = 1, DspSetting = 0 },
+                ],
             };
 
             DspSettings = new DspSettings(1, MasteringVoice.VoiceDetails.InputChannels);
