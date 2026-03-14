@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using TransportX.Rendering;
 
+using TransportX.Sample.Mathematics;
 using TransportX.Sample.Vehicles.Interfaces;
 using TransportX.Sample.Vehicles.Powertrain.Modules.Audio;
 using TransportX.Sample.Vehicles.Powertrain.Physics;

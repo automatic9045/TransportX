@@ -18,6 +18,8 @@ namespace TransportX.Sample.Vehicles.Input
         public IATShifterInput ATShifter { get; }
         public IMTShifterInput MTShifter { get; }
 
+        public IDoorSwitchInput DoorSwitch { get; }
+
         public KeyboardInput(TransportX.Input.InputManager inputManager, Func<float> vehicleSpeedFunc)
         {
             Clutch = new SliderByKey(inputManager.ObserveKey(Key.LeftShift), 0.6f, 3, reverse: true);
@@ -29,6 +31,8 @@ namespace TransportX.Sample.Vehicles.Input
                 inputManager.ObserveKey(Key.W), inputManager.ObserveKey(Key.S), inputManager.ObserveKey(Key.X));
             MTShifter = new KeyboardMTShifterInput(
                 inputManager.ObserveKey(Key.S), inputManager.ObserveKey(Key.X), inputManager.ObserveKey(Key.Z), inputManager.ObserveKey(Key.C));
+
+            DoorSwitch = new KeyboardDoorSwitchInput(inputManager.ObserveKey(Key.Divide), inputManager.ObserveKey(Key.Multiply));
         }
 
         public void Tick(TimeSpan elapsed)

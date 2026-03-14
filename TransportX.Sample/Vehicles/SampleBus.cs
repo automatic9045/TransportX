@@ -19,6 +19,7 @@ using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
+using TransportX.Sample.Vehicles.Doors;
 using TransportX.Sample.Vehicles.Input;
 using TransportX.Sample.Vehicles.Interfaces;
 using TransportX.Sample.Vehicles.Powertrain;
@@ -32,6 +33,9 @@ namespace TransportX.Sample.Vehicles
         private readonly IReadOnlyList<IInput> Inputs;
         private readonly InterfaceSet Interfaces;
         private readonly PowertrainSet Powertrain;
+
+        private readonly BifoldDoor FrontDoor;
+        private readonly PocketDoor RearDoor;
 
         private readonly KeyObserver ResetKey;
 
@@ -63,7 +67,10 @@ namespace TransportX.Sample.Vehicles
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Powertrain = new PowertrainSet(Interfaces, soundFactory, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
 
-            DriverViewpoint = new DriverViewpoint(this, new SixDoF(0.67f, 2, -1.3f));
+            FrontDoor = new BifoldDoor(Interfaces.DoorSwitch, BusModels.FrontDoor1, BusModels.FrontDoor2);
+            RearDoor = new PocketDoor(Interfaces.DoorSwitch, BusModels.RearDoor);
+
+            DriverViewpoint = new DriverViewpoint(this, new SixDoF(0.67f, 1.8f, -1.3f));
             BirdViewpoint = new BirdViewpoint(this, new SixDoF(0, 2, -3), 20, new Vector2(0.3f, 0));
         }
 
@@ -134,6 +141,10 @@ namespace TransportX.Sample.Vehicles
         {
             foreach (IInput input in Inputs) input.Tick(elapsed);
             Interfaces.Tick(BusModels.WheelRL.AngularVelocity.Length(), elapsed);
+
+            FrontDoor.Tick(elapsed);
+            RearDoor.Tick(elapsed);
+
             //Drives.Tick(elapsed);
 
             //Drives.UpdateSound(DXHost.X3DAudio, Camera.Listener, Camera.PlateX, Camera.PlateZ);

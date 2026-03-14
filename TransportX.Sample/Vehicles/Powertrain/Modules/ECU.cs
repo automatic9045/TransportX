@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Sample.Mathematics;
 using TransportX.Sample.Vehicles.Interfaces;
 
 namespace TransportX.Sample.Vehicles.Powertrain.Modules

@@ -23,6 +23,10 @@ namespace TransportX.Sample.Vehicles
 
         public DynamicLocatedModel Body { get; }
 
+        public KinematicLocatedModel FrontDoor1 { get; }
+        public KinematicLocatedModel FrontDoor2 { get; }
+        public KinematicLocatedModel RearDoor { get; }
+
         public DynamicLocatedModel AxleF { get; }
         public DynamicLocatedModel AxleR { get; }
 
@@ -47,12 +51,24 @@ namespace TransportX.Sample.Vehicles
             ColliderMaterial bodyMaterial = new(0.6f, 2, new SpringSettings(30, 1));
             ColliderMaterial wheelMaterial = new(1, 0.5f, new SpringSettings(30, 1));
 
-            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus\Body.glb", true, bodyMaterial);
+            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus_LV290\LV290N.glb", true, bodyMaterial);
             Disposables.Add(bodyModel);
-            Model wheelFLModelBase = modelFactory.NonCollision(@"Bus\WheelFL.glb", true);
-            Model wheelRLModelBase = modelFactory.NonCollision(@"Bus\WheelRL.glb", true);
+
+            CollidableModel frontDoor1Model = modelFactory.WithBoundingBox(@"Bus_LV290\FrontDoor1.glb", true, bodyMaterial);
+            CollidableModel frontDoor2Model = modelFactory.WithBoundingBox(@"Bus_LV290\FrontDoor2.glb", true, bodyMaterial);
+            CollidableModel rearDoorModel = modelFactory.WithBoundingBox(@"Bus_LV290\RearDoor.glb", true, bodyMaterial);
+            Disposables.Add(frontDoor1Model);
+            Disposables.Add(frontDoor2Model);
+            Disposables.Add(rearDoorModel);
+
+            Model wheelFLModelBase = modelFactory.NonCollision(@"Kuusemi\Bus\WheelFL.glb", true);
+            Model wheelRLModelBase = modelFactory.NonCollision(@"Kuusemi\Bus\WheelRL.glb", true);
 
             Body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
+
+            FrontDoor1 = structure.AttachKinematic(frontDoor1Model, new SixDoF(-1.18f, 0, -0.4f));
+            FrontDoor2 = structure.AttachKinematic(frontDoor2Model, new SixDoF(-1.18f, 0, -1.42f));
+            RearDoor = structure.AttachKinematic(rearDoorModel, SixDoF.Zero);
 
             Pose wheelRotation = Pose.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
 
@@ -67,8 +83,8 @@ namespace TransportX.Sample.Vehicles
             CollidableModel axleRModel = new(axleRCollider);
             Disposables.Add(axleRModel);
 
-            AxleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -2.346f));
-            AxleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -7.226f));
+            AxleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -Spec.FrontOverhang));
+            AxleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase));
 
 
             Cylinder wheelFShape = new(0.48f, 0.277f);
@@ -79,10 +95,10 @@ namespace TransportX.Sample.Vehicles
             CollidableModel wheelRLModel = modelFactory.WithCylinder(wheelRLModelBase, wheelRShape, wheelMaterial, wheelRotation);
             Disposables.Add(wheelRLModel);
 
-            WheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -2.346f));
-            WheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -2.346f, 0, float.Pi, 0));
-            WheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -7.226f));
-            WheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -7.226f, 0, float.Pi, 0));
+            WheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -Spec.FrontOverhang));
+            WheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -Spec.FrontOverhang, 0, float.Pi, 0));
+            WheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase));
+            WheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase, 0, float.Pi, 0));
 
 
             AxleToWheelFL = ConnectAxleToWheel(AxleF, WheelFL);

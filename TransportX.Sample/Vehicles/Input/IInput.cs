@@ -17,6 +17,8 @@ namespace TransportX.Sample.Vehicles.Input
         IATShifterInput ATShifter { get; }
         IMTShifterInput MTShifter { get; }
 
+        IDoorSwitchInput DoorSwitch { get; }
+
         void Tick(TimeSpan elapsed);
     }
 }

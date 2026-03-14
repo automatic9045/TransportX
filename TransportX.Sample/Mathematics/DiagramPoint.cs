@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Sample.Vehicles.Powertrain
+namespace TransportX.Sample.Mathematics
 {
-    internal struct DiagramPoint : IComparable<DiagramPoint>
+    internal readonly struct DiagramPoint : IComparable<DiagramPoint>
     {
         public float X { get; }
         public float Y { get; }
@@ -17,12 +17,7 @@ namespace TransportX.Sample.Vehicles.Powertrain
             Y = y;
         }
 
-        public int CompareTo(DiagramPoint other)
-        {
-            float diff = X - other.X;
-            return float.Sign(diff);
-        }
-
+        public int CompareTo(DiagramPoint other) => X.CompareTo(other.X);
         public override string ToString() => $"{X}, {Y}";
     }
 }

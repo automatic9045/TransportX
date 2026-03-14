@@ -34,17 +34,21 @@ namespace TransportX.Sample.Vehicles.Interfaces
         public AMTShifter AMTShifter { get; }
         public MTShifter MTShifter { get; }
 
+        public DoorSwitch DoorSwitch { get; }
+
         public InterfaceSet(IEnumerable<IInput> sources, IInput defaultSource)
         {
             SourceKey = defaultSource;
 
-            Clutch = new Pedal(SourceKey.Clutch);
-            Brake = new Pedal(SourceKey.Brake);
-            Throttle = new Pedal(SourceKey.Throttle);
-            SteeringWheel = new SteeringWheel(SourceKey.Steering);
+            Clutch = new Pedal(Source.Clutch);
+            Brake = new Pedal(Source.Brake);
+            Throttle = new Pedal(Source.Throttle);
+            SteeringWheel = new SteeringWheel(Source.Steering);
             //ATShifter = new ATShifter(sources.Select(source => source.ATShifter));
-            AMTShifter = new AMTShifter(SourceKey.MTShifter);
-            MTShifter = new MTShifter(SourceKey.MTShifter);
+            AMTShifter = new AMTShifter(Source.MTShifter);
+            MTShifter = new MTShifter(Source.MTShifter);
+
+            DoorSwitch = new DoorSwitch(Source.DoorSwitch);
         }
 
         public void Tick(double vehicleAngularVelocity, TimeSpan elapsed)
