@@ -28,10 +28,13 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         internal new const float Length = 3.6f;
 
 
+        private readonly CarSpec Spec;
+
         private readonly float BlinkerDistance;
 
-        private readonly Blinker LeftBlinker;
-        private readonly Blinker RightBlinker;
+        private readonly BlinkerLight LeftBlinkerLight;
+        private readonly BlinkerLight RightBlinkerLight;
+        private readonly BrakeLight BrakeLight;
 
         public override IRouteNavigator Navigator { get; }
         public override ILaneTracker LaneTracker { get; }
@@ -40,8 +43,11 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override IDriver Driver { get; }
 
         public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles,
-            IModel model, IModel blinkerLModel, IModel blinkerRModel, CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
+            IModel model, IModel blinkerLightLModel, IModel blinkerLightRModel, IModel brakeLightModel,
+            CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
         {
+            Spec = spec;
+
             Navigator = new RandomRouteNavigator();
             LaneTracker = new LaneTracker(Navigator, Width, Height, Length);
             PoseSolver = new TwoPointPoseSolver(FrontWheelOffset, RearWheelOffset);
@@ -65,16 +71,18 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             };
             Sensor = new CompositeTrafficSensor([networkSensor, spatialSensor, signalSensor, prioritySensor]);
 
-            Driver = new CarDriver(LaneTracker, Sensor, spec, personality);
+            Driver = new CarDriver(LaneTracker, Sensor, Spec, personality);
             BlinkerDistance = 40 - personality.Factor * 20; // 20～40
 
             Structure.AttachKinematicOrNonCollision(model, Pose.Identity);
-            LocatedModel blinkerL = Structure.Attach(blinkerLModel, Pose.Identity);
-            LocatedModel blinkerR = Structure.Attach(blinkerRModel, Pose.Identity);
+            LocatedModel blinkerLightL = Structure.Attach(blinkerLightLModel, Pose.Identity);
+            LocatedModel blinkerLightR = Structure.Attach(blinkerLightRModel, Pose.Identity);
+            LocatedModel brakeLight = Structure.Attach(brakeLightModel, Pose.Identity);
 
             TimeSpan blinkerPeriod = TimeSpan.FromSeconds(0.8f);
-            LeftBlinker = new Blinker(blinkerL, blinkerPeriod);
-            RightBlinker = new Blinker(blinkerR, blinkerPeriod);
+            LeftBlinkerLight = new BlinkerLight(blinkerLightL, blinkerPeriod);
+            RightBlinkerLight = new BlinkerLight(blinkerLightR, blinkerPeriod);
+            BrakeLight = new BrakeLight(brakeLight);
         }
 
         public override void Tick(TimeSpan elapsed)
@@ -104,11 +112,13 @@ namespace TransportX.Domains.RoadTraffic.Traffic
                 }
             }
 
-            LeftBlinker.IsActive = deflection <= -0.5f;
-            RightBlinker.IsActive = 0.5f <= deflection;
+            LeftBlinkerLight.IsActive = deflection <= -0.5f;
+            RightBlinkerLight.IsActive = 0.5f <= deflection;
+            BrakeLight.IsActive = SVelocity == 0 || Driver.Acceleration * (int)Heading < -Spec.BrakeLightDecelerationThreshold;
 
-            LeftBlinker.Tick(elapsed);
-            RightBlinker.Tick(elapsed);
+            LeftBlinkerLight.Tick(elapsed);
+            RightBlinkerLight.Tick(elapsed);
+            BrakeLight.Tick(elapsed);
         }
 
         public override void Draw(in LocatedDrawContext context)

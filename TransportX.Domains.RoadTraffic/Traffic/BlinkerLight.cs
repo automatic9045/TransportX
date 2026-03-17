@@ -8,7 +8,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Domains.RoadTraffic.Traffic
 {
-    public class Blinker
+    public class BlinkerLight
     {
         private readonly LocatedModel Model;
         private readonly TimeSpan Period;
@@ -17,7 +17,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
 
         public bool IsActive { get; set; } = false;
 
-        public Blinker(LocatedModel model, TimeSpan period)
+        public BlinkerLight(LocatedModel model, TimeSpan period)
         {
             if (period.Ticks <= 0) throw new ArgumentOutOfRangeException(nameof(period));
 
