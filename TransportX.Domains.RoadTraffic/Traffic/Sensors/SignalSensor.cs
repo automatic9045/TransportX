@@ -26,7 +26,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
         public ITrafficParticipant? Target { get; private set; } = null;
         public bool IsTargetOncoming => false;
         public float DistanceToTarget { get; private set; } = 0;
-        public float StopMargin => 0.5f;
+        public float StopMargin { get; init; } = 0.5f;
 
         public Vector4 DebugColor
         {

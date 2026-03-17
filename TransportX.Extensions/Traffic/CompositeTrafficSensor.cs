@@ -66,9 +66,10 @@ namespace TransportX.Extensions.Traffic
             for (int i = 0; i < Sensors.Count; i++)
             {
                 ITrafficSensor sensor = Sensors[i];
-                sensor.MaxDistance = currentSensor is null ? MaxDistance : currentSensor.DistanceToTarget;
+                float searchDistance = currentSensor is null ? MaxDistance : currentSensor.DistanceToTarget + currentSensor.StopMargin;
+                sensor.MaxDistance = searchDistance;
                 sensor.Tick(plannedRoute, obstacles, elapsed);
-                if (currentSensor is null || sensor.DistanceToTarget < currentSensor.DistanceToTarget) currentSensor = sensor;
+                if (currentSensor is null || sensor.DistanceToTarget + sensor.StopMargin < searchDistance) currentSensor = sensor;
             }
 
             CurrentSensor = currentSensor!;

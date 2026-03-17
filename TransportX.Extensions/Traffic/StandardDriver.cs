@@ -53,8 +53,7 @@ namespace TransportX.Extensions.Traffic
             float brakeAcceleration = float.MaxValue;
             if (Sensor.Target is not null)
             {
-                float stopMargin = float.IsNaN(Sensor.StopMargin) ? DefaultStopMargin : Sensor.StopMargin;
-                float effectiveDistance = Sensor.DistanceToTarget - stopMargin;
+                float effectiveDistance = Sensor.DistanceToTarget - Sensor.StopMargin;
                 if (1 < float.Abs(speed)) effectiveDistance -= float.Max(0, speed) * TimeHeadway;
                 if (effectiveDistance <= 0)
                 {

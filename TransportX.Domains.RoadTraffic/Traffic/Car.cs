@@ -51,7 +51,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             {
                 DebugColor = new Vector4(0, 1, 1, 1),
             };
-            SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, obstacle => obstacle != networkSensor.Target && obstacle == this)
+            SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, obstacle => obstacle == networkSensor.Target || obstacle == this)
             {
                 DebugColor = new Vector4(1, 0, 1, 1),
             };

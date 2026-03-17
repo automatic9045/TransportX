@@ -8,8 +8,9 @@ namespace TransportX.Domains.RoadTraffic.Traffic
 {
     public class DriverPersonality
     {
-        public float Factor { get; init; }
-        public required float DefaultStopMargin { get; init; }
+        public required float Factor { get; init; }
         public required float TimeHeadway { get; init; }
+        public required float StartUpReactionTime { get; init; }
+        public required float CreepSpeed { get; init; }
     }
 }

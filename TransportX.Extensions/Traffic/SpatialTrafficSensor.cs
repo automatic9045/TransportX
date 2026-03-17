@@ -29,7 +29,7 @@ namespace TransportX.Extensions.Traffic
         public ITrafficParticipant? Target { get; private set; } = null;
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
-        public float StopMargin => 1.5f;
+        public float StopMargin { get; init; } = 1;
 
         public Vector4 DebugColor
         {
