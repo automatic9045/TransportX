@@ -21,8 +21,8 @@ namespace TransportX.Spatial
     {
         protected readonly IReadOnlyList<LocatedModel> Children;
 
-        protected MergedKinematicLocatedModel(Simulation simulation, ICollidableModel physicsWrapper, BodyHandle handle, List<LocatedModel> children)
-            : base(simulation, physicsWrapper, handle, Pose.Identity)
+        protected MergedKinematicLocatedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, BodyDescription description, List<LocatedModel> children)
+            : base(physicsHost, physicsWrapper, description, Pose.Identity)
         {
             Children = children;
         }
@@ -81,10 +81,7 @@ namespace TransportX.Spatial
             };
 
             BodyDescription desc = BodyDescription.CreateKinematic(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex, 0.01f);
-            BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
-            physicsHost.SetMaterial(handle, material);
-
-            return new MergedKinematicLocatedModel(physicsHost.Simulation, physicsWrapper, handle, children);
+            return new MergedKinematicLocatedModel(physicsHost, physicsWrapper, desc, children);
         }
 
         public override void Dispose()

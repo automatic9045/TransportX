@@ -20,8 +20,8 @@ namespace TransportX.Spatial
             set => ColliderPose = value;
         }
 
-        internal protected DynamicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Pose basePose)
-            : base(simulation, model, handle, basePose)
+        internal protected DynamicLocatedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
+            : base(physicsHost, model, description, basePose)
         {
         }
 
@@ -29,9 +29,7 @@ namespace TransportX.Spatial
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Pose basePose)
         {
             BodyDescription desc = descFactory(model, (model.Collider.Offset * basePose).ToRigidPose());
-            BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
-            physicsHost.SetMaterial(handle, model.Collider.Material);
-            return new DynamicLocatedModel(physicsHost.Simulation, model, handle, basePose);
+            return new DynamicLocatedModel(physicsHost, model, desc, basePose);
         }
 
         public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
@@ -56,7 +54,7 @@ namespace TransportX.Spatial
             bool isChanged = base.SetFromCamera(fromCamera);
             if (isChanged)
             {
-                Simulation.Awakener.AwakenBody(Handle);
+                PhysicsHost.Simulation.Awakener.AwakenBody(Handle);
                 Body.Pose.Position += delta.Position;
             }
 

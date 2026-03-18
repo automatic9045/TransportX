@@ -103,6 +103,16 @@ namespace TransportX.Sample.Vehicles
                 }
             }
 
+            if (Camera.DrawPlateCount <= int.Abs(Camera.PlateX - PlateX) || Camera.DrawPlateCount <= int.Abs(Camera.PlateZ - PlateZ))
+            {
+                Structure.Freeze();
+                return;
+            }
+            else
+            {
+                Structure.Unfreeze();
+            }
+
             base.SubTick(elapsed);
 
             Powertrain.Tick(elapsed);

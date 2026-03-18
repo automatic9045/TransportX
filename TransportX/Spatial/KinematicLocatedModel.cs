@@ -20,8 +20,8 @@ namespace TransportX.Spatial
             set => ColliderPose = base.Pose = value;
         }
 
-        internal protected KinematicLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Pose pose)
-            : base(simulation, model, handle, pose)
+        internal protected KinematicLocatedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose pose)
+            : base(physicsHost, model, description, pose)
         {
             Pose = BasePose;
         }
@@ -31,11 +31,7 @@ namespace TransportX.Spatial
         {
             RigidPose rigidPose = (model.Collider.Offset * pose).ToRigidPose();
             BodyDescription desc = BodyDescription.CreateKinematic(rigidPose, model.Collider.ShapeIndex, 0.01f);
-
-            BodyHandle handle = physicsHost.Simulation.Bodies.Add(desc);
-            physicsHost.SetMaterial(handle, model.Collider.Material);
-
-            return new(physicsHost.Simulation, model, handle, pose);
+            return new(physicsHost, model, desc, pose);
         }
 
         public static LocatedModel CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Pose pose)
@@ -57,7 +53,7 @@ namespace TransportX.Spatial
 
         public DynamicLocatedModel ToDynamic()
         {
-            return new(Simulation, Model, Handle, BasePose)
+            return new(PhysicsHost, Model, Description, BasePose)
             {
                 Pose = Pose,
             };

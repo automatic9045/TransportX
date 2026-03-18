@@ -37,12 +37,12 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetCameraPosition(ILocatable camera)
+        public void SetCameraPosition(ILocatable camera, int computePlateCount)
         {
             foreach (Plate plate in this)
             {
                 PlateOffset fromCamera = new(plate.X - camera.PlateX, plate.Z - camera.PlateZ);
-                plate.SetFromCamera(fromCamera);
+                plate.SetFromCamera(fromCamera, computePlateCount);
             }
         }
 

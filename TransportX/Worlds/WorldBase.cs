@@ -128,18 +128,18 @@ namespace TransportX.Worlds
         public virtual void SubTick(TimeSpan elapsed)
         {
             ComponentEngine.SubTick(elapsed);
-            Bodies.SubTick(elapsed, Camera);
+            Bodies.SubTick(elapsed, Camera, Camera.DrawPlateCount);
             Camera.UpdateView();
-            Plates.SetCameraPosition(Camera);
-            Bodies.SetCameraPosition(Camera);
+            Plates.SetCameraPosition(Camera, Camera.DrawPlateCount);
+            Bodies.SetCameraPosition(Camera, Camera.DrawPlateCount);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
             ComponentEngine.Tick(elapsed, TimeManager.Now);
             Bodies.Tick(elapsed);
-            Plates.SetCameraPosition(Camera);
-            Bodies.SetCameraPosition(Camera);
+            Plates.SetCameraPosition(Camera, Camera.DrawPlateCount);
+            Bodies.SetCameraPosition(Camera, Camera.DrawPlateCount);
         }
 
         public virtual AvatarBase CreateAvatar(string path, string? identifier)

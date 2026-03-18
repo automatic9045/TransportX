@@ -47,9 +47,9 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetFromCamera(PlateOffset fromCamera)
+        public void SetFromCamera(PlateOffset fromCamera, int computePlateCount)
         {
-            bool isFar = 2 <= int.Abs(fromCamera.DeltaX) || 2 <= int.Abs(fromCamera.DeltaZ);
+            bool isFar = computePlateCount < int.Abs(fromCamera.DeltaX) + 1 || computePlateCount < int.Abs(fromCamera.DeltaZ) + 1;
             if (IsFar && isFar) return;
 
             foreach (LocatedModel model in Models)

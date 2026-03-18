@@ -29,6 +29,8 @@ namespace TransportX.Bodies
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
         public LocatedModel? RootModel => Count == 0 ? null : this[0];
 
+        public bool IsActive { get; private set; } = true;
+
         public BodyStructure(IPhysicsHost physicsHost)
         {
             PhysicsHost = physicsHost;
@@ -149,6 +151,27 @@ namespace TransportX.Bodies
             foreach (LocatedModel model in Items)
             {
                 if (model is CollidableLocatedModel collidableModel) collidableModel.SetFromCamera(fromCamera);
+            }
+        }
+
+        public void Freeze()
+        {
+            IsActive = false;
+
+            foreach (LocatedModel model in Items)
+            {
+                if (model is CollidableLocatedModel collidableModel) collidableModel.Freeze();
+            }
+        }
+
+        public void Unfreeze()
+        {
+            if (IsActive) return;
+            IsActive = true;
+
+            foreach (LocatedModel model in Items)
+            {
+                if (model is CollidableLocatedModel collidableModel) collidableModel.Unfreeze();
             }
         }
 

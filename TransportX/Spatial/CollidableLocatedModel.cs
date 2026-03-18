@@ -15,7 +15,11 @@ namespace TransportX.Spatial
 {
     public abstract class CollidableLocatedModel : LocatedModel, IDisposable
     {
-        protected readonly Simulation Simulation;
+        protected readonly IPhysicsHost PhysicsHost;
+        protected readonly BodyDescription Description;
+
+        private Pose FrozenPose = Pose.Identity;
+        private BodyVelocity FrozenBodyVelocity = default;
 
         public new ICollidableModel Model { get; }
 
@@ -24,8 +28,10 @@ namespace TransportX.Spatial
         /// </summary>
         public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
 
+        public bool IsActive { get; private set; } = true;
+
         public BodyHandle Handle { get; }
-        public BodyReference Body => Simulation.Bodies[Handle];
+        public BodyReference Body => PhysicsHost.Simulation.Bodies[Handle];
 
         public Vector3 Velocity => Pose.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
         public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
@@ -42,7 +48,7 @@ namespace TransportX.Spatial
             get => Model.Collider.OffsetInverse * Body.Pose.ToPose() * FromCamera.PoseInverse;
             set
             {
-                Simulation.Awakener.AwakenBody(Handle);
+                PhysicsHost.Simulation.Awakener.AwakenBody(Handle);
                 Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose).Validated().ToRigidPose();
             }
         }
@@ -50,17 +56,20 @@ namespace TransportX.Spatial
         public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
         public Pose ColliderToBase => Model.Collider.Offset * BasePose;
 
-        internal protected CollidableLocatedModel(Simulation simulation, ICollidableModel model, BodyHandle handle, Pose basePose)
+        internal protected CollidableLocatedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
             : base(model, basePose, false)
         {
-            Simulation = simulation;
+            PhysicsHost = physicsHost;
             Model = model;
-            Handle = handle;
+            Description = description;
+
+            Handle = PhysicsHost.Simulation.Bodies.Add(description);
+            PhysicsHost.SetMaterial(Handle, Model.Collider.Material);
         }
 
         public virtual void Dispose()
         {
-            Simulation.Bodies.Remove(Handle);
+            PhysicsHost.Simulation.Bodies.Remove(Handle);
         }
 
         /// <summary>
@@ -97,6 +106,7 @@ namespace TransportX.Spatial
                 case RenderPass.Colliders:
                 {
                     if (Model.ColliderDebugModel is null) return;
+                    if (!IsActive) return;
 
                     Matrix4x4 world = Body.Pose.ToPose().ToMatrix4x4();
                     BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
@@ -110,6 +120,26 @@ namespace TransportX.Spatial
                     break;
                 }
             }
+        }
+
+        public void Freeze()
+        {
+            if (!IsActive) return;
+
+            FrozenPose = Pose;
+            FrozenBodyVelocity = Body.Velocity;
+
+            Body.Velocity = default;
+            IsActive = false;
+        }
+
+        public void Unfreeze()
+        {
+            if (IsActive) return;
+
+            IsActive = true;
+            Pose = FrozenPose;
+            Body.Velocity = FrozenBodyVelocity;
         }
     }
 }
