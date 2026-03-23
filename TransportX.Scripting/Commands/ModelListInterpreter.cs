@@ -66,6 +66,18 @@ namespace TransportX.Scripting.Commands
                 ModelFactory = () => CollidableModel.LoadWithBoundingBox(
                     World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
             }
+            else if (function.Signature == ModelListSignatures.ConvexHull1)
+            {
+                ColliderMaterial material = CreateMaterial(0);
+
+                ModelFactory = () => CollidableModel.LoadWithConvexHull(
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
+            }
+            else if (function.Signature == ModelListSignatures.ConvexHull2)
+            {
+                ModelFactory = () => CollidableModel.LoadWithConvexHull(
+                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
+            }
             else if (function.Signature == ModelListSignatures.ClosedModel1)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
