@@ -14,9 +14,10 @@ namespace TransportX.Physics
 {
     public class PhysicsHost : IPhysicsHost, IDisposable
     {
-        private readonly CollidableProperty<ColliderGroupHandle> Groups = new CollidableProperty<ColliderGroupHandle>();
-        private readonly CollidableProperty<ColliderMaterial> Materials = new CollidableProperty<ColliderMaterial>();
+        private readonly CollidableProperty<ColliderGroupHandle> Groups = new();
+        private readonly CollidableProperty<ColliderMaterial> Materials = new();
 
+        private BufferPool BufferPool;
         private readonly ThreadDispatcher ThreadDispatcherKey;
 
         private bool IsDisposed = false;
@@ -26,9 +27,9 @@ namespace TransportX.Physics
 
         protected PhysicsHost()
         {
-            BufferPool bufferPool = new BufferPool();
-            NarrowPhaseCallbacks narrowPhaseCallbacks = new NarrowPhaseCallbacks(Groups, Materials);
-            Simulation = Simulation.Create(bufferPool, narrowPhaseCallbacks, new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
+            BufferPool = new BufferPool();
+            NarrowPhaseCallbacks narrowPhaseCallbacks = new(Groups, Materials);
+            Simulation = Simulation.Create(BufferPool, narrowPhaseCallbacks, new PoseIntegratorCallbacks(), new SolveDescription(1, 8));
             ThreadDispatcherKey = new ThreadDispatcher(System.Environment.ProcessorCount);
         }
 
@@ -41,8 +42,6 @@ namespace TransportX.Physics
         {
             if (IsDisposed) throw new InvalidOperationException();
             IsDisposed = true;
-
-            ThreadDispatcherKey.Dispose();
 
             int bodyCount = Enumerable.Range(0, Simulation.Bodies.HandleToLocation.Length)
                 .Select(i => new BodyHandle(i))
@@ -75,13 +74,9 @@ namespace TransportX.Physics
                 }
             }
 
-            BufferPool bufferPool = Simulation.BufferPool;
             Simulation.Dispose();
-
-            Groups.Dispose();
-            Materials.Dispose();
-
-            bufferPool.Clear();
+            ThreadDispatcherKey.Dispose();
+            BufferPool.Clear();
         }
 
         public void SetGroup(StaticHandle handle, ColliderGroupHandle group)

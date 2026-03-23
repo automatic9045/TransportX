@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuPhysics.CollisionDetection;
-using BepuPhysics.Constraints;
 
 namespace TransportX.Physics
 {
@@ -36,7 +35,8 @@ namespace TransportX.Physics
 
         public void Dispose()
         {
-
+            Groups.Dispose();
+            Materials.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,7 +74,7 @@ namespace TransportX.Physics
             pairMaterial = new PairMaterialProperties()
             {
                 FrictionCoefficient = a.FrictionCoefficient * b.FrictionCoefficient,
-                MaximumRecoveryVelocity = MathF.Max(a.MaximumRecoveryVelocity, b.MaximumRecoveryVelocity),
+                MaximumRecoveryVelocity = float.Max(a.MaximumRecoveryVelocity, b.MaximumRecoveryVelocity),
             };
             pairMaterial.SpringSettings = pairMaterial.MaximumRecoveryVelocity == a.MaximumRecoveryVelocity ? a.SpringSettings : b.SpringSettings;
 
