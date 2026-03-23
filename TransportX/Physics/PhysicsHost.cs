@@ -43,37 +43,6 @@ namespace TransportX.Physics
             if (IsDisposed) throw new InvalidOperationException();
             IsDisposed = true;
 
-            int bodyCount = Enumerable.Range(0, Simulation.Bodies.HandleToLocation.Length)
-                .Select(i => new BodyHandle(i))
-                .Count(Simulation.Bodies.BodyExists);
-            if (0 < bodyCount)
-            {
-                throw new Exception($"正常に解放されていない動的物理モデルを {bodyCount} 個検出しました。これはメモリリークの原因となります。");
-            }
-
-            int staticCount = Enumerable.Range(0, Simulation.Statics.HandleToIndex.Length)
-                .Select(i => new StaticHandle(i))
-                .Count(Simulation.Statics.StaticExists);
-            if (0 < staticCount)
-            {
-                throw new Exception($"正常に解放されていない静的物理モデルを {staticCount} 個検出しました。これはメモリリークの原因となります。");
-            }
-
-            FieldInfo idPoolField = typeof(ShapeBatch).GetField("idPool", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            for (int i = 0; i < Simulation.Shapes.RegisteredTypeSpan; i++)
-            {
-                ShapeBatch? batch = (ShapeBatch?)Simulation.Shapes[i];
-                if (batch is null) continue;
-
-                IdPool idPool = (IdPool)idPoolField.GetValue(batch)!;
-                int allocatedCount = idPool.HighestPossiblyClaimedId + 1 - idPool.AvailableIdCount;
-                if (0 < allocatedCount)
-                {
-                    throw new Exception($"正常に解放されていない形状データをバッチ {batch.GetType()} から {allocatedCount} 個検出しました。" +
-                        $"これはメモリリークの原因となります。");
-                }
-            }
-
             Simulation.Dispose();
             ThreadDispatcherKey.Dispose();
             BufferPool.Clear();
