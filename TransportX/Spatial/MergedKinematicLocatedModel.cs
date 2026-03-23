@@ -17,7 +17,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class MergedKinematicLocatedModel : KinematicLocatedModel
+    public class MergedKinematicLocatedModel : KinematicLocatedModel, IDisposable
     {
         protected readonly IReadOnlyList<LocatedModel> Children;
 
@@ -84,9 +84,8 @@ namespace TransportX.Spatial
             return new MergedKinematicLocatedModel(physicsHost, physicsWrapper, desc, children);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose();
             Model.Dispose();
         }
 

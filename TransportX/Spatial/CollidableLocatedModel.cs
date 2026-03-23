@@ -13,7 +13,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public abstract class CollidableLocatedModel : LocatedModel, IDisposable
+    public abstract class CollidableLocatedModel : LocatedModel
     {
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly BodyDescription Description;
@@ -65,11 +65,6 @@ namespace TransportX.Spatial
 
             Handle = PhysicsHost.Simulation.Bodies.Add(description);
             PhysicsHost.SetMaterial(Handle, Model.Collider.Material);
-        }
-
-        public virtual void Dispose()
-        {
-            PhysicsHost.Simulation.Bodies.Remove(Handle);
         }
 
         /// <summary>
@@ -140,6 +135,11 @@ namespace TransportX.Spatial
             IsActive = true;
             Pose = FrozenPose;
             Body.Velocity = FrozenBodyVelocity;
+        }
+
+        public virtual void Remove()
+        {
+            PhysicsHost.Simulation.Bodies.Remove(Handle);
         }
     }
 }

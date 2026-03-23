@@ -146,7 +146,6 @@ namespace TransportX.Rendering
         public override void Dispose()
         {
             base.Dispose();
-            Collider.Dispose();
             ColliderDebugModel?.Dispose();
         }
 

@@ -30,7 +30,7 @@ namespace TransportX.Spatial
 
         public void Dispose()
         {
-            foreach (LocatedModel model in Models) (model as CollidableLocatedModel)?.Dispose();
+            foreach (LocatedModel model in Models) (model as MergedKinematicLocatedModel)?.Dispose();
             foreach (NetworkElement element in Network) element.Dispose();
         }
 

@@ -136,14 +136,14 @@ namespace TransportX.Bodies
         {
             foreach (LocatedModel model in Items)
             {
-                if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
+                if (model is MergedKinematicLocatedModel mergedModel) mergedModel.Dispose();
             }
         }
 
         public void Detach(LocatedModel model)
         {
             Items.Remove(model);
-            if (model is CollidableLocatedModel collidableModel) collidableModel.Dispose();
+            if (model is MergedKinematicLocatedModel mergedModel) mergedModel.Dispose();
         }
 
         public void SetFromCamera(PlateOffset fromCamera)
