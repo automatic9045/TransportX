@@ -20,7 +20,7 @@ namespace TransportX.Extensions.Network.Elements
 
         private readonly List<SplineStructure> Structures = [];
 
-        private Func<NetworkEdge, SplineBase>? Finalizer = null;
+        private Func<NetworkPort?, SplineBase>? Finalizer = null;
 
         public LaneLayout OutletLayout { get; }
         public NetworkPort? SourcePort { get; }
@@ -57,22 +57,20 @@ namespace TransportX.Extensions.Network.Elements
 
         public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
         {
-            Finalizer = last =>
+            Finalizer = fromPort =>
             {
-                Pose from = last.Outlet.Offset * last.Pose;
-
                 NetworkElement targetElement = targetPort.Owner;
-                PlateOffset offset = new PlateOffset(
-                    targetElement.PlateX - last.PlateX,
-                    targetElement.PlateZ - last.PlateZ
+                PlateOffset offset = new(
+                    targetElement.PlateX - PlateX,
+                    targetElement.PlateZ - PlateZ
                 );
                 Pose to = targetPort.Offset * targetElement.Pose * offset.Pose;
 
-                BezierSpline spline = new(Device, PhysicsHost, last.PlateX, last.PlateZ, from, to, last.Outlet.Layout, handleScale)
+                BezierSpline spline = new(Device, PhysicsHost, PlateX, PlateZ, Pose, to, OutletLayout, handleScale)
                 {
                     DebugName = DebugName,
                 };
-                last.Outlet.ConnectTo(spline.Inlet);
+                fromPort?.ConnectTo(spline.Inlet);
                 spline.Outlet.ConnectTo(targetPort);
 
                 return spline;
@@ -153,7 +151,7 @@ namespace TransportX.Extensions.Network.Elements
 
             if (Finalizer is not null)
             {
-                SplineBase lastSpline = Finalizer(splines[^1]);
+                SplineBase lastSpline = Finalizer(sourcePort);
                 ApplyStructures(lastSpline);
                 splines.Add(lastSpline);
             }
