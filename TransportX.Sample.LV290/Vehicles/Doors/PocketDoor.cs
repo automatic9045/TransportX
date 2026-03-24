@@ -56,7 +56,7 @@ namespace TransportX.Sample.Vehicles.Doors
         {
             Animator.IsOpen = DoorSwitch.IsRearOpen;
             Animator.Tick(elapsed);
-            
+
             Model.BasePose = new Pose(0, 0, Animator.OpenRate * Width) * Origin;
         }
     }

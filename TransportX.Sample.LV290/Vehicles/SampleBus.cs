@@ -165,15 +165,14 @@ namespace TransportX.Sample.Vehicles
 
             //Drives.UpdateSound(DXHost.X3DAudio, Camera.Listener, Camera.PlateX, Camera.PlateZ);
 
-            Application.Current.MainWindow.Title =
-                $"[{TimeManager.Fps:f0} fps] " +
-                $"{Powertrain.Engine.Rpm:f0}rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
+            Application.Current.MainWindow.Title +=
+                $"; {Powertrain.Engine.Rpm:f0} rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
                 //$"ω={Drives.LeftWheel.AngularVelocity:f2};{Drives.RightWheel.AngularVelocity:f2}, " +
                 //$"Te={Powertrain.Engine.Torque:f0}, Ttc={Powertrain.Clutch.OutTorque:f0}, Ttr={Powertrain.Transmission.OutTorque:f0}, " +
                 //$"r={Position:f1}, " +
                 //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
-                $"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
-                $"rs={Interfaces.SteeringWheel.Rate:f2}, " +
+                //$"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
+                //$"rs={Interfaces.SteeringWheel.Rate:f2}, " +
                 $"v={Vector3.Dot(Velocity, Pose.Direction) * 3.6f:f1} km/h";
 
             /*Tire tire = Drives.Chassis.Tires[2];

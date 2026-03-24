@@ -7,7 +7,7 @@
   <Project Path="TransportX.Domains.RoadTraffic/TransportX.Domains.RoadTraffic.csproj" />
   <Project Path="TransportX.Extensions/TransportX.Extensions.csproj" />
   <Project Path="TransportX.Player/TransportX.Player.csproj" />
-  <Project Path="TransportX.Sample/TransportX.Sample.csproj" />
+  <Project Path="TransportX.Sample.LV290/TransportX.Sample.LV290.csproj" />
   <Project Path="TransportX.Scripting/TransportX.Scripting.csproj" />
   <Project Path="TransportX/TransportX.csproj" />
 </Solution>

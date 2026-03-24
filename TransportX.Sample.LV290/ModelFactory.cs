@@ -20,7 +20,7 @@ namespace TransportX.Sample
 {
     internal class ModelFactory
     {
-        private static readonly string BaseDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"Models");
+        private static readonly string BaseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
 
         private readonly ID3D11DeviceContext Context;
@@ -36,7 +36,7 @@ namespace TransportX.Sample
             DebugModelColor = debugModelColor;
         }
 
-        private string GetAbsolutePath(string relativePath)
+        private static string GetAbsolutePath(string relativePath)
         {
             string path = Path.Combine(BaseDirectory, relativePath);
             return path;

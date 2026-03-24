@@ -51,18 +51,18 @@ namespace TransportX.Sample.Vehicles
             ColliderMaterial bodyMaterial = new(0.6f, 2, new SpringSettings(30, 1));
             ColliderMaterial wheelMaterial = new(1, 0.5f, new SpringSettings(30, 1));
 
-            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Bus_LV290\LV290N.glb", true, bodyMaterial);
+            CollidableModel bodyModel = modelFactory.WithConvexHull(@"Models\LV290N.glb", true, bodyMaterial);
             Disposables.Add(bodyModel);
 
-            CollidableModel frontDoor1Model = modelFactory.WithBoundingBox(@"Bus_LV290\FrontDoor1.glb", true, bodyMaterial);
-            CollidableModel frontDoor2Model = modelFactory.WithBoundingBox(@"Bus_LV290\FrontDoor2.glb", true, bodyMaterial);
-            CollidableModel rearDoorModel = modelFactory.WithBoundingBox(@"Bus_LV290\RearDoor.glb", true, bodyMaterial);
+            CollidableModel frontDoor1Model = modelFactory.WithBoundingBox(@"Models\FrontDoor1.glb", true, bodyMaterial);
+            CollidableModel frontDoor2Model = modelFactory.WithBoundingBox(@"Models\FrontDoor2.glb", true, bodyMaterial);
+            CollidableModel rearDoorModel = modelFactory.WithBoundingBox(@"Models\RearDoor.glb", true, bodyMaterial);
             Disposables.Add(frontDoor1Model);
             Disposables.Add(frontDoor2Model);
             Disposables.Add(rearDoorModel);
 
-            Model wheelFLModelBase = modelFactory.NonCollision(@"Kuusemi\Bus\WheelFL.glb", true);
-            Model wheelRLModelBase = modelFactory.NonCollision(@"Kuusemi\Bus\WheelRL.glb", true);
+            Model wheelFLModelBase = modelFactory.NonCollision(@"Models_Kuusemi\WheelFL.glb", true);
+            Model wheelRLModelBase = modelFactory.NonCollision(@"Models_Kuusemi\WheelRL.glb", true);
 
             Body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 
