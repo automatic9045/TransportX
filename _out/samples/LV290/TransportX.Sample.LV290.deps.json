@@ -1,0 +1,421 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "TransportX.Sample.LV290/1.0.0": {
+        "dependencies": {
+          "TransportX": "1.0.0",
+          "TransportX.Extensions": "1.0.0"
+        },
+        "runtime": {
+          "TransportX.Sample.LV290.dll": {}
+        }
+      },
+      "AssimpNetter/6.0.2.1": {
+        "runtime": {
+          "lib/net6.0/AssimpNetter.dll": {
+            "assemblyVersion": "6.0.2.1",
+            "fileVersion": "6.0.2.1"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm64/native/libassimp.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libassimp.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-arm64/native/libassimp.dylib": {
+            "rid": "osx-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/libassimp.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/assimp.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "6.0.2.0"
+          },
+          "runtimes/win-x64/native/assimp.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "6.0.2.0"
+          },
+          "runtimes/win-x86/native/assimp.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "6.0.2.0"
+          }
+        }
+      },
+      "BepuPhysics/2.4.0": {
+        "dependencies": {
+          "BepuUtilities": "2.4.0"
+        },
+        "runtime": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
+      "BepuUtilities/2.4.0": {
+        "runtime": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
+      "DirectXTexNet/1.0.7": {
+        "runtime": {
+          "lib/net6.0/DirectXTexNet.dll": {
+            "assemblyVersion": "1.0.7.0",
+            "fileVersion": "1.0.7.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win-x64/native/DirectXTexNetImpl.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "assemblyVersion": "1.0.7.0",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/Ijwhost.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "6.0.2924.17105"
+          },
+          "runtimes/win-x86/native/DirectXTexNetImpl.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "assemblyVersion": "1.0.7.0",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/Ijwhost.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "6.0.2924.17105"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyModel/10.0.3": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyModel.dll": {
+            "assemblyVersion": "10.0.0.3",
+            "fileVersion": "10.0.326.7603"
+          }
+        }
+      },
+      "SharpGen.Runtime/2.4.2-beta": {
+        "runtime": {
+          "lib/net9.0/SharpGen.Runtime.dll": {
+            "assemblyVersion": "2.4.2.0",
+            "fileVersion": "2.4.2.0"
+          }
+        }
+      },
+      "SharpGen.Runtime.COM/2.4.2-beta": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta"
+        },
+        "runtime": {
+          "lib/net9.0/SharpGen.Runtime.COM.dll": {
+            "assemblyVersion": "2.4.2.0",
+            "fileVersion": "2.4.2.0"
+          }
+        }
+      },
+      "SharpGLTF.Core/1.0.6": {
+        "runtime": {
+          "lib/net10.0/SharpGLTF.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "SharpGLTF.Runtime/1.0.6": {
+        "dependencies": {
+          "SharpGLTF.Core": "1.0.6"
+        },
+        "runtime": {
+          "lib/net10.0/SharpGLTF.Runtime.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "SharpGLTF.Toolkit/1.0.6": {
+        "dependencies": {
+          "SharpGLTF.Runtime": "1.0.6"
+        },
+        "runtime": {
+          "lib/net10.0/SharpGLTF.Toolkit.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Vortice.D3DCompiler/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "Vortice.DirectX": "3.8.2"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.D3DCompiler.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "Vortice.Direct2D1/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "Vortice.DXGI": "3.8.2"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.Direct2D1.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "Vortice.Direct3D11/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "Vortice.DXGI": "3.8.2"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.Direct3D11.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "Vortice.DirectX/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "SharpGen.Runtime.COM": "2.4.2-beta",
+          "Vortice.Mathematics": "2.1.0"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.DirectX.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "Vortice.DXGI/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "Vortice.DirectX": "3.8.2"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.DXGI.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "Vortice.Mathematics/2.1.0": {
+        "runtime": {
+          "lib/net10.0/Vortice.Mathematics.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.0"
+          }
+        }
+      },
+      "Vortice.XAudio2/3.8.2": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.4.2-beta",
+          "Vortice.DirectX": "3.8.2"
+        },
+        "runtime": {
+          "lib/net10.0/Vortice.XAudio2.dll": {
+            "assemblyVersion": "3.8.2.0",
+            "fileVersion": "3.8.2.0"
+          }
+        }
+      },
+      "TransportX/1.0.0": {
+        "dependencies": {
+          "AssimpNetter": "6.0.2.1",
+          "BepuPhysics": "2.4.0",
+          "DirectXTexNet": "1.0.7",
+          "Microsoft.Extensions.DependencyModel": "10.0.3",
+          "SharpGLTF.Core": "1.0.6",
+          "SharpGLTF.Toolkit": "1.0.6",
+          "Vortice.D3DCompiler": "3.8.2",
+          "Vortice.Direct2D1": "3.8.2",
+          "Vortice.Direct3D11": "3.8.2",
+          "Vortice.XAudio2": "3.8.2"
+        },
+        "runtime": {
+          "TransportX.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "TransportX.Extensions/1.0.0": {
+        "dependencies": {
+          "TransportX": "1.0.0"
+        },
+        "runtime": {
+          "TransportX.Extensions.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TransportX.Sample.LV290/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssimpNetter/6.0.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8HCwbd2ldYM7sliRIzyYAzrNbROPpLnh9CPO9Bf3VUokI6ecPxzOdbG54+/GwjQIf6MDd6V+05sljPDU6mpESQ==",
+      "path": "assimpnetter/6.0.2.1",
+      "hashPath": "assimpnetter.6.0.2.1.nupkg.sha512"
+    },
+    "BepuPhysics/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ck/BJgSQrBqYrj0T9jGljDdHNILBP5kTPTylc7N/hCzR1XJJc7p6ORzwtjTfjgoYkkdajvLHxEQv6BRC8kaysQ==",
+      "path": "bepuphysics/2.4.0",
+      "hashPath": "bepuphysics.2.4.0.nupkg.sha512"
+    },
+    "BepuUtilities/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KNMxkzKLHAvV7jRtErxs3rPv71fHToqo/WN96HlT6iomWuwL97tohEbt0B1WA8A6sO5t6PP+qF08d4T9A8k2uA==",
+      "path": "bepuutilities/2.4.0",
+      "hashPath": "bepuutilities.2.4.0.nupkg.sha512"
+    },
+    "DirectXTexNet/1.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-N6jYdAgCIccIu5vImPwDwmk8dpIyeHK0tW4iqy7bQOAWimPJIBgUtIVU12SCyr7vVTxiM4xZ14NnzKGihh8CLA==",
+      "path": "directxtexnet/1.0.7",
+      "hashPath": "directxtexnet.1.0.7.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyModel/10.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-31kRjr1fgdJO1UZ/AsjL2noqwht+juHMQ8c/oh8CEsDhlM2+0zwVZVsZjxSfOFiPtn5+6kRGuvSbLAufAPT0kA==",
+      "path": "microsoft.extensions.dependencymodel/10.0.3",
+      "hashPath": "microsoft.extensions.dependencymodel.10.0.3.nupkg.sha512"
+    },
+    "SharpGen.Runtime/2.4.2-beta": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-niTtWAUov1F7wZGAlVeEvW+Tnqvg5yTmhI7rxmYu2Utoyu2TbC9tWWpUpMs0PQg5lu5svoYpCAztNjxCqMFP/w==",
+      "path": "sharpgen.runtime/2.4.2-beta",
+      "hashPath": "sharpgen.runtime.2.4.2-beta.nupkg.sha512"
+    },
+    "SharpGen.Runtime.COM/2.4.2-beta": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9lxDFMiepqo3lJQzMSjECCIONeCc2f3Drokgj6HtrTLZcJSftNgcLbD6/iXYj2iphkwgrZb1oLsDOZxoFZkawQ==",
+      "path": "sharpgen.runtime.com/2.4.2-beta",
+      "hashPath": "sharpgen.runtime.com.2.4.2-beta.nupkg.sha512"
+    },
+    "SharpGLTF.Core/1.0.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-m3qIvUnpvRRfQ0fp0TFfpPk+vsHkCIOf/uIVJ19fe9dwa29KCO/PeHVXKAph8nsFxFLXitTIIqCa5W8JGLMhBg==",
+      "path": "sharpgltf.core/1.0.6",
+      "hashPath": "sharpgltf.core.1.0.6.nupkg.sha512"
+    },
+    "SharpGLTF.Runtime/1.0.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MVb0p0gzwnjHB03b0kMhf9bVUd6gSvs/jBpTkL6rMa0RtzSGARbCvZkpGbHXjxgSTncprEuzV4nAaaAucifc3Q==",
+      "path": "sharpgltf.runtime/1.0.6",
+      "hashPath": "sharpgltf.runtime.1.0.6.nupkg.sha512"
+    },
+    "SharpGLTF.Toolkit/1.0.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wb9Ebb4uwXevL4WiLlry29RWIYlxa+NiAa0BB8iSR7VbmgSa5Ij/QaPNlKi1jjA4oL8aEygg5V76zY1SJfIS+Q==",
+      "path": "sharpgltf.toolkit/1.0.6",
+      "hashPath": "sharpgltf.toolkit.1.0.6.nupkg.sha512"
+    },
+    "Vortice.D3DCompiler/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-FhUt+jqNCrBffd1v4CA3B8PgS4ZE0Xzkrczr4yyJwaat4rHxssPnQK5LkXLnSbmMTrOnGthhSaT9Z9FjlQEHmA==",
+      "path": "vortice.d3dcompiler/3.8.2",
+      "hashPath": "vortice.d3dcompiler.3.8.2.nupkg.sha512"
+    },
+    "Vortice.Direct2D1/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UxG1WlWWOg8ys12w5zcGdh+U0U/q6vy6h89tRmYfZH2jhhcAZx0ZG5zPCbKxS+ZsHAjjqmX5Tph23jsp47uCrw==",
+      "path": "vortice.direct2d1/3.8.2",
+      "hashPath": "vortice.direct2d1.3.8.2.nupkg.sha512"
+    },
+    "Vortice.Direct3D11/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GvwickYBqqYs0AVg2eZtlQHlm5E4l4a86U88iBQ6QI91+D7TUtp5hdG3GIMlq+8NFB3V/sjLhcAKw9hKI7O8cA==",
+      "path": "vortice.direct3d11/3.8.2",
+      "hashPath": "vortice.direct3d11.3.8.2.nupkg.sha512"
+    },
+    "Vortice.DirectX/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A3P4XpiUqf+asGFMw4BRtec3q+ZM6cCkTc2FSeVXkZoEvvu+Yl9REen/qQrs623ZfMdHc74BZWDhaiumKItLpQ==",
+      "path": "vortice.directx/3.8.2",
+      "hashPath": "vortice.directx.3.8.2.nupkg.sha512"
+    },
+    "Vortice.DXGI/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-372JYFek9IwG5cBXyJYEnUgujV42hFjWCDPBFig52shet05C4nuNsYDxr+h+/1AGdBiHLkqCh3AVznJiOXmwyQ==",
+      "path": "vortice.dxgi/3.8.2",
+      "hashPath": "vortice.dxgi.3.8.2.nupkg.sha512"
+    },
+    "Vortice.Mathematics/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KK+SjNSuKdP+zbavekubi+vaeb1Jo4k87ZF6CMkVWjr6RjJwc8peVtmgzXXDIMy4ZC3ZISyk3llY3q65ISOkBQ==",
+      "path": "vortice.mathematics/2.1.0",
+      "hashPath": "vortice.mathematics.2.1.0.nupkg.sha512"
+    },
+    "Vortice.XAudio2/3.8.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ie7rL6G4WffZxPxaDCrXBvyKUXkxZDkWlHGmhNq1037bcWFExdJlCYCkmr4fnjzh5kMSFWsKjJ9m+1r+PO9OTQ==",
+      "path": "vortice.xaudio2/3.8.2",
+      "hashPath": "vortice.xaudio2.3.8.2.nupkg.sha512"
+    },
+    "TransportX/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TransportX.Extensions/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

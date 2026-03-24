@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ScriptManifest>
+    <Dependencies>
+        <Dependency Path="$(plugins)TransportX.Domains.RoadTraffic.dll" />
+    </Dependencies>
+</ScriptManifest>

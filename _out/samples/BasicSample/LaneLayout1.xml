@@ -2,8 +2,8 @@
 <LaneLayout>
     <Lanes>
         <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="-6.25" Y="0.15" LeftWidth="1.5"  RightWidth="1.25" />
-        <Lane AllowedTraffic="Cars"        Directions="Out"   X="-2"    Y="0"    LeftWidth="2.75"  RightWidth="2" />
-        <Lane AllowedTraffic="Cars"        Directions="In"    X="2"     Y="0"    LeftWidth="2"  RightWidth="2.75" />
+        <Lane AllowedTraffic="Cars"        Directions="Out"   X="-2"    Y="0"    LeftWidth="2.75" RightWidth="2" />
+        <Lane AllowedTraffic="Cars"        Directions="In"    X="2"     Y="0"    LeftWidth="2"    RightWidth="2.75" />
         <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="6.25"  Y="0.15" LeftWidth="1.25" RightWidth="1.5" />
     </Lanes>
 </LaneLayout>

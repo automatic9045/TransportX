@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Traffic>
+    <Spawner Key="Random" Density="0.005" AssumedSpeed="50">
+        <Agents>
+            <Agent Key="AICar">
+                <Models Body="Car" BlinkerLightL="Car_BlinkerL" BlinkerLightR="Car_BlinkerR" BrakeLight="Car_Brake" />
+                <Spec MinThrottle="7" MaxThrottle="15" MinBrake="5" MaxBrake="12" EmergencyBrake="35"
+                      MinBrakeJerk="3" MaxBrakeJerk="8" EmergencyBrakeJerk="150"
+                      MaxSpeed="120" MaxReverseSpeed="10" />
+            </Agent>
+        </Agents>
+    </Spawner>
+</Traffic>

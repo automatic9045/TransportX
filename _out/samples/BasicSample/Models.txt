@@ -8,6 +8,12 @@ Road1_10m	Models\Road1\10_1.glb	$OpenModel("Models\\Road1\\Collision10.glb", 0.9
 RoadDeadEnd1	Models\RoadDeadEnd1\Model.glb	$OpenModel(0.9, 1, 30, 1)
 RoadTerminal1	Models\RoadTerminal1\Model.glb	$OpenModel(0.9, 1, 30, 1)
 BusStop	Models\BusStop\Model.glb	$ClosedModel
-Signal	Models\Signal\Signal.obj	$LH$ClosedModel
+Signal_L	Models\Signal\L.glb	$ClosedModel
+Signal_L_CarRed	Models\Signal\L_CarRed.glb	$ClosedModel
+Signal_L_CarYellow	Models\Signal\L_CarYellow.glb	$ClosedModel
+Signal_L_CarGreen	Models\Signal\L_CarGreen.glb	$ClosedModel
 Car	Models\Traffic\Car.glb	$ClosedModel
+Car_BlinkerL	Models\Traffic\Car_BlinkerL.glb	$NonCollision
+Car_BlinkerR	Models\Traffic\Car_BlinkerR.glb	$NonCollision
+Car_Brake	Models\Traffic\Car_Brake.glb	$NonCollision
 Pedestrian	Models\Traffic\Pedestrian.glb	$ClosedModel

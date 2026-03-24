@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<TrafficSignalController>
+    <Schedule>
+        <PlanRef StartTime="7:00:00" Key="Morning" />
+        <PlanRef StartTime="9:00:00" Key="Normal" />
+    </Schedule>
+    <Plans>
+        <Plan Key="Normal" Offset="0">
+            <Step Duration="60">
+                <Group Key="V_Car" Color="Green" />
+                <Group Key="H_Car" Color="Red" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="V_Car" Color="Yellow" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="V_Car" Color="Red" />
+            </Step>
+            <Step Duration="30">
+                <Group Key="H_Car" Color="Green" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="H_Car" Color="Yellow" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="H_Car" Color="Red" />
+            </Step>
+        </Plan>
+        <Plan Key="Morning" Offset="0">
+            <Step Duration="50">
+                <Group Key="V_Car" Color="Green" />
+                <Group Key="H_Car" Color="Red" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="V_Car" Color="Yellow" />
+            </Step>
+            <Step Duration="5">
+                <Group Key="V_Car" Color="Red" />
+            </Step>
+            <Step Duration="40">
+                <Group Key="H_Car" Color="Green" />
+            </Step>
+            <Step Duration="3">
+                <Group Key="H_Car" Color="Yellow" />
+            </Step>
+            <Step Duration="5">
+                <Group Key="H_Car" Color="Red" />
+            </Step>
+        </Plan>
+    </Plans>
+</TrafficSignalController>
