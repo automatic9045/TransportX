@@ -106,7 +106,7 @@ namespace TransportX.Scripting.Commands
             return BeginSpline(null, x, y, z);
         }
 
-        public Junction PutJunction(string templateKey, Pose pose)
+        public JunctionCommand PutJunction(string templateKey, Pose pose)
         {
             Junction junction;
             if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
@@ -123,16 +123,16 @@ namespace TransportX.Scripting.Commands
             junction.DebugName = CreateJunctionDebugName(templateKey);
 
             Target.Network.Add(junction);
-            return junction;
+            return new JunctionCommand(World, junction);
         }
 
-        public Junction PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public JunctionCommand PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutJunction(templateKey, position.ToPose());
         }
 
-        public Junction PutJunction(string templateKey, double x, double y, double z)
+        public JunctionCommand PutJunction(string templateKey, double x, double y, double z)
         {
             return PutJunction(templateKey, x, y, z, 0, 0, 0);
         }
