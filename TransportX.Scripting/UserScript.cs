@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis;
@@ -21,8 +22,13 @@ using TransportX.Scripting.Data.Scripts;
 
 namespace TransportX.Scripting
 {
-    public class UserScript<TCommander, TResult>
+    public partial class UserScript<TCommander, TResult>
     {
+        [GeneratedRegex(@"(?mi)^\s*#load\s+""(?:[^""]*[/\\])?__Editor\.csx""\s*(?:\r?\n)?",
+            RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex LoadForEditorRegex();
+
+
         public Script<TResult> Script { get; }
 
         protected UserScript(Script<TResult> script)
@@ -92,7 +98,7 @@ namespace TransportX.Scripting
                 rawScriptText = string.Empty;
             }
 
-            string scriptText = rawScriptText.Replace("#load \"__Editor.csx\"", null, StringComparison.OrdinalIgnoreCase);
+            string scriptText = LoadForEditorRegex().Replace(rawScriptText, string.Empty);
             Script<TResult> script = CSharpScript.Create<TResult>(scriptText, options, typeof(TCommander));
 
             ImmutableArray<Diagnostic> diagnostics = script.Compile();
