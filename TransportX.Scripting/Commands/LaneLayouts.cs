@@ -17,7 +17,7 @@ namespace TransportX.Scripting.Commands
     public class LaneLayouts : IReadOnlyDictionary<string, LaneLayout>
     {
         private readonly ScriptWorld World;
-        private readonly Dictionary<string, LaneLayout> Items = [];
+        private readonly ScriptDictionary<string, LaneLayout> Items;
 
         public LaneLayout this[string key] => Items[key];
         public IEnumerable<string> Keys => Items.Keys;
@@ -27,6 +27,19 @@ namespace TransportX.Scripting.Commands
         internal LaneLayouts(ScriptWorld world)
         {
             World = world;
+            Items = new ScriptDictionary<string, LaneLayout>(World.ErrorCollector, "進路レイアウト", key => new LaneLayout());
+        }
+
+        public LaneLayout Add(string key, LaneLayout layout)
+        {
+            Items[key] = layout;
+            return layout;
+        }
+
+        public LaneLayout AddOpposition(string key, string baseKey)
+        {
+            Items.GetValue(baseKey, out LaneLayout baseLayout);
+            return Add(key, baseLayout.Opposition);
         }
 
         public LaneLayout Load(string key, string path)
@@ -51,22 +64,11 @@ namespace TransportX.Scripting.Commands
                     World.ErrorCollector.ReportRange(laneData.Errors);
 
                     if (laneData.AllowedTraffic.Value is null) continue;
-                    if (!World.Commander.Network.LaneTraffic.Groups.TryGetValue(laneData.AllowedTraffic.Value, out LaneTrafficGroup? group))
-                    {
-                        ReportError(laneData.AllowedTraffic, $"進路種別 '{laneData.AllowedTraffic.Value}' が見つかりません。");
-                        continue;
-                    }
+                    if (!World.Commander.Network.LaneTraffic.Groups.GetValue(laneData.AllowedTraffic.Value, out LaneTrafficGroup group)) continue;
 
                     LaneWidth width = new(laneData.LeftWidth.Value, laneData.RightWidth.Value);
                     Lane lane = new(group, laneData.Directions.Value, new Vector2(laneData.X.Value, laneData.Y.Value), width);
                     lanes.Add(lane);
-
-
-                    void ReportError<T>(XmlValue<T> source, string message)
-                    {
-                        Error error = source.CreateError(message);
-                        World.ErrorCollector.Report(error);
-                    }
                 }
             }
             catch (Exception ex)
@@ -76,8 +78,7 @@ namespace TransportX.Scripting.Commands
             }
 
             LaneLayout layout = new(lanes);
-            Items.Add(key, layout);
-            return layout;
+            return Add(key, layout);
 
 
             LaneLayout CreateEmptyLayout()
@@ -86,19 +87,6 @@ namespace TransportX.Scripting.Commands
                 Items.Add(key, layout);
                 return layout;
             }
-        }
-
-        internal LaneLayout Get(string key)
-        {
-            if (!TryGetValue(key, out LaneLayout? layout))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"進路レイアウト '{key}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                layout = new LaneLayout();
-            }
-
-            return layout;
         }
 
         public bool ContainsKey(string key) => Items.ContainsKey(key);

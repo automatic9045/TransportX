@@ -37,7 +37,7 @@ namespace TransportX.Scripting.Commands
 
         public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
-            LaneLayout layout = World.Commander.Network.LaneLayouts.Get(layoutKey);
+            LaneLayout layout = World.Commander.Network.LaneLayouts[layoutKey];
             SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             PortDefinition port = new(key, layout, offset.ToPose());
             PortsKey.Add(port);

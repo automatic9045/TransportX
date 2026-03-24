@@ -30,7 +30,7 @@ namespace TransportX.Scripting.Commands
         internal SplineTemplate(ScriptWorld world, string outletLayoutKey)
         {
             World = world;
-            OutletLayout = World.Commander.Network.LaneLayouts.Get(outletLayoutKey);
+            OutletLayout = World.Commander.Network.LaneLayouts[outletLayoutKey];
         }
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
