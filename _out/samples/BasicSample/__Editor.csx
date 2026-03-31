@@ -1,7 +1,7 @@
-#r "..\..\bin\Debug\TransportX.dll"
-#r "..\..\bin\Debug\TransportX.Extensions.dll"
-#r "..\..\bin\Debug\TransportX.Scripting.dll"
-#r "..\..\bin\Debug\Plugins\TransportX.Domains.RoadTraffic.dll"
+#r "..\..\bin\Release\TransportX.dll"
+#r "..\..\bin\Release\TransportX.Extensions.dll"
+#r "..\..\bin\Release\TransportX.Scripting.dll"
+#r "..\..\bin\Release\Plugins\TransportX.Domains.RoadTraffic.dll"
 
 global using System;
 global using System.Collections.Generic;
@@ -10,6 +10,7 @@ global using System.Numerics;
 global using System.Text;
 global using System.Threading.Tasks;
 
+global using TransportX;
 global using TransportX.Scripting;
 global using TransportX.Scripting.Commands;
 global using TransportX.Scripting.Components;

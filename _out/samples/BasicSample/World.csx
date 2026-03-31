@@ -108,7 +108,8 @@ spline = factory.Build();
 Plates[0, 0].PutStructure("RoadTerminal1", -1.7, 0, 30);
 Plates[0, 0].PutStructure("BusStop", -4.5, 0.15, 49.3);
 
-var junction = spline.IntoJunction("3Forked1", "S");
+var fJunction = spline.IntoJunction("3Forked1", "S");
+var junction = fJunction.Build();
 
 var factory2 = junction.IntoSpline("E", "SplineTemplate1")
     .SpeedLimit(1, 40)
@@ -119,7 +120,8 @@ factory2.Curves
     .ByRadius(100, 35);
 var spline2 = factory2.Build();
 
-var junction2 = spline2.IntoJunction("3Forked1", "E");
+var fJunction2 = spline2.IntoJunction("3Forked1", "E");
+var junction2 = fJunction2.Build();
 
 factory = junction.IntoSpline("N", "SplineTemplate1");
 factory.Curves
@@ -130,7 +132,8 @@ factory.Curves
 factory.PutStructure(["BusStop"], -5.25, 0.15, 0, 250, 0, 0, 1);
 spline = factory.Build();
 
-junction = spline.IntoJunction("3Forked1", "S");
+fJunction = spline.IntoJunction("3Forked1", "S");
+junction = fJunction.Build();
 
 factory = junction.IntoSpline("N", "SplineTemplate1");
 factory.Curves.Straight(200);
@@ -162,7 +165,8 @@ factory = junction2.IntoSpline("N", "SplineTemplate1");
 factory.Curves.Straight(30);
 spline = factory.Build();
 
-junction = spline.IntoJunction("DeadEnd1", "0");
+fJunction = spline.IntoJunction("DeadEnd1", "0");
+junction = fJunction.Build();
 
 factory = Plates[0, 0].BeginSpline("SplineTemplate1", 30, 0, 35);
 factory.Curves.Straight(110);
