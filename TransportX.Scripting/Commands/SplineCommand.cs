@@ -33,24 +33,32 @@ namespace TransportX.Scripting.Commands
             return spline;
         }
 
-        public JunctionCommand IntoJunction(string templateKey, string targetPortKey)
+        public JunctionFactoryCommand IntoJunction(string templateKey, string targetPortKey)
         {
             JunctionTemplate? template = World.Commander.Network.Templates.GetJunction(templateKey);
             PortDefinition? targetPort = template?.GetPort(targetPortKey);
 
-            Junction junction = template is null || targetPort is null
-                ? new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Pose, [])
-                : ((Spline)Splines[^1]).ConnectNew(targetPort, template.Build);
+            Junction junction;
+            JunctionFactoryCommand factoryCommand;
+            if (template is null || targetPort is null)
+            {
+                junction = new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Pose, []);
+                factoryCommand = new JunctionFactoryCommand(World, junction);
+            }
+            else
+            {
+                factoryCommand = null!;
+                junction = ((Spline)Splines[^1]).ConnectNew(targetPort, (plateX, plateZ, pose) =>
+                {
+                    factoryCommand = template.Build(plateX, plateZ, pose);
+                    return factoryCommand.Junction;
+                });
+            }
             junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
 
-            AddElementToPlate(junction);
-            return new JunctionCommand(World, junction);
-        }
-
-        private void AddElementToPlate(NetworkElement element)
-        {
-            Plate plate = World.Plates.GetOrAdd(element.PlateX, element.PlateZ);
-            plate.Network.Add(element);
+            Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);
+            plate.Network.Add(junction);
+            return factoryCommand;
         }
     }
 }

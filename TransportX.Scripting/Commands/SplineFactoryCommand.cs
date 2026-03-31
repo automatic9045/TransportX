@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -70,7 +69,7 @@ namespace TransportX.Scripting.Commands
                 return new LocatedModelTemplate(model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
-            SplineFactory.PutStructure(structure);
+            SplineFactory.AddStructure(structure);
 
             return structure;
         }

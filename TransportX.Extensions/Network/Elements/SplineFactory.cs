@@ -35,17 +35,14 @@ namespace TransportX.Extensions.Network.Elements
             SourcePort = sourcePort;
         }
 
-        public void PutStructure(SplineStructure structure)
+        public void AddStructure(SplineStructure structure)
         {
             Structures.Add(structure);
         }
 
-        public void PutStructures(IEnumerable<SplineStructure> structures)
+        public void AddStructures(IEnumerable<SplineStructure> structures)
         {
-            foreach (SplineStructure structure in structures)
-            {
-                PutStructure(structure);
-            }
+            Structures.AddRange(structures);
         }
 
         public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
@@ -181,6 +178,8 @@ namespace TransportX.Extensions.Network.Elements
 
             void ApplyStructures(SplineBase spline)
             {
+                List<SplineStructure> structures = [];
+
                 for (int structureIndex = 0; structureIndex < Structures.Count; structureIndex++)
                 {
                     SplineStructure structure = Structures[structureIndex];
@@ -189,7 +188,7 @@ namespace TransportX.Extensions.Network.Elements
                     int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
 
                     SplineStructure splittedStructure = new(structure.Models, structure.From, structure.Span, structure.Interval, count);
-                    spline.AddStructure(splittedStructure);
+                    structures.Add(splittedStructure);
 
                     if (count == structure.Count)
                     {
@@ -209,7 +208,7 @@ namespace TransportX.Extensions.Network.Elements
                     Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
                 }
 
-                spline.BuildStructures(device, physicsHost);
+                spline.PutStructures(device, physicsHost, structures);
             }
         }
 

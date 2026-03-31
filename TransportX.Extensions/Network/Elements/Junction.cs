@@ -26,7 +26,6 @@ namespace TransportX.Extensions.Network.Elements
         private readonly List<ILanePath> PathsKey = [];
         public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
-        private readonly List<LocatedModelTemplate> Structures = [];
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
@@ -48,15 +47,10 @@ namespace TransportX.Extensions.Network.Elements
             return path;
         }
 
-        public void AddStructure(LocatedModelTemplate structure)
-        {
-            Structures.Add(structure);
-        }
-
-        public void BuildStructures(ID3D11Device device, IPhysicsHost physicsHost)
+        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<LocatedModelTemplate> structures)
         {
             List<KinematicLocatedModelTemplate> structuresToMerge = [];
-            foreach (LocatedModelTemplate structure in Structures)
+            foreach (LocatedModelTemplate structure in structures)
             {
                 Pose pose = structure.Pose * Pose;
                 LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(physicsHost, structure.Model, pose);

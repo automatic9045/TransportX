@@ -19,7 +19,6 @@ namespace TransportX.Extensions.Network.Elements
         private static int DebugColorIndex = 0;
 
 
-        private readonly List<SplineStructure> Structures = [];
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
@@ -33,15 +32,10 @@ namespace TransportX.Extensions.Network.Elements
         public abstract Vector3 GetUp(float s);
         public abstract Pose GetPose(float s);
 
-        public void AddStructure(SplineStructure structure)
-        {
-            Structures.Add(structure);
-        }
-
-        public void BuildStructures(ID3D11Device device, IPhysicsHost physicsHost)
+        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineStructure> structures)
         {
             List<KinematicLocatedModelTemplate> modelsToMerge = [];
-            foreach (SplineStructure structure in Structures)
+            foreach (SplineStructure structure in structures)
             {
                 for (int i = 0; i < structure.Count; i++)
                 {

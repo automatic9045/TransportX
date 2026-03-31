@@ -61,21 +61,18 @@ namespace TransportX.Scripting.Commands
 
         public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)
         {
-            SplineFactory? splineFactory = null;
-            SplineTemplate? template = null;
+            SplineFactoryCommand? factoryCommand = null;
             if (templateKey is not null)
             {
-                template = World.Commander.Network.Templates.GetSpline(templateKey);
+                SplineTemplate? template = World.Commander.Network.Templates.GetSpline(templateKey);
                 if (template is not null)
                 {
-                    splineFactory = template.Build(X, Z, pose, sourcePort);
+                    factoryCommand = template.Build(X, Z, pose, sourcePort);
                 }
             }
-            splineFactory ??= new SplineFactory(X, Z, pose, new LaneLayout(), sourcePort);
-            splineFactory.DebugName = CreateSplineDebugName(templateKey);
 
-            SplineFactoryCommand factoryCommand = new(World, splineFactory);
-            template?.CopyComponentsTo(factoryCommand);
+            factoryCommand ??= new SplineFactoryCommand(World, new SplineFactory(X, Z, pose, new LaneLayout(), sourcePort));
+            factoryCommand.SplineFactory.DebugName = CreateSplineDebugName(templateKey);
 
             return factoryCommand;
         }
@@ -106,33 +103,33 @@ namespace TransportX.Scripting.Commands
             return BeginSpline(null, x, y, z);
         }
 
-        public JunctionCommand PutJunction(string templateKey, Pose pose)
+        public JunctionFactoryCommand PutJunction(string templateKey, Pose pose)
         {
-            Junction junction;
+            JunctionFactoryCommand factoryCommand;
             if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
             {
-                junction = template.Build(X, Z, pose);
+                factoryCommand = template.Build(X, Z, pose);
             }
             else
             {
                 ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                junction = new Junction(X, Z, pose, []);
+                factoryCommand = new JunctionFactoryCommand(World, new Junction(X, Z, pose, []));
             }
-            junction.DebugName = CreateJunctionDebugName(templateKey);
+            factoryCommand.Junction.DebugName = CreateJunctionDebugName(templateKey);
 
-            Target.Network.Add(junction);
-            return new JunctionCommand(World, junction);
+            Target.Network.Add(factoryCommand.Junction);
+            return factoryCommand;
         }
 
-        public JunctionCommand PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public JunctionFactoryCommand PutJunction(string templateKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutJunction(templateKey, position.ToPose());
         }
 
-        public JunctionCommand PutJunction(string templateKey, double x, double y, double z)
+        public JunctionFactoryCommand PutJunction(string templateKey, double x, double y, double z)
         {
             return PutJunction(templateKey, x, y, z, 0, 0, 0);
         }

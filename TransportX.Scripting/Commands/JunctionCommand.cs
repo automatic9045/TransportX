@@ -54,20 +54,33 @@ namespace TransportX.Scripting.Commands
             return spline;
         }
 
-        public JunctionCommand IntoJunction(string portKey, string templateKey, string targetPortKey)
+        public JunctionFactoryCommand IntoJunction(string portKey, string templateKey, string targetPortKey)
         {
             NetworkPort? port = GetPort(portKey);
             JunctionTemplate? template = World.Commander.Network.Templates.GetJunction(templateKey);
             PortDefinition? targetPort = template?.GetPort(targetPortKey);
 
-            Junction junction = port is null || template is null || targetPort is null
-                ? new Junction(Junction.PlateX, Junction.PlateZ, Junction.Pose, [])
-                : Junction.ConnectNew(port, targetPort, template.Build);
+            Junction junction;
+            JunctionFactoryCommand factoryCommand;
+            if (port is null || template is null || targetPort is null)
+            {
+                junction = new(Junction.PlateX, Junction.PlateZ, Junction.Pose, []);
+                factoryCommand = new JunctionFactoryCommand(World, junction);
+            }
+            else
+            {
+                factoryCommand = null!;
+                junction = Junction.ConnectNew(port, targetPort, (plateX, plateZ, pose) =>
+                {
+                    factoryCommand = template.Build(plateX, plateZ, pose);
+                    return factoryCommand.Junction;
+                });
+            }
             junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
 
             Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);
             plate.Network.Add(junction);
-            return new JunctionCommand(World, junction);
+            return factoryCommand;
         }
     }
 }

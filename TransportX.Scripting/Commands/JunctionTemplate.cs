@@ -18,7 +18,7 @@ namespace TransportX.Scripting.Commands
 {
     public class JunctionTemplate
     {
-        private readonly KeyedList<string, PortDefinition> PortsKey = new KeyedList<string, PortDefinition>(item => item.Name);
+        private readonly KeyedList<string, PortDefinition> PortsKey = new(item => item.Name);
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
         private readonly List<JunctionPathTemplate> PathsKey = [];
@@ -108,7 +108,7 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        internal Junction Build(int plateX, int plateZ, Pose pose)
+        internal JunctionFactoryCommand Build(int plateX, int plateZ, Pose pose)
         {
             Junction junction = new(plateX, plateZ, pose, Ports);
 
@@ -120,11 +120,12 @@ namespace TransportX.Scripting.Commands
                 paths.Add((path, built));
             }
 
-            foreach (LocatedModelTemplate structure in Structures)
+            JunctionFactoryCommand factoryCommand = new(World, junction);
+            factoryCommand.AddStructures(Structures);
+            foreach ((Type type, ITemplateComponent<Junction> component) in Components)
             {
-                junction.AddStructure(structure);
+                factoryCommand.Components.Add(type, component);
             }
-            junction.BuildStructures(World.DXHost.Device, World.PhysicsHost);
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();
             componentErrorCollector.Reported += (sender, e) =>
@@ -136,12 +137,8 @@ namespace TransportX.Scripting.Commands
             {
                 template.BuildComponents(built, componentErrorCollector);
             }
-            foreach (ITemplateComponent<Junction> component in Components.Values)
-            {
-                component.Build(junction, componentErrorCollector);
-            }
 
-            return junction;
+            return factoryCommand;
         }
     }
 }

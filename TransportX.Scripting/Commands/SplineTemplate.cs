@@ -69,19 +69,18 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
-        internal SplineFactory Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
+        internal SplineFactoryCommand Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
         {
             SplineFactory factory = new(plateX, plateZ, pose, OutletLayout, sourcePort);
-            factory.PutStructures(Structures);
-            return factory;
-        }
+            factory.AddStructures(Structures);
 
-        internal void CopyComponentsTo(SplineFactoryCommand factoryCommand)
-        {
+            SplineFactoryCommand factoryCommand = new(World, factory);
             foreach ((Type type, ITemplateComponent<IReadOnlyList<SplineBase>> component) in Components)
             {
                 factoryCommand.Components.Add(type, component);
             }
+
+            return factoryCommand;
         }
     }
 }
