@@ -71,7 +71,7 @@ namespace TransportX.Scripting.Commands
                     splineFactory = template.Build(X, Z, pose, sourcePort);
                 }
             }
-            splineFactory ??= new SplineFactory(World.DXHost.Device, World.PhysicsHost, X, Z, pose, new LaneLayout(), sourcePort);
+            splineFactory ??= new SplineFactory(X, Z, pose, new LaneLayout(), sourcePort);
             splineFactory.DebugName = CreateSplineDebugName(templateKey);
 
             SplineFactoryCommand factoryCommand = new(World, splineFactory);

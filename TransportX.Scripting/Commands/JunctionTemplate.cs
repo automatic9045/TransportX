@@ -120,11 +120,11 @@ namespace TransportX.Scripting.Commands
                 paths.Add((path, built));
             }
 
-            foreach (LocatedModelTemplate model in Structures)
+            foreach (LocatedModelTemplate structure in Structures)
             {
-                LocatedModel structure = model.Build(localPose => localPose * junction.Pose);
                 junction.AddStructure(structure);
             }
+            junction.BuildStructures(World.DXHost.Device, World.PhysicsHost);
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();
             componentErrorCollector.Reported += (sender, e) =>

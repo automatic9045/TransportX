@@ -90,7 +90,7 @@ namespace TransportX.Scripting.Commands
 
         public SplineCommand Build()
         {
-            List<SplineBase> splines = SplineFactory.Build();
+            List<SplineBase> splines = SplineFactory.Build(World.DXHost.Device, World.PhysicsHost);
             foreach (SplineBase spline in splines)
             {
                 Plate plate = World.Plates.GetOrAdd(spline.PlateX, spline.PlateZ);

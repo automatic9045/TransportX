@@ -5,20 +5,28 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
+using TransportX.Collections;
 using TransportX.Components;
 using TransportX.Network;
-using TransportX.Collections;
+using TransportX.Physics;
 using TransportX.Spatial;
 
 namespace TransportX.Extensions.Network.Elements
 {
     public class Junction : NetworkNode
     {
+        private static readonly IReadOnlyList<Vector4> DebugColors = [new(0, 0, 1, 1), new(0, 0.75f, 1, 1), new(0, 0.375f, 1, 1), new(0, 0, 0.625f, 1)];
+        private static int DebugColorIndex = 0;
+
+
         public override IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
 
         private readonly List<ILanePath> PathsKey = [];
         public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
+        private readonly List<LocatedModelTemplate> Structures = [];
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
@@ -40,9 +48,37 @@ namespace TransportX.Extensions.Network.Elements
             return path;
         }
 
-        public void AddStructure(LocatedModel model)
+        public void AddStructure(LocatedModelTemplate structure)
         {
-            ModelsKey.Add(model);
+            Structures.Add(structure);
+        }
+
+        public void BuildStructures(ID3D11Device device, IPhysicsHost physicsHost)
+        {
+            List<KinematicLocatedModelTemplate> structuresToMerge = [];
+            foreach (LocatedModelTemplate structure in Structures)
+            {
+                Pose pose = structure.Pose * Pose;
+                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(physicsHost, structure.Model, pose);
+
+                if (compiled is KinematicLocatedModelTemplate kinematicCompiled && kinematicCompiled.CanMerge)
+                {
+                    structuresToMerge.Add(kinematicCompiled);
+                }
+                else
+                {
+                    LocatedModel model = compiled.Build();
+                    ModelsKey.Add(model);
+                }
+            }
+
+            if (0 < structuresToMerge.Count)
+            {
+                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(physicsHost, structuresToMerge);
+                mergedModel.Model.CreateColliderDebugModel(device);
+                mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
+                ModelsKey.Add(mergedModel);
+            }
         }
 
         public Pose GetConnectionPose(NetworkPort port, Pose targetPortOffset)

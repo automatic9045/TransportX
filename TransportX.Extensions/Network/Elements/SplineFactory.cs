@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,9 +14,6 @@ namespace TransportX.Extensions.Network.Elements
 {
     public class SplineFactory : LocatableObject
     {
-        private readonly ID3D11Device Device;
-        private readonly IPhysicsHost PhysicsHost;
-
         private readonly List<SplineStructure> Structures = [];
 
         private Func<NetworkPort?, SplineBase>? Finalizer = null;
@@ -31,11 +27,8 @@ namespace TransportX.Extensions.Network.Elements
 
         public string? DebugName { get; set; } = null;
 
-        public SplineFactory(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose, LaneLayout outletLayout, NetworkPort? sourcePort)
-            : base(plateX, plateZ, pose)
+        public SplineFactory(int plateX, int plateZ, Pose pose, LaneLayout outletLayout, NetworkPort? sourcePort) : base(plateX, plateZ, pose)
         {
-            Device = device;
-            PhysicsHost = physicsHost;
             OutletLayout = outletLayout;
 
             if (sourcePort is not null && sourcePort.Layout != OutletLayout) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(sourcePort));
@@ -66,7 +59,7 @@ namespace TransportX.Extensions.Network.Elements
                 );
                 Pose to = targetPort.Offset * targetElement.Pose * offset.Pose;
 
-                BezierSpline spline = new(Device, PhysicsHost, PlateX, PlateZ, Pose, to, OutletLayout, handleScale)
+                BezierSpline spline = new(PlateX, PlateZ, Pose, to, OutletLayout, handleScale)
                 {
                     DebugName = DebugName,
                 };
@@ -77,7 +70,7 @@ namespace TransportX.Extensions.Network.Elements
             };
         }
 
-        public List<SplineBase> Build()
+        public List<SplineBase> Build(ID3D11Device device, IPhysicsHost physicsHost)
         {
             List<SplineBase> splines = [];
             NetworkPort? sourcePort = SourcePort;
@@ -176,7 +169,7 @@ namespace TransportX.Extensions.Network.Elements
                     CantDelta = segment.CantDelta,
                 }).ToArray();
 
-                Spline spline = new(Device, PhysicsHost, splineX, splineZ, splinePose, OutletLayout, normalizedSegments)
+                Spline spline = new(splineX, splineZ, splinePose, OutletLayout, normalizedSegments)
                 {
                     DebugName = DebugName,
                 };
@@ -215,6 +208,8 @@ namespace TransportX.Extensions.Network.Elements
 
                     Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
                 }
+
+                spline.BuildStructures(device, physicsHost);
             }
         }
 

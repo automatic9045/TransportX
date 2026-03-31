@@ -5,11 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
-
 using TransportX.Components;
 using TransportX.Network;
-using TransportX.Physics;
 
 using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Paths;
@@ -33,9 +30,8 @@ namespace TransportX.Extensions.Network.Elements
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public BezierSpline(ID3D11Device device, IPhysicsHost physicsHost,
-            int plateX, int plateZ, Pose fromPose, Pose toPose, LaneLayout outletLayout, float handleScale = 0.5f)
-            : base(device, physicsHost, plateX, plateZ, fromPose)
+        public BezierSpline(int plateX, int plateZ, Pose fromPose, Pose toPose, LaneLayout outletLayout, float handleScale = 0.5f)
+            : base(plateX, plateZ, fromPose)
         {
             Pose fromTranformInv = Pose.Inverse(fromPose);
             Pose transition = Pose.CreateRotationY(-float.Pi) * toPose * fromTranformInv;

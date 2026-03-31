@@ -32,14 +32,13 @@ namespace TransportX.Spatial
                 ? new KinematicLocatedModelTemplate(physicsHost, collidableModel, pose) : new LocatedModelTemplate(model, pose);
         }
 
-        public KinematicLocatedModel BuildKinematic(Converter<Pose, Pose> poseConverter)
+        public KinematicLocatedModel BuildKinematic()
         {
-            Pose pose = poseConverter(Pose);
-            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, Model, pose);
+            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, Model, Pose);
             Built?.Invoke(this, new TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>(this, locatedModel));
             return locatedModel;
         }
 
-        public override LocatedModel Build(Converter<Pose, Pose> poseConverter) => BuildKinematic(poseConverter);
+        public override LocatedModel Build() => BuildKinematic();
     }
 }

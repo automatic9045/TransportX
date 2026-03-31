@@ -65,13 +65,8 @@ namespace TransportX.Spatial
                     throw new NotSupportedException("メッシュ以外のコライダーを結合することはできません。");
                 }
 
-                LocatedModel visualChild = source.BuildVisual(pose => pose);
+                LocatedModel visualChild = source.BuildVisual();
                 children.Add(visualChild);
-            }
-
-            for (int i = triangleCount; i < combinedTriangles.Length; i++)
-            {
-                combinedTriangles[i] = new Triangle();
             }
 
             ColliderMesh newMesh = new(combinedTriangles, Vector3.One, physicsHost.Simulation.BufferPool);

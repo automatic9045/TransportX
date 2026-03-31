@@ -19,19 +19,14 @@ namespace TransportX.Extensions.Network.Elements
         private static int DebugColorIndex = 0;
 
 
-        protected readonly ID3D11Device Device;
-        protected readonly IPhysicsHost PhysicsHost;
-
+        private readonly List<SplineStructure> Structures = [];
         private readonly List<LocatedModel> ModelsKey = [];
         public override IReadOnlyList<LocatedModel> Models => ModelsKey;
 
         public abstract float Length { get; }
 
-        public SplineBase(ID3D11Device device, IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose)
-            : base(plateX, plateZ, pose)
+        public SplineBase(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
         {
-            Device = device;
-            PhysicsHost = physicsHost;
         }
 
         public abstract Vector3 GetPoint(float s);
@@ -40,45 +35,45 @@ namespace TransportX.Extensions.Network.Elements
 
         public void AddStructure(SplineStructure structure)
         {
+            Structures.Add(structure);
+        }
+
+        public void BuildStructures(ID3D11Device device, IPhysicsHost physicsHost)
+        {
             List<KinematicLocatedModelTemplate> modelsToMerge = [];
-            for (int i = 0; i < structure.Count; i++)
+            foreach (SplineStructure structure in Structures)
             {
-                float s = structure.From + structure.Interval * i;
-                if (Length < s) break;
-
-                LocatedModelTemplate source = structure.Models[i % structure.Models.Count];
-                Pose curvePose = GetSpanPose(s, structure.Span);
-                Pose pose = source.Pose * curvePose * Pose;
-
-                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, pose);
-                if (compiled is KinematicLocatedModelTemplate compiledKinematic && compiledKinematic.CanMerge)
+                for (int i = 0; i < structure.Count; i++)
                 {
-                    modelsToMerge.Add(compiledKinematic);
-                }
-                else
-                {
-                    LocatedModel model = compiled.Build();
-                    ModelsKey.Add(model);
+                    float s = structure.From + structure.Interval * i;
+                    if (Length < s) break;
+
+                    LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
+                    Pose curvePose = GetSpanPose(s, structure.Span);
+                    Pose pose = template.Pose * curvePose * Pose;
+
+                    LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(physicsHost, template.Model, pose);
+                    if (compiled is KinematicLocatedModelTemplate compiledKinematic && compiledKinematic.CanMerge)
+                    {
+                        modelsToMerge.Add(compiledKinematic);
+                    }
+                    else
+                    {
+                        LocatedModel model = compiled.Build();
+                        ModelsKey.Add(model);
+                    }
                 }
             }
 
             if (0 < modelsToMerge.Count)
             {
-                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(PhysicsHost, modelsToMerge);
-                mergedModel.Model.CreateColliderDebugModel(Device);
+                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(physicsHost, modelsToMerge);
+                mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
 
                 DebugColorIndex++;
                 if (DebugColorIndex == DebugColors.Count) DebugColorIndex = 0;
-            }
-        }
-
-        public void AddStructures(IEnumerable<SplineStructure> structures)
-        {
-            foreach (SplineStructure structure in structures)
-            {
-                AddStructure(structure);
             }
         }
 

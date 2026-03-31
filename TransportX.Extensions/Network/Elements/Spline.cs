@@ -5,11 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
-
 using TransportX.Components;
 using TransportX.Network;
-using TransportX.Physics;
 
 using TransportX.Extensions.Network.Paths;
 
@@ -29,8 +26,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public Spline(ID3D11Device device,IPhysicsHost physicsHost,int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments)
-            : base(device, physicsHost, plateX, plateZ, pose)
+        public Spline(int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments) : base(plateX, plateZ, pose)
         {
             if (segments.Length == 0) throw new ArgumentException("セグメント列が空です。", nameof(segments));
 

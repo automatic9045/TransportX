@@ -71,7 +71,7 @@ namespace TransportX.Scripting.Commands
 
         internal SplineFactory Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
         {
-            SplineFactory factory = new(World.DXHost.Device, World.PhysicsHost, plateX, plateZ, pose, OutletLayout, sourcePort);
+            SplineFactory factory = new(plateX, plateZ, pose, OutletLayout, sourcePort);
             factory.PutStructures(Structures);
             return factory;
         }
