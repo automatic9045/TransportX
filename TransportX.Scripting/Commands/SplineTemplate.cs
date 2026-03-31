@@ -50,7 +50,7 @@ namespace TransportX.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return new LocatedModelTemplate(model, pose);
+                return KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);
