@@ -68,7 +68,7 @@ namespace TransportX.Rendering
             public Vector2 InitialAngle { get; }
             public Vector2 Angle { get; private set; }
             public Quaternion Rotation { get; private set; }
-            public Pose RotationPose => new Pose(Vector3.Zero, Rotation);
+            public Pose RotationPose => new(Vector3.Zero, Rotation);
 
             public Rotator(Vector2 initialAngle)
             {
@@ -98,11 +98,14 @@ namespace TransportX.Rendering
 
     public class FreeViewpoint : Viewpoint
     {
-        private new readonly Rotator Rotator = new(Vector2.Zero);
+        private new readonly Rotator Rotator;
 
-        public FreeViewpoint() : base()
+        public Vector2 Angle => Rotator.Angle;
+
+        public FreeViewpoint(int plateX, int plateZ, Vector3 position, Vector2 angle) : base()
         {
-            Locate(0, 0, new Pose(0, 10, 0));
+            Rotator = new Rotator(angle);
+            Locate(plateX, plateZ, new Pose(position, Rotator.Rotation));
         }
 
         public override void Move(Vector2 offset, Vector2 clientSize)

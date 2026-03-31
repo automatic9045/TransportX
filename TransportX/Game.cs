@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -70,6 +73,25 @@ namespace TransportX
 
             DXHost.Context.ClearState();
             DXHost.Context.Flush();
+
+            try
+            {
+                Process process = Process.GetCurrentProcess();
+                string savePath = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "Save.dat");
+
+                StringBuilder saveContentBuilder = new();
+                saveContentBuilder.AppendLine(process.Id.ToString(CultureInfo.InvariantCulture));
+
+                if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
+                {
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.PlateX},{viewpoint.PlateZ}"));
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.Pose.Position.X},{viewpoint.Pose.Position.Y},{viewpoint.Pose.Position.Z}"));
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.Angle.X},{viewpoint.Angle.Y}"));
+                }
+
+                File.WriteAllText(savePath, saveContentBuilder.ToString());
+            }
+            catch { }
         }
 
         public virtual void Draw(System.Drawing.Size clientSize)
@@ -77,8 +99,8 @@ namespace TransportX
             ViewpointInput.ClientSize = new Vector2(clientSize.Width, clientSize.Height);
 
             TimeManager.Tick();
-
             TimeSpan elapsed = TimeManager.DeltaTime;
+
             OnTick(elapsed);
 
             int subTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);

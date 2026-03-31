@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Numerics;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 using TransportX.Dependency;
 using TransportX.Diagnostics;
@@ -26,7 +25,33 @@ namespace TransportX
 
             TimeManager timeManager = new();
             InputManager inputManager = new();
-            Camera camera = new();
+
+            (int PlateX, int PlateZ, Vector3 Position, Vector2 Angle) cameraLocation = (0, 0, new Vector3(0, 10, 0), Vector2.Zero);
+            try
+            {
+                Process process = Process.GetCurrentProcess();
+                string savePath = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "Save.dat");
+
+                string[] saveContent = File.ReadAllLines(savePath);
+
+                if (int.Parse(saveContent[0]) == process.Id)
+                {
+                    string[] plateText = saveContent[1].Split(',');
+                    int plateX = int.Parse(plateText[0]);
+                    int plateZ = int.Parse(plateText[1]);
+
+                    string[] positionText = saveContent[2].Split(',');
+                    Vector3 position = new(float.Parse(positionText[0]), float.Parse(positionText[1]), float.Parse(positionText[2]));
+
+                    string[] angleText = saveContent[3].Split(',');
+                    Vector2 angle = new(float.Parse(angleText[0]), float.Parse(angleText[1]));
+
+                    cameraLocation = new(plateX, plateZ, position, angle);
+                }
+            }
+            catch { }
+
+            Camera camera = new(cameraLocation.PlateX, cameraLocation.PlateZ, cameraLocation.Position, cameraLocation.Angle);
 
             ErrorCollector errorCollector = new();
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)

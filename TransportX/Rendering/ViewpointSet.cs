@@ -11,7 +11,7 @@ namespace TransportX.Rendering
 {
     public class ViewpointSet
     {
-        private readonly Viewpoint Free = new FreeViewpoint();
+        private readonly Viewpoint Free;
 
         public AvatarBase? AttachedTo { get; set; } = null;
         public ViewpointType Type { get; set; } = ViewpointType.Free;
@@ -36,6 +36,11 @@ namespace TransportX.Rendering
 
                 return current;
             }
+        }
+
+        public ViewpointSet(int plateX, int plateZ, Vector3 position, Vector2 angle)
+        {
+            Free = new FreeViewpoint(plateX, plateZ, position, angle);
         }
     }
 }

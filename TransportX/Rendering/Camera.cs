@@ -24,7 +24,7 @@ namespace TransportX.Rendering
 
         public int DrawPlateCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
-        public ViewpointSet Viewpoints { get; } = new ViewpointSet();
+        public ViewpointSet Viewpoints { get; }
 
         public VisualLayers VisibleLayers { get; set; } = VisualLayers.Normal;
 
@@ -32,8 +32,9 @@ namespace TransportX.Rendering
         public Matrix4x4 Projection { get; protected set; } = default;
         public BoundingFrustum Frustum { get; protected set; } = default;
 
-        public Camera() : base()
+        public Camera(int plateX, int plateZ, Vector3 position, Vector2 angle) : base()
         {
+            Viewpoints = new ViewpointSet(plateX, plateZ, position, angle);
         }
 
         public void UpdateView()
