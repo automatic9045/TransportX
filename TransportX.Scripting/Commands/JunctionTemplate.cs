@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,8 +22,8 @@ namespace TransportX.Scripting.Commands
         private readonly KeyedList<string, PortDefinition> PortsKey = new(item => item.Name);
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
-        private readonly List<JunctionPathTemplate> PathsKey = [];
-        public IReadOnlyList<JunctionPathTemplate> Paths => PathsKey;
+        private readonly KeyedList<string, JunctionPathTemplate> PathsKey = new(item => item.Key);
+        public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
         private readonly List<LocatedModelTemplate> StructuresKey = [];
         public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
@@ -112,30 +113,11 @@ namespace TransportX.Scripting.Commands
         {
             Junction junction = new(plateX, plateZ, pose, Ports);
 
-            List<(JunctionPathTemplate, ILanePath)> paths = new(PathsKey.Count);
-            foreach (JunctionPathTemplate path in PathsKey)
-            {
-                ILanePath built = path.Build(junction);
-                built.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(built.AllowedTraffic);
-                paths.Add((path, built));
-            }
-
-            JunctionFactoryCommand factoryCommand = new(World, junction);
+            JunctionFactoryCommand factoryCommand = new(World, junction, Paths);
             factoryCommand.AddStructures(Structures);
             foreach ((Type type, ITemplateComponent<Junction> component) in Components)
             {
                 factoryCommand.Components.Add(type, component);
-            }
-
-            IErrorCollector componentErrorCollector = IErrorCollector.Default();
-            componentErrorCollector.Reported += (sender, e) =>
-            {
-                ScriptError error = ScriptError.CreateFrom(e.Error);
-                World.ErrorCollector.Report(error);
-            };
-            foreach ((JunctionPathTemplate template, ILanePath built) in paths)
-            {
-                template.BuildComponents(built, componentErrorCollector);
             }
 
             return factoryCommand;

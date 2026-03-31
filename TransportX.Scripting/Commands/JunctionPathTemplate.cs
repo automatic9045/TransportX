@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
+using TransportX.Rendering;
+using TransportX.Spatial;
 
 using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Elements;
@@ -21,7 +23,6 @@ namespace TransportX.Scripting.Commands
         internal static JunctionPathTemplate Empty(ScriptWorld world, JunctionTemplate parent) => new(world, parent, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
 
 
-        private readonly string Key;
         private readonly PortDefinition FromPort;
         private readonly int FromPinIndex;
         private readonly PortDefinition ToPort;
@@ -32,8 +33,13 @@ namespace TransportX.Scripting.Commands
         private float Length = 0;
         private bool IsFinalized = false;
 
+        public string Key { get; }
+
         private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
         public WidthPointList Width { get; }
+
+        private readonly List<SplineStructure> StructuresKey = [];
+        public IReadOnlyList<SplineStructure> Structures => StructuresKey;
 
         public ScriptWorld World { get; }
         public JunctionTemplate Parent { get; }
@@ -146,10 +152,46 @@ namespace TransportX.Scripting.Commands
         public void StraightToEnd() => StraightToEnd(out _);
         public void BezierToEnd(double? controlScale = null) => BezierToEnd(out _, controlScale);
 
-        internal ILanePath Build(Junction junction)
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
-            LanePin from = junction.Ports[FromPort.Name].Pins[FromPinIndex];
-            LanePin to = junction.Ports[ToPort.Name].Pins[ToPinIndex];
+            LocatedModelTemplate[] models = modelKeys.Select(key =>
+            {
+                IModel? model;
+                if (key == string.Empty)
+                {
+                    model = Model.Empty();
+                }
+                else if (!World.Models.TryGetValue(key, out model))
+                {
+                    ScriptError error = new(ErrorLevel.Error, $"モデル '{key}' が見つかりません。");
+                    World.ErrorCollector.Report(error);
+
+                    model = Model.Empty();
+                }
+
+                return KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            }).ToArray();
+            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
+            StructuresKey.Add(structure);
+            return structure;
+        }
+
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
+        {
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutStructure(modelKeys, position.ToPose(), from, span, interval, count);
+        }
+
+        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
+        {
+            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
+        }
+
+        internal ILanePath Build(JunctionFactoryCommand factoryCommand)
+        {
+            LanePin from = factoryCommand.Junction.Ports[FromPort.Name].Pins[FromPinIndex];
+            LanePin to = factoryCommand.Junction.Ports[ToPort.Name].Pins[ToPinIndex];
 
             ILanePath path;
             if (Curves.Count == 0 && Width.Items.Count == 0)
@@ -162,8 +204,39 @@ namespace TransportX.Scripting.Commands
                 path = new CompositeLanePath(Key, from, to, Curves, Width.Items);
             }
 
-            junction.Wire(path);
+            factoryCommand.Junction.Wire(path);
+
+            foreach (SplineStructure structure in Structures)
+            {
+                for (int i = 0; i < structure.Count; i++)
+                {
+                    float s = structure.From + structure.Interval * i;
+                    if (path.Length < s) break;
+
+                    LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
+                    Pose curvePose = GetSpanPose(s, structure.Span);
+                    Pose pose = template.Pose * curvePose;
+
+                    LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, template.Model, pose);
+                    factoryCommand.AddStructure(compiled);
+                }
+            }
+
             return path;
+
+
+            Pose GetSpanPose(float s, float span)
+            {
+                Pose front = path.GetLocalPose(s + span);
+                Pose back = path.GetLocalPose(s);
+                Vector3 forward = front.Position - back.Position;
+                if (forward.LengthSquared() < 1e-6f) return back;
+
+                Vector3 up = Vector3.Normalize(Vector3.Lerp(front.Up, back.Up, 0.5f));
+
+                Vector3 tangent = Vector3.Normalize(forward);
+                return Pose.CreateWorldLH(back.Position, tangent, up);
+            }
         }
 
         internal void BuildComponents(ILanePath parent, IErrorCollector errorCollector)
