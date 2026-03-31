@@ -24,11 +24,6 @@ namespace TransportX.Scripting
 {
     public partial class UserScript<TCommander, TResult>
     {
-        [GeneratedRegex(@"(?mi)^\s*#load\s+""(?:[^""]*[/\\])?__Editor\.csx""\s*(?:\r?\n)?",
-            RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-        private static partial Regex LoadForEditorRegex();
-
-
         public Script<TResult> Script { get; }
 
         protected UserScript(Script<TResult> script)
@@ -71,12 +66,12 @@ namespace TransportX.Scripting
                 }
             }
 
-            string rawScriptText;
+            string scriptText;
             try
             {
                 UTF8Encoding strictUtf8 = new(false, true);
                 using StreamReader reader = new(filePath, strictUtf8, true);
-                rawScriptText = reader.ReadToEnd();
+                scriptText = reader.ReadToEnd();
             }
             catch (DecoderFallbackException ex)
             {
@@ -86,7 +81,7 @@ namespace TransportX.Scripting
                     Exception = ex,
                 };
                 errorCollector.Report(error);
-                rawScriptText = string.Empty;
+                scriptText = string.Empty;
             }
             catch (Exception ex)
             {
@@ -95,10 +90,9 @@ namespace TransportX.Scripting
                     Exception = ex,
                 };
                 errorCollector.Report(error);
-                rawScriptText = string.Empty;
+                scriptText = string.Empty;
             }
 
-            string scriptText = LoadForEditorRegex().Replace(rawScriptText, string.Empty);
             Script<TResult> script = CSharpScript.Create<TResult>(scriptText, options, typeof(TCommander));
 
             ImmutableArray<Diagnostic> diagnostics = script.Compile();
