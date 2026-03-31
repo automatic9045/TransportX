@@ -14,9 +14,11 @@ namespace TransportX.Spatial
     {
         private readonly IPhysicsHost PhysicsHost;
 
+        private bool IsMergeProhibited = false;
+
         public new ICollidableModel Model { get; }
         public Pose ColliderToBase => Model.Collider.Offset * Pose;
-        public bool CanMerge => MergedKinematicLocatedModel.CanMerge(Model.Collider);
+        public bool CanMerge => !IsMergeProhibited && MergedKinematicLocatedModel.CanMerge(Model.Collider);
 
         public override event EventHandler<TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>>? Built;
 
@@ -32,13 +34,19 @@ namespace TransportX.Spatial
                 ? new KinematicLocatedModelTemplate(physicsHost, collidableModel, pose) : new LocatedModelTemplate(model, pose);
         }
 
-        public KinematicLocatedModel BuildKinematic()
+        public void ProhibitMerge()
         {
-            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, Model, Pose);
+            IsMergeProhibited = true;
+        }
+
+        public KinematicLocatedModel BuildKinematic(Converter<Pose, Pose> poseConverter)
+        {
+            Pose pose = poseConverter(Pose);
+            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, Model, pose);
             Built?.Invoke(this, new TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>(this, locatedModel));
             return locatedModel;
         }
 
-        public override LocatedModel Build() => BuildKinematic();
+        public override LocatedModel Build(Converter<Pose, Pose> poseConverter) => BuildKinematic(poseConverter);
     }
 }

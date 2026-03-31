@@ -41,6 +41,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
             });
 
             LocatedModelTemplate structure = template.PutStructure(modelKey, pose);
+            (structure as KinematicLocatedModelTemplate)?.ProhibitMerge();
             component.Add(structure, controller, groupKey, (SignalLampRole)lamp);
 
             return structure;

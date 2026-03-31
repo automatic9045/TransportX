@@ -65,7 +65,7 @@ namespace TransportX.Spatial
                     throw new NotSupportedException("メッシュ以外のコライダーを結合することはできません。");
                 }
 
-                LocatedModel visualChild = source.BuildVisual();
+                LocatedModel visualChild = source.BuildVisual(pose => pose);
                 children.Add(visualChild);
             }
 

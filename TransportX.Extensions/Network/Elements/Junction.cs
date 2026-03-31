@@ -52,16 +52,14 @@ namespace TransportX.Extensions.Network.Elements
             List<KinematicLocatedModelTemplate> structuresToMerge = [];
             foreach (LocatedModelTemplate structure in structures)
             {
-                Pose pose = structure.Pose * Pose;
-                LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(physicsHost, structure.Model, pose);
-
-                if (compiled is KinematicLocatedModelTemplate kinematicCompiled && kinematicCompiled.CanMerge)
+                if (structure is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
                 {
-                    structuresToMerge.Add(kinematicCompiled);
+                    KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * Pose);
+                    structuresToMerge.Add(compiled);
                 }
                 else
                 {
-                    LocatedModel model = compiled.Build();
+                    LocatedModel model = structure.Build(pose => pose * Pose);
                     ModelsKey.Add(model);
                 }
             }

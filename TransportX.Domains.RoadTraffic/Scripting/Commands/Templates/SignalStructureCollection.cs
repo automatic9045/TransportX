@@ -25,6 +25,11 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
 
         public void Add(LocatedModelTemplate structure, ISignalController controller, string groupKey, SignalLampRole role)
         {
+            if ((structure as KinematicLocatedModelTemplate)?.CanMerge ?? false)
+            {
+                throw new ArgumentException("信号ストラクチャーは結合不可能である必要があります。", nameof(structure));
+            }
+
             Item item = new(structure, controller, groupKey, role);
             Items.Add(item);
         }

@@ -22,13 +22,14 @@ namespace TransportX.Spatial
             Pose = pose;
         }
 
-        public LocatedModel BuildVisual()
+        public LocatedModel BuildVisual(Converter<Pose, Pose> poseConverter)
         {
-            LocatedModel model = new(Model, Pose);
+            Pose pose = poseConverter(Pose);
+            LocatedModel model = new(Model, pose);
             Built?.Invoke(this, new TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>(this, model));
             return model;
         }
 
-        public virtual LocatedModel Build() => BuildVisual();
+        public virtual LocatedModel Build(Converter<Pose, Pose> poseConverter) => BuildVisual(poseConverter);
     }
 }

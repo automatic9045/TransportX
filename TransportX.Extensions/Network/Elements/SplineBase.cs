@@ -44,16 +44,15 @@ namespace TransportX.Extensions.Network.Elements
 
                     LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
                     Pose curvePose = GetSpanPose(s, structure.Span);
-                    Pose pose = template.Pose * curvePose * Pose;
 
-                    LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(physicsHost, template.Model, pose);
-                    if (compiled is KinematicLocatedModelTemplate compiledKinematic && compiledKinematic.CanMerge)
+                    if (template is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
                     {
-                        modelsToMerge.Add(compiledKinematic);
+                        KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * Pose);
+                        modelsToMerge.Add(compiled);
                     }
                     else
                     {
-                        LocatedModel model = compiled.Build();
+                        LocatedModel model = template.Build(pose => pose * curvePose * Pose);
                         ModelsKey.Add(model);
                     }
                 }
