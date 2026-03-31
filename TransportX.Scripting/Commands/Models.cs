@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,9 +24,14 @@ namespace TransportX.Scripting.Commands
             World = world;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void LoadList(string path)
         {
-            string listPath = Path.GetFullPath(Path.Combine(World.BaseDirectory, path));
+            StackTrace stackTrace = new(true);
+            StackFrame? frame = stackTrace.GetFrame(1);
+            string? callerPath = frame?.GetFileName();
+
+            string listPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(callerPath ?? World.BaseDirectory)!, path));
             if (!File.Exists(listPath))
             {
                 ScriptError error = new(ErrorLevel.Error, $"モデルリスト '{listPath}' が見つかりませんでした。");
