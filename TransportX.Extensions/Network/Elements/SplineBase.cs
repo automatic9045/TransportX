@@ -51,7 +51,7 @@ namespace TransportX.Extensions.Network.Elements
                 Pose pose = source.Pose * curvePose * Pose;
 
                 LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(PhysicsHost, source.Model, pose);
-                if (compiled is KinematicLocatedModelTemplate compiledKinematic)
+                if (compiled is KinematicLocatedModelTemplate compiledKinematic && compiledKinematic.CanMerge)
                 {
                     modelsToMerge.Add(compiledKinematic);
                 }

@@ -27,6 +27,11 @@ namespace TransportX.Spatial
             Children = children;
         }
 
+        public static bool CanMerge(ICollider collider)
+        {
+            return collider is ColliderBase<ColliderMesh>;
+        }
+
         public static MergedKinematicLocatedModel Create(IPhysicsHost physicsHost, IReadOnlyList<KinematicLocatedModelTemplate> sources)
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));

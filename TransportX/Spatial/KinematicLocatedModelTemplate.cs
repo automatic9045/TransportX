@@ -16,6 +16,7 @@ namespace TransportX.Spatial
 
         public new ICollidableModel Model { get; }
         public Pose ColliderToBase => Model.Collider.Offset * Pose;
+        public bool CanMerge => MergedKinematicLocatedModel.CanMerge(Model.Collider);
 
         public override event EventHandler<TemplateBuiltEventArgs<LocatedModelTemplate, LocatedModel>>? Built;
 
