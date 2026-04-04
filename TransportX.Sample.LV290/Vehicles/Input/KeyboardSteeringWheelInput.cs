@@ -47,7 +47,7 @@ namespace TransportX.Sample.Vehicles.Input
             float rate = float.Clamp((vehicleSpeed - MinVehicleSpeed) / (MaxVehicleSpeed - MinVehicleSpeed), 0, 1);
 
             float speed = float.Lerp(2, 0.25f, rate);
-            float resetSpeed = speed * 1.05f;
+            float resetSpeed = float.Lerp(2.5f, 1, rate);
 
             if (IsResetting)
             {
@@ -57,7 +57,7 @@ namespace TransportX.Sample.Vehicles.Input
             }
             else
             {
-                Rate = float.Max(Min, float.Min(Rate + rotateDirection * speed * (float)elapsed.TotalSeconds, Max));
+                Rate = float.Clamp(Rate + rotateDirection * (rotateDirection == -float.Sign(Rate) ? resetSpeed : speed) * (float)elapsed.TotalSeconds, Min, Max);
             }
         }
     }
