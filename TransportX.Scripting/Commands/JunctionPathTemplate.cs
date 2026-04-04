@@ -35,7 +35,7 @@ namespace TransportX.Scripting.Commands
 
         public string Key { get; }
 
-        private Pose LastCurvePoint => Curves.Count == 0 ? FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
+        private Pose LastCurvePoint => Curves.Count == 0 ? Pose.CreateRotationY(float.Pi) * FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
         public WidthPointList Width { get; }
 
         private readonly List<SplineStructure> StructuresKey = [];
