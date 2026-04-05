@@ -20,6 +20,12 @@ namespace TransportX.Scripting.Commands
 
         public SplineFactory SplineFactory { get; }
 
+        public string? Key
+        {
+            get => field;
+            set => field = SplineFactory.DebugName = value;
+        } = null;
+
         public CurveList Curves { get; }
         public GradientList Gradients { get; }
         public CantList Cants { get; }
@@ -27,12 +33,6 @@ namespace TransportX.Scripting.Commands
         public IComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>> Components { get; }
             = new ComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>>();
         public IErrorCollector ErrorCollector => World.ErrorCollector;
-
-        public string Name
-        {
-            get => SplineFactory.DebugName ?? nameof(Spline);
-            set => SplineFactory.DebugName = value;
-        }
 
         internal SplineFactoryCommand(ScriptWorld world, SplineFactory splineFactory)
         {
@@ -112,7 +112,13 @@ namespace TransportX.Scripting.Commands
                 component.Build(splines, componentErrorCollector);
             }
 
-            return new SplineCommand(World, splines);
+            SplineCommand splineCommand = new(World, splines);
+            if (Key is not null)
+            {
+                World.Commander.Network.SplinesKey[Key] = splineCommand;
+            }
+
+            return splineCommand;
         }
 
 

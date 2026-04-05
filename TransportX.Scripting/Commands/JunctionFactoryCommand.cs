@@ -23,6 +23,7 @@ namespace TransportX.Scripting.Commands
         private readonly List<LocatedModelTemplate> Structures = [];
 
         public Junction Junction { get; }
+        public string? Key { get; set; } = null;
 
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
@@ -130,7 +131,13 @@ namespace TransportX.Scripting.Commands
                 component.Build(Junction, componentErrorCollector);
             }
 
-            return new JunctionCommand(World, Junction);
+            JunctionCommand junctionCommand = new(World, Junction);
+            if (Key is not null)
+            {
+                World.Commander.Network.JunctionsKey[Key] = junctionCommand;
+            }
+
+            return junctionCommand;
         }
     }
 }

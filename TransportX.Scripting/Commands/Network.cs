@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using TransportX.Diagnostics;
 using TransportX.Network;
 
+using TransportX.Extensions.Network.Elements;
+
 namespace TransportX.Scripting.Commands
 {
     public class Network
@@ -19,6 +21,12 @@ namespace TransportX.Scripting.Commands
         public LaneLayouts LaneLayouts { get; }
         public Templates Templates { get; }
 
+        internal ScriptDictionary<string, SplineCommand> SplinesKey { get; }
+        public IReadOnlyScriptDictionary<string, SplineCommand> Splines => SplinesKey;
+
+        internal ScriptDictionary<string, JunctionCommand> JunctionsKey { get; }
+        public IReadOnlyScriptDictionary<string, JunctionCommand> Junctions => JunctionsKey;
+
         internal Network(ScriptWorld world)
         {
             World = world;
@@ -26,6 +34,11 @@ namespace TransportX.Scripting.Commands
             LaneTraffic = new LaneTraffic(World);
             LaneLayouts = new LaneLayouts(World);
             Templates = new Templates(World);
+
+            SplinesKey = new ScriptDictionary<string, SplineCommand>(World.ErrorCollector, "スプライン",
+                key => new SplineCommand(World, []));
+            JunctionsKey = new ScriptDictionary<string, JunctionCommand>(World.ErrorCollector, "ジャンクション",
+                key => new JunctionCommand(World, new Junction(0, 0, Pose.Identity, [])));
         }
 
         public void Connect(NetworkPort a, NetworkPort b)
