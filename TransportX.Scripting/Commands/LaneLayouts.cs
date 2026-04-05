@@ -44,7 +44,7 @@ namespace TransportX.Scripting.Commands
 
         public LaneLayout Load(string key, string path)
         {
-            string fullPath = Path.GetFullPath(Path.Combine(World.BaseDirectory, path));
+            string fullPath = Path.GetFullPath(Path.Combine(BaseDirectory.Find() ?? World.BaseDirectory, path));
             if (!File.Exists(fullPath))
             {
                 ScriptError error = new(ErrorLevel.Error, $"進路レイアウトファイル '{fullPath}' が見つかりませんでした。");
