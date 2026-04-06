@@ -36,7 +36,9 @@ namespace TransportX.Scripting.Commands
         public JunctionFactoryCommand IntoJunction(string templateKey, string targetPortKey)
         {
             JunctionTemplate? template = World.Commander.Network.Templates.GetJunction(templateKey);
-            PortDefinition? targetPort = template?.GetPort(targetPortKey);
+
+            PortDefinition? targetPort = null;
+            template?.Ports.TryGetValue(targetPortKey, out targetPort);
 
             Junction junction;
             JunctionFactoryCommand factoryCommand;

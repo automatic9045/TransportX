@@ -9,6 +9,7 @@ using TransportX.Diagnostics;
 using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Elements;
+using TransportX.Collections;
 
 namespace TransportX.Scripting.Commands
 {
@@ -58,7 +59,9 @@ namespace TransportX.Scripting.Commands
         {
             NetworkPort? port = GetPort(portKey);
             JunctionTemplate? template = World.Commander.Network.Templates.GetJunction(templateKey);
-            PortDefinition? targetPort = template?.GetPort(targetPortKey);
+
+            PortDefinition? targetPort = null;
+            template?.Ports.TryGetValue(targetPortKey, out targetPort);
 
             Junction junction;
             JunctionFactoryCommand factoryCommand;

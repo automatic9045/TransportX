@@ -15,14 +15,16 @@ using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Elements;
 
+using TransportX.Scripting.Collections;
+
 namespace TransportX.Scripting.Commands
 {
     public class JunctionTemplate
     {
-        private readonly KeyedList<string, PortDefinition> PortsKey = new(item => item.Name);
+        private readonly ScriptKeyedList<string, PortDefinition> PortsKey;
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
-        private readonly KeyedList<string, JunctionPathTemplate> PathsKey = new(item => item.Key);
+        private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
         public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
         private readonly List<LocatedModelTemplate> StructuresKey = [];
@@ -34,6 +36,11 @@ namespace TransportX.Scripting.Commands
         internal JunctionTemplate(ScriptWorld world)
         {
             World = world;
+
+            PortsKey = new ScriptKeyedList<string, PortDefinition>(item => item.Name,
+                World.ErrorCollector, "進路端子", key => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity));
+            PathsKey = new ScriptKeyedList<string, JunctionPathTemplate>(item => item.Key,
+                World.ErrorCollector, "進路パス", key => JunctionPathTemplate.Empty(World, this));
         }
 
         public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
@@ -42,16 +49,6 @@ namespace TransportX.Scripting.Commands
             SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             PortDefinition port = new(key, layout, offset.ToPose());
             PortsKey.Add(port);
-        }
-
-        internal PortDefinition? GetPort(string portKey)
-        {
-            if (Ports.TryGetValue(portKey, out PortDefinition? port)) return port;
-
-            ScriptError error = new(ErrorLevel.Error, $"進路端子 '{portKey}' が見つかりません。");
-            World.ErrorCollector.Report(error);
-
-            return null;
         }
 
         public JunctionPathTemplate Wire(string key, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
@@ -67,8 +64,7 @@ namespace TransportX.Scripting.Commands
 
             bool CheckPin(string portKey, int pinIndex, [MaybeNullWhen(false)] out PortDefinition port)
             {
-                port = GetPort(portKey);
-                if (port is null) return false;
+                if (!PortsKey.GetValue(portKey, out port)) return false;
 
                 if (pinIndex < 0 || port.Layout.Lanes.Count <= pinIndex)
                 {
