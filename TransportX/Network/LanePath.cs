@@ -53,8 +53,9 @@ namespace TransportX.Network
 
         protected LanePath(string name, LanePin from, LanePin to)
         {
-            // TODO: Kind、Directionsの検証
             if (from.Port.Owner != to.Port.Owner) throw new ArgumentException($"同一 {nameof(NetworkElement)} 内のピンを指定する必要があります。", nameof(to));
+            //if (from.Definition.AllowedTraffic != to.Definition.AllowedTraffic) throw new ArgumentException("始点ピンと終点ピンで許容される交通グループが異なります。", nameof(to));
+            if (!from.Definition.Directions.IsOppositeOf(to.Definition.Directions)) throw new ArgumentException("始点ピンと終点ピンに指定された交通の方向が不整合です。", nameof(to));
 
             Name = name;
             From = from;
