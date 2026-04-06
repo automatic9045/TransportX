@@ -24,6 +24,8 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptKeyedList<string, PortDefinition> PortsKey;
         public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
 
+        private readonly List<(string Input, string Output)> Relays = [];
+
         private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
         public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
@@ -43,12 +45,35 @@ namespace TransportX.Scripting.Commands
                 World.ErrorCollector, "進路パス", key => JunctionPathTemplate.Empty(World, this));
         }
 
-        public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public void AddPort(string key, string layoutKey, Pose offset)
         {
             LaneLayout layout = World.Commander.Network.LaneLayouts[layoutKey];
-            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            PortDefinition port = new(key, layout, offset.ToPose());
+            PortDefinition port = new(key, layout, offset);
             PortsKey.Add(port);
+        }
+
+        public void AddPort(string key, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        {
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            AddPort(key, layoutKey, offset.ToPose());
+        }
+
+        public void AddRelay(string inputKey, string outputKey, string layoutKey, Pose offset)
+        {
+            LaneLayout layout = World.Commander.Network.LaneLayouts[layoutKey];
+
+            PortDefinition input = new(inputKey, layout, offset);
+            PortDefinition output = new(outputKey, layout.Opposition, Pose.CreateRotationY(float.Pi) * offset);
+            PortsKey.Add(input);
+            PortsKey.Add(output);
+
+            Relays.Add((inputKey, outputKey));
+        }
+
+        public void AddRelay(string inputKey, string outputKey, string layoutKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        {
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            AddRelay(inputKey, outputKey, layoutKey, offset.ToPose());
         }
 
         public JunctionPathTemplate Wire(string key, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
@@ -108,6 +133,11 @@ namespace TransportX.Scripting.Commands
         internal JunctionFactoryCommand Build(int plateX, int plateZ, Pose pose)
         {
             Junction junction = new(plateX, plateZ, pose, Ports);
+
+            foreach ((string inputKey, string outputKey) in Relays)
+            {
+                junction.Ports[inputKey].ConnectTo(junction.Ports[outputKey]);
+            }
 
             JunctionFactoryCommand factoryCommand = new(World, junction, Paths);
             factoryCommand.AddStructures(Structures);
