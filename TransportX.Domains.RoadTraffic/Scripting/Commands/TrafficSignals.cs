@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,9 +35,10 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
 
         public static TrafficSignals Create(ScriptWorld world) => new(world);
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void AddController(string key, string path)
         {
-            string fullPath = Path.GetFullPath(Path.Combine(World.BaseDirectory, path));
+            string fullPath = Path.GetFullPath(Path.Combine(BaseDirectory.Find() ?? World.BaseDirectory, path));
             if (!File.Exists(fullPath))
             {
                 ScriptError error = new(ErrorLevel.Error, $"信号制御機データファイル '{path}' が見つかりませんでした。");

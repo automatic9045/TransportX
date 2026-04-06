@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@ namespace TransportX.Scripting.Commands
             return Add(key, baseLayout.Opposition);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public LaneLayout Load(string key, string path)
         {
             string fullPath = Path.GetFullPath(Path.Combine(BaseDirectory.Find() ?? World.BaseDirectory, path));

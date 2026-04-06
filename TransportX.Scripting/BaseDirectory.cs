@@ -7,15 +7,15 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Scripting.Commands
+namespace TransportX.Scripting
 {
-    internal static class BaseDirectory
+    public static class BaseDirectory
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static string? Find(int frameIndex = 1)
+        public static string? Find(int frameIndex = 2)
         {
             StackTrace stackTrace = new(true);
-            StackFrame? frame = stackTrace.GetFrame(frameIndex + 1);
+            StackFrame? frame = stackTrace.GetFrame(frameIndex);
             string? callerPath = frame?.GetFileName();
             return Path.GetDirectoryName(callerPath);
         }
