@@ -11,6 +11,8 @@ using TransportX.Network;
 
 using TransportX.Extensions.Network.Elements;
 
+using TransportX.Scripting.Collections;
+
 namespace TransportX.Scripting.Commands
 {
     public class Network

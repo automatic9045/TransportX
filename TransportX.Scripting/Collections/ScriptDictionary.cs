@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using TransportX.Diagnostics;
 
-namespace TransportX.Scripting
+namespace TransportX.Scripting.Collections
 {
     public class ScriptDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyScriptDictionary<TKey, TValue> where TKey : notnull
     {

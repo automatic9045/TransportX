@@ -11,6 +11,7 @@ using TransportX.Network;
 
 using TransportX.Extensions.Traffic;
 
+using TransportX.Scripting.Collections;
 using TransportX.Scripting.Data;
 
 namespace TransportX.Scripting.Components

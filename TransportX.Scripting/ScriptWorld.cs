@@ -9,6 +9,7 @@ using TransportX.Dependency;
 using TransportX.Environment;
 using TransportX.Worlds;
 
+using TransportX.Scripting.Collections;
 using TransportX.Scripting.Commands;
 
 namespace TransportX.Scripting

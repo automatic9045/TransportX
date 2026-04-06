@@ -8,7 +8,7 @@ using TransportX.Diagnostics;
 using TransportX.Rendering;
 using TransportX.Worlds;
 
-namespace TransportX.Scripting
+namespace TransportX.Scripting.Collections
 {
     internal class ScriptModelCollection : ScriptDictionary<string, IModel>, IModelCollection
     {
