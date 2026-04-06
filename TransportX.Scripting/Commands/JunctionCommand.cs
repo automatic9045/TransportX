@@ -20,7 +20,7 @@ namespace TransportX.Scripting.Commands
 
         public string Name
         {
-            get => Junction.DebugName ?? nameof(Extensions.Network.Elements.Junction);
+            get => Junction.DebugName ?? nameof(TransportX.Extensions.Network.Elements.Junction);
             set => Junction.DebugName = value;
         }
 

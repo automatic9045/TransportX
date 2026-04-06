@@ -20,7 +20,9 @@ namespace TransportX.Extensions.Traffic
         private readonly float Density;
         private readonly float AssumedSpeed;
 
-        private (ILanePath Path, ParticipantDirection Heading)[] SourcePaths = [];
+        private IReadOnlyList<(ILanePath Path, ParticipantDirection Heading)> SourcePaths = [];
+        private float[] CumulativeWeights = [];
+        private float TotalWeight;
         private TimeSpan SinceLastSpawn = TimeSpan.Zero;
 
         public IList<IParticipantFactory> ParticipantFactories { get; } = [];
@@ -38,17 +40,23 @@ namespace TransportX.Extensions.Traffic
         {
             if (Density <= 1e-6f) return;
 
-            IReadOnlyList<ILanePath> targetPaths = paths
+            ILanePath[] targetPaths = paths
                 .Where(path => path.AllowedTraffic.Contains(Type))
                 .ToArray();
 
             foreach (ILanePath path in targetPaths)
             {
+                float density = Density;
+                if (path.Components.TryGet<TrafficDensityComponent>(out TrafficDensityComponent? component))
+                {
+                    density *= component.Factor;
+                }
+
                 float s = 0;
                 while (s < path.Length)
                 {
                     float u = 1 - Random.Shared.NextSingle();
-                    float gap = -float.Log(u) / Density;
+                    float gap = -float.Log(u) / density;
                     s += gap;
 
                     if (path.Length <= s) break;
@@ -69,25 +77,48 @@ namespace TransportX.Extensions.Traffic
                 .SelectMany(port => port.Pins)
                 .Where(pin => pin.Definition.AllowedTraffic.Contains(Type));
 
-            SourcePaths = sourcePins.SelectMany(pin => Enumerable.Concat(
-                pin.SourcePaths.Where(path => path.Directions.HasFlag(FlowDirections.Out)).Select(path => (path, ParticipantDirection.Forward)),
-                pin.DestPaths.Where(path => path.Directions.HasFlag(FlowDirections.In)).Select(path => (path, ParticipantDirection.Backward))
-            )).ToArray();
+            var rawSourcePaths = sourcePins.SelectMany(pin => Enumerable.Concat(
+                pin.SourcePaths.Where(path => path.Directions.HasFlag(FlowDirections.Out)).Select(path => (Path: path, Heading: ParticipantDirection.Forward)),
+                pin.DestPaths.Where(path => path.Directions.HasFlag(FlowDirections.In)).Select(path => (Path: path, Heading: ParticipantDirection.Backward))))
+                .ToArray();
+
+            float[] cumulativeWeights = new float[rawSourcePaths.Length];
+            float totalWeight = 0;
+            SourcePaths = rawSourcePaths.Select((item, i) =>
+            {
+                float weight = Density * AssumedSpeed;
+                if (item.Path.Components.TryGet<TrafficDensityComponent>(out TrafficDensityComponent? component))
+                {
+                    weight *= component.Factor;
+                }
+
+                totalWeight += weight;
+                cumulativeWeights[i] = totalWeight;
+
+                return (item.Path, item.Heading);
+            }).ToArray();
+            CumulativeWeights = cumulativeWeights;
+            TotalWeight = totalWeight;
         }
 
         public void Tick(TimeSpan elapsed)
         {
-            if (Density <= 1e-6f) return;
+            if (TotalWeight < 1e-6f || SourcePaths.Count == 0) return;
 
             SinceLastSpawn += elapsed;
 
-            float spawnInterval = 1 / (Density * AssumedSpeed);
+            float spawnInterval = 1 / TotalWeight;
             if (spawnInterval < SinceLastSpawn.TotalSeconds)
             {
-                SinceLastSpawn = TimeSpan.Zero;
-                if (SourcePaths.Length == 0) return;
+                SinceLastSpawn -= TimeSpan.FromSeconds(spawnInterval);
 
-                (ILanePath path, ParticipantDirection heading) = SourcePaths[Random.Shared.Next(SourcePaths.Length)];
+                float r = Random.Shared.NextSingle() * TotalWeight;
+
+                int index = Array.BinarySearch(CumulativeWeights, r);
+                if (index < 0) index = ~index;
+                if (SourcePaths.Count <= index) index = SourcePaths.Count - 1;
+
+                (ILanePath path, ParticipantDirection heading) = SourcePaths[index];
                 TrySpawnAt(path, heading, heading == ParticipantDirection.Backward ? path.Length : 0);
             }
         }
