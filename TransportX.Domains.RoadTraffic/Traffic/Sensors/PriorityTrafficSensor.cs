@@ -18,10 +18,13 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 {
     public class PriorityTrafficSensor : ITrafficSensor
     {
+        private readonly record struct SearchNode(LanePathSegmentView SegmentView, float DistanceToStart);
+
+
         private const float YieldSearchDistance = 50;
 
 
-        private readonly Queue<(LanePathView View, float Distance)> SearchQueue = new();
+        private readonly Queue<SearchNode> SearchQueue = new();
         private readonly HashSet<ILanePath> VisitedPaths = [];
 
         private readonly ILaneTracker LaneTracker;
@@ -69,7 +72,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
                 if (view.Source.Components.TryGet<YieldComponent>(out YieldComponent? component))
                 {
-                    if (HasApproachingVehicle(component.PriorityPaths, YieldSearchDistance))
+                    if (HasApproachingVehicle(component.PrioritySegments, YieldSearchDistance))
                     {
                         next = new PriorityParticipant(view);
                         break;
@@ -92,27 +95,33 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             }
 
 
-            bool HasApproachingVehicle(IReadOnlyList<ILanePath> startPaths, float maxDistance)
+            bool HasApproachingVehicle(IReadOnlyList<LanePathSegment> startSegments, float maxDistance)
             {
                 SearchQueue.Clear();
                 VisitedPaths.Clear();
 
-                for (int i = 0; i < startPaths.Count; i++)
+                for (int i = 0; i < startSegments.Count; i++)
                 {
-                    ILanePath startPath = startPaths[i];
-                    if (startPath.Directions.HasFlag(FlowDirections.In))
+                    LanePathSegment segment = startSegments[i];
+
+                    if (segment.Path.Directions.HasFlag(FlowDirections.Out))
                     {
-                        SearchQueue.Enqueue((new LanePathView(startPath, true), 0));
+                        LanePathView view = new(segment.Path, false);
+                        SearchQueue.Enqueue(new SearchNode(new LanePathSegmentView(view, view.ToViewS(segment.MinS), view.ToViewS(segment.MaxS)), 0));
                     }
-                    if (startPath.Directions.HasFlag(FlowDirections.Out))
+
+                    if (segment.Path.Directions.HasFlag(FlowDirections.In))
                     {
-                        SearchQueue.Enqueue((new LanePathView(startPath, false), 0));
+                        LanePathView view = new(segment.Path, true);
+                        SearchQueue.Enqueue(new SearchNode(new LanePathSegmentView(view, view.ToViewS(segment.MaxS), view.ToViewS(segment.MinS)), 0));
                     }
                 }
 
                 while (0 < SearchQueue.Count)
                 {
-                    (LanePathView currentView, float distance) = SearchQueue.Dequeue();
+                    SearchNode node = SearchQueue.Dequeue();
+                    LanePathSegmentView currentSegmentView = node.SegmentView;
+                    LanePathView currentView = currentSegmentView.Path;
 
                     if (!VisitedPaths.Add(currentView.Source)) continue;
 
@@ -124,17 +133,28 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
                         if (participant.Heading == expectedHeading)
                         {
-                            if (distance + currentView.Source.Length - currentView.ToViewS(participant.S) <= maxDistance)
+                            float viewS = currentView.ToViewS(participant.S);
+
+                            if (currentSegmentView.MaxViewS < viewS) continue; // 優先区間通過済
+
+                            if (currentSegmentView.MinViewS <= viewS) return true; // 優先区間内
+
+                            float vehicleDistance = node.DistanceToStart + (currentSegmentView.MinViewS - viewS);
+                            if (vehicleDistance <= maxDistance) // 優先区間接近中
                             {
-                                return true;
+                                float speed = float.Abs(participant.SVelocity);
+                                if (1e-3f < speed && (vehicleDistance < 5 || vehicleDistance / speed < 4))
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }
 
-                    float nextDistance = distance + currentView.Source.Length;
+                    float nextDistance = node.DistanceToStart + currentSegmentView.MinViewS;
                     if (maxDistance < nextDistance) continue;
 
-                    LanePin entryPin = currentView.Reverse ? currentView.Source.To : currentView.Source.From;
+                    LanePin entryPin = currentView.From;
                     LanePin? prevPin = entryPin.ConnectedPin;
 
                     if (prevPin is not null)
@@ -144,15 +164,18 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
                             ILanePath path = prevPin.DestPaths[i];
                             if (path.Directions.HasFlag(FlowDirections.Out))
                             {
-                                SearchQueue.Enqueue((new LanePathView(path, false), nextDistance));
+                                LanePathSegmentView segmentView = new(new LanePathView(path, false), path.Length, path.Length);
+                                SearchQueue.Enqueue(new SearchNode(segmentView, nextDistance));
                             }
                         }
+
                         for (int i = 0; i < prevPin.SourcePaths.Count; i++)
                         {
                             ILanePath path = prevPin.SourcePaths[i];
                             if (path.Directions.HasFlag(FlowDirections.In))
                             {
-                                SearchQueue.Enqueue((new LanePathView(path, true), nextDistance));
+                                LanePathSegmentView segmentView = new(new LanePathView(path, true), path.Length, path.Length);
+                                SearchQueue.Enqueue(new SearchNode(segmentView, nextDistance));
                             }
                         }
                     }

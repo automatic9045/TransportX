@@ -15,31 +15,35 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
 {
     internal class Yield : ITemplateComponent<ILanePath>
     {
-        public IReadOnlyList<string> PriorityPathKeys { get; }
+        public IReadOnlyList<JunctionPathSegment> PrioritySegments { get; }
 
-        public Yield(IReadOnlyList<string> priorityPathKeys)
+        public Yield(IReadOnlyList<JunctionPathSegment> prioritySegments)
         {
-            PriorityPathKeys = priorityPathKeys;
+            PrioritySegments = prioritySegments;
         }
 
         public void Build(ILanePath parent, IErrorCollector errorCollector)
         {
-            List<ILanePath> priorityPaths = new(PriorityPathKeys.Count);
-            for (int i = 0; i < PriorityPathKeys.Count; i++)
+            List<LanePathSegment> prioritySegments = new(PrioritySegments.Count);
+            for (int i = 0; i < PrioritySegments.Count; i++)
             {
-                string key = PriorityPathKeys[i];
-                ILanePath? priorityPath = parent.Owner.Paths.FirstOrDefault(path => path.Name == key);
+                JunctionPathSegment segmentSource = PrioritySegments[i];
+                ILanePath? priorityPath = parent.Owner.Paths.FirstOrDefault(path => path.Name == segmentSource.PathKey);
                 if (priorityPath is null)
                 {
-                    Error error = new(ErrorLevel.Error, $"進路パス '{key}' が見つかりません。", null);
+                    Error error = new(ErrorLevel.Error, $"進路パス '{segmentSource.PathKey}' が見つかりません。", null);
                     errorCollector.Report(error);
                     continue;
                 }
 
-                priorityPaths.Add(priorityPath);
+                float minS = float.Clamp((float)segmentSource.MinS, 0, priorityPath.Length);
+                float maxS = float.Clamp((float)segmentSource.MaxS, 0, priorityPath.Length);
+
+                LanePathSegment segment = new(priorityPath, minS, maxS);
+                prioritySegments.Add(segment);
             }
 
-            YieldComponent component = new(priorityPaths);
+            YieldComponent component = new(prioritySegments);
             parent.Components.Add(component);
         }
     }

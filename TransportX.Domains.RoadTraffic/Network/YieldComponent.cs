@@ -11,11 +11,11 @@ namespace TransportX.Domains.RoadTraffic.Network
 {
     public class YieldComponent : IComponent
     {
-        public IReadOnlyList<ILanePath> PriorityPaths { get; }
+        public IReadOnlyList<LanePathSegment> PrioritySegments { get; }
 
-        public YieldComponent(IReadOnlyList<ILanePath> priorityPaths)
+        public YieldComponent(IReadOnlyList<LanePathSegment> prioritySegments)
         {
-            PriorityPaths = priorityPaths;
+            PrioritySegments = prioritySegments;
         }
     }
 }

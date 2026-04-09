@@ -35,9 +35,9 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
             return template;
         }
 
-        public static JunctionPathTemplate Yield(this JunctionPathTemplate template, params string[] priorityPathKey)
+        public static JunctionPathTemplate Yield(this JunctionPathTemplate template, params JunctionPathSegment[] prioritySegments)
         {
-            Templates.Yield component = new(priorityPathKey);
+            Yield component = new(prioritySegments);
             template.Components.Add(component);
             return template;
         }
