@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 using TransportX.Diagnostics;
 using TransportX.Network;
 
-using CompiledComponent = TransportX.Extensions.Traffic.TrafficDensityComponent;
+using TransportX.Extensions.Traffic;
 
 namespace TransportX.Scripting.Components
 {
-    public class TrafficDensityComponent : ITemplateComponent<ILanePath>
+    internal class TrafficDensity : ITemplateComponent<ILanePath>
     {
         public float Factor { get; }
 
-        public TrafficDensityComponent(float factor)
+        public TrafficDensity(float factor)
         {
             Factor = factor;
         }
 
         void ITemplateComponent<ILanePath>.Build(ILanePath path, IErrorCollector errorCollector)
         {
-            CompiledComponent compiled = new(Factor);
+            TrafficDensityComponent compiled = new(Factor);
             path.Components.Add(compiled);
         }
     }

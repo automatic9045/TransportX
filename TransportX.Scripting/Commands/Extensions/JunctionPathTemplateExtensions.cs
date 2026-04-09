@@ -12,7 +12,7 @@ namespace TransportX.Scripting.Commands.Extensions
     {
         public static JunctionPathTemplate TrafficDensity(this JunctionPathTemplate template, double factor)
         {
-            TrafficDensityComponent component = new((float)factor);
+            TrafficDensity component = new((float)factor);
             template.Components.Add(component);
             return template;
         }
