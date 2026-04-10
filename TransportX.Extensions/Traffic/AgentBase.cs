@@ -13,7 +13,7 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public abstract class AgentBase : RigidBody, ITrafficParticipant
+    public abstract class AgentBase : RigidBody, IAutonomousParticipant
     {
         private ILaneTracker? SubscribedTracker = null;
         private WireframeDebugModel? DebugModel = null;
