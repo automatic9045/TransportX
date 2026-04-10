@@ -90,7 +90,7 @@ namespace TransportX.Extensions.Traffic
             LaneTracker.Tick(Driver.Acceleration, elapsed);
             if (!LaneTracker.IsEnabled)
             {
-                Locate(0, 0, Pose.Identity);
+                Locate(0, 0, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
                 return;
             }
 
