@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 using TransportX.Rendering;
 
-using TransportX.Sample.Mathematics;
-using TransportX.Sample.Vehicles.Audio;
-using TransportX.Sample.Vehicles.Interfaces;
-using TransportX.Sample.Vehicles.Powertrain.Physics;
+using TransportX.Sample.LV290.Mathematics;
+using TransportX.Sample.LV290.Vehicles.Audio;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Physics;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class Engine : IModule
     {

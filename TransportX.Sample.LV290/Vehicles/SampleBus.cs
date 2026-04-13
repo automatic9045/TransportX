@@ -19,13 +19,13 @@ using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
-using TransportX.Sample.Vehicles.Audio;
-using TransportX.Sample.Vehicles.Doors;
-using TransportX.Sample.Vehicles.Input;
-using TransportX.Sample.Vehicles.Interfaces;
-using TransportX.Sample.Vehicles.Powertrain;
+using TransportX.Sample.LV290.Vehicles.Audio;
+using TransportX.Sample.LV290.Vehicles.Doors;
+using TransportX.Sample.LV290.Vehicles.Input;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Vehicles.Powertrain;
 
-namespace TransportX.Sample.Vehicles
+namespace TransportX.Sample.LV290.Vehicles
 {
     [AvatarIdentifier("Sample")]
     public class SampleBus : AvatarBase

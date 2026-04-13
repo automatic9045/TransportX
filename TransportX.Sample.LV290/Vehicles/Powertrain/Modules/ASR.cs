@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class ASR
     {

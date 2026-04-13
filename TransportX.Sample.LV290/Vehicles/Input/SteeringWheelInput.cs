@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using TransportX.Input;
 
-namespace TransportX.Sample.Vehicles.Input
+namespace TransportX.Sample.LV290.Vehicles.Input
 {
     internal abstract class SteeringWheelInput : Slider
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using TransportX.Audio;
 using TransportX.Rendering;
 
-namespace TransportX.Sample.Vehicles.Audio
+namespace TransportX.Sample.LV290.Vehicles.Audio
 {
     internal abstract class AudioBase : IDisposable
     {

@@ -11,11 +11,11 @@ using TransportX.Physics;
 using TransportX.Rendering;
 using TransportX.Spatial;
 
-using TransportX.Sample.Vehicles.Interfaces;
-using TransportX.Sample.Vehicles.Powertrain.Modules;
-using TransportX.Sample.Vehicles.Powertrain.Physics;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Modules;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Physics;
 
-namespace TransportX.Sample.Vehicles.Powertrain
+namespace TransportX.Sample.LV290.Vehicles.Powertrain
 {
     internal class PowertrainSet
     {

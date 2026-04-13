@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Sample.Mathematics;
+using TransportX.Sample.LV290.Mathematics;
 
-namespace TransportX.Sample.Vehicles.Doors
+namespace TransportX.Sample.LV290.Vehicles.Doors
 {
     internal class DoorAnimator
     {

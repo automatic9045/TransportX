@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 using TransportX.Spatial;
 
-using TransportX.Sample.Mathematics;
-using TransportX.Sample.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Mathematics;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
 
-namespace TransportX.Sample.Vehicles.Doors
+namespace TransportX.Sample.LV290.Vehicles.Doors
 {
     internal class BifoldDoor
     {

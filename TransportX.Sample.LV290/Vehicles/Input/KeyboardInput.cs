@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 using TransportX.Input;
 
-namespace TransportX.Sample.Vehicles.Input
+namespace TransportX.Sample.LV290.Vehicles.Input
 {
     internal class KeyboardInput : IInput
     {

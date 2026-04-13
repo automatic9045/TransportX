@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using TransportX.Audio;
 using TransportX.Rendering;
 
-using TransportX.Sample.Vehicles.Doors;
+using TransportX.Sample.LV290.Vehicles.Doors;
 
-namespace TransportX.Sample.Vehicles.Audio
+namespace TransportX.Sample.LV290.Vehicles.Audio
 {
     internal class RearDoorAudio : AudioBase
     {

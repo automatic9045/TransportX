@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Sample.Mathematics;
-using TransportX.Sample.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Mathematics;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class ECU
     {

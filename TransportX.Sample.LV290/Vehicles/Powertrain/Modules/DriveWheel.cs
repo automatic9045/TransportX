@@ -10,9 +10,9 @@ using BepuPhysics.Constraints;
 using TransportX.Physics;
 using TransportX.Spatial;
 
-using TransportX.Sample.Vehicles.Powertrain.Physics;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Physics;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class DriveWheel : IModule
     {

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 using TransportX.Rendering;
 
-using TransportX.Sample.Vehicles.Doors;
-using TransportX.Sample.Vehicles.Powertrain.Modules;
+using TransportX.Sample.LV290.Vehicles.Doors;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Modules;
 
-namespace TransportX.Sample.Vehicles.Audio
+namespace TransportX.Sample.LV290.Vehicles.Audio
 {
     internal class AudioSet : IDisposable
     {

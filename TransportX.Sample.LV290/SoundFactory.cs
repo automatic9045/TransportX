@@ -11,7 +11,7 @@ using Vortice.XAudio2;
 using TransportX;
 using TransportX.Audio;
 
-namespace TransportX.Sample
+namespace TransportX.Sample.LV290
 {
     internal class SoundFactory
     {

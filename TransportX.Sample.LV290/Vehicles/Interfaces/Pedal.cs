@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using TransportX.Input;
 
-namespace TransportX.Sample.Vehicles.Interfaces
+namespace TransportX.Sample.LV290.Vehicles.Interfaces
 {
     internal class Pedal : IAxis
     {

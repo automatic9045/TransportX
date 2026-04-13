@@ -16,7 +16,7 @@ using TransportX.Diagnostics;
 using TransportX.Physics;
 using TransportX.Rendering;
 
-namespace TransportX.Sample
+namespace TransportX.Sample.LV290
 {
     internal class ModelFactory
     {

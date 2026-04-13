@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Sample.Mathematics
+namespace TransportX.Sample.LV290.Mathematics
 {
     internal readonly struct DiagramPoint : IComparable<DiagramPoint>
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Sample.Vehicles.Interfaces
+namespace TransportX.Sample.LV290.Vehicles.Interfaces
 {
     internal interface IAxis
     {

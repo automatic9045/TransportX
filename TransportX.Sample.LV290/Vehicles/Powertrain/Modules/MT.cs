@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Sample.Vehicles.Interfaces;
-using TransportX.Sample.Vehicles.Powertrain.Constraints;
-using TransportX.Sample.Vehicles.Powertrain.Physics;
+using TransportX.Sample.LV290.Vehicles.Interfaces;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Constraints;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Physics;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Modules
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class MT : TransmissionBase
     {

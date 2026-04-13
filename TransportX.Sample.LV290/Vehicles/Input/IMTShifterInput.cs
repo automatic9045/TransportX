@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Sample.Vehicles.Input
+namespace TransportX.Sample.LV290.Vehicles.Input
 {
     internal interface IMTShifterInput
     {

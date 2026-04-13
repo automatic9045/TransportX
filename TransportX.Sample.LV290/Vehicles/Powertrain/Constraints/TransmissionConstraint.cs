@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Sample.Vehicles.Powertrain.Physics;
+using TransportX.Sample.LV290.Vehicles.Powertrain.Physics;
 
-namespace TransportX.Sample.Vehicles.Powertrain.Constraints
+namespace TransportX.Sample.LV290.Vehicles.Powertrain.Constraints
 {
     internal class TransmissionConstraint : LinearConstraint
     {

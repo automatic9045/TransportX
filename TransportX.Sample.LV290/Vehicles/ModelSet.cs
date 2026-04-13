@@ -15,7 +15,7 @@ using TransportX.Physics;
 using TransportX.Rendering;
 using TransportX.Spatial;
 
-namespace TransportX.Sample.Vehicles
+namespace TransportX.Sample.LV290.Vehicles
 {
     internal class ModelSet : IDisposable
     {

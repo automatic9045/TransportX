@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Sample.Vehicles.Input;
+using TransportX.Sample.LV290.Vehicles.Input;
 
-namespace TransportX.Sample.Vehicles.Interfaces
+namespace TransportX.Sample.LV290.Vehicles.Interfaces
 {
     internal class MTShifter
     {
