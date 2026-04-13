@@ -139,7 +139,22 @@ namespace TransportX.Scripting.Commands
                 junction.Ports[inputKey].ConnectTo(junction.Ports[outputKey]);
             }
 
-            JunctionFactoryCommand factoryCommand = new(World, junction, Paths);
+            ScriptKeyedList<string, JunctionPathFactoryCommand> pathFactories = new(x => x.Key,
+                Paths.Select(path =>
+                {
+                    JunctionPathFactoryCommand built = path.Build(junction);
+                    built.Path.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(built.Path.AllowedTraffic);
+
+                    foreach ((Type type, ITemplateComponent<ILanePath> component) in path.Components)
+                    {
+                        built.Components.Add(type, component);
+                    }
+
+                    return built;
+                }),
+                World.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(World, junction));
+
+            JunctionFactoryCommand factoryCommand = new(World, junction, pathFactories);
             factoryCommand.AddStructures(Structures);
             foreach ((Type type, ITemplateComponent<Junction> component) in Components)
             {

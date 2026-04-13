@@ -19,7 +19,7 @@ namespace TransportX.Scripting.Commands
 {
     public class JunctionPathTemplate
     {
-        private static PortDefinition EmptyPort() => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity);
+        private static PortDefinition EmptyPort() => new(string.Empty, new LaneLayout(), Pose.Identity);
         internal static JunctionPathTemplate Empty(ScriptWorld world, JunctionTemplate parent) => new(world, parent, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
 
 
@@ -30,12 +30,13 @@ namespace TransportX.Scripting.Commands
 
         private readonly List<PoseCurveBase> Curves = [];
 
-        private float Length = 0;
         private bool IsFinalized = false;
 
         public string Key { get; }
 
         private Pose LastCurvePoint => Curves.Count == 0 ? Pose.CreateRotationY(float.Pi) * FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
+
+        public float Length { get; private set; } = 0;
         public WidthPointList Width { get; }
 
         private readonly List<SplineStructure> StructuresKey = [];
@@ -157,15 +158,8 @@ namespace TransportX.Scripting.Commands
             LocatedModelTemplate[] models = modelKeys.Select(key =>
             {
                 IModel? model;
-                if (key == string.Empty)
+                if (key == string.Empty || !World.ModelsKey.GetValue(key, out model))
                 {
-                    model = Model.Empty();
-                }
-                else if (!World.Models.TryGetValue(key, out model))
-                {
-                    ScriptError error = new(ErrorLevel.Error, $"モデル '{key}' が見つかりません。");
-                    World.ErrorCollector.Report(error);
-
                     model = Model.Empty();
                 }
 
@@ -188,10 +182,10 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
-        internal ILanePath Build(JunctionFactoryCommand factoryCommand)
+        internal JunctionPathFactoryCommand Build(Junction junction)
         {
-            LanePin from = factoryCommand.Junction.Ports[FromPort.Name].Pins[FromPinIndex];
-            LanePin to = factoryCommand.Junction.Ports[ToPort.Name].Pins[ToPinIndex];
+            LanePin from = junction.Ports[FromPort.Name].Pins[FromPinIndex];
+            LanePin to = junction.Ports[ToPort.Name].Pins[ToPinIndex];
 
             ILanePath path;
             if (Curves.Count == 0 && Width.Items.Count == 0)
@@ -204,47 +198,9 @@ namespace TransportX.Scripting.Commands
                 path = new CompositeLanePath(Key, from, to, Curves, Width.Items);
             }
 
-            factoryCommand.Junction.Wire(path);
+            junction.Wire(path);
 
-            foreach (SplineStructure structure in Structures)
-            {
-                for (int i = 0; i < structure.Count; i++)
-                {
-                    float s = structure.From + structure.Interval * i;
-                    if (path.Length < s) break;
-
-                    LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
-                    Pose curvePose = GetSpanPose(s, structure.Span);
-                    Pose pose = template.Pose * curvePose;
-
-                    LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, template.Model, pose);
-                    factoryCommand.AddStructure(compiled);
-                }
-            }
-
-            return path;
-
-
-            Pose GetSpanPose(float s, float span)
-            {
-                Pose front = path.GetLocalPose(s + span);
-                Pose back = path.GetLocalPose(s);
-                Vector3 forward = front.Position - back.Position;
-                if (forward.LengthSquared() < 1e-6f) return back;
-
-                Vector3 up = Vector3.Normalize(Vector3.Lerp(front.Up, back.Up, 0.5f));
-
-                Vector3 tangent = Vector3.Normalize(forward);
-                return Pose.CreateWorldLH(back.Position, tangent, up);
-            }
-        }
-
-        internal void BuildComponents(ILanePath parent, IErrorCollector errorCollector)
-        {
-            foreach (ITemplateComponent<ILanePath> component in Components.Values)
-            {
-                component.Build(parent, errorCollector);
-            }
+            return new JunctionPathFactoryCommand(World, Key, path, Structures);
         }
 
 

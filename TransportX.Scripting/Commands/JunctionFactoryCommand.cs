@@ -19,7 +19,7 @@ namespace TransportX.Scripting.Commands
     {
         private readonly ScriptWorld World;
 
-        private readonly IReadOnlyKeyedList<string, JunctionPathTemplate> Paths;
+        private readonly IReadOnlyKeyedList<string, JunctionPathFactoryCommand> Paths;
         private readonly List<LocatedModelTemplate> Structures = [];
 
         public Junction Junction { get; }
@@ -27,14 +27,15 @@ namespace TransportX.Scripting.Commands
 
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction, IReadOnlyKeyedList<string, JunctionPathTemplate> paths)
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction, IReadOnlyKeyedList<string, JunctionPathFactoryCommand> paths)
         {
             World = world;
             Junction = junction;
             Paths = paths;
         }
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction) : this(world, junction, new KeyedList<string, JunctionPathTemplate>(path => path.Key))
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction)
+            : this(world, junction, new KeyedList<string, JunctionPathFactoryCommand>(path => path.Key))
         {
         }
 
@@ -78,7 +79,7 @@ namespace TransportX.Scripting.Commands
             Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
             SplineStructure structure;
-            if (!Paths.TryGetValue(pathKey, out JunctionPathTemplate? path))
+            if (!Paths.TryGetValue(pathKey, out JunctionPathFactoryCommand? path))
             {
                 ScriptError error = new(ErrorLevel.Error, $"進路パス '{pathKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
@@ -106,12 +107,10 @@ namespace TransportX.Scripting.Commands
 
         public JunctionCommand Build()
         {
-            List<(JunctionPathTemplate, ILanePath)> paths = new(Paths.Count);
-            foreach (JunctionPathTemplate path in Paths)
+            foreach (JunctionPathFactoryCommand path in Paths)
             {
-                ILanePath built = path.Build(this);
-                built.DebugColor = World.Commander.Network.LaneTraffic.GetGroupColor(built.AllowedTraffic);
-                paths.Add((path, built));
+                List<LocatedModelTemplate> structures = path.BuildStructures();
+                Structures.AddRange(structures);
             }
 
             Junction.PutStructures(World.DXHost.Device, World.PhysicsHost, Structures);
@@ -122,9 +121,9 @@ namespace TransportX.Scripting.Commands
                 ScriptError error = ScriptError.CreateFrom(e.Error);
                 World.ErrorCollector.Report(error);
             };
-            foreach ((JunctionPathTemplate template, ILanePath built) in paths)
+            foreach (JunctionPathFactoryCommand path in Paths)
             {
-                template.BuildComponents(built, componentErrorCollector);
+                path.BuildComponents(componentErrorCollector);
             }
             foreach (ITemplateComponent<Junction> component in Components.Values)
             {

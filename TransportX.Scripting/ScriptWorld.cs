@@ -16,14 +16,15 @@ namespace TransportX.Scripting
 {
     public class ScriptWorld : WorldBase
     {
-        public override IModelCollection Models { get; }
+        public override IModelCollection Models => ModelsKey;
+        internal ScriptModelCollection ModelsKey { get; }
 
         public string ScriptPath { get; }
         public Commander Commander { get; }
 
         public ScriptWorld(PluginLoadContext context, WorldBuilder builder) : base(context, builder)
         {
-            Models = new ScriptModelCollection(ErrorCollector);
+            ModelsKey = new ScriptModelCollection(ErrorCollector);
 
             if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
 
