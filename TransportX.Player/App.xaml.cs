@@ -15,6 +15,19 @@ namespace TransportX
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+#if !DEBUG
+            DispatcherUnhandledException += (s, args) =>
+            {
+                MessageBox.Show(args.Exception.ToString(), "Critical Exception");
+                args.Handled = true;
+            };
+
+            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            {
+                MessageBox.Show(args.ExceptionObject.ToString(), "Critical Exception");
+            };
+#endif
+
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
