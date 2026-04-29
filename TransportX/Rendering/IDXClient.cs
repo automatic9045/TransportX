@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11.Debug;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 

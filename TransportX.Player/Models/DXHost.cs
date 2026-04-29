@@ -41,12 +41,15 @@ namespace TransportX.Models
             DeviceCreationFlags creationFlags = DeviceCreationFlags.BgraSupport;
             if (IsDebug) creationFlags |= DeviceCreationFlags.Debug;
 
-            D3D11.D3D11CreateDevice(null, DriverType.Hardware, creationFlags, [ FeatureLevel.Level_11_1 ], out ID3D11Device device, out FeatureLevel featureLevel, out ID3D11DeviceContext context);
+            D3D11.D3D11CreateDevice(null, DriverType.Hardware, creationFlags, [FeatureLevel.Level_11_1, FeatureLevel.Level_11_0],
+                out ID3D11Device device, out FeatureLevel featureLevel, out ID3D11DeviceContext context);
             Device = device;
             Context = context;
             Debug = IsDebug ? Device.QueryInterface<ID3D11Debug>() : null;
 
-            DXGIFactory = DXGI.CreateDXGIFactory2<IDXGIFactory2>(IsDebug);
+            using IDXGIDevice dxgiDevice = Device.QueryInterface<IDXGIDevice>();
+            using IDXGIAdapter dxgiAdapter = dxgiDevice.GetAdapter();
+            DXGIFactory = dxgiAdapter.GetParent<IDXGIFactory2>();
 
             XAudio2 = Vortice.XAudio2.XAudio2.XAudio2Create();
             MasteringVoice = XAudio2.CreateMasteringVoice();

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,8 +8,6 @@ using System.Windows;
 using System.Windows.Interop;
 
 using Vanara.PInvoke;
-using Vortice.Direct3D11;
-using Vortice.Direct3D11.Debug;
 using Vortice.DXGI;
 
 using TransportX.Models;
@@ -69,12 +66,12 @@ namespace TransportX.Components
 
             SwapChainDescription1 swapChainDesc = new SwapChainDescription1()
             {
-                BufferCount = 1,
+                BufferCount = 2,
                 Width = (uint)Size.Width,
                 Height = (uint)Size.Height,
-                Format = Format.R8G8B8A8_UNorm_SRgb,
+                Format = Format.R8G8B8A8_UNorm,
                 SampleDescription = new SampleDescription(1, 0),
-                SwapEffect = SwapEffect.Discard,
+                SwapEffect = SwapEffect.FlipDiscard,
                 Scaling = Scaling.Stretch,
                 BufferUsage = Usage.RenderTargetOutput,
             };

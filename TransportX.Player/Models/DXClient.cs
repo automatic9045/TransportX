@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vanara.PInvoke;
-using Vortice.Direct3D11.Debug;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
@@ -40,14 +39,19 @@ namespace TransportX.Models
             RenderTarget?.Dispose();
             DepthStencil?.Dispose();
 
-            SwapChain!.ResizeBuffers(1, (uint)width, (uint)height);
+            SwapChain!.ResizeBuffers(0, (uint)width, (uint)height, Format.R8G8B8A8_UNorm, SwapChainFlags.None);
 
             using (ID3D11Texture2D backBuffer = SwapChain!.GetBuffer<ID3D11Texture2D>(0))
             {
-                RenderTarget = device.CreateRenderTargetView(backBuffer);
+                RenderTargetViewDescription renderTargetDesc = new()
+                {
+                    Format = Format.R8G8B8A8_UNorm_SRgb,
+                    ViewDimension = RenderTargetViewDimension.Texture2D,
+                };
+                RenderTarget = device.CreateRenderTargetView(backBuffer, renderTargetDesc);
             }
 
-            Texture2DDescription depthBufferDesc = new Texture2DDescription()
+            Texture2DDescription depthBufferDesc = new()
             {
                 Format = Format.D32_Float_S8X24_UInt,
                 ArraySize = 1,
@@ -62,7 +66,7 @@ namespace TransportX.Models
             };
             using (ID3D11Texture2D depthBuffer = device.CreateTexture2D(depthBufferDesc))
             {
-                DepthStencilViewDescription depthStencilDesc = new DepthStencilViewDescription()
+                DepthStencilViewDescription depthStencilDesc = new()
                 {
                     Format = depthBufferDesc.Format,
                     ViewDimension = DepthStencilViewDimension.Texture2D,
