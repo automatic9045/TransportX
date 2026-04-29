@@ -22,7 +22,7 @@ namespace TransportX.Rendering
 
         protected readonly RenderQueue RenderQueue = new RenderQueue();
 
-        public int DrawPlateCount { get; set; } = 3;
+        public int DrawChunkCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; }
 
@@ -32,21 +32,21 @@ namespace TransportX.Rendering
         public Matrix4x4 Projection { get; protected set; } = default;
         public BoundingFrustum Frustum { get; protected set; } = default;
 
-        public Camera(int plateX, int plateZ, Vector3 position, Vector2 angle) : base()
+        public Camera(int chunkX, int chunkZ, Vector3 position, Vector2 angle) : base()
         {
-            Viewpoints = new ViewpointSet(plateX, plateZ, position, angle);
+            Viewpoints = new ViewpointSet(chunkX, chunkZ, position, angle);
         }
 
         public void UpdateView()
         {
             Locate(Viewpoints.Current);
 
-            Listener.OrientFront = Pose.Direction;
-            Listener.OrientTop = Pose.Up;
-            Listener.Position = Pose.Position;
+            Listener.OrientFront = WorldPose.Pose.Direction;
+            Listener.OrientTop = WorldPose.Pose.Up;
+            Listener.Position = WorldPose.Pose.Position;
             Listener.Velocity = Velocity;
 
-            View = Pose.Inverse(Pose).ToMatrix4x4();
+            View = Pose.Inverse(WorldPose.Pose).ToMatrix4x4();
         }
 
         public void UpdateProjection(GdiSize clientSize)
@@ -64,7 +64,7 @@ namespace TransportX.Rendering
             {
                 DeviceContext = context.DeviceContext,
                 RenderQueue = RenderQueue,
-                PlateOffset = PlateOffset.Identity,
+                ChunkOffset = ChunkOffset.Identity,
                 View = View,
                 Projection = Projection,
                 Frustum = Frustum,
@@ -72,14 +72,14 @@ namespace TransportX.Rendering
 
             foreach (LocatedModel model in models)
             {
-                model.Pose = new Pose(Pose.Position);
+                model.Pose = new Pose(WorldPose.Pose.Position);
                 model.Draw(drawContext);
             }
 
             Flush(context);
         }
 
-        public void DrawPlates(in CameraDrawContext context, PlateCollection plates)
+        public void DrawChunks(in CameraDrawContext context, ChunkCollection chunks)
         {
             if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(context, RenderPass.Normal);
             if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
@@ -90,26 +90,26 @@ namespace TransportX.Rendering
 
             void Draw(in CameraDrawContext context, RenderPass pass)
             {
-                for (int i = DrawPlateCount - 1; 0 <= i; i--)
+                for (int i = DrawChunkCount - 1; 0 <= i; i--)
                 {
-                    for (int x = PlateX - i; x <= PlateX + i; x++)
+                    for (int x = WorldPose.ChunkX - i; x <= WorldPose.ChunkX + i; x++)
                     {
-                        int dz = int.Abs(x - PlateX) == i ? 1 : i * 2;
-                        for (int z = PlateZ - i; z <= PlateZ + i; z += dz)
+                        int dz = int.Abs(x - WorldPose.ChunkX) == i ? 1 : i * 2;
+                        for (int z = WorldPose.ChunkZ - i; z <= WorldPose.ChunkZ + i; z += dz)
                         {
-                            if (plates.TryGetValue(x, z, out Plate? plate))
+                            if (chunks.TryGetValue(x, z, out Chunk? chunk))
                             {
                                 LocatedDrawContext drawContext = new()
                                 {
                                     DeviceContext = context.DeviceContext,
                                     RenderQueue = RenderQueue,
-                                    PlateOffset = new PlateOffset(x - PlateX, z - PlateZ),
+                                    ChunkOffset = new ChunkOffset(x - WorldPose.ChunkX, z - WorldPose.ChunkZ),
                                     View = View,
                                     Projection = Projection,
                                     Frustum = Frustum,
                                     Pass = pass,
                                 };
-                                plate!.Draw(drawContext);
+                                chunk!.Draw(drawContext);
                             }
                         }
                     }
@@ -125,7 +125,7 @@ namespace TransportX.Rendering
                 {
                     DeviceContext = context.DeviceContext,
                     RenderQueue = RenderQueue,
-                    PlateOffset = new PlateOffset(body.PlateX - PlateX, body.PlateZ - PlateZ),
+                    ChunkOffset = GetChunkOffset(body),
                     View = View,
                     Projection = Projection,
                     Frustum = Frustum,

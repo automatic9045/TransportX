@@ -69,9 +69,9 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
-        internal SplineFactoryCommand Build(int plateX, int plateZ, Pose pose, NetworkPort? sourcePort)
+        internal SplineFactoryCommand Build(WorldPose worldPose, NetworkPort? sourcePort)
         {
-            SplineFactory factory = new(plateX, plateZ, pose, OutletLayout, sourcePort);
+            SplineFactory factory = new(worldPose, OutletLayout, sourcePort);
             factory.AddStructures(Structures);
 
             SplineFactoryCommand factoryCommand = new(World, factory);

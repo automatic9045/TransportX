@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 namespace TransportX.Network
@@ -52,6 +52,6 @@ namespace TransportX.Network
         }
 
         public Pose GetLocalPose(float viewS) => DirectionPose * Source.GetLocalPose(FromViewS(viewS));
-        public Pose GetPose(float viewS) => DirectionPose * Source.GetPose(FromViewS(viewS));
+        public WorldPose GetWorldPose(float viewS) => DirectionPose * Source.GetWorldPose(FromViewS(viewS));
     }
 }

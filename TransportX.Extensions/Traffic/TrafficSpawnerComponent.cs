@@ -23,7 +23,7 @@ namespace TransportX.Extensions.Traffic
 
         public void OnStart()
         {
-            IEnumerable<NetworkElement> network = World.Plates.SelectMany(plate => plate.Network);
+            IEnumerable<NetworkElement> network = World.Chunks.SelectMany(chunk => chunk.Network);
             Spawners.Initialize(network);
         }
 

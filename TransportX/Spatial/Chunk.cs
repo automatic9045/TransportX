@@ -10,7 +10,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class Plate : IDrawable, IDisposable
+    public class Chunk : IDrawable, IDisposable
     {
         public static readonly int Size = 250;
 
@@ -22,7 +22,7 @@ namespace TransportX.Spatial
         public List<LocatedModel> Models { get; } = new List<LocatedModel>();
         public List<NetworkElement> Network { get; } = new List<NetworkElement>();
 
-        public Plate(int x, int z)
+        public Chunk(int x, int z)
         {
             X = x;
             Z = z;
@@ -47,9 +47,9 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetFromCamera(PlateOffset fromCamera, int computePlateCount)
+        public void SetFromCamera(ChunkOffset fromCamera, int computeChunkCount)
         {
-            bool isFar = computePlateCount < int.Abs(fromCamera.DeltaX) + 1 || computePlateCount < int.Abs(fromCamera.DeltaZ) + 1;
+            bool isFar = computeChunkCount < int.Abs(fromCamera.DeltaX) + 1 || computeChunkCount < int.Abs(fromCamera.DeltaZ) + 1;
             if (IsFar && isFar) return;
 
             foreach (LocatedModel model in Models)

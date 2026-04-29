@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Collections;
+using TransportX.Spatial;
 
 namespace TransportX.Network
 {
@@ -16,7 +17,7 @@ namespace TransportX.Network
         public abstract NetworkPort Outlet { get; }
         public override IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
 
-        public NetworkEdge(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
+        public NetworkEdge(WorldPose worldPose) : base(worldPose)
         {
             Ports = new PortSet(this);
         }

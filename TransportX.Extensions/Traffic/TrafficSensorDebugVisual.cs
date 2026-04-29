@@ -53,12 +53,12 @@ namespace TransportX.Extensions.Traffic
 
             InstanceData instanceData = new()
             {
-                World = Matrix4x4.Transpose((Location.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                World = Matrix4x4.Transpose((Location.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
             };
 
             float lengthShift = IsTargetOncoming ? 0 : Target.Length;
-            Vector3 worldDelta = Target.Pose.Position - Target.Pose.Direction * lengthShift + Location.GetPlateOffset(Target).Position - Location.Pose.Position;
-            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.Pose.Orientation));
+            Vector3 worldDelta = Location.GetOffset(Target) - Target.WorldPose.Pose.Direction * lengthShift;
+            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.WorldPose.Pose.Orientation));
 
             Mesh!.Material.BaseColor = DebugColor.ToLinear();
             Mesh.SetVector(context.DeviceContext, localDelta);

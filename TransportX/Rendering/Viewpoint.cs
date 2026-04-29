@@ -102,31 +102,34 @@ namespace TransportX.Rendering
 
         public Vector2 Angle => Rotator.Angle;
 
-        public FreeViewpoint(int plateX, int plateZ, Vector3 position, Vector2 angle) : base()
+        public FreeViewpoint(int chunkX, int chunkZ, Vector3 position, Vector2 angle) : base()
         {
             Rotator = new Rotator(angle);
-            Locate(plateX, plateZ, new Pose(position, Rotator.Rotation));
+            Spatial.WorldPose worldPose = new(chunkX, chunkZ, new Pose(position, Rotator.Rotation));
+            Locate(worldPose);
         }
 
         public override void Move(Vector2 offset, Vector2 clientSize)
         {
             Vector2 amount = 0.1f * new Vector2(-offset.X, offset.Y);
 
-            Vector3 right = Vector3.Transform(Vector3.UnitX, Pose.Orientation);
-            Vector3 forward = Vector3.Transform(Vector3.UnitZ, Pose.Orientation);
+            Vector3 right = Vector3.Transform(Vector3.UnitX, WorldPose.Pose.Orientation);
+            Vector3 forward = Vector3.Transform(Vector3.UnitZ, WorldPose.Pose.Orientation);
             right.Y = forward.Y = 0;
 
             right = Vector3.Normalize(right);
             forward = Vector3.Normalize(forward);
 
             Vector3 r = right * amount.X + forward * amount.Y;
-            Locate(PlateX, PlateZ, Pose * new Pose(r));
+            Spatial.WorldPose worldPose = WorldPose * new Pose(r);
+            Locate(worldPose);
         }
 
         public override void Rotate(Vector2 offset, Vector2 clientSize)
         {
             Rotator.Rotate(1.5f * Perspective * offset, clientSize);
-            Locate(PlateX, PlateZ, new Pose(Pose.Position, Rotator.Rotation));
+            Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(WorldPose.Pose.Position, Rotator.Rotation));
+            Locate(worldPose);
         }
 
         public override void Zoom(float delta)
@@ -138,9 +141,12 @@ namespace TransportX.Rendering
         {
             Rotator.Reset();
 
-            Vector3 position = Pose.Position;
-            position.Y = 10;
-            Locate(PlateX, PlateZ, new Pose(position, Rotator.Rotation));
+            Vector3 position = WorldPose.Pose.Position with
+            {
+                Y = 10,
+            };
+            Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(position, Rotator.Rotation));
+            Locate(worldPose);
         }
     }
 
@@ -163,7 +169,7 @@ namespace TransportX.Rendering
 
             void UpdateLocation()
             {
-                Locate(Source, Rotator.RotationPose * Offset * Source.Pose);
+                Locate(Source, Rotator.RotationPose * Offset * Source.WorldPose.Pose);
             }
         }
 
@@ -211,7 +217,7 @@ namespace TransportX.Rendering
 
             void UpdateLocation()
             {
-                Locate(Source, Translator.TranslationPose * Rotator.RotationPose * Offset * Source.Pose);
+                Locate(Source, Translator.TranslationPose * Rotator.RotationPose * Offset * Source.WorldPose.Pose);
             }
         }
 

@@ -66,7 +66,7 @@ namespace TransportX.Sample.LV290.Vehicles
             ModelFactory modelFactory = new(DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
             SoundFactory soundFactory = new(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
             BusModels = new ModelSet(PhysicsHost.Simulation, Structure, modelFactory);
-            Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, Pose.Direction))];
+            Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, WorldPose.Pose.Direction))];
             Interfaces = new InterfaceSet(Inputs, Inputs[0]);
             Powertrain = new PowertrainSet(Interfaces, BusModels.WheelRL, BusModels.WheelRR, BusModels.PowerMotorRL, BusModels.PowerMotorRR);
 
@@ -95,15 +95,18 @@ namespace TransportX.Sample.LV290.Vehicles
         {
             if (ResetKey.IsPressed)
             {
-                Locate(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
+                WorldPose worldPose = new(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
+                Locate(worldPose);
+
                 foreach (LocatedModel model in Structure)
                 {
                     if (model is DynamicLocatedModel dynamicModel) dynamicModel.Body.Velocity = default;
-                    model.Pose = model.BasePose * Pose;
+                    model.Pose = model.BasePose * WorldPose.Pose;
                 }
             }
 
-            if (Camera.DrawPlateCount <= int.Abs(Camera.PlateX - PlateX) || Camera.DrawPlateCount <= int.Abs(Camera.PlateZ - PlateZ))
+            if (Camera.DrawChunkCount <= int.Abs(Camera.WorldPose.ChunkX - WorldPose.ChunkX)
+                || Camera.DrawChunkCount <= int.Abs(Camera.WorldPose.ChunkZ - WorldPose.ChunkZ))
             {
                 Structure.Freeze();
                 return;
@@ -161,10 +164,6 @@ namespace TransportX.Sample.LV290.Vehicles
             FrontDoor.Tick(elapsed);
             RearDoor.Tick(elapsed);
 
-            //Drives.Tick(elapsed);
-
-            //Drives.UpdateSound(DXHost.X3DAudio, Camera.Listener, Camera.PlateX, Camera.PlateZ);
-
             Application.Current.MainWindow.Title +=
                 $"; {Powertrain.Engine.Rpm:f0} rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
                 //$"ω={Drives.LeftWheel.AngularVelocity:f2};{Drives.RightWheel.AngularVelocity:f2}, " +
@@ -173,7 +172,7 @@ namespace TransportX.Sample.LV290.Vehicles
                 //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
                 //$"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
                 //$"rs={Interfaces.SteeringWheel.Rate:f2}, " +
-                $"v={Vector3.Dot(Velocity, Pose.Direction) * 3.6f:f1} km/h";
+                $"v={Vector3.Dot(Velocity, WorldPose.Pose.Direction) * 3.6f:f1} km/h";
 
             /*Tire tire = Drives.Chassis.Tires[2];
             Application.Current.MainWindow.Title =

@@ -14,6 +14,7 @@ using TransportX.Dependency;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 namespace TransportX
@@ -84,8 +85,9 @@ namespace TransportX
 
                 if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
                 {
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.PlateX},{viewpoint.PlateZ}"));
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.Pose.Position.X},{viewpoint.Pose.Position.Y},{viewpoint.Pose.Position.Z}"));
+                    WorldPose worldPose = viewpoint.WorldPose;
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{worldPose.ChunkX},{worldPose.ChunkZ}"));
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{worldPose.Pose.Position.X},{worldPose.Pose.Position.Y},{worldPose.Pose.Position.Z}"));
                     saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.Angle.X},{viewpoint.Angle.Y}"));
                 }
 
@@ -121,9 +123,9 @@ namespace TransportX
 
         protected virtual void OnTick(TimeSpan elapsed)
         {
-            string plateText = $"({Camera.PlateX}, {Camera.PlateZ})";
-            string coordText = $"({Camera.PositionInWorld.X:F1}, {Camera.PositionInWorld.Y:F1}, {Camera.PositionInWorld.Z:F1})";
-            Application.Current.MainWindow.Title = $"Bus {plateText}; {coordText} @ {TimeManager.Fps:f0} fps";
+            string chunkText = $"({Camera.WorldPose.ChunkX}, {Camera.WorldPose.ChunkZ})";
+            string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
+            Application.Current.MainWindow.Title = $"Bus {chunkText}; {coordText} @ {TimeManager.Fps:f0} fps";
 
             World.Tick(elapsed);
         }

@@ -9,6 +9,7 @@ using Vortice.Direct3D;
 
 using TransportX.Components;
 using TransportX.Rendering;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 namespace TransportX.Network
@@ -88,9 +89,9 @@ namespace TransportX.Network
 
         protected abstract Pose GetLocalPoseCore(float at);
 
-        public Pose GetPose(float at)
+        public WorldPose GetWorldPose(float at)
         {
-            return GetLocalPose(at) * Owner.Pose;
+            return GetLocalPose(at) * Owner.WorldPose;
         }
 
         public abstract LaneWidth GetWidth(float at);
@@ -173,7 +174,7 @@ namespace TransportX.Network
 
             InstanceData instanceData = new()
             {
-                World = Matrix4x4.Transpose((Owner.Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                World = Matrix4x4.Transpose((Owner.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
             };
 
             Vector4 linearDebugColor = DebugColor.ToLinear();

@@ -47,9 +47,9 @@ namespace TransportX.Spatial
             return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
         }
 
-        public override bool SetFromCamera(PlateOffset fromCamera)
+        public override bool SetFromCamera(ChunkOffset fromCamera)
         {
-            PlateOffset delta = fromCamera - FromCamera;
+            ChunkOffset delta = fromCamera - FromCamera;
 
             bool isChanged = base.SetFromCamera(fromCamera);
             if (isChanged)
@@ -61,7 +61,7 @@ namespace TransportX.Spatial
             return isChanged;
         }
 
-        public void Shift(PlateOffset offset)
+        public void Shift(ChunkOffset offset)
         {
             Pose *= offset.PoseInverse;
         }

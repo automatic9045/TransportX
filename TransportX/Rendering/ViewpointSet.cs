@@ -38,9 +38,9 @@ namespace TransportX.Rendering
             }
         }
 
-        public ViewpointSet(int plateX, int plateZ, Vector3 position, Vector2 angle)
+        public ViewpointSet(int chunkX, int chunkZ, Vector3 position, Vector2 angle)
         {
-            Free = new FreeViewpoint(plateX, plateZ, position, angle);
+            Free = new FreeViewpoint(chunkX, chunkZ, position, angle);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace TransportX.Spatial
         /// <summary>
         /// 視点が位置するプレートから、このモデルが位置するプレートまでの距離を取得します。
         /// </summary>
-        public PlateOffset FromCamera { get; private set; } = PlateOffset.Identity;
+        public ChunkOffset FromCamera { get; private set; } = ChunkOffset.Identity;
 
         public bool IsActive { get; private set; } = true;
 
@@ -77,7 +77,7 @@ namespace TransportX.Spatial
         /// </remarks>
         /// <param name="fromCamera">視点が位置するプレートから、このモデルが位置するプレートまでの距離。</param>
         /// <returns><see cref="FromCamera"/> プロパティの値が更新されたかどうか。</returns>
-        public virtual bool SetFromCamera(PlateOffset fromCamera)
+        public virtual bool SetFromCamera(ChunkOffset fromCamera)
         {
             if (fromCamera != FromCamera)
             {

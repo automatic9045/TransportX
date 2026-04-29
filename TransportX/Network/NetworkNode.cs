@@ -5,11 +5,13 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Spatial;
+
 namespace TransportX.Network
 {
     public abstract class NetworkNode : NetworkElement
     {
-        public NetworkNode(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
+        public NetworkNode(WorldPose worldPose) : base(worldPose)
         {
         }
     }

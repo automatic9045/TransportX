@@ -233,7 +233,7 @@ namespace TransportX.Rendering
             {
                 View = Matrix4x4.Transpose(camera.View),
                 Projection = Matrix4x4.Transpose(camera.Projection),
-                CameraPosition = camera.Pose.Position,
+                CameraPosition = camera.WorldPose.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity,
@@ -263,7 +263,7 @@ namespace TransportX.Rendering
             camera.DrawBackground(cameraContext, world.BackgroundModels);
             DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            camera.DrawPlates(cameraContext, world.Plates);
+            camera.DrawChunks(cameraContext, world.Chunks);
             camera.DrawBodies(cameraContext, world.Bodies);
 
 

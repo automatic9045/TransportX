@@ -130,9 +130,9 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
 
-        internal JunctionFactoryCommand Build(int plateX, int plateZ, Pose pose)
+        internal JunctionFactoryCommand Build(WorldPose worldPose)
         {
-            Junction junction = new(plateX, plateZ, pose, Ports);
+            Junction junction = new(worldPose, Ports);
 
             foreach ((string inputKey, string outputKey) in Relays)
             {

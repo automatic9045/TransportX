@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using TransportX.Diagnostics;
 using TransportX.Network;
+using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Elements;
 
@@ -40,7 +41,7 @@ namespace TransportX.Scripting.Commands
             SplinesKey = new ScriptDictionary<string, SplineCommand>(World.ErrorCollector, "スプライン",
                 key => new SplineCommand(World, []));
             JunctionsKey = new ScriptDictionary<string, JunctionCommand>(World.ErrorCollector, "ジャンクション",
-                key => new JunctionCommand(World, new Junction(0, 0, Pose.Identity, [])));
+                key => new JunctionCommand(World, new Junction(WorldPose.Zero, [])));
         }
 
         public void Connect(NetworkPort a, NetworkPort b)

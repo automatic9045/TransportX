@@ -20,7 +20,7 @@ namespace TransportX.Bodies
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is CollidableLocatedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
+        public RigidBody(IPhysicsHost physicsHost, WorldPose worldPose) : base(worldPose)
         {
             Structure = new BodyStructure(physicsHost);
 
@@ -28,16 +28,12 @@ namespace TransportX.Bodies
             {
                 foreach (LocatedModel model in Structure)
                 {
-                    if (model is not DynamicLocatedModel) model.Pose = model.BasePose * Pose;
+                    if (model is not DynamicLocatedModel) model.Pose = model.BasePose * WorldPose.Pose;
                 }
             };
         }
 
-        public RigidBody(IPhysicsHost physicsHost, int plateX, int plateZ, SixDoF position) : this(physicsHost, plateX, plateZ, position.ToPose())
-        {
-        }
-
-        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, 0, 0, Pose.Identity)
+        public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, WorldPose.Zero)
         {
         }
 
@@ -46,38 +42,39 @@ namespace TransportX.Bodies
             Structure.Dispose();
         }
 
-        public virtual void SetFromCamera(PlateOffset fromCamera)
+        public virtual void SetFromCamera(ChunkOffset fromCamera)
         {
             Structure.SetFromCamera(fromCamera);
         }
 
-        protected virtual PlateOffset TeleportTo(int plateX, int plateZ, Pose pose)
+        protected virtual ChunkOffset TeleportTo(WorldPose worldPose)
         {
-            PlateOffset plateOffset = Locate(plateX, plateZ, pose);
+            ChunkOffset chunkOffset = Locate(worldPose);
             foreach (LocatedModel model in Structure)
             {
-                model.Pose = model.BasePose * Pose;
+                model.Pose = model.BasePose * WorldPose.Pose;
             }
 
-            return plateOffset;
+            return chunkOffset;
         }
 
         public virtual void SubTick(TimeSpan elapsed)
         {
             if (Structure.RootModel is null) return;
 
-            PlateOffset plateOffset = Locate(PlateX, PlateZ, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
-            if (!plateOffset.IsZero)
+            WorldPose worldPose = new(WorldPose.ChunkX, WorldPose.ChunkZ, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
+            ChunkOffset chunkOffset = Locate(worldPose);
+            if (!chunkOffset.IsZero)
             {
                 foreach (LocatedModel model in Structure)
                 {
                     if (model is DynamicLocatedModel dynamicModel)
                     {
-                        dynamicModel.Shift(plateOffset);
+                        dynamicModel.Shift(chunkOffset);
                     }
                     else
                     {
-                        model.Pose = model.BasePose * Pose;
+                        model.Pose = model.BasePose * WorldPose.Pose;
                     }
                 }
             }

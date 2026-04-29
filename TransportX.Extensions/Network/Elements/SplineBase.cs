@@ -24,7 +24,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public abstract float Length { get; }
 
-        public SplineBase(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
+        public SplineBase(WorldPose worldPose) : base(worldPose)
         {
         }
 
@@ -47,12 +47,12 @@ namespace TransportX.Extensions.Network.Elements
 
                     if (template is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
                     {
-                        KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * Pose);
+                        KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * WorldPose.Pose);
                         modelsToMerge.Add(compiled);
                     }
                     else
                     {
-                        LocatedModel model = template.Build(pose => pose * curvePose * Pose);
+                        LocatedModel model = template.Build(pose => pose * curvePose * WorldPose.Pose);
                         ModelsKey.Add(model);
                     }
                 }

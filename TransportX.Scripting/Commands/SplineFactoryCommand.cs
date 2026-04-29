@@ -92,8 +92,8 @@ namespace TransportX.Scripting.Commands
             List<SplineBase> splines = SplineFactory.Build(World.DXHost.Device, World.PhysicsHost);
             foreach (SplineBase spline in splines)
             {
-                Plate plate = World.Plates.GetOrAdd(spline.PlateX, spline.PlateZ);
-                plate.Network.Add(spline);
+                Chunk chunk = World.Chunks.GetOrAddFor(spline);
+                chunk.Network.Add(spline);
 
                 foreach (ILanePath path in spline.Paths)
                 {

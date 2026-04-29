@@ -199,9 +199,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
         {
             private readonly LanePathView Target;
 
-            public readonly int PlateX => Target.Source.Owner.PlateX;
-            public readonly int PlateZ => Target.Source.Owner.PlateZ;
-            public readonly Pose Pose { get; }
+            public readonly WorldPose WorldPose { get; }
             public readonly Vector3 Velocity => Vector3.Zero;
 
             public readonly float Width => 0;
@@ -214,7 +212,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             public readonly float S { get; }
             public readonly float SVelocity => 0;
 
-            public event Action<PlateOffset>? Moved
+            public event Action<ChunkOffset>? Moved
             {
                 add => throw new NotSupportedException();
                 remove => throw new NotSupportedException();
@@ -223,7 +221,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             public PriorityParticipant(in LanePathView target)
             {
                 Target = target;
-                Pose = Target.GetPose(0);
+                WorldPose = Target.GetWorldPose(0);
                 Heading = Target.Reverse ? ParticipantDirection.Backward : ParticipantDirection.Forward;
                 S = Target.FromViewS(0);
             }

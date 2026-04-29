@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using TransportX.Components;
 using TransportX.Rendering;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 namespace TransportX.Network
@@ -29,7 +30,7 @@ namespace TransportX.Network
         string? DebugName { get; set; }
 
         Pose GetLocalPose(float at);
-        Pose GetPose(float at);
+        WorldPose GetWorldPose(float at);
         LaneWidth GetWidth(float at);
 
         void Enter(ITrafficParticipant participant);

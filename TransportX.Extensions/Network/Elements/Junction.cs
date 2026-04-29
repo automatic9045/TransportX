@@ -31,7 +31,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public Junction(int plateX, int plateZ, Pose pose, IEnumerable<PortDefinition> ports) : base(plateX, plateZ, pose)
+        public Junction(WorldPose worldPose, IEnumerable<PortDefinition> ports) : base(worldPose)
         {
             Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
@@ -54,12 +54,12 @@ namespace TransportX.Extensions.Network.Elements
             {
                 if (structure is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
                 {
-                    KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * Pose);
+                    KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * WorldPose.Pose);
                     structuresToMerge.Add(compiled);
                 }
                 else
                 {
-                    LocatedModel model = structure.Build(pose => pose * Pose);
+                    LocatedModel model = structure.Build(pose => pose * WorldPose.Pose);
                     ModelsKey.Add(model);
                 }
             }
@@ -76,15 +76,15 @@ namespace TransportX.Extensions.Network.Elements
         public Pose GetConnectionPose(NetworkPort port, Pose targetPortOffset)
         {
             Pose offsetInv = Pose.Inverse(targetPortOffset);
-            Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * Pose;
+            Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * port.Offset * WorldPose.Pose;
             return pose;
         }
 
-        public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<int, int, Pose, T> elementFactory) where T : NetworkElement
+        public T ConnectNew<T>(NetworkPort port, PortDefinition targetPort, Func<WorldPose, T> elementFactory) where T : NetworkElement
         {
             Pose pose = GetConnectionPose(port, targetPort.Offset);
 
-            T element = elementFactory(PlateX, PlateZ, pose);
+            T element = elementFactory(WorldPose.ChangePose(pose));
             port.ConnectTo(element.Ports[targetPort.Name]);
 
             return element;

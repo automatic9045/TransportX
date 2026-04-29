@@ -11,18 +11,12 @@ namespace TransportX
 {
     public interface ILocatable
     {
-        int PlateX { get; }
-        int PlateZ { get; }
-        Pose Pose { get; }
+        WorldPose WorldPose { get; }
         Vector3 Velocity { get; }
 
-        sealed Vector3 PositionInWorld => Pose.Position + new Vector3(PlateX, 0, PlateZ) * Plate.Size; // 注意: 原点から離れたプレート上では、誤差が大きい可能性あり
+        event Action<ChunkOffset>? Moved;
 
-        event Action<PlateOffset>? Moved;
-
-        sealed PlateOffset GetPlateOffset(ILocatable to)
-        {
-            return new PlateOffset(to.PlateX - PlateX, to.PlateZ - PlateZ);
-        }
+        sealed ChunkOffset GetChunkOffset(ILocatable to) => WorldPose.GetChunkOffset(to.WorldPose);
+        sealed Vector3 GetOffset(ILocatable to) => WorldPose.GetOffset(to.WorldPose);
     }
 }

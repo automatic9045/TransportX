@@ -61,8 +61,8 @@ namespace TransportX.Sample.LV290.Vehicles.Audio
             }
             OldIsOpen = Door.IsOpen;
 
-            if (OpenSound.IsPlaying) OpenSound.Update(camera.Listener, camera.PlateX, camera.PlateZ);
-            if (CloseSound.IsPlaying) CloseSound.Update(camera.Listener, camera.PlateX, camera.PlateZ);
+            if (OpenSound.IsPlaying) OpenSound.Update(camera.Listener, camera.WorldPose.ChunkX, camera.WorldPose.ChunkZ);
+            if (CloseSound.IsPlaying) CloseSound.Update(camera.Listener, camera.WorldPose.ChunkX, camera.WorldPose.ChunkZ);
         }
     }
 }

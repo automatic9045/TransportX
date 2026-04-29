@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using TransportX.Components;
 using TransportX.Network;
+using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Paths;
 
@@ -26,7 +27,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public Spline(int plateX, int plateZ, Pose pose, LaneLayout outletLayout, SplineSegment[] segments) : base(plateX, plateZ, pose)
+        public Spline(WorldPose worldPose, LaneLayout outletLayout, SplineSegment[] segments) : base(worldPose)
         {
             if (segments.Length == 0) throw new ArgumentException("セグメント列が空です。", nameof(segments));
 
@@ -90,12 +91,12 @@ namespace TransportX.Extensions.Network.Elements
             return ref Segments[^1];
         }
 
-        public T ConnectNew<T>(PortDefinition targetPortDef, Func<int, int, Pose, T> elementFactory) where T : NetworkElement
+        public T ConnectNew<T>(PortDefinition targetPortDef, Func<WorldPose, T> elementFactory) where T : NetworkElement
         {
             Pose offsetInv = Pose.Inverse(targetPortDef.Offset);
-            Pose pose = offsetInv * Pose.CreateRotationY(-float.Pi) * Outlet.Offset * Pose;
+            WorldPose worldPose = offsetInv * Pose.CreateRotationY(-float.Pi) * Outlet.Offset * WorldPose;
 
-            T element = elementFactory(PlateX, PlateZ, pose);
+            T element = elementFactory(worldPose);
             Outlet.ConnectTo(element.Ports[targetPortDef.Name]);
             return element;
         }

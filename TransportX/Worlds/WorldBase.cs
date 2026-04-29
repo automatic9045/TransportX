@@ -42,7 +42,7 @@ namespace TransportX.Worlds
         public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
 
         public List<LocatedModel> BackgroundModels { get; } = [];
-        public PlateCollection Plates { get; } = [];
+        public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
 
         public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
@@ -77,7 +77,7 @@ namespace TransportX.Worlds
         {
             ComponentEngine.Dispose();
 
-            Plates.Dispose();
+            Chunks.Dispose();
             Bodies.Dispose();
 
             DefaultEnvironment.Dispose();
@@ -88,7 +88,7 @@ namespace TransportX.Worlds
         public virtual void OnStart()
         {
             Validate();
-            Plates.RegisterComponents(ComponentEngine);
+            Chunks.RegisterComponents(ComponentEngine);
             ComponentEngine.OnStart();
         }
 
@@ -99,10 +99,10 @@ namespace TransportX.Worlds
                 .Where(PhysicsHost.Simulation.Bodies.BodyExists)
                 .ToList();
 
-            foreach (Plate plate in Plates)
+            foreach (Chunk chunk in Chunks)
             {
-                RemoveAttachedHandles(plate.Models);
-                RemoveAttachedHandles(plate.Network.SelectMany(e => e.Models));
+                RemoveAttachedHandles(chunk.Models);
+                RemoveAttachedHandles(chunk.Network.SelectMany(e => e.Models));
             }
             foreach (RigidBody body in Bodies)
             {
@@ -127,18 +127,18 @@ namespace TransportX.Worlds
         public virtual void SubTick(TimeSpan elapsed)
         {
             ComponentEngine.SubTick(elapsed);
-            Bodies.SubTick(elapsed, Camera, Camera.DrawPlateCount);
+            Bodies.SubTick(elapsed, Camera, Camera.DrawChunkCount);
             Camera.UpdateView();
-            Plates.SetCameraPosition(Camera, Camera.DrawPlateCount);
-            Bodies.SetCameraPosition(Camera, Camera.DrawPlateCount);
+            Chunks.SetCameraPosition(Camera, Camera.DrawChunkCount);
+            Bodies.SetCameraPosition(Camera, Camera.DrawChunkCount);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
             ComponentEngine.Tick(elapsed, TimeManager.Now);
             Bodies.Tick(elapsed);
-            Plates.SetCameraPosition(Camera, Camera.DrawPlateCount);
-            Bodies.SetCameraPosition(Camera, Camera.DrawPlateCount);
+            Chunks.SetCameraPosition(Camera, Camera.DrawChunkCount);
+            Bodies.SetCameraPosition(Camera, Camera.DrawChunkCount);
         }
 
         public virtual AvatarBase CreateAvatar(string path, string? identifier)

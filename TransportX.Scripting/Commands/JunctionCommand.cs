@@ -49,8 +49,8 @@ namespace TransportX.Scripting.Commands
                 ? Pose.Identity
                 : Junction.GetConnectionPose(port, Pose.CreateRotationY(float.Pi));
 
-            PlateCommand plate = World.Commander.Plates[Junction.PlateX, Junction.PlateZ];
-            SplineFactoryCommand spline = plate.BeginSpline(templateKey, pose, port);
+            ChunkCommand chunk = World.Commander.Chunks.For(Junction);
+            SplineFactoryCommand spline = chunk.BeginSpline(templateKey, pose, port);
 
             return spline;
         }
@@ -67,22 +67,22 @@ namespace TransportX.Scripting.Commands
             JunctionFactoryCommand factoryCommand;
             if (port is null || template is null || targetPort is null)
             {
-                junction = new(Junction.PlateX, Junction.PlateZ, Junction.Pose, []);
+                junction = new(Junction.WorldPose, []);
                 factoryCommand = new JunctionFactoryCommand(World, junction);
             }
             else
             {
                 factoryCommand = null!;
-                junction = Junction.ConnectNew(port, targetPort, (plateX, plateZ, pose) =>
+                junction = Junction.ConnectNew(port, targetPort, worldPose =>
                 {
-                    factoryCommand = template.Build(plateX, plateZ, pose);
+                    factoryCommand = template.Build(worldPose);
                     return factoryCommand.Junction;
                 });
             }
-            junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
+            junction.DebugName = World.Commander.Chunks.For(junction).CreateJunctionDebugName(templateKey);
 
-            Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);
-            plate.Network.Add(junction);
+            Chunk chunk = World.Chunks.GetOrAddFor(junction);
+            chunk.Network.Add(junction);
             return factoryCommand;
         }
     }

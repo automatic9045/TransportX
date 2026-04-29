@@ -29,7 +29,7 @@ namespace TransportX.Network
             }
         } = null;
 
-        public NetworkElement(int plateX, int plateZ, Pose pose) : base(plateX, plateZ, pose)
+        public NetworkElement(WorldPose worldPose) : base(worldPose)
         {
         }
 

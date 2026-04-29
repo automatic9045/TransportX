@@ -26,7 +26,7 @@ namespace TransportX
             TimeManager timeManager = new();
             InputManager inputManager = new();
 
-            (int PlateX, int PlateZ, Vector3 Position, Vector2 Angle) cameraLocation = (0, 0, new Vector3(0, 10, 0), Vector2.Zero);
+            CameraLocation cameraLocation = new(0, 0, new Vector3(125, 10, 125), Vector2.Zero);
             try
             {
                 Process process = Process.GetCurrentProcess();
@@ -36,9 +36,9 @@ namespace TransportX
 
                 if (int.Parse(saveContent[0]) == process.Id)
                 {
-                    string[] plateText = saveContent[1].Split(',');
-                    int plateX = int.Parse(plateText[0]);
-                    int plateZ = int.Parse(plateText[1]);
+                    string[] chunkText = saveContent[1].Split(',');
+                    int chunkX = int.Parse(chunkText[0]);
+                    int chunkZ = int.Parse(chunkText[1]);
 
                     string[] positionText = saveContent[2].Split(',');
                     Vector3 position = new(float.Parse(positionText[0]), float.Parse(positionText[1]), float.Parse(positionText[2]));
@@ -46,12 +46,12 @@ namespace TransportX
                     string[] angleText = saveContent[3].Split(',');
                     Vector2 angle = new(float.Parse(angleText[0]), float.Parse(angleText[1]));
 
-                    cameraLocation = new(plateX, plateZ, position, angle);
+                    cameraLocation = new(chunkX, chunkZ, position, angle);
                 }
             }
             catch { }
 
-            Camera camera = new(cameraLocation.PlateX, cameraLocation.PlateZ, cameraLocation.Position, cameraLocation.Angle);
+            Camera camera = new(cameraLocation.ChunkX, cameraLocation.ChunkZ, cameraLocation.Position, cameraLocation.Angle);
 
             ErrorCollector errorCollector = new();
             WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
@@ -91,5 +91,8 @@ namespace TransportX
             };
             return new Game(info);
         }
+
+
+        private record CameraLocation(int ChunkX, int ChunkZ, Vector3 Position, Vector2 Angle);
     }
 }

@@ -27,7 +27,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public string? DebugName { get; set; } = null;
 
-        public SplineFactory(int plateX, int plateZ, Pose pose, LaneLayout outletLayout, NetworkPort? sourcePort) : base(plateX, plateZ, pose)
+        public SplineFactory(WorldPose worldPose, LaneLayout outletLayout, NetworkPort? sourcePort) : base(worldPose)
         {
             OutletLayout = outletLayout;
 
@@ -50,13 +50,10 @@ namespace TransportX.Extensions.Network.Elements
             Finalizer = fromPort =>
             {
                 NetworkElement targetElement = targetPort.Owner;
-                PlateOffset offset = new(
-                    targetElement.PlateX - PlateX,
-                    targetElement.PlateZ - PlateZ
-                );
-                Pose to = targetPort.Offset * targetElement.Pose * offset.Pose;
+                ChunkOffset offset = GetChunkOffset(targetElement);
+                Pose to = targetPort.Offset * targetElement.WorldPose.Pose * offset.Pose;
 
-                BezierSpline spline = new(PlateX, PlateZ, Pose, to, OutletLayout, handleScale)
+                BezierSpline spline = new(WorldPose, to, OutletLayout, handleScale)
                 {
                     DebugName = DebugName,
                 };
@@ -72,10 +69,8 @@ namespace TransportX.Extensions.Network.Elements
             List<SplineBase> splines = [];
             NetworkPort? sourcePort = SourcePort;
 
-            int splineX = PlateX;
-            int splineZ = PlateZ;
-            Pose splinePose = Pose;
-            Pose splinePoseInv = Pose.Inverse(splinePose);
+            WorldPose splinePose = WorldPose;
+            Pose splinePoseInv = Pose.Inverse(splinePose.Pose);
 
             Queue<Span> curves = new(Curves.Spans);
             Queue<Span> gradients = new(Gradients.Spans);
@@ -96,7 +91,7 @@ namespace TransportX.Extensions.Network.Elements
                 Span slicedGradient = gradient.Slice(s, length);
                 Span slicedCant = cant.Slice(s, length);
 
-                Pose segmentPose = Pose * splinePoseInv;
+                Pose segmentPose = WorldPose.Pose * splinePoseInv;
                 SplineSegment segment = new()
                 {
                     FromS = s,
@@ -113,16 +108,14 @@ namespace TransportX.Extensions.Network.Elements
                 segments.Add(segment);
 
                 Pose pose = segment.GetLocalPose(slicedCurve.Length);
-                PlateOffset plateOffset = Move(pose);
+                ChunkOffset chunkOffset = Move(pose);
 
-                if (!plateOffset.IsZero)
+                if (!chunkOffset.IsZero)
                 {
                     AddSpline();
 
-                    splineX = PlateX;
-                    splineZ = PlateZ;
-                    splinePose = Pose;
-                    splinePoseInv = Pose.Inverse(splinePose);
+                    splinePose = WorldPose;
+                    splinePoseInv = Pose.Inverse(splinePose.Pose);
 
                     segments = [];
                 }
@@ -166,7 +159,7 @@ namespace TransportX.Extensions.Network.Elements
                     CantDelta = segment.CantDelta,
                 }).ToArray();
 
-                Spline spline = new(splineX, splineZ, splinePose, OutletLayout, normalizedSegments)
+                Spline spline = new(splinePose, OutletLayout, normalizedSegments)
                 {
                     DebugName = DebugName,
                 };

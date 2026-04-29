@@ -28,8 +28,8 @@ namespace TransportX.Scripting.Commands
 
         public SplineFactoryCommand IntoSpline(string? templateKey)
         {
-            PlateCommand plate = World.Commander.Plates[Outlet.Owner.PlateX, Outlet.Owner.PlateZ];
-            SplineFactoryCommand spline = plate.BeginSpline(templateKey, Outlet.Offset * Splines[^1].Pose, Outlet);
+            ChunkCommand chunk = World.Commander.Chunks.For(Outlet.Owner);
+            SplineFactoryCommand spline = chunk.BeginSpline(templateKey, Outlet.Offset * Splines[^1].WorldPose.Pose, Outlet);
             return spline;
         }
 
@@ -44,22 +44,22 @@ namespace TransportX.Scripting.Commands
             JunctionFactoryCommand factoryCommand;
             if (template is null || targetPort is null)
             {
-                junction = new Junction(Splines[^1].PlateX, Splines[^1].PlateZ, Outlet.Offset * Splines[^1].Pose, []);
+                junction = new Junction(Outlet.Offset * Splines[^1].WorldPose, []);
                 factoryCommand = new JunctionFactoryCommand(World, junction);
             }
             else
             {
                 factoryCommand = null!;
-                junction = ((Spline)Splines[^1]).ConnectNew(targetPort, (plateX, plateZ, pose) =>
+                junction = ((Spline)Splines[^1]).ConnectNew(targetPort, (worldPose) =>
                 {
-                    factoryCommand = template.Build(plateX, plateZ, pose);
+                    factoryCommand = template.Build(worldPose);
                     return factoryCommand.Junction;
                 });
             }
-            junction.DebugName = World.Commander.Plates[junction.PlateX, junction.PlateZ].CreateJunctionDebugName(templateKey);
+            junction.DebugName = World.Commander.Chunks.For(junction).CreateJunctionDebugName(templateKey);
 
-            Plate plate = World.Plates.GetOrAdd(junction.PlateX, junction.PlateZ);
-            plate.Network.Add(junction);
+            Chunk chunk = World.Chunks.GetOrAddFor(junction);
+            chunk.Network.Add(junction);
             return factoryCommand;
         }
     }

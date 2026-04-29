@@ -83,9 +83,9 @@ namespace TransportX.Avatars
             DebugModel.Dispose();
         }
 
-        public new PlateOffset TeleportTo(int plateX, int plateZ, Pose pose)
+        public new ChunkOffset TeleportTo(WorldPose worldPose)
         {
-            return base.TeleportTo(plateX, plateZ, pose);
+            return base.TeleportTo(worldPose);
         }
 
         public abstract bool Spawn(ILanePath path, ParticipantDirection heading, float s);
@@ -98,7 +98,7 @@ namespace TransportX.Avatars
             {
                 InstanceData instanceData = new()
                 {
-                    World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                    World = Matrix4x4.Transpose((WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
                 };
                 context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
             }

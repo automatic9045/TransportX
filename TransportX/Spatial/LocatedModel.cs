@@ -46,7 +46,7 @@ namespace TransportX.Spatial
             if (!IsVisible) return;
             if (context.Pass != RenderPass.Normal) return;
 
-            Matrix4x4 world = (Pose * context.PlateOffset.Pose).ToMatrix4x4();
+            Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
             BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
             if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 

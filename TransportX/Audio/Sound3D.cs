@@ -56,9 +56,9 @@ namespace TransportX.Audio
         {
             if (AttachedTo is not null)
             {
-                Emitter.OrientFront = AttachedTo.Pose.Direction;
-                Emitter.OrientTop = AttachedTo.Pose.Up;
-                Emitter.Position = AttachedTo.Pose.Position + new PlateOffset(AttachedTo.PlateX - cameraX, AttachedTo.PlateZ - cameraZ).Position;
+                Emitter.OrientFront = AttachedTo.WorldPose.Pose.Direction;
+                Emitter.OrientTop = AttachedTo.WorldPose.Pose.Up;
+                Emitter.Position = AttachedTo.WorldPose.Pose.Position + new ChunkOffset(AttachedTo.WorldPose.ChunkX - cameraX, AttachedTo.WorldPose.ChunkZ - cameraZ).Position;
                 Emitter.Velocity = AttachedTo.Velocity;
             }
 

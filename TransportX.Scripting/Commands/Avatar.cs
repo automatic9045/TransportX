@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Diagnostics;
+using TransportX.Spatial;
 
 namespace TransportX.Scripting.Commands
 {
@@ -35,7 +36,7 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public void Locate(int plateX, int plateZ, Pose pose)
+        public void Locate(WorldPose worldPose)
         {
             if (World.Avatar is null)
             {
@@ -44,18 +45,19 @@ namespace TransportX.Scripting.Commands
                 return;
             }
 
-            World.Avatar.TeleportTo(plateX, plateZ, pose);
+            World.Avatar.TeleportTo(worldPose);
         }
 
-        public void Locate(int plateX, int plateZ, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public void Locate(int chunkX, int chunkZ, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            Locate(plateX, plateZ, position.ToPose());
+            WorldPose worldPose = new(chunkX, chunkZ, position.ToPose());
+            Locate(worldPose);
         }
 
-        public void Locate(int plateX, int plateZ, double x, double y, double z)
+        public void Locate(int chunkX, int chunkZ, double x, double y, double z)
         {
-            Locate(plateX, plateZ, x, y, z, 0, 0, 0);
+            Locate(chunkX, chunkZ, x, y, z, 0, 0, 0);
         }
     }
 }

@@ -13,24 +13,24 @@ using TransportX.Extensions.Network.Elements;
 
 namespace TransportX.Scripting.Commands
 {
-    public class PlateCommand
+    public class ChunkCommand
     {
         private readonly ScriptWorld World;
         private readonly int X;
         private readonly int Z;
 
-        private readonly Plate Target;
+        private readonly Chunk Target;
 
         private int SplineCounter = 0;
         private int JunctionCounter = 0;
 
-        internal PlateCommand(ScriptWorld world, int x, int z)
+        internal ChunkCommand(ScriptWorld world, int x, int z)
         {
             World = world;
             X = x;
             Z = z;
 
-            Target = World.Plates.GetOrAdd(X, Z);
+            Target = World.Chunks.GetOrAdd(X, Z);
         }
 
         public LocatedModel PutStructure(string modelKey, Pose pose)
@@ -61,17 +61,19 @@ namespace TransportX.Scripting.Commands
 
         public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)
         {
+            WorldPose worldPose = new(X, Z, pose);
+
             SplineFactoryCommand? factoryCommand = null;
             if (templateKey is not null)
             {
                 SplineTemplate? template = World.Commander.Network.Templates.GetSpline(templateKey);
                 if (template is not null)
                 {
-                    factoryCommand = template.Build(X, Z, pose, sourcePort);
+                    factoryCommand = template.Build(worldPose, sourcePort);
                 }
             }
 
-            factoryCommand ??= new SplineFactoryCommand(World, new SplineFactory(X, Z, pose, new LaneLayout(), sourcePort));
+            factoryCommand ??= new SplineFactoryCommand(World, new SplineFactory(worldPose, new LaneLayout(), sourcePort));
             factoryCommand.SplineFactory.DebugName = CreateSplineDebugName(templateKey);
 
             return factoryCommand;
@@ -105,17 +107,19 @@ namespace TransportX.Scripting.Commands
 
         public JunctionFactoryCommand PutJunction(string templateKey, Pose pose)
         {
+            WorldPose worldPose = new(X, Z, pose);
+
             JunctionFactoryCommand factoryCommand;
             if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
             {
-                factoryCommand = template.Build(X, Z, pose);
+                factoryCommand = template.Build(worldPose);
             }
             else
             {
                 ScriptError error = new(ErrorLevel.Error, $"ジャンクションテンプレート '{templateKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                factoryCommand = new JunctionFactoryCommand(World, new Junction(X, Z, pose, []));
+                factoryCommand = new JunctionFactoryCommand(World, new Junction(worldPose, []));
             }
             factoryCommand.Junction.DebugName = CreateJunctionDebugName(templateKey);
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using TransportX.Components;
 using TransportX.Network;
+using TransportX.Spatial;
 
 using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Paths;
@@ -30,11 +31,10 @@ namespace TransportX.Extensions.Network.Elements
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public BezierSpline(int plateX, int plateZ, Pose fromPose, Pose toPose, LaneLayout outletLayout, float handleScale = 0.5f)
-            : base(plateX, plateZ, fromPose)
+        public BezierSpline(WorldPose from, Pose to, LaneLayout outletLayout, float handleScale = 0.5f) : base(from)
         {
-            Pose fromTranformInv = Pose.Inverse(fromPose);
-            Pose transition = Pose.CreateRotationY(-float.Pi) * toPose * fromTranformInv;
+            Pose fromTranformInv = Pose.Inverse(from.Pose);
+            Pose transition = Pose.CreateRotationY(-float.Pi) * to * fromTranformInv;
 
             Vector3 p0 = Vector3.Zero;
             Vector3 p1 = Vector3.UnitZ * (transition.Position.Length() * handleScale);

@@ -23,7 +23,7 @@ namespace TransportX
 
             void Update()
             {
-                Locate(Parent, Offset * Parent.Pose);
+                Locate(Offset * Parent.WorldPose);
             }
         }
 

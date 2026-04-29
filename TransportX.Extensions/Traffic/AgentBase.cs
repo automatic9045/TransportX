@@ -68,7 +68,7 @@ namespace TransportX.Extensions.Traffic
             LaneTracker.Initialize(path, heading, s);
 
             Tick(TimeSpan.Zero);
-            TeleportTo(PlateX, PlateZ, Pose);
+            TeleportTo(WorldPose);
             return true;
         }
 
@@ -90,7 +90,8 @@ namespace TransportX.Extensions.Traffic
             LaneTracker.Tick(Driver.Acceleration, elapsed);
             if (!LaneTracker.IsEnabled)
             {
-                Locate(0, 0, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
+                Spatial.WorldPose worldPose = new(0, 0, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
+                Locate(worldPose);
                 return;
             }
 
@@ -114,7 +115,7 @@ namespace TransportX.Extensions.Traffic
 
                 InstanceData instanceData = new()
                 {
-                    World = Matrix4x4.Transpose((Pose * context.PlateOffset.Pose).ToMatrix4x4()),
+                    World = Matrix4x4.Transpose((WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
                 };
                 context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
             }

@@ -14,91 +14,48 @@ namespace TransportX
         public static readonly LocatableObject Origin = new();
 
 
-        public int PlateX { get; private set; }
-        public int PlateZ { get; private set; }
-        public Pose Pose { get; private set; }
-        public Vector3 PositionInWorld => ((ILocatable)this).PositionInWorld;
-
+        public WorldPose WorldPose { get; private set; }
         public virtual Vector3 Velocity => Vector3.Zero;
 
-        public event Action<PlateOffset>? Moved;
+        public event Action<ChunkOffset>? Moved;
 
-        public LocatableObject(int plateX, int plateZ, Pose pose)
+        public LocatableObject(WorldPose worldPose)
         {
-            Locate(plateX, plateZ, pose);
+            Locate(worldPose);
         }
 
-        public LocatableObject() : this(0, 0, Pose.Identity)
+        public LocatableObject() : this(WorldPose.Zero)
         {
         }
 
-        public LocatableObject(int plateX, int plateZ, SixDoF position)
+        protected ChunkOffset Locate(WorldPose worldPose)
         {
-            Locate(plateX, plateZ, position);
+            if (WorldPose == worldPose) return ChunkOffset.Identity;
+
+            WorldPose = worldPose;
+            Moved?.Invoke(worldPose.NormalizedOffset);
+
+            return worldPose.NormalizedOffset;
         }
 
-        protected PlateOffset Locate(int plateX, int plateZ, Pose pose)
+        protected ChunkOffset Locate(ILocatable attachTo, Pose pose)
         {
-            int dx = GetPlateDelta(pose.Position.X);
-            int dz = GetPlateDelta(pose.Position.Z);
-
-            pose = new(pose.Position - new Vector3(dx, 0, dz) * Plate.Size, pose.Orientation);
-
-            plateX += dx;
-            plateZ += dz;
-
-            PlateOffset plateOffset = new(dx, dz);
-            if (PlateX == plateX && PlateZ == plateZ && Pose == pose) return plateOffset;
-
-            PlateX = plateX;
-            PlateZ = plateZ;
-            Pose = pose;
-
-            Moved?.Invoke(plateOffset);
-
-            return plateOffset;
-
-
-            static int GetPlateDelta(float delta)
-            {
-                return (int)float.Floor(delta / Plate.Size);
-            }
+            WorldPose worldPose = new(attachTo.WorldPose.ChunkX, attachTo.WorldPose.ChunkZ, pose);
+            return Locate(worldPose);
         }
 
-        protected PlateOffset Locate(int plateX, int plateZ, Matrix4x4 transform)
+        protected ChunkOffset Locate(ILocatable attachTo)
         {
-            Pose pose = Pose.FromMatrix4x4(transform);
-            return Locate(plateX, plateZ, pose);
+            return Locate(attachTo.WorldPose);
         }
 
-        protected PlateOffset Locate(int plateX, int plateZ, SixDoF position)
+        protected ChunkOffset Move(Pose delta)
         {
-            Pose pose = position.ToPose();
-            return Locate(plateX, plateZ, pose);
+            WorldPose worldPose = new(WorldPose.ChunkX, WorldPose.ChunkZ, delta * WorldPose.Pose);
+            return Locate(worldPose);
         }
 
-        protected PlateOffset Locate(ILocatable attachTo, Pose pose)
-        {
-            return Locate(attachTo.PlateX, attachTo.PlateZ, pose);
-        }
-
-        protected PlateOffset Locate(ILocatable attachTo)
-        {
-            return Locate(attachTo.PlateX, attachTo.PlateZ, attachTo.Pose);
-        }
-
-        protected PlateOffset Move(Pose delta)
-        {
-            Pose pose = delta * Pose;
-            return Locate(PlateX, PlateZ, pose);
-        }
-
-        protected PlateOffset Move(Matrix4x4 offset)
-        {
-            Pose pose = Pose.FromMatrix4x4(offset);
-            return Move(pose);
-        }
-
-        public PlateOffset GetPlateOffset(ILocatable to) => ((ILocatable)this).GetPlateOffset(to);
+        public ChunkOffset GetChunkOffset(ILocatable to) => ((ILocatable)this).GetChunkOffset(to);
+        public Vector3 GetOffset(ILocatable to) => ((ILocatable)this).GetOffset(to);
     }
 }
