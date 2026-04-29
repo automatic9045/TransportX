@@ -116,6 +116,7 @@ namespace TransportX.Rendering
             SamplerDescription samplerDesc = new()
             {
                 Filter = Filter.Anisotropic,
+                MaxAnisotropy = 16,
                 AddressU = TextureAddressMode.Wrap,
                 AddressV = TextureAddressMode.Wrap,
                 AddressW = TextureAddressMode.Wrap,
