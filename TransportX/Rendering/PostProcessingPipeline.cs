@@ -24,6 +24,7 @@ namespace TransportX.Rendering
         private readonly ID3D11PixelShader DownsamplePixelShader;
         private readonly ID3D11PixelShader UpsamplePixelShader;
         private readonly ID3D11PixelShader CompositePixelShader;
+        private readonly ID3D11PixelShader FxaaPixelShader;
 
         private readonly ID3D11SamplerState SamplerState;
 
@@ -53,6 +54,9 @@ namespace TransportX.Rendering
 
             Blob compositePSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.CompositePS.hlsl", "main", "PS", "ps_5_0");
             CompositePixelShader = Context.Device.CreatePixelShader(compositePSBlob);
+
+            Blob fxaaPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.FxaaPS.hlsl", "main", "PS", "ps_5_0");
+            FxaaPixelShader = Context.Device.CreatePixelShader(fxaaPSBlob);
 
             SamplerDescription samplerDesc = new()
             {
@@ -118,6 +122,7 @@ namespace TransportX.Rendering
             DownsamplePixelShader.Dispose();
             UpsamplePixelShader.Dispose();
             CompositePixelShader.Dispose();
+            FxaaPixelShader.Dispose();
 
             SamplerState.Dispose();
 
@@ -223,17 +228,26 @@ namespace TransportX.Rendering
             // 4. Composite
 
             Context.OMSetBlendState(OpaqueBlendState);
-            Context.OMSetRenderTargets(renderTarget, null);
+            Context.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
             Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
             Context.PSSetShader(CompositePixelShader);
             Context.PSSetShaderResource(0, Buffer.HdrBuffer.ShaderResourceView);
             Context.PSSetShaderResource(1, Buffer.BloomMips[0].ShaderResourceView);
             Context.Draw(3, 0);
-
-
             Context.PSSetShaderResource(0, null!);
             Context.PSSetShaderResource(1, null!);
+
+
+            // 5. FXAA (Antialiasing)
+
+            Context.OMSetRenderTargets(renderTarget, null);
+            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+
+            Context.PSSetShader(FxaaPixelShader);
+            Context.PSSetShaderResource(0, Buffer.LdrBuffer.ShaderResourceView);
+            Context.Draw(3, 0);
+            Context.PSSetShaderResource(0, null!);
         }
 
 

@@ -18,8 +18,11 @@ namespace TransportX.Rendering
         private readonly ID3D11DepthStencilView DepthStencil;
 
         public System.Drawing.Size Size { get; }
+
         public RenderTexture HdrBuffer { get; }
         public IReadOnlyList<RenderTexture> BloomMips { get; }
+
+        public RenderTexture LdrBuffer { get; }
 
         public PostProcessingBuffer(ID3D11DeviceContext context, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
         {
@@ -57,6 +60,14 @@ namespace TransportX.Rendering
             }
 
             BloomMips = bloomMips;
+
+            desc = desc with
+            {
+                Width = (uint)size.Width,
+                Height = (uint)size.Height,
+                Format = Format.R8G8B8A8_UNorm,
+            };
+            LdrBuffer = new RenderTexture(Context.Device, desc);
         }
 
         public void Dispose()
@@ -67,6 +78,8 @@ namespace TransportX.Rendering
             {
                 BloomMips[i].Dispose();
             }
+
+            LdrBuffer.Dispose();
         }
 
         public void Initialize()
