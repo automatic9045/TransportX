@@ -20,7 +20,7 @@ namespace TransportX.Audio
         public Emitter Emitter { get; }
         public DspSettings DspSettings { get; }
 
-        public ILocatable? AttachedTo { get; set; } = null;
+        public IWorldObject? AttachedTo { get; set; } = null;
 
         public Sound3D(IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, SoundStream stream, IXAudio2SourceVoice sourceVoice) : base(stream, sourceVoice)
         {

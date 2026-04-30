@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace TransportX
 {
-    public sealed class AttachableObject : LocatableObject
+    public sealed class AttachableObject : WorldObject
     {
-        public ILocatable Parent { get; }
+        public IWorldObject Parent { get; }
         public Pose Offset { get; }
 
-        public AttachableObject(ILocatable parent, Pose offset) : base()
+        public AttachableObject(IWorldObject parent, Pose offset) : base()
         {
             Parent = parent;
             Offset = offset;
@@ -27,7 +27,7 @@ namespace TransportX
             }
         }
 
-        public AttachableObject(ILocatable parent, SixDoF position) : this(parent, position.ToPose())
+        public AttachableObject(IWorldObject parent, SixDoF position) : this(parent, position.ToPose())
         {
         }
     }

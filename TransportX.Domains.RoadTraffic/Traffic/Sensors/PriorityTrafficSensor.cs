@@ -48,10 +48,10 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             set => DebugVisual.DebugName = value;
         }
 
-        public PriorityTrafficSensor(ILaneTracker laneTracker, ILocatable location)
+        public PriorityTrafficSensor(ILaneTracker laneTracker, IWorldObject origin)
         {
             LaneTracker = laneTracker;
-            DebugVisual = new TrafficSensorDebugVisual(location);
+            DebugVisual = new TrafficSensorDebugVisual(origin);
         }
 
         public void Dispose()

@@ -14,7 +14,7 @@ namespace TransportX.Extensions.Traffic
 {
     public class TrafficSensorDebugVisual : IDebugDrawable
     {
-        private readonly ILocatable Location;
+        private readonly IWorldObject Origin;
 
         private DynamicLineMesh? Mesh = null;
         private WireframeDebugModel? Model = null;
@@ -29,9 +29,9 @@ namespace TransportX.Extensions.Traffic
             set => Model?.DebugName = field = value;
         }
 
-        public TrafficSensorDebugVisual(ILocatable location)
+        public TrafficSensorDebugVisual(IWorldObject origin)
         {
-            Location = location;
+            Origin = origin;
         }
 
         public void Dispose()
@@ -53,12 +53,12 @@ namespace TransportX.Extensions.Traffic
 
             InstanceData instanceData = new()
             {
-                World = Matrix4x4.Transpose((Location.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
+                World = Matrix4x4.Transpose((Origin.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
             };
 
             float lengthShift = IsTargetOncoming ? 0 : Target.Length;
-            Vector3 worldDelta = Location.GetOffset(Target) - Target.WorldPose.Pose.Direction * lengthShift;
-            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Location.WorldPose.Pose.Orientation));
+            Vector3 worldDelta = Origin.GetOffset(Target) - Target.WorldPose.Pose.Direction * lengthShift;
+            Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Origin.WorldPose.Pose.Orientation));
 
             Mesh!.Material.BaseColor = DebugColor.ToLinear();
             Mesh.SetVector(context.DeviceContext, localDelta);

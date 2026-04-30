@@ -8,7 +8,7 @@ using TransportX.Network;
 
 namespace TransportX.Traffic
 {
-    public interface ITrafficParticipant : ILocatable
+    public interface ITrafficParticipant : IWorldObject
     {
         float Width { get; }
         float Height { get; }

@@ -45,7 +45,7 @@ namespace TransportX.Scripting.Components
                 }
             }
 
-            private class Participant : LocatableObject, ITrafficParticipant
+            private class Participant : WorldObject, ITrafficParticipant
             {
                 public float Width => 1;
                 public float Height => 1;

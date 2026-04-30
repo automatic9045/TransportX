@@ -37,7 +37,7 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetCameraPosition(ILocatable camera, int computeChunkCount)
+        public void SetCameraPosition(IWorldObject camera, int computeChunkCount)
         {
             foreach (Chunk chunk in this)
             {
@@ -82,9 +82,9 @@ namespace TransportX.Spatial
             }
         }
 
-        public Chunk GetOrAddFor(ILocatable locatable, Func<int, int, Chunk>? itemFactory = null)
+        public Chunk GetOrAddFor(IWorldObject worldObject, Func<int, int, Chunk>? itemFactory = null)
         {
-            return GetOrAdd(locatable.WorldPose.ChunkX, locatable.WorldPose.ChunkZ, itemFactory);
+            return GetOrAdd(worldObject.WorldPose.ChunkX, worldObject.WorldPose.ChunkZ, itemFactory);
         }
 
         private ConcurrentDictionary<int, Chunk> FilterByX(int x)

@@ -34,10 +34,10 @@ namespace TransportX.Extensions.Traffic
             set => DebugVisual.DebugName = value;
         }
 
-        public NetworkTrafficSensor(ILaneTracker laneTracker, ILocatable location)
+        public NetworkTrafficSensor(ILaneTracker laneTracker, IWorldObject origin)
         {
             LaneTracker = laneTracker;
-            DebugVisual = new TrafficSensorDebugVisual(location);
+            DebugVisual = new TrafficSensorDebugVisual(origin);
         }
 
         public void Dispose()

@@ -11,7 +11,7 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public class TwoPointPoseSolver : LocatableObject, IPoseSolver
+    public class TwoPointPoseSolver : WorldObject, IPoseSolver
     {
         private readonly float FrontOffset;
         private readonly float RearOffset;

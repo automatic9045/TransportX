@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TransportX.Rendering
 {
-    public abstract class Viewpoint : LocatableObject
+    public abstract class Viewpoint : WorldObject
     {
         public float Perspective { get; protected set; } = 1;
 
@@ -153,12 +153,12 @@ namespace TransportX.Rendering
 
     public class DriverViewpoint : Viewpoint
     {
-        private readonly ILocatable Source;
+        private readonly IWorldObject Source;
         private readonly Pose Offset;
 
         private new readonly Rotator Rotator = new(Vector2.Zero);
 
-        public DriverViewpoint(ILocatable source, Pose offset) : base()
+        public DriverViewpoint(IWorldObject source, Pose offset) : base()
         {
             Source = source;
             Offset = offset;
@@ -173,7 +173,7 @@ namespace TransportX.Rendering
             }
         }
 
-        public DriverViewpoint(ILocatable source, SixDoF offset) : this(source, offset.ToPose())
+        public DriverViewpoint(IWorldObject source, SixDoF offset) : this(source, offset.ToPose())
         {
         }
 
@@ -197,13 +197,13 @@ namespace TransportX.Rendering
 
     public class BirdViewpoint : Viewpoint
     {
-        private readonly ILocatable Source;
+        private readonly IWorldObject Source;
         private readonly Pose Offset;
 
         private new readonly Translator Translator;
         private new readonly Rotator Rotator;
 
-        public BirdViewpoint(ILocatable source, Pose offset, float initialDistance, Vector2 initialAngle) : base()
+        public BirdViewpoint(IWorldObject source, Pose offset, float initialDistance, Vector2 initialAngle) : base()
         {
             Source = source;
             Offset = offset;
@@ -221,7 +221,7 @@ namespace TransportX.Rendering
             }
         }
 
-        public BirdViewpoint(ILocatable source, SixDoF offset, float initialDistance, Vector2 initialAngle)
+        public BirdViewpoint(IWorldObject source, SixDoF offset, float initialDistance, Vector2 initialAngle)
             : this(source, offset.ToPose(), initialDistance, initialAngle)
         {
         }

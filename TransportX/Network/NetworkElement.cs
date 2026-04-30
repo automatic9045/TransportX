@@ -12,7 +12,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Network
 {
-    public abstract class NetworkElement : LocatableObject, IDrawable, IDisposable
+    public abstract class NetworkElement : WorldObject, IDrawable, IDisposable
     {
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<ILanePath> Paths { get; }

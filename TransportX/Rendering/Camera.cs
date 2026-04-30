@@ -15,7 +15,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Rendering
 {
-    public class Camera : LocatableObject
+    public class Camera : WorldObject
     {
         private static readonly RenderPass[] AllPasses = Enum.GetValues<RenderPass>();
 

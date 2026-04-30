@@ -20,7 +20,7 @@ namespace TransportX.Extensions.Traffic
 
 
         private readonly ILaneTracker LaneTracker;
-        private readonly ILocatable Location;
+        private readonly IWorldObject Origin;
         private readonly Func<ITrafficParticipant, bool> ObstacleSkipCondition;
         private readonly TrafficSensorDebugVisual DebugVisual;
 
@@ -42,13 +42,13 @@ namespace TransportX.Extensions.Traffic
             set => DebugVisual.DebugName = value;
         }
 
-        public SpatialTrafficSensor(ILaneTracker laneTracker, ILocatable location, Func<ITrafficParticipant, bool> obstacleSkipCondition)
+        public SpatialTrafficSensor(ILaneTracker laneTracker, IWorldObject origin, Func<ITrafficParticipant, bool> obstacleSkipCondition)
         {
             LaneTracker = laneTracker;
-            Location = location;
+            Origin = origin;
             ObstacleSkipCondition = obstacleSkipCondition;
 
-            DebugVisual = new TrafficSensorDebugVisual(Location);
+            DebugVisual = new TrafficSensorDebugVisual(Origin);
         }
 
         public void Dispose()
@@ -62,7 +62,7 @@ namespace TransportX.Extensions.Traffic
 
             float minSurfaceDistance = MaxDistance;
 
-            Pose poseInv = Pose.Inverse(Location.WorldPose.Pose);
+            Pose poseInv = Pose.Inverse(Origin.WorldPose.Pose);
             ProjectedParticipant nearestObstacle = default;
             float nearestObstacleDistance = float.NaN;
             foreach (ITrafficParticipant obstacle in obstacles)
@@ -70,16 +70,16 @@ namespace TransportX.Extensions.Traffic
                 if (!obstacle.IsEnabled) continue;
                 if (ObstacleSkipCondition(obstacle)) continue;
 
-                ChunkOffset offset = Location.GetChunkOffset(obstacle);
+                ChunkOffset offset = Origin.GetChunkOffset(obstacle);
                 if (1 < int.Abs(offset.DeltaX) || 1 < int.Abs(offset.DeltaZ)) continue;
 
-                Vector3 delta = obstacle.WorldPose.Pose.Position + offset.Position - Location.WorldPose.Pose.Position;
+                Vector3 delta = obstacle.WorldPose.Pose.Position + offset.Position - Origin.WorldPose.Pose.Position;
                 float maxDistance = minSurfaceDistance + LaneTracker.Length + obstacle.Length + ObstacleDetectMargin;
                 if (maxDistance * maxDistance < delta.LengthSquared()) continue;
 
                 Vector3 localFront = Pose.Transform(obstacle.WorldPose.Pose.Position + offset.Position, poseInv);
 
-                Quaternion relativeRotation = obstacle.WorldPose.Pose.Orientation * Quaternion.Inverse(Location.WorldPose.Pose.Orientation);
+                Quaternion relativeRotation = obstacle.WorldPose.Pose.Orientation * Quaternion.Inverse(Origin.WorldPose.Pose.Orientation);
                 Vector3 localRight = Vector3.Transform(Vector3.UnitX, relativeRotation) * obstacle.Width / 2;
                 Vector3 localUp = Vector3.Transform(Vector3.UnitY, relativeRotation) * obstacle.Height;
                 Vector3 localBack = Vector3.Transform(Vector3.UnitZ, relativeRotation) * obstacle.Length;
@@ -103,9 +103,9 @@ namespace TransportX.Extensions.Traffic
                 {
                     minSurfaceDistance = surfaceDistance;
 
-                    nearestObstacleDistance = 0 <= Vector3.Dot(Location.WorldPose.Pose.Direction, obstacle.WorldPose.Pose.Direction) ? bbox.Max.Z : bbox.Min.Z;
+                    nearestObstacleDistance = 0 <= Vector3.Dot(Origin.WorldPose.Pose.Direction, obstacle.WorldPose.Pose.Direction) ? bbox.Max.Z : bbox.Min.Z;
                     nearestObstacle = new ProjectedParticipant(
-                        LaneTracker.Heading, LaneTracker.S, Location.WorldPose.Pose.Direction,
+                        LaneTracker.Heading, LaneTracker.S, Origin.WorldPose.Pose.Direction,
                         obstacle, nearestObstacleDistance, bbox.Width, bbox.Height, bbox.Depth);
                 }
             }

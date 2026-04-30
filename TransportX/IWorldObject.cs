@@ -9,14 +9,14 @@ using TransportX.Spatial;
 
 namespace TransportX
 {
-    public interface ILocatable
+    public interface IWorldObject
     {
         WorldPose WorldPose { get; }
         Vector3 Velocity { get; }
 
         event Action<ChunkOffset>? Moved;
 
-        sealed ChunkOffset GetChunkOffset(ILocatable to) => WorldPose.GetChunkOffset(to.WorldPose);
-        sealed Vector3 GetOffset(ILocatable to) => WorldPose.GetOffset(to.WorldPose);
+        sealed ChunkOffset GetChunkOffset(IWorldObject to) => WorldPose.GetChunkOffset(to.WorldPose);
+        sealed Vector3 GetOffset(IWorldObject to) => WorldPose.GetOffset(to.WorldPose);
     }
 }

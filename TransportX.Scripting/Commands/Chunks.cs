@@ -17,9 +17,9 @@ namespace TransportX.Scripting.Commands
             World = world;
         }
 
-        public ChunkCommand For(ILocatable locatable)
+        public ChunkCommand For(IWorldObject worldObject)
         {
-            return this[locatable.WorldPose.ChunkX, locatable.WorldPose.ChunkZ];
+            return this[worldObject.WorldPose.ChunkX, worldObject.WorldPose.ChunkZ];
         }
     }
 }

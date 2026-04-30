@@ -19,7 +19,7 @@ namespace TransportX.Bodies
             foreach (RigidBody body in this) body.Dispose();
         }
 
-        public void SetCameraPosition(ILocatable camera, int computeChunkCount)
+        public void SetCameraPosition(IWorldObject camera, int computeChunkCount)
         {
             foreach (RigidBody body in this)
             {
@@ -28,7 +28,7 @@ namespace TransportX.Bodies
             }
         }
 
-        public void SubTick(TimeSpan elapsed, ILocatable camera, int computeChunkCount)
+        public void SubTick(TimeSpan elapsed, IWorldObject camera, int computeChunkCount)
         {
             foreach (RigidBody body in this)
             {

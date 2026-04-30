@@ -11,7 +11,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class RigidBody : LocatableObject, IDisposable, IDrawable
+    public class RigidBody : WorldObject, IDisposable, IDrawable
     {
         public BodyStructure Structure { get; }
 

@@ -8,7 +8,7 @@ using TransportX.Network;
 
 namespace TransportX.Traffic
 {
-    public interface IPoseSolver : ILocatable
+    public interface IPoseSolver : IWorldObject
     {
         void Tick(IReadOnlyList<LanePathView> pathViewHistory, LanePathView pathView, float viewS, TimeSpan elapsed);
     }

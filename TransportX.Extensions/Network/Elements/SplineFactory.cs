@@ -12,7 +12,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Extensions.Network.Elements
 {
-    public class SplineFactory : LocatableObject
+    public class SplineFactory : WorldObject
     {
         private readonly List<SplineStructure> Structures = [];
 

@@ -9,9 +9,9 @@ using TransportX.Spatial;
 
 namespace TransportX
 {
-    public class LocatableObject : ILocatable
+    public class WorldObject : IWorldObject
     {
-        public static readonly LocatableObject Origin = new();
+        public static readonly WorldObject Origin = new();
 
 
         public WorldPose WorldPose { get; private set; }
@@ -19,12 +19,12 @@ namespace TransportX
 
         public event Action<ChunkOffset>? Moved;
 
-        public LocatableObject(WorldPose worldPose)
+        public WorldObject(WorldPose worldPose)
         {
             Locate(worldPose);
         }
 
-        public LocatableObject() : this(WorldPose.Zero)
+        public WorldObject() : this(WorldPose.Zero)
         {
         }
 
@@ -38,13 +38,13 @@ namespace TransportX
             return worldPose.NormalizedOffset;
         }
 
-        protected ChunkOffset Locate(ILocatable attachTo, Pose pose)
+        protected ChunkOffset Locate(IWorldObject attachTo, Pose pose)
         {
             WorldPose worldPose = new(attachTo.WorldPose.ChunkX, attachTo.WorldPose.ChunkZ, pose);
             return Locate(worldPose);
         }
 
-        protected ChunkOffset Locate(ILocatable attachTo)
+        protected ChunkOffset Locate(IWorldObject attachTo)
         {
             return Locate(attachTo.WorldPose);
         }
@@ -55,7 +55,7 @@ namespace TransportX
             return Locate(worldPose);
         }
 
-        public ChunkOffset GetChunkOffset(ILocatable to) => ((ILocatable)this).GetChunkOffset(to);
-        public Vector3 GetOffset(ILocatable to) => ((ILocatable)this).GetOffset(to);
+        public ChunkOffset GetChunkOffset(IWorldObject to) => ((IWorldObject)this).GetChunkOffset(to);
+        public Vector3 GetOffset(IWorldObject to) => ((IWorldObject)this).GetOffset(to);
     }
 }
