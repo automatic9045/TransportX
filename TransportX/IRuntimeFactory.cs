@@ -10,8 +10,8 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public interface IGameFactory
+    public interface IRuntimeFactory
     {
-        IGame Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo);
+        IRuntime Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo);
     }
 }

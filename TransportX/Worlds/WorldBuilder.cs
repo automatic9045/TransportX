@@ -23,7 +23,7 @@ namespace TransportX.Worlds
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required IErrorCollector ErrorCollector { get; init; }
-        public required PluginLoadContext GameContext { get; init; }
+        public required PluginLoadContext RuntimeContext { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
         public required Camera Camera { get; init; }
@@ -36,7 +36,7 @@ namespace TransportX.Worlds
         internal protected WorldBase Build()
         {
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
-            GameContext.Children.Add(context);
+            RuntimeContext.Children.Add(context);
 
             Type[] worldTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(WorldBase)))

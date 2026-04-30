@@ -15,7 +15,7 @@ namespace TransportX.Worlds
         string Author { get; }
         string Path { get; }
         string? Identifier { get; }
-        string GamePath { get; }
+        string RuntimePath { get; }
         IReadOnlyList<string> Args { get; }
     }
 }

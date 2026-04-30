@@ -19,7 +19,7 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class Game : IGame
+    public class Runtime : IRuntime
     {
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
@@ -40,7 +40,7 @@ namespace TransportX
 
         public PluginLoadContext Context { get; }
 
-        public Game(GameCreationInfo info)
+        public Runtime(RuntimeCreationInfo info)
         {
             Context = info.Context;
 

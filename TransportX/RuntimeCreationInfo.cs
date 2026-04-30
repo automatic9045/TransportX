@@ -6,7 +6,7 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class GameCreationInfo
+    public class RuntimeCreationInfo
     {
         public required PluginLoadContext Context { get; init; }
 

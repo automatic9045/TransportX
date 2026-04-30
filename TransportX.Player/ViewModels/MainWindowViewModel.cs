@@ -28,8 +28,8 @@ namespace TransportX.ViewModels
         private readonly CompositeDisposable Disposables = new CompositeDisposable();
 
         private IWorldInfo? WorldInfo = null;
-        private IGame? Game = null;
-        private CompositeDisposable? PerGameDisposables = null;
+        private IRuntime? Runtime = null;
+        private CompositeDisposable? PerRuntimeDisposables = null;
 
         public ReactivePropertySlim<DXHost> DXHost { get; }
         public ReactivePropertySlim<DXClient?> DXClient { get; }
@@ -67,13 +67,13 @@ namespace TransportX.ViewModels
             {
                 if (e.Key == Key.F5)
                 {
-                    if (WorldInfo is not null) LoadGame(WorldInfo);
+                    if (WorldInfo is not null) LoadRuntime(WorldInfo);
                 }
             }).AddTo(Disposables);
 
             Application.Current.Exit += (sender, e) =>
             {
-                PerGameDisposables?.Dispose();
+                PerRuntimeDisposables?.Dispose();
                 dx.Dispose();
             };
 
@@ -89,7 +89,7 @@ namespace TransportX.ViewModels
             Disposables.Dispose();
         }
 
-        internal bool LoadGame(IWorldInfo worldInfo)
+        internal bool LoadRuntime(IWorldInfo worldInfo)
         {
             WorldInfo = worldInfo;
             Application.Current.MainWindow.Title = "Bus - Now loading...";
@@ -100,10 +100,10 @@ namespace TransportX.ViewModels
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, Colors.Blue);
             dxClient.SwapChain.Present(0);
 
-            PluginLoadContext? oldGameContext = Game?.Context;
-            PerGameDisposables?.Dispose();
-            oldGameContext?.Unload();
-            Game = null;
+            PluginLoadContext? oldRuntimeContext = Runtime?.Context;
+            PerRuntimeDisposables?.Dispose();
+            oldRuntimeContext?.Unload();
+            Runtime = null;
 
             // !!! .NET Runtime のバグ回避のため !!!
             // 参考: https://github.com/dotnet/runtime/issues/123930
@@ -116,11 +116,11 @@ namespace TransportX.ViewModels
                 }
             }
 
-            GameLoader loader = new GameLoader(dxHost, dxClient);
-            IGame game;
+            RuntimeLoader loader = new RuntimeLoader(dxHost, dxClient);
+            IRuntime runtime;
             try
             {
-                game = loader.Load(WorldInfo);
+                runtime = loader.Load(WorldInfo);
             }
             catch (Exception ex)
             {
@@ -132,16 +132,16 @@ namespace TransportX.ViewModels
                 return false;
             }
 
-            PerGameDisposables = new CompositeDisposable();
-            Game = game.AddTo(PerGameDisposables);
+            PerRuntimeDisposables = new CompositeDisposable();
+            Runtime = runtime.AddTo(PerRuntimeDisposables);
 
             Observable.CombineLatest(MouseDragOffset, MouseLeftButton, MouseMiddleButton, MouseRightButton,
                 (o, l, m, r) => (Offset: o, Left: l, Middle: m, Right: r))
-                .Subscribe(t => Game.OnMouseDragMove(t.Offset, t.Left, t.Middle, t.Right)).AddTo(PerGameDisposables);
-            KeyDownCommand.Subscribe(args => Game.OnKeyDown(args.Key)).AddTo(PerGameDisposables);
-            KeyUpCommand.Subscribe(args => Game.OnKeyUp(args.Key)).AddTo(PerGameDisposables);
-            MouseWheelCommand.Subscribe(args => Game.OnMouseWheel(args.Delta)).AddTo(PerGameDisposables);
-            RenderingCommand.Subscribe(args => Game.Draw(args.Size)).AddTo(PerGameDisposables);
+                .Subscribe(t => Runtime.OnMouseDragMove(t.Offset, t.Left, t.Middle, t.Right)).AddTo(PerRuntimeDisposables);
+            KeyDownCommand.Subscribe(args => Runtime.OnKeyDown(args.Key)).AddTo(PerRuntimeDisposables);
+            KeyUpCommand.Subscribe(args => Runtime.OnKeyUp(args.Key)).AddTo(PerRuntimeDisposables);
+            MouseWheelCommand.Subscribe(args => Runtime.OnMouseWheel(args.Delta)).AddTo(PerRuntimeDisposables);
+            RenderingCommand.Subscribe(args => Runtime.Draw(args.Size)).AddTo(PerRuntimeDisposables);
 
             return true;
         }

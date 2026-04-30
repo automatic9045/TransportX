@@ -16,9 +16,9 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class GameFactory : IGameFactory
+    public class RuntimeFactory : IRuntimeFactory
     {
-        public IGame Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
+        public IRuntime Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
         {
             Renderer renderer = new Renderer(dxHost, dxClient);
             PhysicsHost physicsHost = PhysicsHost.Create();
@@ -60,7 +60,7 @@ namespace TransportX
                 DXClient = dxClient,
                 PhysicsHost = physicsHost,
                 ErrorCollector = errorCollector,
-                GameContext = context,
+                RuntimeContext = context,
                 TimeManager = timeManager,
                 InputManager = inputManager,
                 Camera = camera,
@@ -77,7 +77,7 @@ namespace TransportX
                 world = new EmptyWorld(worldBuilder);
             }
 
-            GameCreationInfo info = new()
+            RuntimeCreationInfo info = new()
             {
                 Context = context,
                 DXHost = dxHost,
@@ -89,7 +89,7 @@ namespace TransportX
                 Camera = camera,
                 World = world,
             };
-            return new Game(info);
+            return new Runtime(info);
         }
 
 

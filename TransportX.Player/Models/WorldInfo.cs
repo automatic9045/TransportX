@@ -28,7 +28,7 @@ namespace TransportX.Models
 
         public string? Identifier { get; set; } = null;
 
-        public string GamePath
+        public string RuntimePath
         {
             get => field;
             set => field = PathMacros.Expand(value);

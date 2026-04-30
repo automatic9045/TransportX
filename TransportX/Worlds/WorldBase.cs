@@ -27,7 +27,7 @@ namespace TransportX.Worlds
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public IErrorCollector ErrorCollector { get; }
-        public PluginLoadContext GameContext { get; }
+        public PluginLoadContext RuntimeContext { get; }
         public PluginLoadContext WorldContext { get; }
         public TimeManager TimeManager { get; }
         public InputManager InputManager { get; }
@@ -61,7 +61,7 @@ namespace TransportX.Worlds
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
             ErrorCollector = builder.ErrorCollector;
-            GameContext = builder.GameContext;
+            RuntimeContext = builder.RuntimeContext;
             WorldContext = context;
             TimeManager = builder.TimeManager;
             InputManager = builder.InputManager;
@@ -149,7 +149,7 @@ namespace TransportX.Worlds
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,
                 ErrorCollector = ErrorCollector,
-                GameContext = GameContext,
+                RuntimeContext = RuntimeContext,
                 WorldContext = WorldContext,
                 TimeManager = TimeManager,
                 InputManager = InputManager,

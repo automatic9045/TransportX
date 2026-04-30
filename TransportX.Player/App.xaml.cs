@@ -38,7 +38,7 @@ namespace TransportX
                 return;
             }
 
-            bool isLoaded = ((MainWindowViewModel)mainWindow.DataContext).LoadGame(worldInfo);
+            bool isLoaded = ((MainWindowViewModel)mainWindow.DataContext).LoadRuntime(worldInfo);
             if (!isLoaded)
             {
                 Shutdown(1);

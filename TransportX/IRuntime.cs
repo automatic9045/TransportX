@@ -10,7 +10,7 @@ using TransportX.Dependency;
 
 namespace TransportX
 {
-    public interface IGame : IDisposable
+    public interface IRuntime : IDisposable
     {
         PluginLoadContext Context { get; }
 
