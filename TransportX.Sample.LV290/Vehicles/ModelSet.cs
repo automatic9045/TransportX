@@ -66,8 +66,8 @@ namespace TransportX.Sample.LV290.Vehicles
 
             Body = structure.AttachDynamic(bodyModel, Spec.Weight * 0.5f, SixDoF.Zero);
 
-            FrontDoor1 = structure.AttachKinematic(frontDoor1Model, new SixDoF(-1.18f, 0, -0.4f));
-            FrontDoor2 = structure.AttachKinematic(frontDoor2Model, new SixDoF(-1.18f, 0, -1.42f));
+            FrontDoor1 = structure.AttachKinematic(frontDoor1Model, new SixDoF(-1.16f, 0, -0.4f));
+            FrontDoor2 = structure.AttachKinematic(frontDoor2Model, new SixDoF(-1.16f, 0, -1.42f));
             RearDoor = structure.AttachKinematic(rearDoorModel, SixDoF.Zero);
 
             Pose wheelRotation = Pose.CreateRotationZ(float.Pi / 2); // Z軸奥向き正に見て左回転
