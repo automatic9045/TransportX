@@ -41,7 +41,7 @@ namespace TransportX.Worlds
         public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
         public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
 
-        public List<LocatedModel> BackgroundModels { get; } = [];
+        public List<TransformedModel> BackgroundModels { get; } = [];
         public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
 
@@ -115,11 +115,11 @@ namespace TransportX.Worlds
             }
 
 
-            void RemoveAttachedHandles(IEnumerable<LocatedModel> models)
+            void RemoveAttachedHandles(IEnumerable<TransformedModel> models)
             {
-                foreach (LocatedModel model in models)
+                foreach (TransformedModel model in models)
                 {
-                    if (model is CollidableLocatedModel collidable) validHandles.Remove(collidable.Handle);
+                    if (model is CollidableTransformedModel collidable) validHandles.Remove(collidable.Handle);
                 }
             }
         }

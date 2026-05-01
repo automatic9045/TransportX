@@ -30,8 +30,8 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModel locatedModel = new LocatedModel(model, Pose.Identity);
-            World.BackgroundModels.Add(locatedModel);
+            TransformedModel transformedModel = new(model, Pose.Identity);
+            World.BackgroundModels.Add(transformedModel);
         }
     }
 }

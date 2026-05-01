@@ -44,7 +44,7 @@ namespace TransportX.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
-            LocatedModelTemplate[] models = modelKeys.Select(key =>
+            TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
                 IModel? model;
                 if (key == string.Empty || !World.ModelsKey.GetValue(key, out model))
@@ -52,7 +52,7 @@ namespace TransportX.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+                return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
             StructuresKey.Add(structure);
@@ -71,9 +71,9 @@ namespace TransportX.Scripting.Commands
             return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
-        internal List<LocatedModelTemplate> BuildStructures()
+        internal List<TransformedModelTemplate> BuildStructures()
         {
-            List<LocatedModelTemplate> structures = [];
+            List<TransformedModelTemplate> structures = [];
             foreach (SplineStructure structure in Structures)
             {
                 for (int i = 0; i < structure.Count; i++)
@@ -81,11 +81,11 @@ namespace TransportX.Scripting.Commands
                     float s = structure.From + structure.Interval * i;
                     if (Path.Length < s) break;
 
-                    LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
+                    TransformedModelTemplate template = structure.Models[i % structure.Models.Count];
                     Pose curvePose = GetSpanPose(s, structure.Span);
                     Pose pose = template.Pose * curvePose;
 
-                    LocatedModelTemplate compiled = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, template.Model, pose);
+                    TransformedModelTemplate compiled = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, template.Model, pose);
                     structures.Add(compiled);
                 }
             }

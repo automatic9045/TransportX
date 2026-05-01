@@ -11,7 +11,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class LocatedModel : IDrawable
+    public class TransformedModel : IDrawable
     {
         public IModel Model { get; }
 
@@ -30,14 +30,14 @@ namespace TransportX.Spatial
         public virtual Pose Pose { get; set; } = Pose.Identity;
         public bool IsVisible { get; set; } = true;
 
-        protected LocatedModel(IModel model, Pose basePose, bool setPose)
+        protected TransformedModel(IModel model, Pose basePose, bool setPose)
         {
             Model = model;
             BasePose = basePose;
             if (setPose) Pose = basePose;
         }
 
-        public LocatedModel(IModel model, Pose basePose) : this(model, basePose, true)
+        public TransformedModel(IModel model, Pose basePose) : this(model, basePose, true)
         {
         }
 

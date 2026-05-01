@@ -98,9 +98,9 @@ namespace TransportX.Sample.LV290.Vehicles
                 WorldPose worldPose = new(0, 0, new SixDoF(10, 1f, 25, 0, 0, 0.01f));
                 Locate(worldPose);
 
-                foreach (LocatedModel model in Structure)
+                foreach (TransformedModel model in Structure)
                 {
-                    if (model is DynamicLocatedModel dynamicModel) dynamicModel.Body.Velocity = default;
+                    if (model is DynamicTransformedModel dynamicModel) dynamicModel.Body.Velocity = default;
                     model.Pose = model.BasePose * WorldPose.Pose;
                 }
             }
@@ -146,7 +146,7 @@ namespace TransportX.Sample.LV290.Vehicles
             ApplyBrakeTorque(BusModels.WheelRL, BusModels.BrakeMotorRL, brakeTorque);
             ApplyBrakeTorque(BusModels.WheelRR, BusModels.BrakeMotorRR, brakeTorque);
 
-            void ApplyBrakeTorque(DynamicLocatedModel wheel, Constraint<AngularAxisMotor> motor, float torque)
+            void ApplyBrakeTorque(DynamicTransformedModel wheel, Constraint<AngularAxisMotor> motor, float torque)
             {
                 motor.Update(desc =>
                 {

@@ -10,14 +10,14 @@ namespace TransportX.Domains.RoadTraffic.Traffic
 {
     public class BlinkerLight
     {
-        private readonly LocatedModel Model;
+        private readonly TransformedModel Model;
         private readonly TimeSpan Period;
 
         private TimeSpan Elapsed = TimeSpan.Zero;
 
         public bool IsActive { get; set; } = false;
 
-        public BlinkerLight(LocatedModel model, TimeSpan period)
+        public BlinkerLight(TransformedModel model, TimeSpan period)
         {
             if (period.Ticks <= 0) throw new ArgumentOutOfRangeException(nameof(period));
 

@@ -16,9 +16,9 @@ namespace TransportX.Bodies
         public BodyStructure Structure { get; }
 
         public override Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
-            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.Velocity : Vector3.Zero;
+            : Structure.RootModel is CollidableTransformedModel collidable ? collidable.Velocity : Vector3.Zero;
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
-            : Structure.RootModel is CollidableLocatedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
+            : Structure.RootModel is CollidableTransformedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
 
         public RigidBody(IPhysicsHost physicsHost, WorldPose worldPose) : base(worldPose)
         {
@@ -26,9 +26,9 @@ namespace TransportX.Bodies
 
             Moved += _ =>
             {
-                foreach (LocatedModel model in Structure)
+                foreach (TransformedModel model in Structure)
                 {
-                    if (model is not DynamicLocatedModel) model.Pose = model.BasePose * WorldPose.Pose;
+                    if (model is not DynamicTransformedModel) model.Pose = model.BasePose * WorldPose.Pose;
                 }
             };
         }
@@ -50,7 +50,7 @@ namespace TransportX.Bodies
         protected virtual ChunkOffset TeleportTo(WorldPose worldPose)
         {
             ChunkOffset chunkOffset = Locate(worldPose);
-            foreach (LocatedModel model in Structure)
+            foreach (TransformedModel model in Structure)
             {
                 model.Pose = model.BasePose * WorldPose.Pose;
             }
@@ -66,9 +66,9 @@ namespace TransportX.Bodies
             ChunkOffset chunkOffset = Locate(worldPose);
             if (!chunkOffset.IsZero)
             {
-                foreach (LocatedModel model in Structure)
+                foreach (TransformedModel model in Structure)
                 {
-                    if (model is DynamicLocatedModel dynamicModel)
+                    if (model is DynamicTransformedModel dynamicModel)
                     {
                         dynamicModel.Shift(chunkOffset);
                     }

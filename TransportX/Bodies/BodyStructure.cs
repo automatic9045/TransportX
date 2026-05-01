@@ -14,20 +14,20 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class BodyStructure : IReadOnlyList<LocatedModel>, IDisposable, IDrawable
+    public class BodyStructure : IReadOnlyList<TransformedModel>, IDisposable, IDrawable
     {
         protected readonly IPhysicsHost PhysicsHost;
 
-        protected readonly List<LocatedModel> Items = new List<LocatedModel>();
+        protected readonly List<TransformedModel> Items = new List<TransformedModel>();
 
-        public LocatedModel this[int index] => Items[index];
+        public TransformedModel this[int index] => Items[index];
         public int Count => Items.Count;
-        public List<LocatedModel>.Enumerator GetEnumerator() => Items.GetEnumerator();
-        IEnumerator<LocatedModel> IEnumerable<LocatedModel>.GetEnumerator() => GetEnumerator();
+        public List<TransformedModel>.Enumerator GetEnumerator() => Items.GetEnumerator();
+        IEnumerator<TransformedModel> IEnumerable<TransformedModel>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public ColliderGroupHandle DefaultGroup { get; } = ColliderGroupHandle.NewGroup();
-        public LocatedModel? RootModel => Count == 0 ? null : this[0];
+        public TransformedModel? RootModel => Count == 0 ? null : this[0];
 
         public bool IsActive { get; private set; } = true;
 
@@ -36,121 +36,121 @@ namespace TransportX.Bodies
             PhysicsHost = physicsHost;
         }
 
-        private T AttachCollidable<T>(T locatedModel, ColliderGroupHandle group) where T : CollidableLocatedModel
+        private T AttachCollidable<T>(T collidable, ColliderGroupHandle group) where T : CollidableTransformedModel
         {
-            PhysicsHost.SetGroup(locatedModel.Handle, group);
+            PhysicsHost.SetGroup(collidable.Handle, group);
 
-            Items.Add(locatedModel);
-            return locatedModel;
+            Items.Add(collidable);
+            return collidable;
         }
 
-        public DynamicLocatedModel AttachDynamic(
+        public DynamicTransformedModel AttachDynamic(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, Pose basePose)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, descFactory, basePose);
-            return AttachCollidable(locatedModel, group);
+            DynamicTransformedModel transformedModel = DynamicTransformedModel.Create(PhysicsHost, model, descFactory, basePose);
+            return AttachCollidable(transformedModel, group);
         }
 
-        public DynamicLocatedModel AttachDynamic(
+        public DynamicTransformedModel AttachDynamic(
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, ColliderGroupHandle group, SixDoF basePosition)
         {
             return AttachDynamic(model, descFactory, group, basePosition.ToPose());
         }
 
-        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, Pose basePose)
+        public DynamicTransformedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, Pose basePose)
         {
-            DynamicLocatedModel locatedModel = DynamicLocatedModel.Create(PhysicsHost, model, mass, basePose);
-            return AttachCollidable(locatedModel, group);
+            DynamicTransformedModel transformedModel = DynamicTransformedModel.Create(PhysicsHost, model, mass, basePose);
+            return AttachCollidable(transformedModel, group);
         }
 
-        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF basePosition)
+        public DynamicTransformedModel AttachDynamic(ICollidableModel model, float mass, ColliderGroupHandle group, SixDoF basePosition)
         {
             return AttachDynamic(model, mass, group, basePosition.ToPose());
         }
 
-        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, Pose basePose)
+        public DynamicTransformedModel AttachDynamic(ICollidableModel model, float mass, Pose basePose)
         {
             return AttachDynamic(model, mass, DefaultGroup, basePose);
         }
 
-        public DynamicLocatedModel AttachDynamic(ICollidableModel model, float mass, SixDoF basePosition)
+        public DynamicTransformedModel AttachDynamic(ICollidableModel model, float mass, SixDoF basePosition)
         {
             return AttachDynamic(model, mass, DefaultGroup, basePosition.ToPose());
         }
 
-        public KinematicLocatedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, Pose pose)
+        public KinematicTransformedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, Pose pose)
         {
-            KinematicLocatedModel locatedModel = KinematicLocatedModel.Create(PhysicsHost, model, pose);
-            return AttachCollidable(locatedModel, group);
+            KinematicTransformedModel transformedModel = KinematicTransformedModel.Create(PhysicsHost, model, pose);
+            return AttachCollidable(transformedModel, group);
         }
 
-        public KinematicLocatedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, SixDoF position)
+        public KinematicTransformedModel AttachKinematic(ICollidableModel model, ColliderGroupHandle group, SixDoF position)
         {
             return AttachKinematic(model, group, position.ToPose());
         }
 
-        public KinematicLocatedModel AttachKinematic(ICollidableModel model, Pose pose)
+        public KinematicTransformedModel AttachKinematic(ICollidableModel model, Pose pose)
         {
             return AttachKinematic(model, DefaultGroup, pose);
         }
 
-        public KinematicLocatedModel AttachKinematic(ICollidableModel model, SixDoF position)
+        public KinematicTransformedModel AttachKinematic(ICollidableModel model, SixDoF position)
         {
             return AttachKinematic(model, DefaultGroup, position.ToPose());
         }
 
-        public LocatedModel Attach(IModel model, Pose pose)
+        public TransformedModel Attach(IModel model, Pose pose)
         {
-            LocatedModel locatedModel = new LocatedModel(model, pose);
+            TransformedModel transformedModel = new(model, pose);
 
-            Items.Add(locatedModel);
-            return locatedModel;
+            Items.Add(transformedModel);
+            return transformedModel;
         }
 
-        public LocatedModel Attach(IModel model, SixDoF position)
+        public TransformedModel Attach(IModel model, SixDoF position)
         {
             return Attach(model, position.ToPose());
         }
 
-        public LocatedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, Pose pose)
+        public TransformedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, Pose pose)
         {
             return model is ICollidableModel collidable ? AttachKinematic(collidable, group, pose) : Attach(model, pose);
         }
 
-        public LocatedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, SixDoF position)
+        public TransformedModel AttachKinematicOrNonCollision(IModel model, ColliderGroupHandle group, SixDoF position)
         {
             return AttachKinematicOrNonCollision(model, group, position.ToPose());
         }
 
-        public LocatedModel AttachKinematicOrNonCollision(IModel model, Pose pose)
+        public TransformedModel AttachKinematicOrNonCollision(IModel model, Pose pose)
         {
             return AttachKinematicOrNonCollision(model, DefaultGroup, pose);
         }
 
-        public LocatedModel AttachKinematicOrNonCollision(IModel model, SixDoF position)
+        public TransformedModel AttachKinematicOrNonCollision(IModel model, SixDoF position)
         {
             return AttachKinematicOrNonCollision(model, position.ToPose());
         }
 
         public void Dispose()
         {
-            foreach (LocatedModel model in Items)
+            foreach (TransformedModel model in Items)
             {
-                if (model is MergedKinematicLocatedModel mergedModel) mergedModel.Dispose();
+                if (model is MergedKinematicTransformedModel mergedModel) mergedModel.Dispose();
             }
         }
 
-        public void Detach(LocatedModel model)
+        public void Detach(TransformedModel model)
         {
             Items.Remove(model);
-            if (model is MergedKinematicLocatedModel mergedModel) mergedModel.Dispose();
+            if (model is MergedKinematicTransformedModel mergedModel) mergedModel.Dispose();
         }
 
         public void SetFromCamera(ChunkOffset fromCamera)
         {
-            foreach (LocatedModel model in Items)
+            foreach (TransformedModel model in Items)
             {
-                if (model is CollidableLocatedModel collidableModel) collidableModel.SetFromCamera(fromCamera);
+                if (model is CollidableTransformedModel collidableModel) collidableModel.SetFromCamera(fromCamera);
             }
         }
 
@@ -158,9 +158,9 @@ namespace TransportX.Bodies
         {
             IsActive = false;
 
-            foreach (LocatedModel model in Items)
+            foreach (TransformedModel model in Items)
             {
-                if (model is CollidableLocatedModel collidableModel) collidableModel.Freeze();
+                if (model is CollidableTransformedModel collidableModel) collidableModel.Freeze();
             }
         }
 
@@ -169,15 +169,15 @@ namespace TransportX.Bodies
             if (IsActive) return;
             IsActive = true;
 
-            foreach (LocatedModel model in Items)
+            foreach (TransformedModel model in Items)
             {
-                if (model is CollidableLocatedModel collidableModel) collidableModel.Unfreeze();
+                if (model is CollidableTransformedModel collidableModel) collidableModel.Unfreeze();
             }
         }
 
         public void Draw(in LocatedDrawContext context)
         {
-            foreach (LocatedModel model in Items) model.Draw(context);
+            foreach (TransformedModel model in Items) model.Draw(context);
         }
     }
 }

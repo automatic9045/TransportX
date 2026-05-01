@@ -16,7 +16,7 @@ namespace TransportX.Network
     {
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<ILanePath> Paths { get; }
-        public abstract IReadOnlyList<LocatedModel> Models { get; }
+        public abstract IReadOnlyList<TransformedModel> Models { get; }
         public abstract IComponentCollection<IComponent> Components { get; }
 
         public string? DebugName
@@ -35,13 +35,13 @@ namespace TransportX.Network
 
         public void Dispose()
         {
-            foreach (LocatedModel model in Models) (model as MergedKinematicLocatedModel)?.Dispose();
+            foreach (TransformedModel model in Models) (model as MergedKinematicTransformedModel)?.Dispose();
             foreach (ILanePath path in Paths) path.Dispose();
         }
 
         public void Draw(in LocatedDrawContext context)
         {
-            foreach (LocatedModel model in Models)
+            foreach (TransformedModel model in Models)
             {
                 model.Draw(context);
             }

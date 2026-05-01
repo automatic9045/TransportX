@@ -12,7 +12,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class DynamicLocatedModel : CollidableLocatedModel
+    public class DynamicTransformedModel : CollidableTransformedModel
     {
         public override Pose Pose
         {
@@ -20,19 +20,19 @@ namespace TransportX.Spatial
             set => ColliderPose = value;
         }
 
-        internal protected DynamicLocatedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
+        internal protected DynamicTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
             : base(physicsHost, model, description, basePose)
         {
         }
 
-        public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
+        public static DynamicTransformedModel Create(IPhysicsHost physicsHost,
             ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Pose basePose)
         {
             BodyDescription desc = descFactory(model, (model.Collider.Offset * basePose).ToRigidPose());
-            return new DynamicLocatedModel(physicsHost, model, desc, basePose);
+            return new DynamicTransformedModel(physicsHost, model, desc, basePose);
         }
 
-        public static DynamicLocatedModel Create(IPhysicsHost physicsHost,
+        public static DynamicTransformedModel Create(IPhysicsHost physicsHost,
             ICollidableModel model, float mass, CollidableDescription collidableDescription, Pose basePose)
         {
             BodyInertia inertia = model.Collider.ComputeInertia(mass);
@@ -42,7 +42,7 @@ namespace TransportX.Spatial
             return Create(physicsHost, model, CreateDesc, basePose);
         }
 
-        public static DynamicLocatedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Pose basePose)
+        public static DynamicTransformedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Pose basePose)
         {
             return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
         }

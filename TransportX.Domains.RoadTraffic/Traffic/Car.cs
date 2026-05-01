@@ -75,9 +75,9 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             BlinkerDistance = 40 - personality.Factor * 20; // 20～40
 
             Structure.AttachKinematicOrNonCollision(model, Pose.Identity);
-            LocatedModel blinkerLightL = Structure.Attach(blinkerLightLModel, Pose.Identity);
-            LocatedModel blinkerLightR = Structure.Attach(blinkerLightRModel, Pose.Identity);
-            LocatedModel brakeLight = Structure.Attach(brakeLightModel, Pose.Identity);
+            TransformedModel blinkerLightL = Structure.Attach(blinkerLightLModel, Pose.Identity);
+            TransformedModel blinkerLightR = Structure.Attach(blinkerLightRModel, Pose.Identity);
+            TransformedModel brakeLight = Structure.Attach(brakeLightModel, Pose.Identity);
 
             TimeSpan blinkerPeriod = TimeSpan.FromSeconds(0.8f);
             LeftBlinkerLight = new BlinkerLight(blinkerLightL, blinkerPeriod);

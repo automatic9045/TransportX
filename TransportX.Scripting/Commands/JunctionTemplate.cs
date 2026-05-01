@@ -29,8 +29,8 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
         public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
-        private readonly List<LocatedModelTemplate> StructuresKey = [];
-        public IReadOnlyList<LocatedModelTemplate> Structures => StructuresKey;
+        private readonly List<TransformedModelTemplate> StructuresKey = [];
+        public IReadOnlyList<TransformedModelTemplate> Structures => StructuresKey;
 
         public ScriptWorld World { get; }
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
@@ -104,7 +104,7 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, Pose pose)
+        public TransformedModelTemplate PutStructure(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -114,18 +114,18 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModelTemplate structure = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            TransformedModelTemplate structure = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             StructuresKey.Add(structure);
             return structure;
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKey, position.ToPose());
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z)
         {
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }

@@ -10,13 +10,13 @@ namespace TransportX.Extensions.Network.Elements
 {
     public class SplineStructure
     {
-        public IReadOnlyList<LocatedModelTemplate> Models { get; }
+        public IReadOnlyList<TransformedModelTemplate> Models { get; }
         public float From { get; }
         public float Span { get; }
         public float Interval { get; }
         public int Count { get; }
 
-        public SplineStructure(IReadOnlyList<LocatedModelTemplate> models, float from, float span, float interval, int count)
+        public SplineStructure(IReadOnlyList<TransformedModelTemplate> models, float from, float span, float interval, int count)
         {
             Models = models;
             From = from;

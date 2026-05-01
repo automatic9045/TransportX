@@ -18,14 +18,14 @@ namespace TransportX.Sample.LV290.Vehicles.Doors
 
 
         private readonly DoorSwitch DoorSwitch;
-        private readonly LocatedModel Model;
+        private readonly TransformedModel Model;
         private readonly Pose Origin;
 
         private readonly DoorAnimator Animator;
 
         public bool IsOpen => Animator.IsOpen;
 
-        public PocketDoor(DoorSwitch doorSwitch, LocatedModel model)
+        public PocketDoor(DoorSwitch doorSwitch, TransformedModel model)
         {
             DoorSwitch = doorSwitch;
             Model = model;

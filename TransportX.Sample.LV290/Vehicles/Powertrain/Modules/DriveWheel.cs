@@ -16,7 +16,7 @@ namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
 {
     internal class DriveWheel : IModule
     {
-        private readonly DynamicLocatedModel Wheel;
+        private readonly DynamicTransformedModel Wheel;
         private readonly Constraint<AngularAxisMotor> Motor;
 
         private readonly Shaft Input;
@@ -27,7 +27,7 @@ namespace TransportX.Sample.LV290.Vehicles.Powertrain.Modules
         public float Velocity => AngularVelocity * 0.959f / 2;
         public float OutTorque => Input.Torque;
 
-        public DriveWheel(DynamicLocatedModel wheel, Constraint<AngularAxisMotor> motor, Shaft input, bool reverseDirection)
+        public DriveWheel(DynamicTransformedModel wheel, Constraint<AngularAxisMotor> motor, Shaft input, bool reverseDirection)
         {
             Wheel = wheel;
             Motor = motor;

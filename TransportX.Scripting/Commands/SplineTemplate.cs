@@ -35,7 +35,7 @@ namespace TransportX.Scripting.Commands
 
         public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
         {
-            LocatedModelTemplate[] models = modelKeys.Select(key =>
+            TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
                 IModel? model;
                 if (key == string.Empty)
@@ -50,7 +50,7 @@ namespace TransportX.Scripting.Commands
                     model = Model.Empty();
                 }
 
-                return KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+                return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineStructure structure = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
             StructuresKey.Add(structure);

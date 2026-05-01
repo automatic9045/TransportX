@@ -41,8 +41,8 @@ namespace TransportX.Sample.LV290.Vehicles.Doors
 
         private readonly DoorSwitch DoorSwitch;
 
-        private readonly LocatedModel Door1Model;
-        private readonly LocatedModel Door2Model;
+        private readonly TransformedModel Door1Model;
+        private readonly TransformedModel Door2Model;
 
         private readonly Pose Door1Origin;
         private readonly Pose Door2Origin;
@@ -51,7 +51,7 @@ namespace TransportX.Sample.LV290.Vehicles.Doors
 
         public bool IsOpen => Animator.IsOpen;
 
-        public BifoldDoor(DoorSwitch doorSwitch, LocatedModel door1Model, LocatedModel door2Model)
+        public BifoldDoor(DoorSwitch doorSwitch, TransformedModel door1Model, TransformedModel door2Model)
         {
             DoorSwitch = doorSwitch;
 

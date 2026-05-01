@@ -19,8 +19,8 @@ namespace TransportX.Extensions.Network.Elements
         private static int DebugColorIndex = 0;
 
 
-        private readonly List<LocatedModel> ModelsKey = [];
-        public override IReadOnlyList<LocatedModel> Models => ModelsKey;
+        private readonly List<TransformedModel> ModelsKey = [];
+        public override IReadOnlyList<TransformedModel> Models => ModelsKey;
 
         public abstract float Length { get; }
 
@@ -34,7 +34,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineStructure> structures)
         {
-            List<KinematicLocatedModelTemplate> modelsToMerge = [];
+            List<KinematicTransformedModelTemplate> modelsToMerge = [];
             foreach (SplineStructure structure in structures)
             {
                 for (int i = 0; i < structure.Count; i++)
@@ -42,17 +42,17 @@ namespace TransportX.Extensions.Network.Elements
                     float s = structure.From + structure.Interval * i;
                     if (Length < s) break;
 
-                    LocatedModelTemplate template = structure.Models[i % structure.Models.Count];
+                    TransformedModelTemplate template = structure.Models[i % structure.Models.Count];
                     Pose curvePose = GetSpanPose(s, structure.Span);
 
-                    if (template is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
+                    if (template is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
                     {
-                        KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * WorldPose.Pose);
+                        KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * WorldPose.Pose);
                         modelsToMerge.Add(compiled);
                     }
                     else
                     {
-                        LocatedModel model = template.Build(pose => pose * curvePose * WorldPose.Pose);
+                        TransformedModel model = template.Build(pose => pose * curvePose * WorldPose.Pose);
                         ModelsKey.Add(model);
                     }
                 }
@@ -60,7 +60,7 @@ namespace TransportX.Extensions.Network.Elements
 
             if (0 < modelsToMerge.Count)
             {
-                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(physicsHost, modelsToMerge);
+                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, modelsToMerge);
                 mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);

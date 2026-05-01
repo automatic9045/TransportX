@@ -17,11 +17,11 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class MergedKinematicLocatedModel : KinematicLocatedModel, IDisposable
+    public class MergedKinematicTransformedModel : KinematicTransformedModel, IDisposable
     {
-        protected readonly IReadOnlyList<LocatedModel> Children;
+        protected readonly IReadOnlyList<TransformedModel> Children;
 
-        protected MergedKinematicLocatedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, BodyDescription description, List<LocatedModel> children)
+        protected MergedKinematicTransformedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, BodyDescription description, List<TransformedModel> children)
             : base(physicsHost, physicsWrapper, description, Pose.Identity)
         {
             Children = children;
@@ -32,18 +32,18 @@ namespace TransportX.Spatial
             return collider is ColliderBase<ColliderMesh>;
         }
 
-        public static MergedKinematicLocatedModel Create(IPhysicsHost physicsHost, IReadOnlyList<KinematicLocatedModelTemplate> sources)
+        public static MergedKinematicTransformedModel Create(IPhysicsHost physicsHost, IReadOnlyList<KinematicTransformedModelTemplate> sources)
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
             int triangleCount = sources.Sum(m => m.Model.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
             physicsHost.Simulation.BufferPool.Take(triangleCount, out Buffer<Triangle> combinedTriangles);
 
-            List<LocatedModel> children = [];
+            List<TransformedModel> children = [];
             int writeIndex = 0;
             for (int i = 0; i < sources.Count; i++)
             {
-                KinematicLocatedModelTemplate source = sources[i];
+                KinematicTransformedModelTemplate source = sources[i];
 
                 if (source.Model.Collider is ColliderBase<ColliderMesh> meshCollider)
                 {
@@ -65,7 +65,7 @@ namespace TransportX.Spatial
                     throw new NotSupportedException("メッシュ以外のコライダーを結合することはできません。");
                 }
 
-                LocatedModel visualChild = source.BuildVisual(pose => pose);
+                TransformedModel visualChild = source.BuildVisual(pose => pose);
                 children.Add(visualChild);
             }
 
@@ -81,7 +81,7 @@ namespace TransportX.Spatial
             };
 
             BodyDescription desc = BodyDescription.CreateKinematic(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex, 0.01f);
-            return new MergedKinematicLocatedModel(physicsHost, physicsWrapper, desc, children);
+            return new MergedKinematicTransformedModel(physicsHost, physicsWrapper, desc, children);
         }
 
         public void Dispose()

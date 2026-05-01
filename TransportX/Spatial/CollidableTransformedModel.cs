@@ -13,7 +13,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public abstract class CollidableLocatedModel : LocatedModel
+    public abstract class CollidableTransformedModel : TransformedModel
     {
         protected readonly IPhysicsHost PhysicsHost;
         protected readonly BodyDescription Description;
@@ -37,10 +37,10 @@ namespace TransportX.Spatial
         public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
 
         /// <summary>
-        /// 物理モデルの姿勢を、LocatedModel 座標系に変換した形で取得・設定します。
+        /// 物理モデルの姿勢を、<see cref="TransformedModel"/> 座標系に変換した形で取得・設定します。
         /// </summary>
         /// <remarks>
-        /// LocatedModel 座標系はモデルが位置するプレートを基準とする一方、物理モデル座標系は視点が位置するプレートを基準とするため、
+        /// <see cref="TransformedModel"/> 座標系はモデルが位置するプレートを基準とする一方、物理モデル座標系は視点が位置するプレートを基準とするため、
         /// <see cref="ICollider.Offset"/> と <see cref="FromCamera"/> プロパティの値を参照して変換されます。
         /// </remarks>
         protected Pose ColliderPose
@@ -56,7 +56,7 @@ namespace TransportX.Spatial
         public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
         public Pose ColliderToBase => Model.Collider.Offset * BasePose;
 
-        internal protected CollidableLocatedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
+        internal protected CollidableTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
             : base(model, basePose, false)
         {
             PhysicsHost = physicsHost;
@@ -71,7 +71,7 @@ namespace TransportX.Spatial
         /// 視点が位置するプレートと、このモデルが位置するプレートの位置関係を設定します。
         /// </summary>
         /// <remarks>
-        /// ここで設定した値は、LocatedModel 座標系と物理モデル座標系の差を計算するために使用されます。
+        /// ここで設定した値は、<see cref="TransformedModel"/> 座標系と物理モデル座標系の差を計算するために使用されます。
         /// <paramref name="fromCamera"/> パラメータの値が <see cref="FromCamera"/> プロパティと異なっている場合は、同プロパティの値を更新します。
         /// 派生クラスによっては <see cref="ColliderPose"/> プロパティの値もあわせて更新されます。
         /// </remarks>

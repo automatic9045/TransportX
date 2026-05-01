@@ -20,7 +20,7 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptWorld World;
 
         private readonly IReadOnlyKeyedList<string, JunctionPathFactoryCommand> Paths;
-        private readonly List<LocatedModelTemplate> Structures = [];
+        private readonly List<TransformedModelTemplate> Structures = [];
 
         public Junction Junction { get; }
         public string? Key { get; set; } = null;
@@ -39,17 +39,17 @@ namespace TransportX.Scripting.Commands
         {
         }
 
-        public void AddStructure(LocatedModelTemplate structure)
+        public void AddStructure(TransformedModelTemplate structure)
         {
             Structures.Add(structure);
         }
 
-        public void AddStructures(IEnumerable<LocatedModelTemplate> structures)
+        public void AddStructures(IEnumerable<TransformedModelTemplate> structures)
         {
             Structures.AddRange(structures);
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, Pose pose)
+        public TransformedModelTemplate PutStructure(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -59,18 +59,18 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModelTemplate structure = KinematicLocatedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            TransformedModelTemplate structure = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             AddStructure(structure);
             return structure;
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKey, position.ToPose());
         }
 
-        public LocatedModelTemplate PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z)
         {
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }
@@ -109,7 +109,7 @@ namespace TransportX.Scripting.Commands
         {
             foreach (JunctionPathFactoryCommand path in Paths)
             {
-                List<LocatedModelTemplate> structures = path.BuildStructures();
+                List<TransformedModelTemplate> structures = path.BuildStructures();
                 Structures.AddRange(structures);
             }
 

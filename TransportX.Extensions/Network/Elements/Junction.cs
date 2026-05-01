@@ -26,8 +26,8 @@ namespace TransportX.Extensions.Network.Elements
         private readonly List<ILanePath> PathsKey = [];
         public override IReadOnlyList<ILanePath> Paths => PathsKey;
 
-        private readonly List<LocatedModel> ModelsKey = [];
-        public override IReadOnlyList<LocatedModel> Models => ModelsKey;
+        private readonly List<TransformedModel> ModelsKey = [];
+        public override IReadOnlyList<TransformedModel> Models => ModelsKey;
 
         public override IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
@@ -47,26 +47,26 @@ namespace TransportX.Extensions.Network.Elements
             return path;
         }
 
-        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<LocatedModelTemplate> structures)
+        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> structures)
         {
-            List<KinematicLocatedModelTemplate> structuresToMerge = [];
-            foreach (LocatedModelTemplate structure in structures)
+            List<KinematicTransformedModelTemplate> structuresToMerge = [];
+            foreach (TransformedModelTemplate structure in structures)
             {
-                if (structure is KinematicLocatedModelTemplate kinematic && kinematic.CanMerge)
+                if (structure is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
                 {
-                    KinematicLocatedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * WorldPose.Pose);
+                    KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * WorldPose.Pose);
                     structuresToMerge.Add(compiled);
                 }
                 else
                 {
-                    LocatedModel model = structure.Build(pose => pose * WorldPose.Pose);
+                    TransformedModel model = structure.Build(pose => pose * WorldPose.Pose);
                     ModelsKey.Add(model);
                 }
             }
 
             if (0 < structuresToMerge.Count)
             {
-                MergedKinematicLocatedModel mergedModel = MergedKinematicLocatedModel.Create(physicsHost, structuresToMerge);
+                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, structuresToMerge);
                 mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);

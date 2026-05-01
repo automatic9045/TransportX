@@ -21,19 +21,19 @@ namespace TransportX.Sample.LV290.Vehicles
     {
         private readonly List<IDisposable> Disposables = [];
 
-        public DynamicLocatedModel Body { get; }
+        public DynamicTransformedModel Body { get; }
 
-        public KinematicLocatedModel FrontDoor1 { get; }
-        public KinematicLocatedModel FrontDoor2 { get; }
-        public KinematicLocatedModel RearDoor { get; }
+        public KinematicTransformedModel FrontDoor1 { get; }
+        public KinematicTransformedModel FrontDoor2 { get; }
+        public KinematicTransformedModel RearDoor { get; }
 
-        public DynamicLocatedModel AxleF { get; }
-        public DynamicLocatedModel AxleR { get; }
+        public DynamicTransformedModel AxleF { get; }
+        public DynamicTransformedModel AxleR { get; }
 
-        public DynamicLocatedModel WheelFL { get; }
-        public DynamicLocatedModel WheelFR { get; }
-        public DynamicLocatedModel WheelRL { get; }
-        public DynamicLocatedModel WheelRR { get; }
+        public DynamicTransformedModel WheelFL { get; }
+        public DynamicTransformedModel WheelFR { get; }
+        public DynamicTransformedModel WheelRL { get; }
+        public DynamicTransformedModel WheelRR { get; }
 
         public Constraint<Hinge> AxleToWheelFL { get; }
         public Constraint<Hinge> AxleToWheelFR { get; }
@@ -106,7 +106,7 @@ namespace TransportX.Sample.LV290.Vehicles
             ConnectAxleToWheel(AxleR, WheelRL);
             ConnectAxleToWheel(AxleR, WheelRR);
 
-            Constraint<Hinge> ConnectAxleToWheel(DynamicLocatedModel axle, DynamicLocatedModel wheel)
+            Constraint<Hinge> ConnectAxleToWheel(DynamicTransformedModel axle, DynamicTransformedModel wheel)
             {
                 Pose baseToAxle = axle.BaseToCollider;
                 Pose baseToWheel = wheel.BaseToCollider;
@@ -128,7 +128,7 @@ namespace TransportX.Sample.LV290.Vehicles
             ConnectBodyToAxle(Body, AxleF, 7);
             ConnectBodyToAxle(Body, AxleR, 5);
 
-            void ConnectBodyToAxle(DynamicLocatedModel body, DynamicLocatedModel axle, float springFrequency)
+            void ConnectBodyToAxle(DynamicTransformedModel body, DynamicTransformedModel axle, float springFrequency)
             {
                 Pose baseToBody = body.BaseToCollider;
                 Pose baseToAxle = axle.BaseToCollider;
@@ -189,7 +189,7 @@ namespace TransportX.Sample.LV290.Vehicles
             BrakeMotorRL = AddMotor(AxleR, WheelRL);
             BrakeMotorRR = AddMotor(AxleR, WheelRR);
 
-            Constraint<AngularAxisMotor> AddMotor(DynamicLocatedModel axle, DynamicLocatedModel wheel)
+            Constraint<AngularAxisMotor> AddMotor(DynamicTransformedModel axle, DynamicTransformedModel wheel)
             {
                 AngularAxisMotor motor = new()
                 {

@@ -30,7 +30,7 @@ namespace TransportX.Sample.LV290.Vehicles.Powertrain
         public ASR ASR { get; }
 
         public PowertrainSet(InterfaceSet interfaces,
-            DynamicLocatedModel wheelRL, DynamicLocatedModel wheelRR, Constraint<AngularAxisMotor> motorRL, Constraint<AngularAxisMotor> motorRR)
+            DynamicTransformedModel wheelRL, DynamicTransformedModel wheelRR, Constraint<AngularAxisMotor> motorRL, Constraint<AngularAxisMotor> motorRR)
         {
             Shaft engineToClutch = new Shaft(3);
             Shaft clutchToTransmission = new Shaft(0.15f);

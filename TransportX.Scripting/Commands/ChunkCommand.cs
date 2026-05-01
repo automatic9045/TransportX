@@ -33,7 +33,7 @@ namespace TransportX.Scripting.Commands
             Target = World.Chunks.GetOrAdd(X, Z);
         }
 
-        public LocatedModel PutStructure(string modelKey, Pose pose)
+        public TransformedModel PutStructure(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -43,18 +43,18 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            LocatedModel locatedModel = KinematicLocatedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
-            Target.Models.Add(locatedModel);
-            return locatedModel;
+            TransformedModel transformedModel = KinematicTransformedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            Target.Models.Add(transformedModel);
+            return transformedModel;
         }
 
-        public LocatedModel PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModel PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return PutStructure(modelKey, position.ToPose());
         }
 
-        public LocatedModel PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModel PutStructure(string modelKey, double x, double y, double z)
         {
             return PutStructure(modelKey, x, y, z, 0, 0, 0);
         }

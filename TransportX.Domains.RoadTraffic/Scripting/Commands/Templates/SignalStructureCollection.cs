@@ -23,9 +23,9 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
         {
         }
 
-        public void Add(LocatedModelTemplate structure, ISignalController controller, string groupKey, SignalLampRole role)
+        public void Add(TransformedModelTemplate structure, ISignalController controller, string groupKey, SignalLampRole role)
         {
-            if ((structure as KinematicLocatedModelTemplate)?.CanMerge ?? false)
+            if ((structure as KinematicTransformedModelTemplate)?.CanMerge ?? false)
             {
                 throw new ArgumentException("信号ストラクチャーは結合不可能である必要があります。", nameof(structure));
             }
@@ -44,14 +44,14 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
 
         private class Item
         {
-            private readonly LocatedModelTemplate Structure;
+            private readonly TransformedModelTemplate Structure;
             private readonly ISignalController Controller;
             private readonly string GroupKey;
             private readonly SignalLampRole Role;
 
-            private LocatedModel? BuiltModel = null;
+            private TransformedModel? BuiltModel = null;
 
-            public Item(LocatedModelTemplate structure, ISignalController controller, string groupKey, SignalLampRole role)
+            public Item(TransformedModelTemplate structure, ISignalController controller, string groupKey, SignalLampRole role)
             {
                 Structure = structure;
                 Controller = controller;

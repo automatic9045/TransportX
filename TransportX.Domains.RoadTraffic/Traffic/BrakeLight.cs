@@ -10,11 +10,11 @@ namespace TransportX.Domains.RoadTraffic.Traffic
 {
     internal class BrakeLight
     {
-        private readonly LocatedModel Model;
+        private readonly TransformedModel Model;
 
         public bool IsActive { get; set; } = false;
 
-        public BrakeLight(LocatedModel model)
+        public BrakeLight(TransformedModel model)
         {
             Model = model;
         }

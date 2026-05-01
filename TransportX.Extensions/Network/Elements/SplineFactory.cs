@@ -189,7 +189,7 @@ namespace TransportX.Extensions.Network.Elements
                         continue;
                     }
 
-                    LocatedModelTemplate[] nextModels = new LocatedModelTemplate[structure.Models.Count];
+                    TransformedModelTemplate[] nextModels = new TransformedModelTemplate[structure.Models.Count];
                     for (int i = 0; i < nextModels.Length; i++)
                     {
                         nextModels[i] = structure.Models[(i + count) % nextModels.Length];

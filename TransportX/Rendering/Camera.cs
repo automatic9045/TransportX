@@ -56,7 +56,7 @@ namespace TransportX.Rendering
             Frustum = new(View * Projection);
         }
 
-        public void DrawBackground(in CameraDrawContext context, IEnumerable<LocatedModel> models)
+        public void DrawBackground(in CameraDrawContext context, IEnumerable<TransformedModel> models)
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
@@ -70,7 +70,7 @@ namespace TransportX.Rendering
                 Frustum = Frustum,
             };
 
-            foreach (LocatedModel model in models)
+            foreach (TransformedModel model in models)
             {
                 model.Pose = new Pose(WorldPose.Pose.Position);
                 model.Draw(drawContext);

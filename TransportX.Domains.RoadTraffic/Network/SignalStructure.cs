@@ -11,12 +11,12 @@ namespace TransportX.Domains.RoadTraffic.Network
 {
     public class SignalStructure
     {
-        private readonly LocatedModel Model;
+        private readonly TransformedModel Model;
         private readonly ISignalController Controller;
         private readonly string GroupKey;
         private readonly SignalLampRole Role;
 
-        public SignalStructure(LocatedModel model, ISignalController controller, string groupKey, SignalLampRole role)
+        public SignalStructure(TransformedModel model, ISignalController controller, string groupKey, SignalLampRole role)
         {
             Model = model;
             Controller = controller;
