@@ -32,18 +32,18 @@ namespace TransportX.Extensions.Network.Elements
         public abstract Vector3 GetUp(float s);
         public abstract Pose GetPose(float s);
 
-        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineStructure> structures)
+        public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineProp> props)
         {
             List<KinematicTransformedModelTemplate> modelsToMerge = [];
-            foreach (SplineStructure structure in structures)
+            foreach (SplineProp prop in props)
             {
-                for (int i = 0; i < structure.Count; i++)
+                for (int i = 0; i < prop.Count; i++)
                 {
-                    float s = structure.From + structure.Interval * i;
+                    float s = prop.From + prop.Interval * i;
                     if (Length < s) break;
 
-                    TransformedModelTemplate template = structure.Models[i % structure.Models.Count];
-                    Pose curvePose = GetSpanPose(s, structure.Span);
+                    TransformedModelTemplate template = prop.Models[i % prop.Models.Count];
+                    Pose curvePose = GetSpanPose(s, prop.Span);
 
                     if (template is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
                     {

@@ -20,7 +20,7 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptWorld World;
 
         private readonly IReadOnlyKeyedList<string, JunctionPathFactoryCommand> Paths;
-        private readonly List<TransformedModelTemplate> Structures = [];
+        private readonly List<TransformedModelTemplate> Props = [];
 
         public Junction Junction { get; }
         public string? Key { get; set; } = null;
@@ -39,17 +39,17 @@ namespace TransportX.Scripting.Commands
         {
         }
 
-        public void AddStructure(TransformedModelTemplate structure)
+        public void AddProp(TransformedModelTemplate prop)
         {
-            Structures.Add(structure);
+            Props.Add(prop);
         }
 
-        public void AddStructures(IEnumerable<TransformedModelTemplate> structures)
+        public void AddProps(IEnumerable<TransformedModelTemplate> props)
         {
-            Structures.AddRange(structures);
+            Props.AddRange(props);
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, Pose pose)
+        public TransformedModelTemplate PutProp(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -59,61 +59,61 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            TransformedModelTemplate structure = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
-            AddStructure(structure);
-            return structure;
+            TransformedModelTemplate prop = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            AddProp(prop);
+            return prop;
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModelTemplate PutProp(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKey, position.ToPose());
+            return PutProp(modelKey, position.ToPose());
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModelTemplate PutProp(string modelKey, double x, double y, double z)
         {
-            return PutStructure(modelKey, x, y, z, 0, 0, 0);
+            return PutProp(modelKey, x, y, z, 0, 0, 0);
         }
 
-        public SplineStructure PutPathStructure(IReadOnlyList<string> modelKeys, string pathKey,
+        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
             Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
-            SplineStructure structure;
+            SplineProp prop;
             if (!Paths.TryGetValue(pathKey, out JunctionPathFactoryCommand? path))
             {
                 ScriptError error = new(ErrorLevel.Error, $"進路パス '{pathKey}' が見つかりません。");
                 World.ErrorCollector.Report(error);
 
-                structure = new([], 0, 0, 0, 0);
-                return structure;
+                prop = new([], 0, 0, 0, 0);
+                return prop;
             }
 
-            structure = path.PutStructure(modelKeys, pose, from, span, interval, count);
-            return structure;
+            prop = path.PutProp(modelKeys, pose, from, span, interval, count);
+            return prop;
         }
 
-        public SplineStructure PutPathStructure(IReadOnlyList<string> modelKeys, string pathKey,
+        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutPathStructure(modelKeys, pathKey, position.ToPose(), from, span, interval, count);
+            return PutPathProp(modelKeys, pathKey, position.ToPose(), from, span, interval, count);
         }
 
-        public SplineStructure PutPathStructure(IReadOnlyList<string> modelKeys, string pathKey,
+        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
             double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
         {
-            return PutPathStructure(modelKeys, pathKey, x, y, z, 0, 0, 0, from, span, interval, count);
+            return PutPathProp(modelKeys, pathKey, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
         public JunctionCommand Build()
         {
             foreach (JunctionPathFactoryCommand path in Paths)
             {
-                List<TransformedModelTemplate> structures = path.BuildStructures();
-                Structures.AddRange(structures);
+                List<TransformedModelTemplate> props = path.BuildProps();
+                Props.AddRange(props);
             }
 
-            Junction.PutStructures(World.DXHost.Device, World.PhysicsHost, Structures);
+            Junction.PutProps(World.DXHost.Device, World.PhysicsHost, Props);
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();
             componentErrorCollector.Reported += (sender, e) =>

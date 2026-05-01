@@ -14,7 +14,7 @@ namespace TransportX.Extensions.Network.Elements
 {
     public class SplineFactory : WorldObject
     {
-        private readonly List<SplineStructure> Structures = [];
+        private readonly List<SplineProp> Props = [];
 
         private Func<NetworkPort?, SplineBase>? Finalizer = null;
 
@@ -35,14 +35,14 @@ namespace TransportX.Extensions.Network.Elements
             SourcePort = sourcePort;
         }
 
-        public void AddStructure(SplineStructure structure)
+        public void AddProp(SplineProp prop)
         {
-            Structures.Add(structure);
+            Props.Add(prop);
         }
 
-        public void AddStructures(IEnumerable<SplineStructure> structures)
+        public void AddProps(IEnumerable<SplineProp> props)
         {
-            Structures.AddRange(structures);
+            Props.AddRange(props);
         }
 
         public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
@@ -135,7 +135,7 @@ namespace TransportX.Extensions.Network.Elements
             if (Finalizer is not null)
             {
                 SplineBase lastSpline = Finalizer(sourcePort);
-                ApplyStructures(lastSpline);
+                ApplyProps(lastSpline);
                 splines.Add(lastSpline);
             }
 
@@ -165,43 +165,43 @@ namespace TransportX.Extensions.Network.Elements
                 };
                 sourcePort?.ConnectTo(spline.Inlet);
                 sourcePort = spline.Outlet;
-                ApplyStructures(spline);
+                ApplyProps(spline);
                 splines.Add(spline);
             }
 
-            void ApplyStructures(SplineBase spline)
+            void ApplyProps(SplineBase spline)
             {
-                List<SplineStructure> structures = [];
+                List<SplineProp> props = [];
 
-                for (int structureIndex = 0; structureIndex < Structures.Count; structureIndex++)
+                for (int propIndex = 0; propIndex < Props.Count; propIndex++)
                 {
-                    SplineStructure structure = Structures[structureIndex];
-                    if (structure.Count <= 0) continue;
+                    SplineProp prop = Props[propIndex];
+                    if (prop.Count <= 0) continue;
 
-                    int count = int.Min((int)float.Ceiling((spline.Length - structure.From) / structure.Interval), structure.Count);
+                    int count = int.Min((int)float.Ceiling((spline.Length - prop.From) / prop.Interval), prop.Count);
 
-                    SplineStructure splittedStructure = new(structure.Models, structure.From, structure.Span, structure.Interval, count);
-                    structures.Add(splittedStructure);
+                    SplineProp splittedProp = new(prop.Models, prop.From, prop.Span, prop.Interval, count);
+                    props.Add(splittedProp);
 
-                    if (count == structure.Count)
+                    if (count == prop.Count)
                     {
-                        Structures[structureIndex] = new SplineStructure(structure.Models, 0, structure.Span, structure.Interval, 0);
+                        Props[propIndex] = new SplineProp(prop.Models, 0, prop.Span, prop.Interval, 0);
                         continue;
                     }
 
-                    TransformedModelTemplate[] nextModels = new TransformedModelTemplate[structure.Models.Count];
+                    TransformedModelTemplate[] nextModels = new TransformedModelTemplate[prop.Models.Count];
                     for (int i = 0; i < nextModels.Length; i++)
                     {
-                        nextModels[i] = structure.Models[(i + count) % nextModels.Length];
+                        nextModels[i] = prop.Models[(i + count) % nextModels.Length];
                     }
 
-                    float nextFrom = structure.From + structure.Interval * count - spline.Length;
-                    int nextCount = structure.Count - count;
+                    float nextFrom = prop.From + prop.Interval * count - spline.Length;
+                    int nextCount = prop.Count - count;
 
-                    Structures[structureIndex] = new SplineStructure(nextModels, nextFrom, structure.Span, structure.Interval, nextCount);
+                    Props[propIndex] = new SplineProp(nextModels, nextFrom, prop.Span, prop.Interval, nextCount);
                 }
 
-                spline.PutStructures(device, physicsHost, structures);
+                spline.PutProps(device, physicsHost, props);
             }
         }
 

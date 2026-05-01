@@ -49,7 +49,7 @@ namespace TransportX.Scripting.Commands
             SplineFactory.InterpolateByBezier(targetPort, (float)handleScale);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -68,23 +68,23 @@ namespace TransportX.Scripting.Commands
 
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
-            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
-            SplineFactory.AddStructure(structure);
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
+            SplineFactory.AddProp(prop);
 
-            return structure;
+            return prop;
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.ToPose(), from, span, interval, count);
+            return PutProp(modelKeys, position.ToPose(), from, span, interval, count);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
         {
-            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
+            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
         public SplineCommand Build()

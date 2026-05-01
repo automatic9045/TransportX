@@ -28,21 +28,21 @@ namespace TransportX.Scripting.Commands
         public string Key { get; }
         public ILanePath Path { get; }
 
-        private readonly List<SplineStructure> StructuresKey;
-        public IReadOnlyList<SplineStructure> Structures => StructuresKey;
+        private readonly List<SplineProp> PropsKey;
+        public IReadOnlyList<SplineProp> Props => PropsKey;
 
         public IComponentCollection<ITemplateComponent<ILanePath>> Components { get; } = new ComponentCollection<ITemplateComponent<ILanePath>>();
 
-        public JunctionPathFactoryCommand(ScriptWorld world, string key, ILanePath path, IEnumerable<SplineStructure> templateStructures)
+        public JunctionPathFactoryCommand(ScriptWorld world, string key, ILanePath path, IEnumerable<SplineProp> templateProps)
         {
             World = world;
 
             Key = key;
             Path = path;
-            StructuresKey = [.. templateStructures];
+            PropsKey = [.. templateProps];
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -54,43 +54,43 @@ namespace TransportX.Scripting.Commands
 
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
-            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
-            StructuresKey.Add(structure);
-            return structure;
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
+            PropsKey.Add(prop);
+            return prop;
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.ToPose(), from, span, interval, count);
+            return PutProp(modelKeys, position.ToPose(), from, span, interval, count);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
         {
-            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
+            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
-        internal List<TransformedModelTemplate> BuildStructures()
+        internal List<TransformedModelTemplate> BuildProps()
         {
-            List<TransformedModelTemplate> structures = [];
-            foreach (SplineStructure structure in Structures)
+            List<TransformedModelTemplate> props = [];
+            foreach (SplineProp prop in Props)
             {
-                for (int i = 0; i < structure.Count; i++)
+                for (int i = 0; i < prop.Count; i++)
                 {
-                    float s = structure.From + structure.Interval * i;
+                    float s = prop.From + prop.Interval * i;
                     if (Path.Length < s) break;
 
-                    TransformedModelTemplate template = structure.Models[i % structure.Models.Count];
-                    Pose curvePose = GetSpanPose(s, structure.Span);
+                    TransformedModelTemplate template = prop.Models[i % prop.Models.Count];
+                    Pose curvePose = GetSpanPose(s, prop.Span);
                     Pose pose = template.Pose * curvePose;
 
                     TransformedModelTemplate compiled = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, template.Model, pose);
-                    structures.Add(compiled);
+                    props.Add(compiled);
                 }
             }
 
-            return structures;
+            return props;
 
 
             Pose GetSpanPose(float s, float span)

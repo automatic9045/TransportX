@@ -33,7 +33,7 @@ namespace TransportX.Scripting.Commands
             Target = World.Chunks.GetOrAdd(X, Z);
         }
 
-        public TransformedModel PutStructure(string modelKey, Pose pose)
+        public TransformedModel PutProp(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -48,15 +48,15 @@ namespace TransportX.Scripting.Commands
             return transformedModel;
         }
 
-        public TransformedModel PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModel PutProp(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKey, position.ToPose());
+            return PutProp(modelKey, position.ToPose());
         }
 
-        public TransformedModel PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModel PutProp(string modelKey, double x, double y, double z)
         {
-            return PutStructure(modelKey, x, y, z, 0, 0, 0);
+            return PutProp(modelKey, x, y, z, 0, 0, 0);
         }
 
         public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)

@@ -8,7 +8,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Extensions.Network.Elements
 {
-    public class SplineStructure
+    public class SplineProp
     {
         public IReadOnlyList<TransformedModelTemplate> Models { get; }
         public float From { get; }
@@ -16,7 +16,7 @@ namespace TransportX.Extensions.Network.Elements
         public float Interval { get; }
         public int Count { get; }
 
-        public SplineStructure(IReadOnlyList<TransformedModelTemplate> models, float from, float span, float interval, int count)
+        public SplineProp(IReadOnlyList<TransformedModelTemplate> models, float from, float span, float interval, int count)
         {
             Models = models;
             From = from;

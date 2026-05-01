@@ -39,8 +39,8 @@ namespace TransportX.Scripting.Commands
         public float Length { get; private set; } = 0;
         public WidthPointList Width { get; }
 
-        private readonly List<SplineStructure> StructuresKey = [];
-        public IReadOnlyList<SplineStructure> Structures => StructuresKey;
+        private readonly List<SplineProp> PropsKey = [];
+        public IReadOnlyList<SplineProp> Props => PropsKey;
 
         public ScriptWorld World { get; }
         public JunctionTemplate Parent { get; }
@@ -153,7 +153,7 @@ namespace TransportX.Scripting.Commands
         public void StraightToEnd() => StraightToEnd(out _);
         public void BezierToEnd(double? controlScale = null) => BezierToEnd(out _, controlScale);
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -165,21 +165,21 @@ namespace TransportX.Scripting.Commands
 
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
-            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, count);
-            StructuresKey.Add(structure);
-            return structure;
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
+            PropsKey.Add(prop);
+            return prop;
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.ToPose(), from, span, interval, count);
+            return PutProp(modelKeys, position.ToPose(), from, span, interval, count);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
         {
-            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
+            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
         internal JunctionPathFactoryCommand Build(Junction junction)
@@ -200,7 +200,7 @@ namespace TransportX.Scripting.Commands
 
             junction.Wire(path);
 
-            return new JunctionPathFactoryCommand(World, Key, path, Structures);
+            return new JunctionPathFactoryCommand(World, Key, path, Props);
         }
 
 

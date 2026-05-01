@@ -9,14 +9,14 @@ using TransportX.Spatial;
 
 namespace TransportX.Domains.RoadTraffic.Network
 {
-    public class SignalStructure
+    public class SignalProp
     {
         private readonly TransformedModel Model;
         private readonly ISignalController Controller;
         private readonly string GroupKey;
         private readonly SignalLampRole Role;
 
-        public SignalStructure(TransformedModel model, ISignalController controller, string groupKey, SignalLampRole role)
+        public SignalProp(TransformedModel model, ISignalController controller, string groupKey, SignalLampRole role)
         {
             Model = model;
             Controller = controller;

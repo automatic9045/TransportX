@@ -47,26 +47,26 @@ namespace TransportX.Extensions.Network.Elements
             return path;
         }
 
-        public void PutStructures(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> structures)
+        public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> props)
         {
-            List<KinematicTransformedModelTemplate> structuresToMerge = [];
-            foreach (TransformedModelTemplate structure in structures)
+            List<KinematicTransformedModelTemplate> propsToMerge = [];
+            foreach (TransformedModelTemplate prop in props)
             {
-                if (structure is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
+                if (prop is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
                 {
-                    KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, structure.Pose * WorldPose.Pose);
-                    structuresToMerge.Add(compiled);
+                    KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, prop.Pose * WorldPose.Pose);
+                    propsToMerge.Add(compiled);
                 }
                 else
                 {
-                    TransformedModel model = structure.Build(pose => pose * WorldPose.Pose);
+                    TransformedModel model = prop.Build(pose => pose * WorldPose.Pose);
                     ModelsKey.Add(model);
                 }
             }
 
-            if (0 < structuresToMerge.Count)
+            if (0 < propsToMerge.Count)
             {
-                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, structuresToMerge);
+                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, propsToMerge);
                 mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);

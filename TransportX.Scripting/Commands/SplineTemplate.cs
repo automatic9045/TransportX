@@ -20,8 +20,8 @@ namespace TransportX.Scripting.Commands
 
         public LaneLayout OutletLayout { get; }
 
-        private readonly List<SplineStructure> StructuresKey = [];
-        public IReadOnlyList<SplineStructure> Structures => StructuresKey;
+        private readonly List<SplineProp> PropsKey = [];
+        public IReadOnlyList<SplineProp> Props => PropsKey;
 
         public IComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>> Components { get; }
             = new ComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>>();
@@ -33,7 +33,7 @@ namespace TransportX.Scripting.Commands
             OutletLayout = World.Commander.Network.LaneLayouts[outletLayoutKey];
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
@@ -52,27 +52,27 @@ namespace TransportX.Scripting.Commands
 
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
-            SplineStructure structure = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
-            StructuresKey.Add(structure);
-            return structure;
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
+            PropsKey.Add(prop);
+            return prop;
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKeys, position.ToPose(), from, span, interval);
+            return PutProp(modelKeys, position.ToPose(), from, span, interval);
         }
 
-        public SplineStructure PutStructure(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
         {
-            return PutStructure(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
+            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
         internal SplineFactoryCommand Build(WorldPose worldPose, NetworkPort? sourcePort)
         {
             SplineFactory factory = new(worldPose, OutletLayout, sourcePort);
-            factory.AddStructures(Structures);
+            factory.AddProps(Props);
 
             SplineFactoryCommand factoryCommand = new(World, factory);
             foreach ((Type type, ITemplateComponent<IReadOnlyList<SplineBase>> component) in Components)

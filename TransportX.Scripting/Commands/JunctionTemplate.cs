@@ -29,8 +29,8 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
         public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
-        private readonly List<TransformedModelTemplate> StructuresKey = [];
-        public IReadOnlyList<TransformedModelTemplate> Structures => StructuresKey;
+        private readonly List<TransformedModelTemplate> PropsKey = [];
+        public IReadOnlyList<TransformedModelTemplate> Props => PropsKey;
 
         public ScriptWorld World { get; }
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
@@ -104,7 +104,7 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, Pose pose)
+        public TransformedModelTemplate PutProp(string modelKey, Pose pose)
         {
             if (!World.Models.TryGetValue(modelKey, out IModel? model))
             {
@@ -114,20 +114,20 @@ namespace TransportX.Scripting.Commands
                 model = Model.Empty();
             }
 
-            TransformedModelTemplate structure = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
-            StructuresKey.Add(structure);
-            return structure;
+            TransformedModelTemplate prop = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            PropsKey.Add(prop);
+            return prop;
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        public TransformedModelTemplate PutProp(string modelKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutStructure(modelKey, position.ToPose());
+            return PutProp(modelKey, position.ToPose());
         }
 
-        public TransformedModelTemplate PutStructure(string modelKey, double x, double y, double z)
+        public TransformedModelTemplate PutProp(string modelKey, double x, double y, double z)
         {
-            return PutStructure(modelKey, x, y, z, 0, 0, 0);
+            return PutProp(modelKey, x, y, z, 0, 0, 0);
         }
 
         internal JunctionFactoryCommand Build(WorldPose worldPose)
@@ -155,7 +155,7 @@ namespace TransportX.Scripting.Commands
                 World.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(World, junction));
 
             JunctionFactoryCommand factoryCommand = new(World, junction, pathFactories);
-            factoryCommand.AddStructures(Structures);
+            factoryCommand.AddProps(Props);
             foreach ((Type type, ITemplateComponent<Junction> component) in Components)
             {
                 factoryCommand.Components.Add(type, component);
