@@ -90,7 +90,7 @@ namespace TransportX.Spatial
             }
         }
 
-        public override void Draw(in LocatedDrawContext context)
+        public override void Draw(in TransformedDrawContext context)
         {
             switch (context.Pass)
             {

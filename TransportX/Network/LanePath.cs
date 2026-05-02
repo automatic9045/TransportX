@@ -106,7 +106,7 @@ namespace TransportX.Network
             ParticipantsKey.Remove(participant);
         }
 
-        public void Draw(in LocatedDrawContext context)
+        public void Draw(in TransformedDrawContext context)
         {
             if (context.Pass != RenderPass.Network) throw new InvalidOperationException();
 

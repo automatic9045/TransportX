@@ -60,7 +60,7 @@ namespace TransportX.Rendering
         {
             if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
 
-            LocatedDrawContext drawContext = new()
+            TransformedDrawContext drawContext = new()
             {
                 DeviceContext = context.DeviceContext,
                 RenderQueue = RenderQueue,
@@ -99,7 +99,7 @@ namespace TransportX.Rendering
                         {
                             if (chunks.TryGetValue(x, z, out Chunk? chunk))
                             {
-                                LocatedDrawContext drawContext = new()
+                                TransformedDrawContext drawContext = new()
                                 {
                                     DeviceContext = context.DeviceContext,
                                     RenderQueue = RenderQueue,
@@ -121,7 +121,7 @@ namespace TransportX.Rendering
         {
             foreach (RigidBody body in bodies)
             {
-                LocatedDrawContext drawContext = new()
+                TransformedDrawContext drawContext = new()
                 {
                     DeviceContext = context.DeviceContext,
                     RenderQueue = RenderQueue,

@@ -75,7 +75,7 @@ namespace TransportX.Extensions.Traffic
             CurrentSensor = currentSensor!;
         }
 
-        public void Draw(in LocatedDrawContext context)
+        public void Draw(in TransformedDrawContext context)
         {
             CurrentSensor.Draw(context);
         }

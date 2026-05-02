@@ -84,7 +84,7 @@ namespace TransportX.Bodies
         {
         }
 
-        public virtual void Draw(in LocatedDrawContext context)
+        public virtual void Draw(in TransformedDrawContext context)
         {
             Structure.Draw(context);
         }

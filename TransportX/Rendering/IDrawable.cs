@@ -9,6 +9,6 @@ namespace TransportX.Rendering
 {
     public interface IDrawable
     {
-        void Draw(in LocatedDrawContext context);
+        void Draw(in TransformedDrawContext context);
     }
 }

@@ -13,7 +13,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Rendering
 {
-    public readonly struct LocatedDrawContext
+    public readonly struct TransformedDrawContext
     {
         public required ID3D11DeviceContext DeviceContext { get; init; }
         public required IRenderQueue RenderQueue { get; init; }
@@ -23,7 +23,7 @@ namespace TransportX.Rendering
         public required BoundingFrustum Frustum { get; init; }
         public RenderPass Pass { get; init; } = RenderPass.Normal;
 
-        public LocatedDrawContext()
+        public TransformedDrawContext()
         {
         }
     }

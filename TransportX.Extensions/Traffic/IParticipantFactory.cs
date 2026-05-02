@@ -12,6 +12,6 @@ namespace TransportX.Extensions.Traffic
     {
         ParticipantSpec Spec { get; }
 
-        ITrafficParticipant Create(in TrafficSpawnContext context);
+        ITrafficEntity Create(in TrafficSpawnContext context);
     }
 }

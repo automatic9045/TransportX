@@ -185,7 +185,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             }
         }
 
-        public void Draw(in LocatedDrawContext context)
+        public void Draw(in TransformedDrawContext context)
         {
             if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
 

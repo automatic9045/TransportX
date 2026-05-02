@@ -121,7 +121,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             BrakeLight.Tick(elapsed);
         }
 
-        public override void Draw(in LocatedDrawContext context)
+        public override void Draw(in TransformedDrawContext context)
         {
             base.Draw(context);
             if (IsEnabled && context.Pass == RenderPass.Traffic) Sensor.Draw(context);

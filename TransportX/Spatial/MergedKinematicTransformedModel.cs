@@ -89,7 +89,7 @@ namespace TransportX.Spatial
             Model.Dispose();
         }
 
-        public override void Draw(in LocatedDrawContext context)
+        public override void Draw(in TransformedDrawContext context)
         {
             if (IsVisible && context.Pass == RenderPass.Normal)
             {

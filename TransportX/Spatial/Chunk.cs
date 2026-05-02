@@ -68,7 +68,7 @@ namespace TransportX.Spatial
             IsFar = isFar;
         }
 
-        public void Draw(in LocatedDrawContext context)
+        public void Draw(in TransformedDrawContext context)
         {
             foreach (TransformedModel model in Models)
             {

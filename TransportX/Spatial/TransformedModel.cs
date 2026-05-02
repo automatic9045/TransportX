@@ -41,7 +41,7 @@ namespace TransportX.Spatial
         {
         }
 
-        public virtual void Draw(in LocatedDrawContext context)
+        public virtual void Draw(in TransformedDrawContext context)
         {
             if (!IsVisible) return;
             if (context.Pass != RenderPass.Normal) return;
