@@ -27,7 +27,7 @@ namespace TransportX.Network
             DirectionPose = Reverse ? Pose.CreateRotationY(float.Pi) : Pose.Identity;
         }
 
-        public LanePathView(ILanePath source, ParticipantDirection heading) : this(source, heading == ParticipantDirection.Backward)
+        public LanePathView(ILanePath source, EntityDirection heading) : this(source, heading == EntityDirection.Backward)
         {
         }
 

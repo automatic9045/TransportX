@@ -31,12 +31,12 @@ namespace TransportX.Domains.RoadTraffic.Network
             path.Components.Add(this);
         }
 
-        public float GetDeflection(ParticipantDirection direction)
+        public float GetDeflection(EntityDirection direction)
         {
             return direction switch
             {
-                ParticipantDirection.Forward => Forward,
-                ParticipantDirection.Backward => Backward,
+                EntityDirection.Forward => Forward,
+                EntityDirection.Backward => Backward,
                 _ => throw new NotSupportedException(),
             };
         }

@@ -19,7 +19,7 @@ namespace TransportX.Extensions.Traffic
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
-        public ITrafficParticipant? Target => CurrentSensor.Target;
+        public ITrafficEntity? Target => CurrentSensor.Target;
         public bool IsTargetOncoming => CurrentSensor.IsTargetOncoming;
         public float DistanceToTarget => CurrentSensor.DistanceToTarget;
         public float StopMargin => CurrentSensor.StopMargin;
@@ -60,7 +60,7 @@ namespace TransportX.Extensions.Traffic
             for (int i = 0; i < Sensors.Count; i++) Sensors[i].Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
         {
             ITrafficSensor? currentSensor = null;
             for (int i = 0; i < Sensors.Count; i++)

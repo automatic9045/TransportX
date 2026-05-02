@@ -23,7 +23,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
-        public ITrafficParticipant? Target { get; private set; } = null;
+        public ITrafficEntity? Target { get; private set; } = null;
         public bool IsTargetOncoming => false;
         public float DistanceToTarget { get; private set; } = 0;
         public float StopMargin { get; init; } = 0.75f;
@@ -50,7 +50,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             DebugVisual?.Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
         {
             if (LaneTracker.Path is null) throw new InvalidOperationException();
 
@@ -63,7 +63,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
                 {
                     if (component.Signal == SignalColor.Red || (component.Signal == SignalColor.Yellow && totalLength < float.Abs(LaneTracker.SVelocity)))
                     {
-                        Target = new SignalParticipant(view);
+                        Target = new SignalEntity(view);
                         DistanceToTarget = totalLength;
                         return;
                     }
@@ -86,7 +86,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
         }
 
 
-        private readonly struct SignalParticipant : ITrafficParticipant
+        private readonly struct SignalEntity : ITrafficEntity
         {
             private readonly LanePathView Target;
 
@@ -99,7 +99,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
             public readonly bool IsEnabled => true;
             public readonly ILanePath? Path => Target.Source;
-            public readonly ParticipantDirection Heading { get; }
+            public readonly EntityDirection Heading { get; }
             public readonly float S { get; }
             public readonly float SVelocity => 0;
 
@@ -109,15 +109,15 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
                 remove => throw new NotSupportedException();
             }
 
-            public SignalParticipant(in LanePathView target)
+            public SignalEntity(in LanePathView target)
             {
                 Target = target;
                 WorldPose = Target.GetWorldPose(0);
-                Heading = Target.Reverse ? ParticipantDirection.Backward : ParticipantDirection.Forward;
+                Heading = Target.Reverse ? EntityDirection.Backward : EntityDirection.Forward;
                 S = Target.FromViewS(0);
             }
 
-            public readonly bool Spawn(ILanePath path, ParticipantDirection heading, float s)
+            public readonly bool Spawn(ILanePath path, EntityDirection heading, float s)
             {
                 throw new NotSupportedException();
             }

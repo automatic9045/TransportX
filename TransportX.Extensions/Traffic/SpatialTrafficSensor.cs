@@ -21,12 +21,12 @@ namespace TransportX.Extensions.Traffic
 
         private readonly ILaneTracker LaneTracker;
         private readonly IWorldObject Origin;
-        private readonly Func<ITrafficParticipant, bool> ObstacleSkipCondition;
+        private readonly Func<ITrafficEntity, bool> ObstacleSkipCondition;
         private readonly TrafficSensorDebugVisual DebugVisual;
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
-        public ITrafficParticipant? Target { get; private set; } = null;
+        public ITrafficEntity? Target { get; private set; } = null;
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
         public float StopMargin { get; init; } = 1;
@@ -42,7 +42,7 @@ namespace TransportX.Extensions.Traffic
             set => DebugVisual.DebugName = value;
         }
 
-        public SpatialTrafficSensor(ILaneTracker laneTracker, IWorldObject origin, Func<ITrafficParticipant, bool> obstacleSkipCondition)
+        public SpatialTrafficSensor(ILaneTracker laneTracker, IWorldObject origin, Func<ITrafficEntity, bool> obstacleSkipCondition)
         {
             LaneTracker = laneTracker;
             Origin = origin;
@@ -56,16 +56,16 @@ namespace TransportX.Extensions.Traffic
             DebugVisual.Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
         {
             if (!LaneTracker.IsEnabled || LaneTracker.Path is null) throw new InvalidOperationException();
 
             float minSurfaceDistance = MaxDistance;
 
             Pose poseInv = Pose.Inverse(Origin.WorldPose.Pose);
-            ProjectedParticipant nearestObstacle = default;
+            ProjectedEntity nearestObstacle = default;
             float nearestObstacleDistance = float.NaN;
-            foreach (ITrafficParticipant obstacle in obstacles)
+            foreach (ITrafficEntity obstacle in obstacles)
             {
                 if (!obstacle.IsEnabled) continue;
                 if (ObstacleSkipCondition(obstacle)) continue;
@@ -104,7 +104,7 @@ namespace TransportX.Extensions.Traffic
                     minSurfaceDistance = surfaceDistance;
 
                     nearestObstacleDistance = 0 <= Vector3.Dot(Origin.WorldPose.Pose.Direction, obstacle.WorldPose.Pose.Direction) ? bbox.Max.Z : bbox.Min.Z;
-                    nearestObstacle = new ProjectedParticipant(
+                    nearestObstacle = new ProjectedEntity(
                         LaneTracker.Heading, LaneTracker.S, Origin.WorldPose.Pose.Direction,
                         obstacle, nearestObstacleDistance, bbox.Width, bbox.Height, bbox.Depth);
                 }
@@ -134,9 +134,9 @@ namespace TransportX.Extensions.Traffic
         }
 
 
-        private readonly struct ProjectedParticipant : ITrafficParticipant
+        private readonly struct ProjectedEntity : ITrafficEntity
         {
-            private readonly ITrafficParticipant Source;
+            private readonly ITrafficEntity Source;
 
             public readonly WorldPose WorldPose => Source.WorldPose;
             public readonly Vector3 Velocity => Source.Velocity;
@@ -147,7 +147,7 @@ namespace TransportX.Extensions.Traffic
 
             public readonly bool IsEnabled => true;
             public readonly ILanePath? Path => null;
-            public readonly ParticipantDirection Heading { get; }
+            public readonly EntityDirection Heading { get; }
             public readonly float S { get; }
             public readonly float SVelocity { get; }
 
@@ -157,9 +157,9 @@ namespace TransportX.Extensions.Traffic
                 remove => throw new NotSupportedException();
             }
 
-            public ProjectedParticipant(
-                ParticipantDirection originHeading, float originS, Vector3 originDirection,
-                ITrafficParticipant source, float offset, float width, float height, float length)
+            public ProjectedEntity(
+                EntityDirection originHeading, float originS, Vector3 originDirection,
+                ITrafficEntity source, float offset, float width, float height, float length)
             {
                 Source = source;
 
@@ -169,13 +169,13 @@ namespace TransportX.Extensions.Traffic
 
                 float dotHeading = Vector3.Dot(originDirection, source.WorldPose.Pose.Direction);
                 Heading = 0 <= dotHeading ? originHeading
-                    : originHeading == ParticipantDirection.Forward ? ParticipantDirection.Backward
-                    : ParticipantDirection.Forward;
+                    : originHeading == EntityDirection.Forward ? EntityDirection.Backward
+                    : EntityDirection.Forward;
                 S = originS + (int)originHeading * offset;
                 SVelocity = (int)originHeading * Vector3.Dot(originDirection, source.Velocity);
             }
 
-            public readonly bool Spawn(ILanePath path, ParticipantDirection heading, float s)
+            public readonly bool Spawn(ILanePath path, EntityDirection heading, float s)
             {
                 throw new NotSupportedException();
             }

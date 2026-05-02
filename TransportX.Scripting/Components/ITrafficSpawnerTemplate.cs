@@ -28,7 +28,7 @@ namespace TransportX.Scripting.Components
 
             private class Spawner : ITrafficSpawner
             {
-                public IList<IParticipantFactory> ParticipantFactories { get; } = [];
+                public IList<IEntityFactory> EntityFactories { get; } = [];
 
                 public void Initialize(IEnumerable<ILanePath> paths, IEnumerable<NetworkPort> sourcePorts)
                 {

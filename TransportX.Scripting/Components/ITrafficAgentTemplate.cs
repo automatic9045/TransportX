@@ -17,46 +17,46 @@ namespace TransportX.Scripting.Components
     {
         public static ITrafficAgentTemplate Default() => new DefaultTemplate();
 
-        IParticipantFactory Build(XElement data);
+        IEntityFactory Build(XElement data);
 
 
         private class DefaultTemplate : ITrafficAgentTemplate
         {
-            public IParticipantFactory Build(XElement data)
+            public IEntityFactory Build(XElement data)
             {
-                return new ParticipantFactory();
+                return new EntityFactory();
             }
 
 
-            private class ParticipantFactory : IParticipantFactory
+            private class EntityFactory : IEntityFactory
             {
-                private static readonly ParticipantSpec Spec = new()
+                private static readonly EntitySpec Spec = new()
                 {
                     Width = 1,
                     Height = 1,
                     Length = 1,
                 };
 
-                ParticipantSpec IParticipantFactory.Spec => Spec;
+                EntitySpec IEntityFactory.Spec => Spec;
 
-                public ITrafficParticipant Create(in TrafficSpawnContext context)
+                public ITrafficEntity Create(in TrafficSpawnContext context)
                 {
-                    return new Participant();
+                    return new Entity();
                 }
             }
 
-            private class Participant : WorldObject, ITrafficParticipant
+            private class Entity : WorldObject, ITrafficEntity
             {
                 public float Width => 1;
                 public float Height => 1;
                 public float Length => 1;
                 public bool IsEnabled => false;
                 public ILanePath? Path => null;
-                public ParticipantDirection Heading => ParticipantDirection.Forward;
+                public EntityDirection Heading => EntityDirection.Forward;
                 public float S => 0;
                 public float SVelocity => 0;
 
-                public bool Spawn(ILanePath path, ParticipantDirection heading, float s)
+                public bool Spawn(ILanePath path, EntityDirection heading, float s)
                 {
                     return false;
                 }

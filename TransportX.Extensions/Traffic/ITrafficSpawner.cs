@@ -11,7 +11,7 @@ namespace TransportX.Extensions.Traffic
 {
     public interface ITrafficSpawner
     {
-        IList<IParticipantFactory> ParticipantFactories { get; }
+        IList<IEntityFactory> EntityFactories { get; }
 
         void Initialize(IEnumerable<ILanePath> paths, IEnumerable<NetworkPort> sourcePorts);
         void Tick(TimeSpan elapsed);

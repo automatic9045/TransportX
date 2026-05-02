@@ -12,7 +12,7 @@ namespace TransportX.Extensions.Traffic
 {
     public class RandomTrafficSpawner : ITrafficSpawner
     {
-        private readonly ConcurrentDictionary<IParticipantFactory, List<ITrafficParticipant>> Participants = [];
+        private readonly ConcurrentDictionary<IEntityFactory, List<ITrafficEntity>> Entities = [];
 
         private readonly LaneTrafficType Type;
         private readonly TrafficSpawnContext Context;
@@ -20,12 +20,12 @@ namespace TransportX.Extensions.Traffic
         private readonly float Density;
         private readonly float AssumedSpeed;
 
-        private IReadOnlyList<(ILanePath Path, ParticipantDirection Heading)> SourcePaths = [];
+        private IReadOnlyList<(ILanePath Path, EntityDirection Heading)> SourcePaths = [];
         private float[] CumulativeWeights = [];
         private float TotalWeight;
         private TimeSpan SinceLastSpawn = TimeSpan.Zero;
 
-        public IList<IParticipantFactory> ParticipantFactories { get; } = [];
+        public IList<IEntityFactory> EntityFactories { get; } = [];
 
         public RandomTrafficSpawner(LaneTrafficType type, in TrafficSpawnContext context, float density, float assumedSpeed)
         {
@@ -61,11 +61,11 @@ namespace TransportX.Extensions.Traffic
 
                     if (path.Length <= s) break;
 
-                    ParticipantDirection heading = path.Directions switch
+                    EntityDirection heading = path.Directions switch
                     {
-                        FlowDirections.In => ParticipantDirection.Backward,
-                        FlowDirections.Out => ParticipantDirection.Forward,
-                        FlowDirections.InOut => Random.Shared.GetItems([ParticipantDirection.Forward, ParticipantDirection.Backward], 1)[0],
+                        FlowDirections.In => EntityDirection.Backward,
+                        FlowDirections.Out => EntityDirection.Forward,
+                        FlowDirections.InOut => Random.Shared.GetItems([EntityDirection.Forward, EntityDirection.Backward], 1)[0],
                         _ => throw new NotSupportedException(),
                     };
                     TrySpawnAt(path, heading, s);
@@ -78,8 +78,8 @@ namespace TransportX.Extensions.Traffic
                 .Where(pin => pin.Definition.AllowedTraffic.Contains(Type));
 
             var rawSourcePaths = sourcePins.SelectMany(pin => Enumerable.Concat(
-                pin.SourcePaths.Where(path => path.Directions.HasFlag(FlowDirections.Out)).Select(path => (Path: path, Heading: ParticipantDirection.Forward)),
-                pin.DestPaths.Where(path => path.Directions.HasFlag(FlowDirections.In)).Select(path => (Path: path, Heading: ParticipantDirection.Backward))))
+                pin.SourcePaths.Where(path => path.Directions.HasFlag(FlowDirections.Out)).Select(path => (Path: path, Heading: EntityDirection.Forward)),
+                pin.DestPaths.Where(path => path.Directions.HasFlag(FlowDirections.In)).Select(path => (Path: path, Heading: EntityDirection.Backward))))
                 .ToArray();
 
             float[] cumulativeWeights = new float[rawSourcePaths.Length];
@@ -118,36 +118,36 @@ namespace TransportX.Extensions.Traffic
                 if (index < 0) index = ~index;
                 if (SourcePaths.Count <= index) index = SourcePaths.Count - 1;
 
-                (ILanePath path, ParticipantDirection heading) = SourcePaths[index];
-                TrySpawnAt(path, heading, heading == ParticipantDirection.Backward ? path.Length : 0);
+                (ILanePath path, EntityDirection heading) = SourcePaths[index];
+                TrySpawnAt(path, heading, heading == EntityDirection.Backward ? path.Length : 0);
             }
         }
 
-        private ITrafficParticipant? TrySpawnAt(ILanePath path, ParticipantDirection heading, float s)
+        private ITrafficEntity? TrySpawnAt(ILanePath path, EntityDirection heading, float s)
         {
-            IParticipantFactory factory = ParticipantFactories[Random.Shared.Next(ParticipantFactories.Count)];
+            IEntityFactory factory = EntityFactories[Random.Shared.Next(EntityFactories.Count)];
 
             if (path.GetWidth(s).Total < factory.Spec.Width) return null;
 
-            bool isOccupied = path.Participants.Any(p => float.Abs(p.S - s) < factory.Spec.Length);
+            bool isOccupied = path.Entities.Any(p => float.Abs(p.S - s) < factory.Spec.Length);
             if (isOccupied) return null;
 
-            ITrafficParticipant participant;
+            ITrafficEntity entity;
 
-            List<ITrafficParticipant> participants = Participants.GetOrAdd(factory, _ => []);
-            ITrafficParticipant? disabledParticipant = participants.FirstOrDefault(p => !p.IsEnabled);
-            if (participants.Count == 0 || disabledParticipant is null)
+            List<ITrafficEntity> entities = Entities.GetOrAdd(factory, _ => []);
+            ITrafficEntity? disabledEntity = entities.FirstOrDefault(p => !p.IsEnabled);
+            if (entities.Count == 0 || disabledEntity is null)
             {
-                participant = factory.Create(Context);
-                participants.Add(participant);
+                entity = factory.Create(Context);
+                entities.Add(entity);
             }
             else
             {
-                participant = disabledParticipant;
+                entity = disabledEntity;
             }
 
-            bool spawned = participant.Spawn(path, heading, s);
-            return spawned ? participant : null;
+            bool spawned = entity.Spawn(path, heading, s);
+            return spawned ? entity : null;
         }
     }
 }

@@ -11,12 +11,12 @@ using TransportX.Rendering;
 
 namespace TransportX.Traffic
 {
-    public static class ParticipantDebugModelFactory
+    public static class EntityDebugModelFactory
     {
-        public static WireframeDebugModel CreateDebugModel(this ITrafficParticipant participant, ID3D11Device device)
+        public static WireframeDebugModel CreateDebugModel(this ITrafficEntity entity, ID3D11Device device)
         {
-            Vector3 min = new(-participant.Width / 2, 0, -participant.Length);
-            Vector3 max = new(participant.Width / 2, participant.Height, 0);
+            Vector3 min = new(-entity.Width / 2, 0, -entity.Length);
+            Vector3 max = new(entity.Width / 2, entity.Height, 0);
             return WireframeDebugModel.CreateBoundingBox(device, Material.Default(), min, max);
         }
     }

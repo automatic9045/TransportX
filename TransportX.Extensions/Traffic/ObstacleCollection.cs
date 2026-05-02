@@ -10,7 +10,7 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public class ObstacleCollection : IEnumerable<ITrafficParticipant>
+    public class ObstacleCollection : IEnumerable<ITrafficEntity>
     {
         private readonly IReadOnlyList<RigidBody> Source;
 
@@ -20,18 +20,18 @@ namespace TransportX.Extensions.Traffic
         }
 
         public Enumerator GetEnumerator() => new(Source);
-        IEnumerator<ITrafficParticipant> IEnumerable<ITrafficParticipant>.GetEnumerator() => GetEnumerator();
+        IEnumerator<ITrafficEntity> IEnumerable<ITrafficEntity>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 
-        public struct Enumerator : IEnumerator<ITrafficParticipant>
+        public struct Enumerator : IEnumerator<ITrafficEntity>
         {
             private readonly IReadOnlyList<RigidBody> Source;
 
             private int Index = 0;
-            private ITrafficParticipant? CurrentKey = default;
+            private ITrafficEntity? CurrentKey = default;
 
-            public readonly ITrafficParticipant Current => CurrentKey!;
+            public readonly ITrafficEntity Current => CurrentKey!;
             readonly object IEnumerator.Current => CurrentKey!;
 
             internal Enumerator(IReadOnlyList<RigidBody> source)
@@ -50,9 +50,9 @@ namespace TransportX.Extensions.Traffic
                     var item = Source[Index];
                     Index++;
 
-                    if (item is ITrafficParticipant tp)
+                    if (item is ITrafficEntity entity)
                     {
-                        CurrentKey = tp;
+                        CurrentKey = entity;
                         return true;
                     }
                 }

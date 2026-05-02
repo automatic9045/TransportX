@@ -29,7 +29,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting
 
         public static CarTemplate Create(ScriptWorld world) => new(world);
 
-        public IParticipantFactory Build(XElement data)
+        public IEntityFactory Build(XElement data)
         {
             XElement modelsElement = data.Element("Models") ?? new XElement(string.Empty);
             IModel model = GetModel(modelsElement, "Body") ?? Model.Empty();

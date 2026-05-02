@@ -55,7 +55,7 @@ namespace TransportX.Sample.LV290.Vehicles
 
         public override bool IsEnabled => true;
         public override ILanePath? Path => null;
-        public override ParticipantDirection Heading => ParticipantDirection.Forward;
+        public override EntityDirection Heading => EntityDirection.Forward;
         public override float S => 0;
         public override float SVelocity => 0;
 
@@ -86,7 +86,7 @@ namespace TransportX.Sample.LV290.Vehicles
             Audios.Dispose();
         }
 
-        public override bool Spawn(ILanePath path, ParticipantDirection heading, float s)
+        public override bool Spawn(ILanePath path, EntityDirection heading, float s)
         {
             throw new NotSupportedException();
         }

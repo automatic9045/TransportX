@@ -18,7 +18,7 @@ namespace TransportX.Extensions.Traffic
 
         public float MaxDistance { get; set; } = float.MaxValue;
 
-        public ITrafficParticipant? Target { get; private set; } = null;
+        public ITrafficEntity? Target { get; private set; } = null;
         public bool IsTargetOncoming { get; private set; } = false;
         public float DistanceToTarget { get; private set; } = 0;
         public float StopMargin { get; init; } = 2;
@@ -45,15 +45,15 @@ namespace TransportX.Extensions.Traffic
             DebugVisual?.Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
         {
             if (!LaneTracker.IsEnabled || LaneTracker.Path is null) throw new InvalidOperationException();
 
             LanePathView pathView = new(LaneTracker.Path, LaneTracker.Heading);
 
-            ITrafficParticipant? next = LaneTracker.Path.Participants
-                .OrderBy(participant => pathView.ToViewS(participant.S))
-                .FirstOrDefault(participant => pathView.ToViewS(LaneTracker.S) < pathView.ToViewS(participant.S));
+            ITrafficEntity? next = LaneTracker.Path.Entities
+                .OrderBy(entity => pathView.ToViewS(entity.S))
+                .FirstOrDefault(entity => pathView.ToViewS(LaneTracker.S) < pathView.ToViewS(entity.S));
             bool isOncoming = next is not null && LaneTracker.Heading != next.Heading;
 
             float distance;
@@ -72,8 +72,8 @@ namespace TransportX.Extensions.Traffic
                 {
                     if (MaxDistance < distance) break;
 
-                    next = view.Source.Participants
-                        .OrderBy(participant => view.ToViewS(participant.S))
+                    next = view.Source.Entities
+                        .OrderBy(entity => view.ToViewS(entity.S))
                         .FirstOrDefault();
 
                     if (next is null)
@@ -82,7 +82,7 @@ namespace TransportX.Extensions.Traffic
                     }
                     else
                     {
-                        isOncoming = (next.Heading == ParticipantDirection.Forward) == view.Reverse;
+                        isOncoming = (next.Heading == EntityDirection.Forward) == view.Reverse;
                         distance += view.ToViewS(next.S);
                         surfaceDistance = isOncoming ? distance : distance - next.Length;
 

@@ -18,7 +18,7 @@ using TransportX.Worlds;
 
 namespace TransportX.Avatars
 {
-    public abstract class AvatarBase : RigidBody, ITrafficParticipant
+    public abstract class AvatarBase : RigidBody, ITrafficEntity
     {
         private readonly IDebugModel DebugModel;
 
@@ -47,10 +47,10 @@ namespace TransportX.Avatars
 
         public abstract bool IsEnabled { get; }
         public abstract ILanePath? Path { get; }
-        public abstract ParticipantDirection Heading { get; }
+        public abstract EntityDirection Heading { get; }
         public abstract float S { get; }
         public abstract float SVelocity { get; }
-        float ITrafficParticipant.SVelocity => SVelocity;
+        float ITrafficEntity.SVelocity => SVelocity;
 
         protected Vector4 DebugColor
         {
@@ -88,7 +88,7 @@ namespace TransportX.Avatars
             return base.TeleportTo(worldPose);
         }
 
-        public abstract bool Spawn(ILanePath path, ParticipantDirection heading, float s);
+        public abstract bool Spawn(ILanePath path, EntityDirection heading, float s);
 
         public override void Draw(in TransformedDrawContext context)
         {

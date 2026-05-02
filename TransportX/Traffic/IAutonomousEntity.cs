@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransportX.Traffic
 {
-    public enum ParticipantDirection
+    public interface IAutonomousEntity : ITrafficEntity
     {
-        Backward = -1,
-        Forward = 1,
     }
 }

@@ -22,7 +22,7 @@ namespace TransportX.Extensions.Traffic
 
         public bool IsEnabled { get; private set; } = false;
         public ILanePath? Path { get; private set; } = null;
-        public ParticipantDirection Heading { get; private set; } = ParticipantDirection.Forward;
+        public EntityDirection Heading { get; private set; } = EntityDirection.Forward;
         public float S { get; private set; } = 0;
         public float SVelocity { get; private set; } = 0;
 
@@ -38,7 +38,7 @@ namespace TransportX.Extensions.Traffic
             Length = length;
         }
 
-        public void Initialize(ILanePath path, ParticipantDirection heading, float s)
+        public void Initialize(ILanePath path, EntityDirection heading, float s)
         {
             Path = path;
             Heading = heading;
@@ -83,7 +83,7 @@ namespace TransportX.Extensions.Traffic
                 {
                     viewS -= Path.Length;
                     Path = pathView.Source;
-                    Heading = pathView.Reverse ? ParticipantDirection.Backward : ParticipantDirection.Forward;
+                    Heading = pathView.Reverse ? EntityDirection.Backward : EntityDirection.Forward;
 
                     if (pathView.Reverse != oldPathView.Reverse) SVelocity = -SVelocity;
                 }

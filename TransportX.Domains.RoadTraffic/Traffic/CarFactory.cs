@@ -11,9 +11,9 @@ using TransportX.Extensions.Traffic;
 
 namespace TransportX.Domains.RoadTraffic.Traffic
 {
-    public class CarFactory : IParticipantFactory
+    public class CarFactory : IEntityFactory
     {
-        private static readonly ParticipantSpec Spec = new()
+        private static readonly EntitySpec Spec = new()
         {
             Width = Car.Width,
             Height = Car.Height,
@@ -27,7 +27,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         private readonly IModel BrakeLightModel;
         private readonly CarSpec CarSpec;
 
-        ParticipantSpec IParticipantFactory.Spec => Spec;
+        EntitySpec IEntityFactory.Spec => Spec;
 
         public CarFactory(IModel model, IModel blinkerLightLModel, IModel blinkerLightRModel, IModel brakeLightModel, CarSpec carSpec)
         {
@@ -38,7 +38,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             CarSpec = carSpec;
         }
 
-        public ITrafficParticipant Create(in TrafficSpawnContext context)
+        public ITrafficEntity Create(in TrafficSpawnContext context)
         {
             DriverPersonality personality = new()
             {

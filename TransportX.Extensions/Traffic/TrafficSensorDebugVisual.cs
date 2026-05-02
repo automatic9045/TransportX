@@ -19,7 +19,7 @@ namespace TransportX.Extensions.Traffic
         private DynamicLineMesh? Mesh = null;
         private WireframeDebugModel? Model = null;
 
-        public ITrafficParticipant? Target { get; set; } = null;
+        public ITrafficEntity? Target { get; set; } = null;
         public bool IsTargetOncoming { get; set; } = false;
 
         public Vector4 DebugColor { get; set; } = Vector4.One;

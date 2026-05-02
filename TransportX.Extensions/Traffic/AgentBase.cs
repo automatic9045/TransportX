@@ -13,7 +13,7 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public abstract class AgentBase : RigidBody, IAutonomousParticipant
+    public abstract class AgentBase : RigidBody, IAutonomousEntity
     {
         private ILaneTracker? SubscribedTracker = null;
         private WireframeDebugModel? DebugModel = null;
@@ -30,11 +30,11 @@ namespace TransportX.Extensions.Traffic
 
         public bool IsEnabled => LaneTracker.IsEnabled;
         public ILanePath? Path => LaneTracker.Path;
-        public ParticipantDirection Heading => LaneTracker.Heading;
+        public EntityDirection Heading => LaneTracker.Heading;
         public float S => LaneTracker.S;
         public float SVelocity => LaneTracker.SVelocity;
 
-        public IEnumerable<ITrafficParticipant> Obstacles { get; }
+        public IEnumerable<ITrafficEntity> Obstacles { get; }
 
         protected Vector4 DebugColor
         {
@@ -42,7 +42,7 @@ namespace TransportX.Extensions.Traffic
             set => DebugModel?.Color = field = value;
         } = new Vector4(0, 0, 1, 1);
 
-        protected AgentBase(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles) : base(physicsHost)
+        protected AgentBase(IPhysicsHost physicsHost, IEnumerable<ITrafficEntity> obstacles) : base(physicsHost)
         {
             Obstacles = obstacles;
         }
@@ -54,9 +54,9 @@ namespace TransportX.Extensions.Traffic
             Sensor.Dispose();
         }
 
-        public bool Spawn(ILanePath path, ParticipantDirection heading, float s)
+        public bool Spawn(ILanePath path, EntityDirection heading, float s)
         {
-            FlowDirections direction = heading == ParticipantDirection.Forward ? FlowDirections.Out : FlowDirections.In;
+            FlowDirections direction = heading == EntityDirection.Forward ? FlowDirections.Out : FlowDirections.In;
             if (!path.Directions.HasFlag(direction)) throw new ArgumentException("進行方向が進路の方向と一致しません。", nameof(heading));
 
             if (SubscribedTracker is null)

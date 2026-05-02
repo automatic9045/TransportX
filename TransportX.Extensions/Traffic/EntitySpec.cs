@@ -8,7 +8,7 @@ using TransportX.Components;
 
 namespace TransportX.Extensions.Traffic
 {
-    public class ParticipantSpec
+    public class EntitySpec
     {
         public required float Width { get; init; }
         public required float Height { get; init; }
@@ -16,7 +16,7 @@ namespace TransportX.Extensions.Traffic
 
         public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        public ParticipantSpec()
+        public EntitySpec()
         {
         }
     }

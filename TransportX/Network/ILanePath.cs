@@ -25,7 +25,7 @@ namespace TransportX.Network
 
         IComponentCollection<IComponent> Components { get; }
 
-        IReadOnlyList<ITrafficParticipant> Participants { get; }
+        IReadOnlyList<ITrafficEntity> Entities { get; }
 
         string? DebugName { get; set; }
 
@@ -33,7 +33,7 @@ namespace TransportX.Network
         WorldPose GetWorldPose(float at);
         LaneWidth GetWidth(float at);
 
-        void Enter(ITrafficParticipant participant);
-        void Exit(ITrafficParticipant participant);
+        void Enter(ITrafficEntity entity);
+        void Exit(ITrafficEntity entity);
     }
 }

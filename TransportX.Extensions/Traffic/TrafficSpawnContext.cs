@@ -14,7 +14,7 @@ namespace TransportX.Extensions.Traffic
     {
         public required IPhysicsHost PhysicsHost { get; init; }
         public required ICollection<RigidBody> Bodies { get; init; }
-        public required IEnumerable<ITrafficParticipant> Obstacles { get; init; }
+        public required IEnumerable<ITrafficEntity> Obstacles { get; init; }
 
         public TrafficSpawnContext()
         {

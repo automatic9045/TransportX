@@ -16,7 +16,7 @@ namespace TransportX.Traffic
 
         bool IsEnabled { get; }
         ILanePath? Path { get; }
-        ParticipantDirection Heading { get; }
+        EntityDirection Heading { get; }
         float S { get; }
         float SVelocity { get; }
 
@@ -24,7 +24,7 @@ namespace TransportX.Traffic
 
         event EventHandler<PathChangedEventArgs>? PathChanged;
 
-        void Initialize(ILanePath path, ParticipantDirection heading, float s);
+        void Initialize(ILanePath path, EntityDirection heading, float s);
         void Tick(float acceleration, TimeSpan elapsed);
     }
 }

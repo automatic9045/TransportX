@@ -36,8 +36,8 @@ namespace TransportX.Network
 
         public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
 
-        private readonly List<ITrafficParticipant> ParticipantsKey = [];
-        public IReadOnlyList<ITrafficParticipant> Participants => ParticipantsKey;
+        private readonly List<ITrafficEntity> EntitiesKey = [];
+        public IReadOnlyList<ITrafficEntity> Entities => EntitiesKey;
 
         public abstract float Length { get; }
 
@@ -96,14 +96,14 @@ namespace TransportX.Network
 
         public abstract LaneWidth GetWidth(float at);
 
-        public virtual void Enter(ITrafficParticipant participant)
+        public virtual void Enter(ITrafficEntity entity)
         {
-            ParticipantsKey.Add(participant);
+            EntitiesKey.Add(entity);
         }
 
-        public virtual void Exit(ITrafficParticipant participant)
+        public virtual void Exit(ITrafficEntity entity)
         {
-            ParticipantsKey.Remove(participant);
+            EntitiesKey.Remove(entity);
         }
 
         public void Draw(in TransformedDrawContext context)

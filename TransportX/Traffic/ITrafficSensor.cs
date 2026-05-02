@@ -13,13 +13,13 @@ namespace TransportX.Traffic
     {
         float MaxDistance { get; set; }
 
-        ITrafficParticipant? Target { get; }
+        ITrafficEntity? Target { get; }
         bool IsTargetOncoming { get; }
         float DistanceToTarget { get; }
         float StopMargin { get; }
 
         string? DebugName { get; set; }
 
-        void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficParticipant> obstacles, TimeSpan elapsed);
+        void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed);
     }
 }

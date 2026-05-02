@@ -42,7 +42,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override ITrafficSensor Sensor { get; }
         public override IDriver Driver { get; }
 
-        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficParticipant> obstacles,
+        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficEntity> obstacles,
             IModel model, IModel blinkerLightLModel, IModel blinkerLightRModel, IModel brakeLightModel,
             CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
         {

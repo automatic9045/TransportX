@@ -8,7 +8,7 @@ using TransportX.Network;
 
 namespace TransportX.Traffic
 {
-    public interface ITrafficParticipant : IWorldObject
+    public interface ITrafficEntity : IWorldObject
     {
         float Width { get; }
         float Height { get; }
@@ -16,10 +16,10 @@ namespace TransportX.Traffic
 
         bool IsEnabled { get; }
         ILanePath? Path { get; }
-        ParticipantDirection Heading { get; }
+        EntityDirection Heading { get; }
         float S { get; }
         float SVelocity { get; }
 
-        bool Spawn(ILanePath path, ParticipantDirection heading, float s);
+        bool Spawn(ILanePath path, EntityDirection heading, float s);
     }
 }

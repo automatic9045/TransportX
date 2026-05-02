@@ -8,9 +8,9 @@ using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
 {
-    public interface IParticipantFactory
+    public interface IEntityFactory
     {
-        ParticipantSpec Spec { get; }
+        EntitySpec Spec { get; }
 
         ITrafficEntity Create(in TrafficSpawnContext context);
     }

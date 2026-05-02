@@ -97,8 +97,8 @@ namespace TransportX.Scripting.Components
                     World.ErrorCollector.ReportRange(agentData.Errors);
 
                     ITrafficAgentTemplate agentTemplate = Agents[agentData.Key.Value];
-                    IParticipantFactory factory = agentTemplate.Build(agentData.FullElement!);
-                    spawner.ParticipantFactories.Add(factory);
+                    IEntityFactory factory = agentTemplate.Build(agentData.FullElement!);
+                    spawner.EntityFactories.Add(factory);
                 }
 
                 Source.Spawners.Register(spawner);
