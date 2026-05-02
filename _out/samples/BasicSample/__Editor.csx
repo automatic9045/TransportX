@@ -21,12 +21,12 @@ ScriptWorld World => null!;
 
 Avatar Avatar => null!;
 Background Background => null!;
+Chunks Chunks => null!;
 Components Components => null!;
 Debug Debug => null!;
 DirectionalLight DirectionalLight => null!;
 WorldEnvironment Environment => null!;
 Models Models => null!;
-Plates Plates => null!;
 Network Network => null!;
 Triggers Triggers => null!;
 
