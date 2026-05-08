@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vanara.PInvoke;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
 using TransportX.Rendering;
 
-namespace TransportX.Models
+namespace TransportX.Player
 {
-    public class DXClient : IDXClient, IDisposable
+    internal class DXClient : IDXClient, IDisposable
     {
         public nint Hwnd { get; }
         public IDXGISwapChain1 SwapChain { get; }
@@ -31,7 +30,6 @@ namespace TransportX.Models
             RenderTarget?.Dispose();
             DepthStencil?.Dispose();
             SwapChain.Dispose();
-            User32.DestroyWindow(Hwnd);
         }
 
         internal void Resize(ID3D11Device device, int width, int height)

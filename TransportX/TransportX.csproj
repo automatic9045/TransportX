@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>$(CommonOutputPath)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -31,6 +30,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.3" />
     <PackageReference Include="SharpGLTF.Core" Version="1.0.6" />
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.6" />
+    <PackageReference Include="Silk.NET.Input" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.SDL" Version="2.23.0" />
     <PackageReference Include="Vortice.D3DCompiler" Version="3.8.2" />
     <PackageReference Include="Vortice.Direct2D1" Version="3.8.2" />
     <PackageReference Include="Vortice.Direct3D11" Version="3.8.2" />

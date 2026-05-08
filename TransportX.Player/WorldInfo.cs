@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 using TransportX.IO;
 using TransportX.Worlds;
 
-namespace TransportX.Models
+namespace TransportX
 {
     public sealed class WorldInfo : IWorldInfo
     {

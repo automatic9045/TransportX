@@ -20,8 +20,6 @@ namespace TransportX.Scripting
         public static readonly ScriptOptions Default = ScriptOptions.Default
             .WithSourceResolver(new ScriptSourceResolver(ScriptOptions.Default.SourceResolver))
             .AddImports("System", "System.Collections.Generic", "System.Linq", "System.Numerics", "System.Text")
-            .AddReferences(typeof(MessageBox).Assembly)
-            .AddImports(typeof(MessageBox).Namespace!)
             .AddReferencesAndImports(typeof(WorldBase).Assembly)
             .AddReferencesAndImports(typeof(SplineBase).Assembly)
             .AddReferencesAndImports(typeof(ScriptWorld).Assembly)

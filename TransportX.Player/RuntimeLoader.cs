@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX;
 using TransportX.Dependency;
 using TransportX.Rendering;
 using TransportX.Worlds;
 
-namespace TransportX.Models
+namespace TransportX
 {
     internal class RuntimeLoader
     {
+        private readonly Platform Platform;
         private readonly IDXHost DXHost;
         private readonly IDXClient DXClient;
 
-        public RuntimeLoader(IDXHost dxHost, IDXClient dxClient)
+        public RuntimeLoader(Platform platform, IDXHost dxHost, IDXClient dxClient)
         {
+            Platform = platform;
             DXHost = dxHost;
             DXClient = dxClient;
         }
@@ -52,7 +52,15 @@ namespace TransportX.Models
 
             Type type = types[0];
             IRuntimeFactory runtimeFactory = (IRuntimeFactory)Activator.CreateInstance(type)!;
-            IRuntime runtime = runtimeFactory.Create(context, DXHost, DXClient, worldInfo);
+
+            RuntimeHost runtimeHost = new()
+            {
+                Context = context,
+                Platform = Platform,
+                DXHost = DXHost,
+                DXClient = DXClient,
+            };
+            IRuntime runtime = runtimeFactory.Create(runtimeHost, worldInfo);
             return runtime;
         }
     }

@@ -4,12 +4,10 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 
 using BepuPhysics.Constraints;
+using Silk.NET.Input;
 
-using TransportX;
 using TransportX.Avatars;
 using TransportX.Dependency;
 using TransportX.Input;
@@ -164,7 +162,7 @@ namespace TransportX.Sample.LV290.Vehicles
             FrontDoor.Tick(elapsed);
             RearDoor.Tick(elapsed);
 
-            Application.Current.MainWindow.Title +=
+            Platform.Window.Title +=
                 $"; {Powertrain.Engine.Rpm:f0} rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
                 //$"ω={Drives.LeftWheel.AngularVelocity:f2};{Drives.RightWheel.AngularVelocity:f2}, " +
                 //$"Te={Powertrain.Engine.Torque:f0}, Ttc={Powertrain.Clutch.OutTorque:f0}, Ttr={Powertrain.Transmission.OutTorque:f0}, " +

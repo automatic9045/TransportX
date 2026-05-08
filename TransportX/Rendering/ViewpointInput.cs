@@ -5,8 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Key = System.Windows.Input.Key;
-using MouseButtonState = System.Windows.Input.MouseButtonState;
+using Silk.NET.Input;
 
 using TransportX.Input;
 
@@ -25,14 +24,20 @@ namespace TransportX.Rendering
 
         public ViewpointInput(InputManager inputManager, ViewpointSet viewpoints)
         {
-            inputManager.MouseDragMoved += (sender, e) =>
-            {
-                Vector2 offset = new Vector2((float)e.Offset.X, (float)e.Offset.Y);
-                if (e.MiddleButton == MouseButtonState.Pressed) viewpoints.Current.Move(offset, ClientSize);
-                if (e.RightButton == MouseButtonState.Pressed) viewpoints.Current.Rotate(offset, ClientSize);
-            };
+            inputManager.MouseScroll += (mouse, delta) => viewpoints.Current.Zoom(delta.Y);
 
-            inputManager.MouseWheel += (sender, e) => viewpoints.Current.Zoom(e.Delta);
+            inputManager.MouseMove += (mouse, delta) =>
+            {
+                if (mouse.IsButtonPressed(MouseButton.Middle))
+                {
+                    viewpoints.Current.Move(delta, ClientSize);
+                }
+
+                if (mouse.IsButtonPressed(MouseButton.Right))
+                {
+                    viewpoints.Current.Rotate(delta, ClientSize);
+                }
+            };
 
             Driver = ObserveKey(Key.F1, ViewpointType.Driver);
             Passenger = ObserveKey(Key.F2, ViewpointType.Passenger);

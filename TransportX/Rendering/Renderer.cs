@@ -12,6 +12,7 @@ using Vortice.DXGI;
 
 using TransportX.Environment;
 using TransportX.Worlds;
+using Silk.NET.Maths;
 
 namespace TransportX.Rendering
 {
@@ -20,6 +21,7 @@ namespace TransportX.Rendering
         protected static readonly Vector3 LightDirection = Vector3.Normalize(new Vector3(-1, -6, -2));
 
 
+        protected readonly Platform Platform;
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
 
@@ -43,8 +45,9 @@ namespace TransportX.Rendering
 
         private readonly ID3D11ShaderResourceView BrdfLutTexture;
 
-        public Renderer(IDXHost dxHost, IDXClient dxClient)
+        public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient)
         {
+            Platform = platform;
             DXHost = dxHost;
             DXClient = dxClient;
 
@@ -122,7 +125,7 @@ namespace TransportX.Rendering
                 AddressW = TextureAddressMode.Wrap,
                 ComparisonFunc = ComparisonFunction.Never,
                 MinLOD = 0,
-                MaxLOD = 2,
+                MaxLOD = float.MaxValue,
             };
             TextureSamplerState = DXHost.Device.CreateSamplerState(samplerDesc);
 
@@ -202,16 +205,18 @@ namespace TransportX.Rendering
             BrdfLutTexture.Dispose();
         }
 
-        public void Draw(Camera camera, WorldBase world, System.Drawing.Size size)
+        public void Draw(Camera camera, WorldBase world)
         {
             if (DXClient.DepthStencil is null) throw new InvalidOperationException();
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();
 
-            PostProcess.Setup(DXClient.DepthStencil, size);
+            Vector2D<int> size = Platform.Window.Size;
+
+            PostProcess.Setup(DXClient.DepthStencil, (Vector2)size);
 
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);
-            DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
+            DXHost.Context.RSSetViewport(0, 0, size.X, size.Y);
             DXHost.Context.IASetInputLayout(InputLayout);
 
             DXHost.Context.VSSetShader(VertexShader);
@@ -227,7 +232,7 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
 
 
-            camera.UpdateProjection(size);
+            camera.UpdateProjection((Vector2)size);
 
             SceneConstants sceneConstants = new()
             {

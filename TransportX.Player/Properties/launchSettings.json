@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Bus": {
-      "commandName": "Project",
-      "nativeDebugging": true
-    }
-  }
-}

@@ -48,7 +48,7 @@ namespace TransportX.Rendering
 
             public void Zoom(float delta)
             {
-                Update(Distance - 0.01f * delta);
+                Update(Distance - 1f * delta);
             }
 
             public void Reset()
@@ -134,7 +134,7 @@ namespace TransportX.Rendering
 
         public override void Zoom(float delta)
         {
-            Move(new Pose(0, 0, 0.02f * delta));
+            Move(new Pose(0, 0, 2f * delta));
         }
 
         public override void Reset()
@@ -184,7 +184,7 @@ namespace TransportX.Rendering
 
         public override void Zoom(float delta)
         {
-            Perspective = float.Max(0.01f, float.Min(Perspective - 0.0005f * delta, 1));
+            Perspective = float.Clamp(Perspective - 0.05f * delta, 0.01f, 1.25f);
         }
 
         public override void Reset()

@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Dependency;
-using TransportX.Rendering;
 using TransportX.Worlds;
 
 namespace TransportX
 {
     public interface IRuntimeFactory
     {
-        IRuntime Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo);
+        IRuntime Create(RuntimeHost runtimeHost, IWorldInfo worldInfo);
     }
 }

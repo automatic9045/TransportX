@@ -18,13 +18,13 @@ namespace TransportX
 {
     public class RuntimeFactory : IRuntimeFactory
     {
-        public IRuntime Create(PluginLoadContext context, IDXHost dxHost, IDXClient dxClient, IWorldInfo worldInfo)
+        public IRuntime Create(RuntimeHost runtimeHost, IWorldInfo worldInfo)
         {
-            Renderer renderer = new Renderer(dxHost, dxClient);
+            Renderer renderer = new(runtimeHost.Platform, runtimeHost.DXHost, runtimeHost.DXClient);
             PhysicsHost physicsHost = PhysicsHost.Create();
 
             TimeManager timeManager = new();
-            InputManager inputManager = new();
+            InputManager inputManager = new(runtimeHost.Platform.Input);
 
             CameraLocation cameraLocation = new(0, 0, new Vector3(125, 10, 125), Vector2.Zero);
             try
@@ -54,13 +54,14 @@ namespace TransportX
             Camera camera = new(cameraLocation.ChunkX, cameraLocation.ChunkZ, cameraLocation.Position, cameraLocation.Angle);
 
             ErrorCollector errorCollector = new();
-            WorldBuilder worldBuilder = new WorldBuilder(worldInfo)
+            WorldBuilder worldBuilder = new(worldInfo)
             {
-                DXHost = dxHost,
-                DXClient = dxClient,
+                Platform = runtimeHost.Platform,
+                DXHost = runtimeHost.DXHost,
+                DXClient = runtimeHost.DXClient,
                 PhysicsHost = physicsHost,
                 ErrorCollector = errorCollector,
-                RuntimeContext = context,
+                RuntimeContext = runtimeHost.Context,
                 TimeManager = timeManager,
                 InputManager = inputManager,
                 Camera = camera,
@@ -71,7 +72,7 @@ namespace TransportX
             {
                 PluginLoadContext worldContext = world.WorldContext;
                 world.Dispose();
-                context.Children.Remove(worldContext);
+                runtimeHost.Context.Children.Remove(worldContext);
                 worldContext.Unload();
 
                 world = new EmptyWorld(worldBuilder);
@@ -79,9 +80,10 @@ namespace TransportX
 
             RuntimeCreationInfo info = new()
             {
-                Context = context,
-                DXHost = dxHost,
-                DXClient = dxClient,
+                Context = runtimeHost.Context,
+                Platform = runtimeHost.Platform,
+                DXHost = runtimeHost.DXHost,
+                DXClient = runtimeHost.DXClient,
                 PhysicsHost = physicsHost,
                 Renderer = renderer,
                 TimeManager = timeManager,

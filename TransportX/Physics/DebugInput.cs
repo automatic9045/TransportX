@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Key = System.Windows.Input.Key;
+using Silk.NET.Input;
 
 using TransportX.Input;
 using TransportX.Rendering;

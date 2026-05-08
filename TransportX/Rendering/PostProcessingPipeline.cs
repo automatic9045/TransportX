@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -133,7 +132,7 @@ namespace TransportX.Rendering
             OpaqueBlendState.Dispose();
         }
 
-        public void Setup(ID3D11DepthStencilView depthStencil, Size size)
+        public void Setup(ID3D11DepthStencilView depthStencil, Vector2 size)
         {
             if (Buffer is null || size != Buffer.Size)
             {
@@ -229,7 +228,7 @@ namespace TransportX.Rendering
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
-            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
 
             Context.PSSetShader(CompositePixelShader);
             Context.PSSetShaderResource(0, Buffer.HdrBuffer.ShaderResourceView);
@@ -242,7 +241,7 @@ namespace TransportX.Rendering
             // 5. FXAA (Antialiasing)
 
             Context.OMSetRenderTargets(renderTarget, null);
-            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
 
             Context.PSSetShader(FxaaPixelShader);
             Context.PSSetShaderResource(0, Buffer.LdrBuffer.ShaderResourceView);

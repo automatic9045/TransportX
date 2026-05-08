@@ -23,6 +23,7 @@ namespace TransportX.Worlds
     public abstract class WorldBase : IDisposable
     {
         public IWorldInfo Info { get; }
+        public Platform Platform { get; }
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
@@ -57,6 +58,7 @@ namespace TransportX.Worlds
         public WorldBase(PluginLoadContext context, WorldBuilder builder)
         {
             Info = builder.Info;
+            Platform = builder.Platform;
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
@@ -143,8 +145,9 @@ namespace TransportX.Worlds
 
         public virtual AvatarBase CreateAvatar(string path, string? identifier)
         {
-            AvatarBuilder builder = new AvatarBuilder()
+            AvatarBuilder builder = new()
             {
+                Platform = Platform,
                 DXHost = DXHost,
                 DXClient = DXClient,
                 PhysicsHost = PhysicsHost,

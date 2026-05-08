@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,14 +18,14 @@ namespace TransportX.Rendering
         private readonly ID3D11DeviceContext Context;
         private readonly ID3D11DepthStencilView DepthStencil;
 
-        public System.Drawing.Size Size { get; }
+        public Vector2 Size { get; }
 
         public RenderTexture HdrBuffer { get; }
         public IReadOnlyList<RenderTexture> BloomMips { get; }
 
         public RenderTexture LdrBuffer { get; }
 
-        public PostProcessingBuffer(ID3D11DeviceContext context, ID3D11DepthStencilView depthStencil, System.Drawing.Size size)
+        public PostProcessingBuffer(ID3D11DeviceContext context, ID3D11DepthStencilView depthStencil, Vector2 size)
         {
             Context = context;
             DepthStencil = depthStencil;
@@ -32,8 +33,8 @@ namespace TransportX.Rendering
 
             Texture2DDescription desc = new()
             {
-                Width = (uint)size.Width,
-                Height = (uint)size.Height,
+                Width = (uint)size.X,
+                Height = (uint)size.Y,
                 MipLevels = 1,
                 ArraySize = 1,
                 Format = Format.R11G11B10_Float,
@@ -45,8 +46,8 @@ namespace TransportX.Rendering
             HdrBuffer = new RenderTexture(Context.Device, desc);
 
             RenderTexture[] bloomMips = new RenderTexture[BloomMipCount];
-            uint mipWidth = (uint)size.Width / 2;
-            uint mipHeight = (uint)size.Height / 2;
+            uint mipWidth = (uint)size.X / 2;
+            uint mipHeight = (uint)size.Y / 2;
 
             for (int i = 0; i < BloomMipCount; i++)
             {
@@ -63,8 +64,8 @@ namespace TransportX.Rendering
 
             desc = desc with
             {
-                Width = (uint)size.Width,
-                Height = (uint)size.Height,
+                Width = (uint)size.X,
+                Height = (uint)size.Y,
                 Format = Format.R8G8B8A8_UNorm,
             };
             LdrBuffer = new RenderTexture(Context.Device, desc);

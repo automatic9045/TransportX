@@ -10,6 +10,7 @@ namespace TransportX
     {
         public required PluginLoadContext Context { get; init; }
 
+        public required Platform Platform { get; init; }
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required PhysicsHost PhysicsHost { get; init; }

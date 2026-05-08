@@ -7,8 +7,6 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
 
 using TransportX.Dependency;
 using TransportX.Input;
@@ -21,6 +19,7 @@ namespace TransportX
 {
     public class Runtime : IRuntime
     {
+        protected readonly Platform Platform;
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
         protected readonly PhysicsHost PhysicsHost;
@@ -28,7 +27,7 @@ namespace TransportX
         protected readonly Renderer Renderer;
 
         protected readonly TimeManager TimeManager;
-        protected readonly Input.InputManager InputManager;
+        protected readonly InputManager InputManager;
         protected readonly Camera Camera;
 
         protected readonly ViewpointInput ViewpointInput;
@@ -44,6 +43,7 @@ namespace TransportX
         {
             Context = info.Context;
 
+            Platform = info.Platform;
             DXHost = info.DXHost;
             DXClient = info.DXClient;
             PhysicsHost = info.PhysicsHost;
@@ -96,9 +96,9 @@ namespace TransportX
             catch { }
         }
 
-        public virtual void Draw(System.Drawing.Size clientSize)
+        public virtual void Draw()
         {
-            ViewpointInput.ClientSize = new Vector2(clientSize.Width, clientSize.Height);
+            ViewpointInput.ClientSize = (Vector2)Platform.Window.Size;
 
             TimeManager.Tick();
             TimeSpan elapsed = TimeManager.DeltaTime;
@@ -112,7 +112,7 @@ namespace TransportX
                 OnSubTick(computeElapsed);
             }
 
-            OnDraw(clientSize);
+            OnDraw();
         }
 
         protected virtual void OnSubTick(TimeSpan elapsed)
@@ -125,20 +125,14 @@ namespace TransportX
         {
             string chunkText = $"({Camera.WorldPose.ChunkX}, {Camera.WorldPose.ChunkZ})";
             string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
-            Application.Current.MainWindow.Title = $"Bus {chunkText}; {coordText} @ {TimeManager.Fps:f0} fps";
+            Platform.Window.Title = $"Bus {chunkText}; {coordText} @ {TimeManager.Fps:f0} fps";
 
             World.Tick(elapsed);
         }
 
-        protected virtual void OnDraw(System.Drawing.Size clientSize)
+        protected virtual void OnDraw()
         {
-            Renderer.Draw(Camera, World, clientSize);
+            Renderer.Draw(Camera, World);
         }
-
-        public void OnKeyDown(Key key) => InputManager.OnKeyDown(key);
-        public void OnKeyUp(Key key) => InputManager.OnKeyUp(key);
-        public void OnMouseDragMove(System.Windows.Vector offset, MouseButtonState leftButton, MouseButtonState middleButton, MouseButtonState rightButton)
-            => InputManager.OnMouseDragMove(offset, leftButton, middleButton, rightButton);
-        public void OnMouseWheel(int delta) => InputManager.OnMouseWheel(delta);
     }
 }

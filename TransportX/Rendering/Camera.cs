@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GdiSize = System.Drawing.Size;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -49,10 +48,10 @@ namespace TransportX.Rendering
             View = Pose.Inverse(WorldPose.Pose).ToMatrix4x4();
         }
 
-        public void UpdateProjection(GdiSize clientSize)
+        public void UpdateProjection(Vector2 clientSize)
         {
             Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
+                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), clientSize.X / clientSize.Y, 0.1f, 1000);
             Frustum = new(View * Projection);
         }
 

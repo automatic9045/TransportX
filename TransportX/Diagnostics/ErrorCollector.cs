@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
+
+using Silk.NET.SDL;
 
 namespace TransportX.Diagnostics
 {
@@ -26,7 +27,7 @@ namespace TransportX.Diagnostics
             Reported?.Invoke(this, new ErrorEventArgs(error));
 
             MessageBox.Show($"{error}\n\nスタックトレース:\n{error.Exception?.StackTrace ?? error.StackTrace.ToString()}",
-                "読込中にエラーが発生しました", MessageBoxButton.OK, MessageBoxImage.Error);
+                "読込中にエラーが発生しました", MessageBoxFlags.Error);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace TransportX.Avatars
         public abstract string Description { get; }
         public abstract string Author { get; }
 
+        public Platform Platform { get; }
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
@@ -60,6 +61,7 @@ namespace TransportX.Avatars
 
         public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.PhysicsHost)
         {
+            Platform = builder.Platform;
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;

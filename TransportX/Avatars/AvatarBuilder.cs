@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +17,7 @@ namespace TransportX.Avatars
 {
     public class AvatarBuilder
     {
+        public required Platform Platform { get; init; }
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }

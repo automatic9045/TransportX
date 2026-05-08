@@ -19,6 +19,7 @@ namespace TransportX.Worlds
     {
         public IWorldInfo Info { get; }
 
+        public required Platform Platform { get; init; }
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }

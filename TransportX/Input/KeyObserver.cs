@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
+
+using Silk.NET.Input;
 
 namespace TransportX.Input
 {
@@ -28,13 +29,13 @@ namespace TransportX.Input
             Disposing?.Invoke(this, EventArgs.Empty);
         }
 
-        internal void Press()
+        internal void Press(IKeyboard keyboard)
         {
             IsPressed = true;
             Pressed?.Invoke(this, EventArgs.Empty);
         }
 
-        internal void Release()
+        internal void Release(IKeyboard keyboard)
         {
             IsPressed = false;
             Released?.Invoke(this, EventArgs.Empty);
