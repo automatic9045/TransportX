@@ -17,32 +17,32 @@ namespace TransportX.Sample.LV290.Vehicles.Input
         private readonly KeyObserver PlusKey;
         private readonly KeyObserver MinusKey;
 
-        public event EventHandler? RPressed;
-        public event EventHandler? NPressed;
-        public event EventHandler? DPressed;
-        public event EventHandler? ModePressed;
-        public event EventHandler? PlusPressed;
-        public event EventHandler? MinusPressed;
+        public event Action? RPressed;
+        public event Action? NPressed;
+        public event Action? DPressed;
+        public event Action? ModePressed;
+        public event Action? PlusPressed;
+        public event Action? MinusPressed;
 
         public KeyboardATShifterInput(KeyObserver rKey, KeyObserver nKey, KeyObserver dKey, KeyObserver modeKey, KeyObserver plusKey, KeyObserver minusKey)
         {
             RKey = rKey;
-            RKey.Pressed += (sender, e) => RPressed?.Invoke(sender, e);
+            RKey.Pressed += keyboard => RPressed?.Invoke();
 
             NKey = nKey;
-            NKey.Pressed += (sender, e) => NPressed?.Invoke(sender, e);
+            NKey.Pressed += keyboard => NPressed?.Invoke();
 
             DKey = dKey;
-            DKey.Pressed += (sender, e) => DPressed?.Invoke(sender, e);
+            DKey.Pressed += keyboard => DPressed?.Invoke();
 
             ModeKey = modeKey;
-            ModeKey.Pressed += (sender, e) => ModePressed?.Invoke(sender, e);
+            ModeKey.Pressed += keyboard => ModePressed?.Invoke();
 
             PlusKey = plusKey;
-            PlusKey.Pressed += (sender, e) => PlusPressed?.Invoke(sender, e);
+            PlusKey.Pressed += keyboard => PlusPressed?.Invoke();
 
             MinusKey = minusKey;
-            MinusKey.Pressed += (sender, e) => MinusPressed?.Invoke(sender, e);
+            MinusKey.Pressed += keyboard => MinusPressed?.Invoke();
         }
     }
 }

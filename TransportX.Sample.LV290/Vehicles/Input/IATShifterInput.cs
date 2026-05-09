@@ -8,11 +8,11 @@ namespace TransportX.Sample.LV290.Vehicles.Input
 {
     internal interface IATShifterInput
     {
-        event EventHandler? RPressed;
-        event EventHandler? NPressed;
-        event EventHandler? DPressed;
-        event EventHandler? ModePressed;
-        event EventHandler? PlusPressed;
-        event EventHandler? MinusPressed;
+        event Action? RPressed;
+        event Action? NPressed;
+        event Action? DPressed;
+        event Action? ModePressed;
+        event Action? PlusPressed;
+        event Action? MinusPressed;
     }
 }

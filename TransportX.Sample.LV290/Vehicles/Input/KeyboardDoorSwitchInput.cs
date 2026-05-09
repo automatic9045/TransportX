@@ -21,8 +21,8 @@ namespace TransportX.Sample.LV290.Vehicles.Input
             FrontKey = frontKey;
             RearKey = rearKey;
 
-            FrontKey.Pressed += (sender, e) => IsFrontOpen = !IsFrontOpen;
-            RearKey.Pressed += (sender, e) => IsRearOpen = !IsRearOpen;
+            FrontKey.Pressed += keyboard => IsFrontOpen = !IsFrontOpen;
+            RearKey.Pressed += keyboard => IsRearOpen = !IsRearOpen;
         }
     }
 }

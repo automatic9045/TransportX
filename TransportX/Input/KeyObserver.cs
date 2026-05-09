@@ -16,8 +16,8 @@ namespace TransportX.Input
 
         internal event EventHandler? Disposing;
 
-        public event EventHandler? Pressed;
-        public event EventHandler? Released;
+        public event KeyEventHandler? Pressed;
+        public event KeyEventHandler? Released;
 
         public KeyObserver(Key key)
         {
@@ -32,13 +32,13 @@ namespace TransportX.Input
         internal void Press(IKeyboard keyboard)
         {
             IsPressed = true;
-            Pressed?.Invoke(this, EventArgs.Empty);
+            Pressed?.Invoke(keyboard);
         }
 
         internal void Release(IKeyboard keyboard)
         {
             IsPressed = false;
-            Released?.Invoke(this, EventArgs.Empty);
+            Released?.Invoke(keyboard);
         }
     }
 }

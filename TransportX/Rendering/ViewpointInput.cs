@@ -45,13 +45,13 @@ namespace TransportX.Rendering
             Free = ObserveKey(Key.F4, ViewpointType.Free);
 
             Reset = inputManager.ObserveKey(Key.Space);
-            Reset.Pressed += (sender, e) => viewpoints.Current.Reset();
+            Reset.Pressed += keyboard => viewpoints.Current.Reset();
 
 
             KeyObserver ObserveKey(Key key, ViewpointType viewpointType)
             {
                 KeyObserver keyObserver = inputManager.ObserveKey(key);
-                keyObserver.Pressed += (sender, e) => viewpoints.Type = viewpointType;
+                keyObserver.Pressed += keyboard => viewpoints.Type = viewpointType;
                 return keyObserver;
             }
         }
