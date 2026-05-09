@@ -15,14 +15,10 @@ namespace TransportX
     internal class RuntimeLoader
     {
         private readonly Platform Platform;
-        private readonly IDXHost DXHost;
-        private readonly IDXClient DXClient;
 
-        public RuntimeLoader(Platform platform, IDXHost dxHost, IDXClient dxClient)
+        public RuntimeLoader(Platform platform)
         {
             Platform = platform;
-            DXHost = dxHost;
-            DXClient = dxClient;
         }
 
         public IRuntime Load(IWorldInfo worldInfo)
@@ -57,8 +53,6 @@ namespace TransportX
             {
                 Context = context,
                 Platform = Platform,
-                DXHost = DXHost,
-                DXClient = DXClient,
             };
             IRuntime runtime = runtimeFactory.Create(runtimeHost, worldInfo);
             return runtime;

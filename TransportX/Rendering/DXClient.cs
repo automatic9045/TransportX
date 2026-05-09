@@ -9,9 +9,9 @@ using Vortice.DXGI;
 
 using TransportX.Rendering;
 
-namespace TransportX.Player
+namespace TransportX
 {
-    internal class DXClient : IDXClient, IDisposable
+    public class DXClient : IDXClient, IDisposable
     {
         public nint Hwnd { get; }
         public IDXGISwapChain1 SwapChain { get; }

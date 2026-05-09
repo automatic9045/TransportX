@@ -7,6 +7,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Silk.NET.Windowing;
+using Vortice.DXGI;
+using Vortice.Mathematics;
+
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
@@ -20,10 +24,43 @@ namespace TransportX
     {
         public IRuntime Create(RuntimeHost runtimeHost, IWorldInfo worldInfo)
         {
-            Renderer renderer = new(runtimeHost.Platform, runtimeHost.DXHost, runtimeHost.DXClient);
+            DXHost dxHost = new();
+
+            IWindow window = runtimeHost.Platform.Window;
+            if (window.Native is null || window.Native.Win32 is null)
+            {
+                throw new NotSupportedException("Windows 環境以外では実行できません。");
+            }
+            nint hwnd = window.Native.Win32.Value.Hwnd;
+
+            SwapChainDescription1 swapChainDesc = new()
+            {
+                BufferCount = 2,
+                Width = (uint)window.Size.X,
+                Height = (uint)window.Size.Y,
+                Format = Format.R8G8B8A8_UNorm,
+                SampleDescription = new SampleDescription(1, 0),
+                SwapEffect = SwapEffect.FlipDiscard,
+                Scaling = Scaling.Stretch,
+                BufferUsage = Usage.RenderTargetOutput,
+            };
+            SwapChainFullscreenDescription fullscreenDesc = new()
+            {
+                Windowed = true,
+            };
+            IDXGISwapChain1 swapChain = dxHost.DXGIFactory.CreateSwapChainForHwnd(dxHost.Device, hwnd, swapChainDesc, fullscreenDesc);
+
+            DXClient dxClient = new(hwnd, swapChain);
+            dxClient.Resize(dxHost.Device, window.Size.X, window.Size.Y);
+
+            dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
+            dxClient.SwapChain!.Present(1, PresentFlags.None);
+
+            Renderer renderer = new(runtimeHost.Platform, dxHost, dxClient);
             PhysicsHost physicsHost = PhysicsHost.Create();
 
-            TimeManager timeManager = new();
+            TimeManager updateTimeManager = new();
+            TimeManager renderTimeManager = new();
             InputManager inputManager = new(runtimeHost.Platform.Input);
 
             CameraLocation cameraLocation = new(0, 0, new Vector3(125, 10, 125), Vector2.Zero);
@@ -57,12 +94,12 @@ namespace TransportX
             WorldBuilder worldBuilder = new(worldInfo)
             {
                 Platform = runtimeHost.Platform,
-                DXHost = runtimeHost.DXHost,
-                DXClient = runtimeHost.DXClient,
+                DXHost = dxHost,
+                DXClient = dxClient,
                 PhysicsHost = physicsHost,
                 ErrorCollector = errorCollector,
                 RuntimeContext = runtimeHost.Context,
-                TimeManager = timeManager,
+                TimeManager = updateTimeManager,
                 InputManager = inputManager,
                 Camera = camera,
             };
@@ -80,13 +117,13 @@ namespace TransportX
 
             RuntimeCreationInfo info = new()
             {
-                Context = runtimeHost.Context,
-                Platform = runtimeHost.Platform,
-                DXHost = runtimeHost.DXHost,
-                DXClient = runtimeHost.DXClient,
+                Host = runtimeHost,
+                DXHost = dxHost,
+                DXClient = dxClient,
                 PhysicsHost = physicsHost,
                 Renderer = renderer,
-                TimeManager = timeManager,
+                UpdateTimeManager = updateTimeManager,
+                RenderTimeManager = renderTimeManager,
                 InputManager = inputManager,
                 Camera = camera,
                 World = world,

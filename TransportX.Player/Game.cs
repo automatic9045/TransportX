@@ -22,19 +22,16 @@ namespace TransportX.Player
 {
     internal class Game : IDisposable
     {
-        private readonly DXHost DXHost;
         private readonly IWindow Window;
-
-        private DXClient? DXClient = null;
         private IInputContext? Input = null;
 
         private IWorldInfo? WorldInfo = null;
         private IRuntime? Runtime = null;
 
+        private bool IsReloadRequested = false;
+
         public Game()
         {
-            DXHost = new DXHost();
-
             WindowOptions options = WindowOptions.Default with
             {
                 API = GraphicsAPI.None,
@@ -45,8 +42,6 @@ namespace TransportX.Player
 
             Window.Load += OnLoad;
             Window.Update += OnUpdate;
-            Window.Render += OnRender;
-            Window.Resize += OnResize;
             Window.Closing += OnClosing;
 
             AssemblyLoadContext.Default.Resolving += (context, name) =>
@@ -66,32 +61,6 @@ namespace TransportX.Player
         {
             Input = Window.CreateInput();
 
-            if (Window.Native is null || Window.Native.Win32 is null)
-            {
-                throw new NotSupportedException("Windows 環境以外では実行できません。");
-            }
-            nint hwnd = Window.Native.Win32.Value.Hwnd;
-
-            SwapChainDescription1 swapChainDesc = new()
-            {
-                BufferCount = 2,
-                Width = (uint)Window.Size.X,
-                Height = (uint)Window.Size.Y,
-                Format = Format.R8G8B8A8_UNorm,
-                SampleDescription = new SampleDescription(1, 0),
-                SwapEffect = SwapEffect.FlipDiscard,
-                Scaling = Scaling.Stretch,
-                BufferUsage = Usage.RenderTargetOutput,
-            };
-            SwapChainFullscreenDescription fullscreenDesc = new()
-            {
-                Windowed = true,
-            };
-            IDXGISwapChain1 swapChain = DXHost.DXGIFactory.CreateSwapChainForHwnd(DXHost.Device, hwnd, swapChainDesc, fullscreenDesc);
-
-            DXClient = new DXClient(hwnd, swapChain);
-            DXClient.Resize(DXHost.Device, Window.Size.X, Window.Size.Y);
-
             IWorldInfo? worldInfo = WorldSelector.Select();
             if (worldInfo is null)
             {
@@ -109,76 +78,32 @@ namespace TransportX.Player
 
         private void OnUpdate(double deltaTime)
         {
-            if (Input is null || WorldInfo is null) throw new InvalidOperationException();
-
-            for (int i = 0; i < Input.Keyboards.Count; i++)
+            if (IsReloadRequested)
             {
-                if (Input.Keyboards[i].IsKeyPressed(Key.F5))
+                if (WorldInfo is null) throw new InvalidOperationException();
+
+                IsReloadRequested = false;
+                bool isLoaded = LoadRuntime(WorldInfo);
+                if (!isLoaded)
                 {
-                    bool isLoaded = LoadRuntime(WorldInfo);
-                    if (!isLoaded)
-                    {
-                        System.Environment.Exit(0);
-                        return;
-                    }
-                    break;
+                    System.Environment.Exit(0);
+                    return;
                 }
-            }
-        }
-
-        private void OnRender(double deltaTime)
-        {
-            if (DXClient is null || DXClient.RenderTarget is null) throw new InvalidOperationException();
-
-            if (Runtime is null)
-            {
-                ID3D11DeviceContext context = DXHost.Context;
-
-                context.OMSetRenderTargets(DXClient.RenderTarget, DXClient.DepthStencil);
-                Viewport viewport = new(0, 0, Window.Size.X, Window.Size.Y);
-                context.RSSetViewport(viewport);
-
-                context.ClearRenderTargetView(DXClient.RenderTarget, new Color4(0, 0, 0, 1));
-                if (DXClient.DepthStencil is not null)
-                {
-                    context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
-                }
-            }
-            else
-            {
-                Runtime.Draw();
-            }
-
-            DXClient.SwapChain!.Present(Window.VSync ? 1u : 0u, PresentFlags.None);
-        }
-
-        private void OnResize(Vector2D<int> size)
-        {
-            if (DXClient is null) throw new InvalidOperationException();
-
-            if (0 < size.X && 0 < size.Y)
-            {
-                DXClient.Resize(DXHost.Device, size.X, size.Y);
             }
         }
 
         private void OnClosing()
         {
             Runtime?.Dispose();
-            DXClient?.Dispose();
-            DXHost.Dispose();
         }
 
         private bool LoadRuntime(IWorldInfo worldInfo)
         {
-            if (DXClient is null || DXClient.RenderTarget is null || Input is null) throw new InvalidOperationException();
+            if (Input is null) throw new InvalidOperationException();
 
             WorldInfo = worldInfo;
 
-            DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, Colors.Blue);
-            DXClient.SwapChain.Present(0);
-
-            PluginLoadContext? oldRuntimeContext = Runtime?.Context;
+            PluginLoadContext? oldRuntimeContext = Runtime?.Host.Context;
             Runtime?.Dispose();
             oldRuntimeContext?.Unload();
             Runtime = null;
@@ -199,19 +124,16 @@ namespace TransportX.Player
                 Window = Window,
                 Input = Input,
             };
-            RuntimeLoader loader = new(platform, DXHost, DXClient);
+            RuntimeLoader loader = new(platform);
 
             try
             {
                 Runtime = loader.Load(WorldInfo);
+                Runtime.Host.ReloadRequested += () => IsReloadRequested = true;
             }
             catch (Exception ex)
             {
-                
                 MessageBox.Show(ex.ToString(), "読込中にエラーが発生しました", MessageBoxFlags.Error);
-
-                DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, Colors.Black);
-                DXClient.SwapChain.Present(0);
                 return false;
             }
 

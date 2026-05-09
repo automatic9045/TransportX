@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 using TransportX.Dependency;
-using TransportX.Rendering;
 
 namespace TransportX
 {
-    public readonly struct RuntimeHost
+    public class RuntimeHost
     {
         public required PluginLoadContext Context { get; init; }
-
         public required Platform Platform { get; init; }
-        public required IDXHost DXHost { get; init; }
-        public required IDXClient DXClient { get; init; }
+
+        public event Action? ReloadRequested;
+
+        public void RequestReload()
+        {
+            ReloadRequested?.Invoke();
+        }
     }
 }

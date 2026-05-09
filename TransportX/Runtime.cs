@@ -8,7 +8,11 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Dependency;
+using Silk.NET.Input;
+using Silk.NET.Maths;
+using Vortice.DXGI;
+using Vortice.Mathematics;
+
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -19,51 +23,72 @@ namespace TransportX
 {
     public class Runtime : IRuntime
     {
-        protected readonly Platform Platform;
-        protected readonly IDXHost DXHost;
-        protected readonly IDXClient DXClient;
+        protected readonly DXHost DXHost;
+        protected readonly DXClient DXClient;
         protected readonly PhysicsHost PhysicsHost;
 
         protected readonly Renderer Renderer;
 
-        protected readonly TimeManager TimeManager;
+        protected readonly TimeManager UpdateTimeManager;
+        protected readonly TimeManager RenderTimeManager;
         protected readonly InputManager InputManager;
         protected readonly Camera Camera;
 
+        protected readonly WorldBase World;
+
+        protected readonly KeyObserver ReloadKeyObserver;
         protected readonly ViewpointInput ViewpointInput;
         protected readonly DebugInput DebugInput;
 
-        protected readonly WorldBase World;
-
+        private TimeSpan ComputingAccumulator = TimeSpan.Zero;
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
-        public PluginLoadContext Context { get; }
+        public RuntimeHost Host { get; }
+        public bool IsDisposed { get; private set; } = false;
 
         public Runtime(RuntimeCreationInfo info)
         {
-            Context = info.Context;
+            Host = info.Host;
 
-            Platform = info.Platform;
             DXHost = info.DXHost;
             DXClient = info.DXClient;
             PhysicsHost = info.PhysicsHost;
 
             Renderer = info.Renderer;
 
-            TimeManager = info.TimeManager;
+            UpdateTimeManager = info.UpdateTimeManager;
+            RenderTimeManager = info.RenderTimeManager;
             InputManager = info.InputManager;
             Camera = info.Camera;
 
             World = info.World;
 
+            ReloadKeyObserver = InputManager.ObserveKey(Key.F5);
+            ReloadKeyObserver.Pressed += keyboard =>
+            {
+                DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, new Color4(0, 0, 0));
+                DXClient.SwapChain!.Present(1, PresentFlags.None);
+
+                Host.RequestReload();
+            };
+
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
             DebugInput = new DebugInput(InputManager, Camera);
+
+            Host.Platform.Window.Update += OnUpdate;
+            Host.Platform.Window.Render += OnRender;
+            Host.Platform.Window.Resize += OnResize;
 
             World.OnStart();
         }
 
         public virtual void Dispose()
         {
+            Host.Platform.Window.Update -= OnUpdate;
+            Host.Platform.Window.Render -= OnRender;
+            Host.Platform.Window.Resize -= OnResize;
+
+            ReloadKeyObserver.Dispose();
             ViewpointInput.Dispose();
             DebugInput.Dispose();
 
@@ -74,6 +99,9 @@ namespace TransportX
 
             DXHost.Context.ClearState();
             DXHost.Context.Flush();
+
+            DXClient.Dispose();
+            DXHost.Dispose();
 
             try
             {
@@ -94,25 +122,43 @@ namespace TransportX
                 File.WriteAllText(savePath, saveContentBuilder.ToString());
             }
             catch { }
+
+            IsDisposed = true;
         }
 
-        public virtual void Draw()
+        private void OnUpdate(double deltaTime)
         {
-            ViewpointInput.ClientSize = (Vector2)Platform.Window.Size;
+            if (IsDisposed) return;
 
-            TimeManager.Tick();
-            TimeSpan elapsed = TimeManager.DeltaTime;
+            ViewpointInput.ClientSize = (Vector2)Host.Platform.Window.Size;
+
+            UpdateTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
+            TimeSpan elapsed = UpdateTimeManager.DeltaTime;
 
             OnTick(elapsed);
 
-            int subTickCount = (int)double.Ceiling(elapsed / LimitComputingTime);
-            TimeSpan computeElapsed = elapsed / subTickCount;
-            for (int i = 0; i < subTickCount; i++)
+            ComputingAccumulator += elapsed;
+            while (LimitComputingTime <= ComputingAccumulator)
             {
-                OnSubTick(computeElapsed);
+                OnSubTick(LimitComputingTime);
+                ComputingAccumulator -= LimitComputingTime;
             }
+        }
+
+        private void OnRender(double deltaTime)
+        {
+            RenderTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
 
             OnDraw();
+            DXClient.SwapChain!.Present(1, PresentFlags.None);
+        }
+
+        private void OnResize(Vector2D<int> size)
+        {
+            if (0 < size.X && 0 < size.Y)
+            {
+                DXClient.Resize(DXHost.Device, size.X, size.Y);
+            }
         }
 
         protected virtual void OnSubTick(TimeSpan elapsed)
@@ -125,7 +171,7 @@ namespace TransportX
         {
             string chunkText = $"({Camera.WorldPose.ChunkX}, {Camera.WorldPose.ChunkZ})";
             string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
-            Platform.Window.Title = $"Bus {chunkText}; {coordText} @ {TimeManager.Fps:f0} fps";
+            Host.Platform.Window.Title = $"TransportX {chunkText}; {coordText} @ {RenderTimeManager.Frequency:f0} fps";
 
             World.Tick(elapsed);
         }

@@ -12,9 +12,9 @@ using Vortice.XAudio2;
 
 using TransportX.Rendering;
 
-namespace TransportX.Player
+namespace TransportX
 {
-    internal class DXHost : IDXHost, IDisposable
+    public class DXHost : IDXHost, IDisposable
     {
         private static readonly bool IsDebug = false;
 

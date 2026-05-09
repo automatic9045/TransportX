@@ -8,7 +8,7 @@ namespace TransportX
 {
     public interface ITimeManager
     {
-        double Fps { get; }
+        double Frequency { get; }
         TimeSpan DeltaTime { get; }
     }
 }
