@@ -7,12 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Silk.NET.Input;
-using Silk.NET.Maths;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
-using Vortice.Mathematics;
 
 using TransportX.Dependency;
 using TransportX.Diagnostics;
@@ -26,7 +22,7 @@ namespace TransportX.Player
         private IInputContext? Input = null;
 
         private IWorldInfo? WorldInfo = null;
-        private IRuntime? Runtime = null;
+        private IApp? App = null;
 
         private bool IsReloadRequested = false;
 
@@ -68,7 +64,7 @@ namespace TransportX.Player
                 return;
             }
 
-            bool isLoaded = LoadRuntime(worldInfo);
+            bool isLoaded = LoadApp(worldInfo);
             if (!isLoaded)
             {
                 System.Environment.Exit(0);
@@ -83,7 +79,7 @@ namespace TransportX.Player
                 if (WorldInfo is null) throw new InvalidOperationException();
 
                 IsReloadRequested = false;
-                bool isLoaded = LoadRuntime(WorldInfo);
+                bool isLoaded = LoadApp(WorldInfo);
                 if (!isLoaded)
                 {
                     System.Environment.Exit(0);
@@ -94,19 +90,19 @@ namespace TransportX.Player
 
         private void OnClosing()
         {
-            Runtime?.Dispose();
+            App?.Dispose();
         }
 
-        private bool LoadRuntime(IWorldInfo worldInfo)
+        private bool LoadApp(IWorldInfo worldInfo)
         {
             if (Input is null) throw new InvalidOperationException();
 
             WorldInfo = worldInfo;
 
-            PluginLoadContext? oldRuntimeContext = Runtime?.Host.Context;
-            Runtime?.Dispose();
-            oldRuntimeContext?.Unload();
-            Runtime = null;
+            PluginLoadContext? oldAppContext = App?.Host.Context;
+            App?.Dispose();
+            oldAppContext?.Unload();
+            App = null;
 
             // !!! .NET Runtime のバグ回避のため !!!
             // 参考: https://github.com/dotnet/runtime/issues/123930
@@ -124,12 +120,12 @@ namespace TransportX.Player
                 Window = Window,
                 Input = Input,
             };
-            RuntimeLoader loader = new(platform);
+            AppLoader loader = new(platform);
 
             try
             {
-                Runtime = loader.Load(WorldInfo);
-                Runtime.Host.ReloadRequested += () => IsReloadRequested = true;
+                App = loader.Load(WorldInfo);
+                App.Host.ReloadRequested += () => IsReloadRequested = true;
             }
             catch (Exception ex)
             {

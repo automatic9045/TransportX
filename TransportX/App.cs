@@ -21,7 +21,7 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class Runtime : IRuntime
+    public class App : IApp
     {
         protected readonly DXHost DXHost;
         protected readonly DXClient DXClient;
@@ -43,10 +43,10 @@ namespace TransportX
         private TimeSpan ComputingAccumulator = TimeSpan.Zero;
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
-        public RuntimeHost Host { get; }
+        public AppHost Host { get; }
         public bool IsDisposed { get; private set; } = false;
 
-        public Runtime(RuntimeCreationInfo info)
+        public App(AppCreationInfo info)
         {
             Host = info.Host;
 

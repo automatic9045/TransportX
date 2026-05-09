@@ -15,7 +15,7 @@ namespace TransportX.Worlds
 
         public EmptyWorld(WorldBuilder builder) : base(new PluginLoadContext(typeof(EmptyWorld).Assembly.Location), builder)
         {
-            RuntimeContext.Children.Add(WorldContext);
+            AppContext.Children.Add(WorldContext);
         }
     }
 }

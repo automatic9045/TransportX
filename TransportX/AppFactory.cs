@@ -20,13 +20,13 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class RuntimeFactory : IRuntimeFactory
+    public class AppFactory : IAppFactory
     {
-        public IRuntime Create(RuntimeHost runtimeHost, IWorldInfo worldInfo)
+        public IApp Create(AppHost host, IWorldInfo worldInfo)
         {
             DXHost dxHost = new();
 
-            IWindow window = runtimeHost.Platform.Window;
+            IWindow window = host.Platform.Window;
             if (window.Native is null || window.Native.Win32 is null)
             {
                 throw new NotSupportedException("Windows 環境以外では実行できません。");
@@ -56,12 +56,12 @@ namespace TransportX
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
             dxClient.SwapChain!.Present(1, PresentFlags.None);
 
-            Renderer renderer = new(runtimeHost.Platform, dxHost, dxClient);
+            Renderer renderer = new(host.Platform, dxHost, dxClient);
             PhysicsHost physicsHost = PhysicsHost.Create();
 
             TimeManager updateTimeManager = new();
             TimeManager renderTimeManager = new();
-            InputManager inputManager = new(runtimeHost.Platform.Input);
+            InputManager inputManager = new(host.Platform.Input);
 
             CameraLocation cameraLocation = new(0, 0, new Vector3(125, 10, 125), Vector2.Zero);
             try
@@ -93,12 +93,12 @@ namespace TransportX
             ErrorCollector errorCollector = new();
             WorldBuilder worldBuilder = new(worldInfo)
             {
-                Platform = runtimeHost.Platform,
+                Platform = host.Platform,
                 DXHost = dxHost,
                 DXClient = dxClient,
                 PhysicsHost = physicsHost,
                 ErrorCollector = errorCollector,
-                RuntimeContext = runtimeHost.Context,
+                AppContext = host.Context,
                 TimeManager = updateTimeManager,
                 InputManager = inputManager,
                 Camera = camera,
@@ -109,15 +109,15 @@ namespace TransportX
             {
                 PluginLoadContext worldContext = world.WorldContext;
                 world.Dispose();
-                runtimeHost.Context.Children.Remove(worldContext);
+                host.Context.Children.Remove(worldContext);
                 worldContext.Unload();
 
                 world = new EmptyWorld(worldBuilder);
             }
 
-            RuntimeCreationInfo info = new()
+            AppCreationInfo info = new()
             {
-                Host = runtimeHost,
+                Host = host,
                 DXHost = dxHost,
                 DXClient = dxClient,
                 PhysicsHost = physicsHost,
@@ -128,7 +128,7 @@ namespace TransportX
                 Camera = camera,
                 World = world,
             };
-            return new Runtime(info);
+            return new App(info);
         }
 
 

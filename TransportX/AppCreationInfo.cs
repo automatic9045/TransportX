@@ -11,9 +11,9 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    public class RuntimeCreationInfo
+    public class AppCreationInfo
     {
-        public required RuntimeHost Host { get; init; }
+        public required AppHost Host { get; init; }
 
         public required DXHost DXHost { get; init; }
         public required DXClient DXClient { get; init; }

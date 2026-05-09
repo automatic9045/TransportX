@@ -28,7 +28,7 @@ namespace TransportX
 
         public string? Identifier { get; set; } = null;
 
-        public string RuntimePath
+        public string AppPath
         {
             get => field;
             set => field = PathMacros.Expand(value);

@@ -8,7 +8,7 @@ using TransportX.Dependency;
 
 namespace TransportX
 {
-    public class RuntimeHost
+    public class AppHost
     {
         public required PluginLoadContext Context { get; init; }
         public required Platform Platform { get; init; }

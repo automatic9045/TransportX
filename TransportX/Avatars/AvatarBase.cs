@@ -31,7 +31,7 @@ namespace TransportX.Avatars
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public IErrorCollector ErrorCollector { get; }
-        public PluginLoadContext RuntimeContext { get; }
+        public PluginLoadContext AppContext { get; }
         public PluginLoadContext WorldContext { get; }
         public PluginLoadContext AvatarContext { get; }
         public ITimeManager TimeManager { get; }
@@ -66,7 +66,7 @@ namespace TransportX.Avatars
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
             ErrorCollector = builder.ErrorCollector;
-            RuntimeContext = builder.RuntimeContext;
+            AppContext = builder.AppContext;
             WorldContext = builder.WorldContext;
             AvatarContext = context;
             TimeManager = builder.TimeManager;

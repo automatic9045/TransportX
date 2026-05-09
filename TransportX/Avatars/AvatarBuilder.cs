@@ -22,7 +22,7 @@ namespace TransportX.Avatars
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required IErrorCollector ErrorCollector { get; init; }
-        public required PluginLoadContext RuntimeContext { get; init; }
+        public required PluginLoadContext AppContext { get; init; }
         public required PluginLoadContext WorldContext { get; init; }
         public required ITimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }

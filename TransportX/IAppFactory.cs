@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Dependency;
+using TransportX.Worlds;
 
 namespace TransportX
 {
-    public interface IRuntime : IDisposable
+    public interface IAppFactory
     {
-        RuntimeHost Host { get; }
+        IApp Create(AppHost host, IWorldInfo worldInfo);
     }
 }

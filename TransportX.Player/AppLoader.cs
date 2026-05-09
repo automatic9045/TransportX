@@ -12,27 +12,27 @@ using TransportX.Worlds;
 
 namespace TransportX
 {
-    internal class RuntimeLoader
+    internal class AppLoader
     {
         private readonly Platform Platform;
 
-        public RuntimeLoader(Platform platform)
+        public AppLoader(Platform platform)
         {
             Platform = platform;
         }
 
-        public IRuntime Load(IWorldInfo worldInfo)
+        public IApp Load(IWorldInfo worldInfo)
         {
-            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.RuntimePath, out Assembly assembly);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.AppPath, out Assembly assembly);
             Type[] types = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(IRuntimeFactory).IsAssignableFrom(t))
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(IAppFactory).IsAssignableFrom(t))
                 .ToArray();
 
             switch (types.Length)
             {
                 case 0:
                 {
-                    string fileName = Path.GetFileName(worldInfo.RuntimePath);
+                    string fileName = Path.GetFileName(worldInfo.AppPath);
                     throw new ArgumentException($"{fileName} にはランタイムが定義されていません。", nameof(worldInfo));
                 }
 
@@ -41,21 +41,21 @@ namespace TransportX
 
                 default:
                 {
-                    string fileName = Path.GetFileName(worldInfo.RuntimePath);
+                    string fileName = Path.GetFileName(worldInfo.AppPath);
                     throw new ArgumentException($"{fileName} には 2 つ以上のランタイムが定義されています。", nameof(worldInfo));
                 }
             }
 
             Type type = types[0];
-            IRuntimeFactory runtimeFactory = (IRuntimeFactory)Activator.CreateInstance(type)!;
+            IAppFactory appFactory = (IAppFactory)Activator.CreateInstance(type)!;
 
-            RuntimeHost runtimeHost = new()
+            AppHost appHost = new()
             {
                 Context = context,
                 Platform = Platform,
             };
-            IRuntime runtime = runtimeFactory.Create(runtimeHost, worldInfo);
-            return runtime;
+            IApp app = appFactory.Create(appHost, worldInfo);
+            return app;
         }
     }
 }
