@@ -21,7 +21,7 @@ namespace TransportX
             Platform = platform;
         }
 
-        public IApp Load(IWorldInfo worldInfo)
+        public (AppHost AppHost, IApp App) Load(IWorldInfo worldInfo)
         {
             PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.AppPath, out Assembly assembly);
             Type[] types = assembly.GetTypes()
@@ -55,7 +55,7 @@ namespace TransportX
                 Platform = Platform,
             };
             IApp app = appFactory.Create(appHost, worldInfo);
-            return app;
+            return (appHost, app);
         }
     }
 }

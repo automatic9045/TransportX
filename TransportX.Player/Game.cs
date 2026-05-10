@@ -21,8 +21,7 @@ namespace TransportX.Player
         private readonly IWindow Window;
         private IInputContext? Input = null;
 
-        private IWorldInfo? WorldInfo = null;
-        private IApp? App = null;
+        private AppSession? Session = null;
 
         private bool IsReloadRequested = false;
 
@@ -76,10 +75,10 @@ namespace TransportX.Player
         {
             if (IsReloadRequested)
             {
-                if (WorldInfo is null) throw new InvalidOperationException();
+                if (Session is null) throw new InvalidOperationException();
 
                 IsReloadRequested = false;
-                bool isLoaded = LoadApp(WorldInfo);
+                bool isLoaded = LoadApp(Session.WorldInfo);
                 if (!isLoaded)
                 {
                     System.Environment.Exit(0);
@@ -90,19 +89,17 @@ namespace TransportX.Player
 
         private void OnClosing()
         {
-            App?.Dispose();
+            Session?.App.Dispose();
         }
 
         private bool LoadApp(IWorldInfo worldInfo)
         {
             if (Input is null) throw new InvalidOperationException();
 
-            WorldInfo = worldInfo;
-
-            PluginLoadContext? oldAppContext = App?.Host.Context;
-            App?.Dispose();
+            PluginLoadContext? oldAppContext = Session?.AppHost.Context;
+            Session?.App.Dispose();
             oldAppContext?.Unload();
-            App = null;
+            Session = null;
 
             // !!! .NET Runtime のバグ回避のため !!!
             // 参考: https://github.com/dotnet/runtime/issues/123930
@@ -124,8 +121,9 @@ namespace TransportX.Player
 
             try
             {
-                App = loader.Load(WorldInfo);
-                App.Host.ReloadRequested += () => IsReloadRequested = true;
+                (AppHost appHost, IApp app) = loader.Load(worldInfo);
+                appHost.ReloadRequested += () => IsReloadRequested = true;
+                Session = new(worldInfo, appHost, app);
             }
             catch (Exception ex)
             {
@@ -140,5 +138,8 @@ namespace TransportX.Player
         {
             Window.Run();
         }
+
+
+        private record AppSession(IWorldInfo WorldInfo, AppHost AppHost, IApp App);
     }
 }

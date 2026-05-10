@@ -23,6 +23,8 @@ namespace TransportX
 {
     public class App : IApp
     {
+        protected readonly AppHost Host;
+
         protected readonly DXHost DXHost;
         protected readonly DXClient DXClient;
         protected readonly PhysicsHost PhysicsHost;
@@ -43,7 +45,6 @@ namespace TransportX
         private TimeSpan ComputingAccumulator = TimeSpan.Zero;
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
 
-        public AppHost Host { get; }
         public bool IsDisposed { get; private set; } = false;
 
         public App(AppCreationInfo info)

@@ -10,6 +10,5 @@ namespace TransportX
 {
     public interface IApp : IDisposable
     {
-        AppHost Host { get; }
     }
 }
