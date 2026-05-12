@@ -17,13 +17,12 @@ using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
 using TransportX.Spatial;
-using TransportX.Worlds;
 
-namespace TransportX
+namespace TransportX.Worlds
 {
-    public class App : IApp
+    public class WorldApp : IApp
     {
-        protected readonly AppHost Host;
+        protected readonly IAppHost Host;
 
         protected readonly DXHost DXHost;
         protected readonly DXClient DXClient;
@@ -47,22 +46,22 @@ namespace TransportX
 
         public bool IsDisposed { get; private set; } = false;
 
-        public App(AppCreationInfo info)
+        public WorldApp(WorldAppDependencies dependencies)
         {
-            Host = info.Host;
+            Host = dependencies.Host;
 
-            DXHost = info.DXHost;
-            DXClient = info.DXClient;
-            PhysicsHost = info.PhysicsHost;
+            DXHost = dependencies.DXHost;
+            DXClient = dependencies.DXClient;
+            PhysicsHost = dependencies.PhysicsHost;
 
-            Renderer = info.Renderer;
+            Renderer = dependencies.Renderer;
 
-            UpdateTimeManager = info.UpdateTimeManager;
-            RenderTimeManager = info.RenderTimeManager;
-            InputManager = info.InputManager;
-            Camera = info.Camera;
+            UpdateTimeManager = dependencies.UpdateTimeManager;
+            RenderTimeManager = dependencies.RenderTimeManager;
+            InputManager = dependencies.InputManager;
+            Camera = dependencies.Camera;
 
-            World = info.World;
+            World = dependencies.World;
 
             ReloadKeyObserver = InputManager.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
@@ -70,7 +69,7 @@ namespace TransportX
                 DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, new Color4(0, 0, 0));
                 DXClient.SwapChain!.Present(1, PresentFlags.None);
 
-                Host.RequestReload();
+                Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
             };
 
             ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);

@@ -10,6 +10,11 @@ namespace TransportX
 {
     public interface IAppFactory
     {
-        IApp Create(AppHost host, IWorldInfo worldInfo);
+        IApp Create(IAppHost host, IAppParameters parameters);
+    }
+
+    public interface IAppFactory<TParameters> : IAppFactory where TParameters : IAppParameters
+    {
+        IApp Create(IAppHost host, TParameters parameters);
     }
 }

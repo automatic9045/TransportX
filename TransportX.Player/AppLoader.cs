@@ -7,10 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Dependency;
-using TransportX.Rendering;
 using TransportX.Worlds;
 
-namespace TransportX
+namespace TransportX.Player.Launcher
 {
     internal class AppLoader
     {
@@ -21,41 +20,80 @@ namespace TransportX
             Platform = platform;
         }
 
-        public (AppHost AppHost, IApp App) Load(IWorldInfo worldInfo)
+        public (AppHost AppHost, IApp App) Load(AppReference reference, IAppParameters parameters)
         {
-            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(worldInfo.AppPath, out Assembly assembly);
-            Type[] types = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(IAppFactory).IsAssignableFrom(t))
-                .ToArray();
+            PluginLoadContext context = null!;
+            Type type;
 
-            switch (types.Length)
+            switch (reference)
             {
-                case 0:
+                case TypeAppReference typeReference:
                 {
-                    string fileName = Path.GetFileName(worldInfo.AppPath);
-                    throw new ArgumentException($"{fileName} にはランタイムが定義されていません。", nameof(worldInfo));
+                    if (!IsAppType(typeReference.FactoryType))
+                    {
+                        throw new ArgumentException(
+                            $"型 {typeReference.FactoryType.FullName} は {nameof(IAppFactory)} を実装した具象クラスではありません。", nameof(reference));
+                    }
+
+                    type = typeReference.FactoryType;
+                    break;
                 }
 
-                case 1:
+                case PathAppReference pathReference:
+                {
+                    context = PluginLoadContext.CreateAndLoadPlugin(pathReference.Path, out Assembly assembly);
+
+                    if (pathReference.FactoryTypeFullName is null)
+                    {
+                        Type[] types = assembly.GetTypes().Where(IsAppType).ToArray();
+                        switch (types.Length)
+                        {
+                            case 0:
+                            {
+                                string fileName = Path.GetFileName(pathReference.Path);
+                                throw new ArgumentException($"{fileName} にはアプリケーションが定義されていません。", nameof(reference));
+                            }
+
+                            case 1:
+                            {
+                                type = types[0];
+                                break;
+                            }
+
+                            default:
+                            {
+                                string fileName = Path.GetFileName(pathReference.Path);
+                                throw new ArgumentException($"{fileName} には 2 つ以上のアプリケーションが定義されています。", nameof(reference));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        string fileName = Path.GetFileName(pathReference.Path);
+                        type = assembly.GetType(pathReference.FactoryTypeFullName)
+                            ?? throw new ArgumentException($"{fileName} で型 {pathReference.FactoryTypeFullName} が見つかりませんでした。", nameof(reference));
+                    }
                     break;
+                }
 
                 default:
-                {
-                    string fileName = Path.GetFileName(worldInfo.AppPath);
-                    throw new ArgumentException($"{fileName} には 2 つ以上のランタイムが定義されています。", nameof(worldInfo));
-                }
+                    throw new NotSupportedException();
             }
 
-            Type type = types[0];
             IAppFactory appFactory = (IAppFactory)Activator.CreateInstance(type)!;
 
             AppHost appHost = new()
             {
                 Context = context,
                 Platform = Platform,
+                CurrentReference = reference,
             };
-            IApp app = appFactory.Create(appHost, worldInfo);
+
+            IApp app = appFactory.Create(appHost, parameters);
             return (appHost, app);
+
+
+            bool IsAppType(Type type) => type.IsClass && !type.IsAbstract && typeof(IAppFactory).IsAssignableFrom(type);
         }
     }
 }

@@ -16,13 +16,22 @@ using TransportX.Diagnostics;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
-using TransportX.Worlds;
 
-namespace TransportX
+namespace TransportX.Worlds
 {
-    public class AppFactory : IAppFactory
+    public class WorldAppFactory : IAppFactory<WorldAppParameters>
     {
-        public IApp Create(AppHost host, IWorldInfo worldInfo)
+        public IApp Create(IAppHost host, IAppParameters parameters)
+        {
+            if (parameters is not WorldAppParameters worldParameters)
+            {
+                throw new ArgumentException($"{nameof(parameters)} は {nameof(WorldAppParameters)} でなければなりません。", nameof(parameters));
+            }
+
+            return Create(host, worldParameters);
+        }
+
+        public IApp Create(IAppHost host, WorldAppParameters parameters)
         {
             DXHost dxHost = new();
 
@@ -91,7 +100,7 @@ namespace TransportX
             Camera camera = new(cameraLocation.ChunkX, cameraLocation.ChunkZ, cameraLocation.Position, cameraLocation.Angle);
 
             ErrorCollector errorCollector = new();
-            WorldBuilder worldBuilder = new(worldInfo)
+            WorldBuilder worldBuilder = new(parameters.WorldInfo)
             {
                 Platform = host.Platform,
                 DXHost = dxHost,
@@ -115,7 +124,7 @@ namespace TransportX
                 world = new EmptyWorld(worldBuilder);
             }
 
-            AppCreationInfo info = new()
+            WorldAppDependencies info = new()
             {
                 Host = host,
                 DXHost = dxHost,
@@ -128,7 +137,7 @@ namespace TransportX
                 Camera = camera,
                 World = world,
             };
-            return new App(info);
+            return new WorldApp(info);
         }
 
 
