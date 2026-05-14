@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Cameras;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;

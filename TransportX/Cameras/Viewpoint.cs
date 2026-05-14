@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering
+namespace TransportX.Cameras
 {
     public abstract class Viewpoint : WorldObject
     {
@@ -65,15 +65,14 @@ namespace TransportX.Rendering
 
         protected sealed class Rotator
         {
-            public Vector2 InitialAngle { get; }
+            public Vector2 InitialAngle { get; set; } = Vector2.Zero;
             public Vector2 Angle { get; private set; }
             public Quaternion Rotation { get; private set; }
             public Pose RotationPose => new(Vector3.Zero, Rotation);
 
-            public Rotator(Vector2 initialAngle)
+            public Rotator()
             {
-                Update(initialAngle);
-                InitialAngle = Angle;
+                Update(InitialAngle);
             }
 
             public void Rotate(Vector2 velocity, Vector2 clientSize)
@@ -87,9 +86,9 @@ namespace TransportX.Rendering
                 Update(InitialAngle);
             }
 
-            private void Update(Vector2 angle)
+            public void Update(Vector2 angle)
             {
-                Angle = new Vector2(float.Max(-float.Pi / 2 + 0.001f, float.Min(angle.X, float.Pi / 2 - 0.001f)), angle.Y % float.Tau);
+                Angle = new Vector2(float.Clamp(angle.X, -float.Pi / 2 + 0.001f, float.Pi / 2 - 0.001f), angle.Y % float.Tau);
                 Rotation = Quaternion.CreateFromYawPitchRoll(Angle.Y, Angle.X, 0);
             }
         }
@@ -102,10 +101,15 @@ namespace TransportX.Rendering
 
         public Vector2 Angle => Rotator.Angle;
 
-        public FreeViewpoint(int chunkX, int chunkZ, Vector3 position, Vector2 angle) : base()
+        public FreeViewpoint() : base()
         {
-            Rotator = new Rotator(angle);
-            Spatial.WorldPose worldPose = new(chunkX, chunkZ, new Pose(position, Rotator.Rotation));
+            Rotator = new Rotator();
+        }
+
+        public void Locate(CameraPose cameraPose)
+        {
+            Rotator.Update(cameraPose.Angle);
+            Spatial.WorldPose worldPose = new(cameraPose.ChunkX, cameraPose.ChunkZ, new Pose(cameraPose.Position, Rotator.Rotation));
             Locate(worldPose);
         }
 
@@ -156,7 +160,7 @@ namespace TransportX.Rendering
         private readonly IWorldObject Source;
         private readonly Pose Offset;
 
-        private new readonly Rotator Rotator = new(Vector2.Zero);
+        private new readonly Rotator Rotator = new();
 
         public DriverViewpoint(IWorldObject source, Pose offset) : base()
         {
@@ -209,7 +213,10 @@ namespace TransportX.Rendering
             Offset = offset;
 
             Translator = new Translator(initialDistance);
-            Rotator = new Rotator(initialAngle);
+            Rotator = new Rotator();
+
+            Rotator.InitialAngle = initialAngle;
+            Rotator.Reset();
 
             Source.Moved += _ => UpdateLocation();
             UpdateLocation();

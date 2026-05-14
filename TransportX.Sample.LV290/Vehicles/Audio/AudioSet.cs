@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Rendering;
+using TransportX.Cameras;
 
 using TransportX.Sample.LV290.Vehicles.Doors;
 using TransportX.Sample.LV290.Vehicles.Powertrain.Modules;

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Audio;
-using TransportX.Rendering;
+using TransportX.Cameras;
 
 using TransportX.Sample.LV290.Vehicles.Powertrain.Modules;
 

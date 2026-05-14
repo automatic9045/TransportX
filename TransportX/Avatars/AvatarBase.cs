@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Bodies;
+using TransportX.Cameras;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;

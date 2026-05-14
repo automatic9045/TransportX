@@ -9,6 +9,7 @@ using BepuPhysics;
 
 using TransportX.Avatars;
 using TransportX.Bodies;
+using TransportX.Cameras;
 using TransportX.Components;
 using TransportX.Dependency;
 using TransportX.Diagnostics;

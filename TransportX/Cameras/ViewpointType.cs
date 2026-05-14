@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering
+namespace TransportX.Cameras
 {
     public enum ViewpointType
     {

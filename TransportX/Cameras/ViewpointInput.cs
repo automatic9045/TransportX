@@ -9,7 +9,7 @@ using Silk.NET.Input;
 
 using TransportX.Input;
 
-namespace TransportX.Rendering
+namespace TransportX.Cameras
 {
     public class ViewpointInput : IDisposable
     {

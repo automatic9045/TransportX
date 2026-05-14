@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +8,7 @@ using Silk.NET.Windowing;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Cameras;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
@@ -72,32 +70,7 @@ namespace TransportX.Worlds
             TimeManager renderTimeManager = new();
             InputManager inputManager = new(host.Platform.Input);
 
-            CameraLocation cameraLocation = new(0, 0, new Vector3(125, 10, 125), Vector2.Zero);
-            try
-            {
-                Process process = Process.GetCurrentProcess();
-                string savePath = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "Save.dat");
-
-                string[] saveContent = File.ReadAllLines(savePath);
-
-                if (int.Parse(saveContent[0]) == process.Id)
-                {
-                    string[] chunkText = saveContent[1].Split(',');
-                    int chunkX = int.Parse(chunkText[0]);
-                    int chunkZ = int.Parse(chunkText[1]);
-
-                    string[] positionText = saveContent[2].Split(',');
-                    Vector3 position = new(float.Parse(positionText[0]), float.Parse(positionText[1]), float.Parse(positionText[2]));
-
-                    string[] angleText = saveContent[3].Split(',');
-                    Vector2 angle = new(float.Parse(angleText[0]), float.Parse(angleText[1]));
-
-                    cameraLocation = new(chunkX, chunkZ, position, angle);
-                }
-            }
-            catch { }
-
-            Camera camera = new(cameraLocation.ChunkX, cameraLocation.ChunkZ, cameraLocation.Position, cameraLocation.Angle);
+            Camera camera = new();
 
             ErrorCollector errorCollector = new();
             WorldBuilder worldBuilder = new(parameters.WorldInfo)
@@ -139,8 +112,5 @@ namespace TransportX.Worlds
             };
             return new WorldApp(info);
         }
-
-
-        private record CameraLocation(int ChunkX, int ChunkZ, Vector3 Position, Vector2 Angle);
     }
 }

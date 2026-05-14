@@ -10,16 +10,17 @@ using Vortice.Mathematics;
 using Vortice.XAudio2;
 
 using TransportX.Bodies;
+using TransportX.Rendering;
 using TransportX.Spatial;
 
-namespace TransportX.Rendering
+namespace TransportX.Cameras
 {
     public class Camera : WorldObject
     {
         private static readonly RenderPass[] AllPasses = Enum.GetValues<RenderPass>();
 
 
-        protected readonly RenderQueue RenderQueue = new RenderQueue();
+        protected readonly RenderQueue RenderQueue = new();
 
         public int DrawChunkCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
@@ -31,9 +32,9 @@ namespace TransportX.Rendering
         public Matrix4x4 Projection { get; protected set; } = default;
         public BoundingFrustum Frustum { get; protected set; } = default;
 
-        public Camera(int chunkX, int chunkZ, Vector3 position, Vector2 angle) : base()
+        public Camera() : base()
         {
-            Viewpoints = new ViewpointSet(chunkX, chunkZ, position, angle);
+            Viewpoints = new ViewpointSet();
         }
 
         public void UpdateView()

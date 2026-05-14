@@ -13,6 +13,8 @@ using Silk.NET.Maths;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Cameras;
+using TransportX.Data;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -79,6 +81,12 @@ namespace TransportX.Worlds
             Host.Platform.Window.Render += OnRender;
             Host.Platform.Window.Resize += OnResize;
 
+            Save save = Save.Import();
+            if (save.FreeViewpointPose.HasValue)
+            {
+                Camera.Viewpoints.Free.Locate(save.FreeViewpointPose.Value);
+            }
+
             World.OnStart();
         }
 
@@ -103,25 +111,13 @@ namespace TransportX.Worlds
             DXClient.Dispose();
             DXHost.Dispose();
 
-            try
+            Save save = new();
+            if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
             {
-                Process process = Process.GetCurrentProcess();
-                string savePath = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "Save.dat");
-
-                StringBuilder saveContentBuilder = new();
-                saveContentBuilder.AppendLine(process.Id.ToString(CultureInfo.InvariantCulture));
-
-                if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
-                {
-                    WorldPose worldPose = viewpoint.WorldPose;
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{worldPose.ChunkX},{worldPose.ChunkZ}"));
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{worldPose.Pose.Position.X},{worldPose.Pose.Position.Y},{worldPose.Pose.Position.Z}"));
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{viewpoint.Angle.X},{viewpoint.Angle.Y}"));
-                }
-
-                File.WriteAllText(savePath, saveContentBuilder.ToString());
+                WorldPose worldPose = viewpoint.WorldPose;
+                save.FreeViewpointPose = new CameraPose(worldPose.ChunkX, worldPose.ChunkZ, worldPose.Pose.Position, viewpoint.Angle);
             }
-            catch { }
+            save.Export();
 
             IsDisposed = true;
         }

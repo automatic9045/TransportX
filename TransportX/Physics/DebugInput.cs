@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 using Silk.NET.Input;
 
+using TransportX.Cameras;
 using TransportX.Input;
-using TransportX.Rendering;
 
 namespace TransportX.Physics
 {

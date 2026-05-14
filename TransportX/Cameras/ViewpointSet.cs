@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 using TransportX.Avatars;
 
-namespace TransportX.Rendering
+namespace TransportX.Cameras
 {
     public class ViewpointSet
     {
-        private readonly Viewpoint Free;
+        public FreeViewpoint Free { get; }
 
         public AvatarBase? AttachedTo { get; set; } = null;
         public ViewpointType Type { get; set; } = ViewpointType.Free;
@@ -38,9 +38,9 @@ namespace TransportX.Rendering
             }
         }
 
-        public ViewpointSet(int chunkX, int chunkZ, Vector3 position, Vector2 angle)
+        public ViewpointSet()
         {
-            Free = new FreeViewpoint(chunkX, chunkZ, position, angle);
+            Free = new FreeViewpoint();
         }
     }
 }

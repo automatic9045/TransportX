@@ -9,11 +9,11 @@ using BepuPhysics.Constraints;
 using Silk.NET.Input;
 
 using TransportX.Avatars;
+using TransportX.Cameras;
 using TransportX.Dependency;
 using TransportX.Input;
 using TransportX.Network;
 using TransportX.Physics;
-using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
