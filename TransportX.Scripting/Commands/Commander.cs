@@ -12,6 +12,7 @@ namespace TransportX.Scripting.Commands
 
         public Avatar Avatar { get; }
         public Background Background { get; }
+        public Camera Camera { get; }
         public Chunks Chunks { get; }
         public Components Components { get; }
         public Debug Debug { get; }
@@ -27,6 +28,7 @@ namespace TransportX.Scripting.Commands
 
             Avatar = new Avatar(world);
             Background = new Background(world);
+            Camera = new Camera(world);
             Chunks = new Chunks(world);
             Components = new Components(world);
             Debug = new Debug(world);
@@ -43,6 +45,7 @@ namespace TransportX.Scripting.Commands
 
             Avatar = parent.Avatar;
             Background = parent.Background;
+            Camera = parent.Camera;
             Chunks = parent.Chunks;
             Components = parent.Components;
             Debug = parent.Debug;
