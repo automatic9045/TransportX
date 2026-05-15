@@ -163,22 +163,13 @@ namespace TransportX.Sample.LV290.Vehicles
             FrontDoor.Tick(elapsed);
             RearDoor.Tick(elapsed);
 
-            Platform.Window.Title +=
-                $"; {Powertrain.Engine.Rpm:f0} rpm, [G{Powertrain.Transmission.Gear}; cl{Powertrain.Clutch.Engagement:f2}; th{Powertrain.Engine.ECU.Throttle:f2}], " +
-                //$"ω={Drives.LeftWheel.AngularVelocity:f2};{Drives.RightWheel.AngularVelocity:f2}, " +
-                //$"Te={Powertrain.Engine.Torque:f0}, Ttc={Powertrain.Clutch.OutTorque:f0}, Ttr={Powertrain.Transmission.OutTorque:f0}, " +
-                //$"r={Position:f1}, " +
-                //$"v={Powertrain.LeftWheel.Velocity * 3.6f:f1} km/h, {Powertrain.LeftWheel.Rpm:f1}rpm";
-                //$"Tl={Powertrain.LeftWheel.OutTorque:f1} Nm, " +
-                //$"rs={Interfaces.SteeringWheel.Rate:f2}, " +
-                $"v={Vector3.Dot(Velocity, WorldPose.Pose.Direction) * 3.6f:f1} km/h";
-
-            /*Tire tire = Drives.Chassis.Tires[2];
-            Application.Current.MainWindow.Title =
-                $"Tt={Drives.Transmission.Torque:F1}; " +
-                $"M=a={tire.AngularAcceleration:F1}, v={tire.AngularVelocity:F1}; " +
-                $"Fx={tire.LateralForce:F1}, Fy={tire.VerticalLoad:F1}, Fz={tire.LongitudinalForce:F1}; " +
-                $"Mx={tire.RollingResistanceMoment:F1}, My={tire.SelfAligningTorque:F1}";*/
+            string gearText = Powertrain.Transmission.Gear switch
+            {
+                -1 => "R",
+                0 => "N",
+                _ => Powertrain.Transmission.Gear.ToString(),
+            };
+            Platform.Window.Title += $"; [Gear {gearText}] {Powertrain.Engine.Rpm:f0} rpm, {Vector3.Dot(Velocity, WorldPose.Pose.Direction) * 3.6f:f1} km/h";
         }
     }
 }
