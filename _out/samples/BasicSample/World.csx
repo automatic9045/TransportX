@@ -1,5 +1,7 @@
 #load "__Editor.csx"
 
+Camera.Locate(-1, 0, 230, 8, 10, 0, 40, 0);
+
 Avatar.Load(@"..\LV290\TransportX.Sample.LV290.dll");
 Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
 

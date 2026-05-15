@@ -21,6 +21,7 @@ ScriptWorld World => null!;
 
 Avatar Avatar => null!;
 Background Background => null!;
+Camera Camera => null!;
 Chunks Chunks => null!;
 Components Components => null!;
 Debug Debug => null!;

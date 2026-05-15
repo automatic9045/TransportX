@@ -1,2 +1,4 @@
 /bin
 *.dll
+/samples/OkayamaCity
+/samples/OkayamaCity.xml
