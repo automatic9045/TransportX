@@ -1,12 +1,11 @@
 Background	Models\Background\Background.glb	$NonCollision
 Grass	Models\Grass\Grass.glb	$OpenModel(0.6, 1, 15, 1)
-Road1_1	Models\Road1\1.glb	$OpenModel("Models\\Road1\\Collision.glb", 0.9, 1, 30, 1)
-Road1_2	Models\Road1\2.glb	$OpenModel("Models\\Road1\\Collision.glb", 0.9, 1, 30, 1)
-Road1_3	Models\Road1\3.glb	$OpenModel("Models\\Road1\\Collision.glb", 0.9, 1, 30, 1)
-Road1_Sidewalk	Models\Road1\Sidewalk.glb	$OpenModel(0.9, 1, 30, 1)
-Road1_10m	Models\Road1\10_1.glb	$OpenModel("Models\\Road1\\Collision10.glb", 0.9, 1, 30, 1)
-RoadDeadEnd1	Models\RoadDeadEnd1\Model.glb	$OpenModel(0.9, 1, 30, 1)
+Road2_Straight	Models\Road2\Straight.glb	$OpenModel(0.9, 1, 30, 1)
+Road2_3Forked	Models\Road2\3Forked.glb	$OpenModel(0.9, 1, 30, 1)
+Road2_DeadEnd	Models\Road2\DeadEnd.glb	$OpenModel(0.9, 1, 30, 1)
 RoadTerminal1	Models\RoadTerminal1\Model.glb	$OpenModel(0.9, 1, 30, 1)
+WhiteLine150	Models\WhiteLine\150.glb	$NonCollision
+WhiteLine500	Models\WhiteLine\500.glb	$NonCollision
 BusStop	Models\BusStop\Model.glb	$ClosedModel
 Signal_L	Models\Signal\L.glb	$ClosedModel
 Signal_L_CarRed	Models\Signal\L_CarRed.glb	$NonCollision
