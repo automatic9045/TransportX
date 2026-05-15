@@ -11,6 +11,7 @@ namespace TransportX
     public readonly struct Pose : IEquatable<Pose>
     {
         public static readonly Pose Identity = new(Vector3.Zero);
+        public static readonly Pose NaN = new(Vector3.NaN, new Quaternion(Vector3.NaN, float.NaN));
 
 
         public readonly Vector3 Position { get; }
@@ -116,6 +117,12 @@ namespace TransportX
         public static Vector3 TransformNormal(Vector3 normal, in Pose pose)
         {
             return Vector3.Transform(normal, pose.Orientation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasNaN(in Pose pose)
+        {
+            return Vector3.IsNaN(pose.Position) != Vector3.Zero || Vector4.IsNaN(pose.Orientation.AsVector4()) != Vector4.Zero;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
