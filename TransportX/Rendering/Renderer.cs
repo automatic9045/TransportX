@@ -212,6 +212,11 @@ namespace TransportX.Rendering
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();
 
             Vector2D<int> size = Platform.Window.Size;
+            if (size.X == 0 || size.Y == 0)
+            {
+                PostProcess.Reset();
+                return;
+            }
 
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);

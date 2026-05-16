@@ -132,6 +132,12 @@ namespace TransportX.Rendering
             OpaqueBlendState.Dispose();
         }
 
+        public void Reset()
+        {
+            Buffer?.Dispose();
+            Buffer = null;
+        }
+
         public void Setup(ID3D11DepthStencilView depthStencil, Vector2 size)
         {
             if (Buffer is null || size != Buffer.Size)
@@ -190,7 +196,7 @@ namespace TransportX.Rendering
                 BlurConstants blur = new()
                 {
                     TexelSize = new Vector2(1f / Buffer.BloomMips[i].Size.Width, 1f / Buffer.BloomMips[i].Size.Height),
-                    BloomScatter = 1.0f,
+                    BloomScatter = 1,
                 };
                 Context.UpdateSubresource(blur, BlurBuffer);
 
