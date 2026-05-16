@@ -22,7 +22,7 @@ namespace TransportX.Scripting
             .AddImports("System", "System.Collections.Generic", "System.Linq", "System.Numerics", "System.Text")
             .AddReferencesAndImports(typeof(WorldBase).Assembly)
             .AddReferencesAndImports(typeof(SplineBase).Assembly)
-            .AddReferencesAndImports(typeof(ScriptWorld).Assembly)
+            .AddReferencesAndImports(typeof(ScriptOptionFactory).Assembly)
             .WithFileEncoding(Encoding.UTF8)
             .WithEmitDebugInformation(true);
 

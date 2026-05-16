@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Scripting.Commands;
+using TransportX.Scripting.Worlds.Commands;
 
 namespace TransportX.Domains.RoadTraffic.Scripting.Commands
 {

@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TransportX.Scripting.Worlds.Commands
+{
+    public class TickCommander : Commander
+    {
+        public TimeSpan Elapsed { get; internal set; } = TimeSpan.Zero;
+
+        internal TickCommander(Commander parent) : base(parent)
+        {
+        }
+    }
+}

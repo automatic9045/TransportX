@@ -11,8 +11,8 @@ using TransportX.Rendering;
 
 using TransportX.Extensions.Traffic;
 
-using TransportX.Scripting;
-using TransportX.Scripting.Components;
+using TransportX.Scripting.Worlds;
+using TransportX.Scripting.Worlds.Components;
 
 using TransportX.Domains.RoadTraffic.Traffic;
 

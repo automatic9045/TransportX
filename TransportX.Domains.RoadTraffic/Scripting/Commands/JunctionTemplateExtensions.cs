@@ -9,7 +9,7 @@ using TransportX.Rendering;
 using TransportX.Spatial;
 
 using TransportX.Scripting;
-using TransportX.Scripting.Commands;
+using TransportX.Scripting.Worlds.Commands;
 
 using TransportX.Domains.RoadTraffic.Network;
 using TransportX.Domains.RoadTraffic.Scripting.Commands.Templates;
