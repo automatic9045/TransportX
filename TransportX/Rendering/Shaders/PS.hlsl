@@ -6,10 +6,13 @@ Texture2D EmissiveTexture : register(t3);
 TextureCube DiffuseIBLTexture : register(t10);
 TextureCube SpecularIBLTexture : register(t11);
 
+Texture2DArray ShadowMapTexture : register(t12);
+
 Texture2D BrdfLutTexture : register(t100);
 
 SamplerState TextureSampler : register(s0);
 SamplerState BrdfSampler : register(s1);
+SamplerComparisonState ShadowSampler : register(s2);
 
 cbuffer MaterialBuffer : register(b0)
 {
@@ -41,6 +44,18 @@ cbuffer SceneBuffer : register(b2)
     float _Padding4;
     float3 LightDirection;
     float LightIntensity;
+}
+
+cbuffer CSMSamplingBuffer : register(b3)
+{
+    float4x4 LightViewProjection0;
+    float4x4 LightViewProjection1;
+    float4x4 LightViewProjection2;
+    float4x4 LightViewProjection3;
+    float4 SplitDepths;
+    float Resolution;
+    float3 _Padding5;
+
 }
 
 struct PS_IN
@@ -97,6 +112,108 @@ float GeometrySmith(float nDotV, float nDotL, float roughness)
     return geometryLight * geometryView;
 }
 
+float InterleavedGradientNoise(float2 positionScreen)
+{
+    float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+    return frac(magic.z * frac(dot(positionScreen, magic.xy)));
+}
+
+static const float2 PoissonDisk[16] =
+{
+    float2(-0.94201624, -0.39906216), float2(0.94558609, -0.76890725),
+    float2(-0.094184101, -0.92938870), float2(0.34495938, 0.29387760),
+    float2(-0.91588581, 0.45771432), float2(-0.81544232, -0.87912464),
+    float2(-0.38277543, 0.27676845), float2(0.97484398, 0.75648379),
+    float2(0.44323325, -0.97511554), float2(0.53742981, -0.47373420),
+    float2(-0.26496911, -0.41893023), float2(0.79197514, 0.19090188),
+    float2(-0.24188840, 0.99706507), float2(-0.81409955, 0.91437590),
+    float2(0.19984126, 0.78641367), float2(0.14383161, -0.14100467)
+};
+
+float CalculateShadow(float3 worldPos, float3 geometricNormal, float3 lightDir, float viewDistance, float2 screenPos)
+{
+    float3 l = normalize(-lightDir);
+    float nDotL = dot(geometricNormal, l);
+
+    if (nDotL <= 0.0)
+    {
+        return 0.0;
+    }
+
+    int cascadeIndex = 0;
+    if (SplitDepths.x < viewDistance)
+        cascadeIndex = 1;
+    if (SplitDepths.y < viewDistance)
+        cascadeIndex = 2;
+
+    float radius = 100.0;
+    if (cascadeIndex == 1)
+        radius = 250.0;
+    if (cascadeIndex == 2)
+        radius = 1000.0;
+    float texelSizeWorld = (radius * 2.0) / Resolution;
+
+    float pcfSpread = 2.0;
+    if (cascadeIndex == 1)
+        pcfSpread *= 1.5;
+    if (cascadeIndex == 2)
+        pcfSpread *= 2.5;
+
+    float clampedNDotL = max(nDotL, 0.0001);
+    float sinTheta = sqrt(1.0 - clampedNDotL * clampedNDotL);
+    float tanTheta = sinTheta / clampedNDotL;
+
+    float maxPcfDistance = texelSizeWorld * pcfSpread;
+    float normalOffset = maxPcfDistance * sinTheta;
+    float3 biasedWorldPos = worldPos + (geometricNormal * normalOffset);
+
+    float4x4 lightViewProj;
+    if (cascadeIndex == 0)
+        lightViewProj = LightViewProjection0;
+    else if (cascadeIndex == 1)
+        lightViewProj = LightViewProjection1;
+    else
+        lightViewProj = LightViewProjection2;
+
+    float4 lightSpacePos = mul(float4(biasedWorldPos, 1.0), lightViewProj);
+    float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+
+    projCoords.x = projCoords.x * 0.5 + 0.5;
+    projCoords.y = projCoords.y * -0.5 + 0.5;
+
+    if (projCoords.x < 0.0 || 1.0 < projCoords.x || projCoords.y < 0.0 || 1.0 < projCoords.y || projCoords.z < 0.0 || 1.0 < projCoords.z)
+    {
+        return 1.0;
+    }
+
+    float currentDepth = projCoords.z;
+    float shadow = 0.0;
+    float texelSize = 1.0 / Resolution;
+
+    float zBiasWorld = texelSizeWorld * (0.5 + pcfSpread * tanTheta);
+    zBiasWorld = min(zBiasWorld, 5.0);
+
+    float zFar = 1500.0 + radius;
+    float depthBias = zBiasWorld / zFar;
+
+    float noise = InterleavedGradientNoise(screenPos);
+    float angle = noise * PI * 2.0;
+    float s, c;
+    sincos(angle, s, c);
+    float2x2 rotation = float2x2(c, -s, s, c);
+
+    for (int i = 0; i < 16; ++i)
+    {
+        float2 offset = mul(PoissonDisk[i], rotation) * texelSize * pcfSpread;
+        float3 uv = float3(projCoords.xy + offset, cascadeIndex);
+
+        shadow += ShadowMapTexture.SampleCmpLevelZero(ShadowSampler, uv, currentDepth - depthBias);
+    }
+    shadow /= 16.0;
+
+    return shadow;
+}
+
 float4 main(PS_IN input) : SV_TARGET
 {
     float4 baseColor = BaseColor * input.Color;
@@ -105,7 +222,8 @@ float4 main(PS_IN input) : SV_TARGET
         baseColor *= BaseColorTexture.Sample(TextureSampler, input.TexCoord);
     }
 
-    float3 normal = normalize(input.Normal);
+    float3 geometricNormal = normalize(input.Normal);
+    float3 normal = geometricNormal;
     if (HasNormalTexture)
     {
         float3 tangentNormal = NormalTexture.Sample(TextureSampler, input.TexCoord).xyz * 2.0 - 1.0;
@@ -158,7 +276,10 @@ float4 main(PS_IN input) : SV_TARGET
     float3 specularRatio = f;
     float3 diffuseRatio = (float3(1.0, 1.0, 1.0) - specularRatio) * (1.0 - metallic);
 
-    float3 radianceOut = (diffuseRatio * baseColor.rgb / PI + specular) * LightColor * LightIntensity * nDotL;
+    float viewDistance = distance(input.WorldPosition, CameraPosition);
+    float shadowFactor = CalculateShadow(input.WorldPosition, geometricNormal, LightDirection, viewDistance, input.Position.xy);
+
+    float3 radianceOut = (diffuseRatio * baseColor.rgb / PI + specular) * LightColor * LightIntensity * nDotL * shadowFactor;
 
     float3 diffuseIBLRatio = (1.0 - FresnelSchlickRoughness(nDotV, baseReflectivity, roughness)) * (1.0 - metallic);
 

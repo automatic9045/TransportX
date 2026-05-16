@@ -68,6 +68,40 @@ namespace TransportX.Rendering
 
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct ShadowConstants
+    {
+        internal static readonly int Size = Marshal.SizeOf<ShadowConstants>();
+
+
+        public Matrix4x4 LightViewProjection;
+
+        public ShadowConstants()
+        {
+        }
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CSMSamplingConstants
+    {
+        internal static readonly int Size = Marshal.SizeOf<CSMSamplingConstants>();
+
+
+        public Matrix4x4 LightViewProjection0;
+        public Matrix4x4 LightViewProjection1;
+        public Matrix4x4 LightViewProjection2;
+        public Matrix4x4 LightViewProjection3;
+        public Vector4 SplitDepths;
+        public float Resolution;
+        public Vector3 Padding;
+
+        public CSMSamplingConstants()
+        {
+        }
+    }
+
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct PostProcessConstants
     {
         internal static readonly int Size = Marshal.SizeOf<PostProcessConstants>();

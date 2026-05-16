@@ -163,7 +163,7 @@ namespace TransportX.Cameras
         {
             foreach (RenderPass pass in AllPasses)
             {
-                ID3D11PixelShader shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
+                ID3D11PixelShader? shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
                 context.DeviceContext.PSSetShader(shader);
 
                 RenderQueue.Render(pass, new DrawContext()

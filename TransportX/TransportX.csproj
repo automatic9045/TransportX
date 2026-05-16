@@ -19,6 +19,7 @@
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\CompositePS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\ExtractPS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\VS.hlsl" />
+    <EmbeddedResource Include="Rendering\Shaders\ShadowVS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\VS.hlsl" />
   </ItemGroup>
