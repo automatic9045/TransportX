@@ -45,21 +45,21 @@ tJunctionPath = tJunction.Wire("SN1", "S", 1, "N", 2)
     .Deflection(0)
     .Signal("V_Car");
 tJunctionPath.StraightToEnd(out s1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine150"], -2, -0.12, 0, s1 - 0.75, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
 tJunctionPath = tJunction.Wire("SN2", "S", 2, "N", 1)
     .Deflection(0)
     .Signal("V_Car");
 tJunctionPath.StraightToEnd();
-tJunctionPath.PutProp(["WhiteLine150"], -2, -0.12, 0, 0, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, -0.12, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, -0.12, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, -0.12, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, -0.12, 0, 0, 90, 0, 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, 0, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
 tJunctionPath.PutProp(["WhiteLine150"], 2, -0.12, 0, -0.25, 1, 1, 1);
 
 tJunctionPath = tJunction.Wire("SN3", "S", 3, "N", 0);
@@ -73,11 +73,11 @@ tJunctionPath = tJunction.Wire("SE1", "S", 1, "E", 2)
     .Signal("H_Car")
     /*.Yield("SN1")*/;
 tJunctionPath.BezierToEnd(out s1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, -0.12, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine150"], -2, -0.12, 0, s1 - 0.75, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
+tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
 tJunctionPath = tJunction.Wire("SE2", "S", 2, "E", 1)
     .Deflection(1)
