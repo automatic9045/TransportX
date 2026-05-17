@@ -153,7 +153,7 @@ float CalculateShadow(float3 worldPos, float3 geometricNormal, float3 lightDir, 
         radius = 1000.0;
     float texelSizeWorld = (radius * 2.0) / Resolution;
 
-    float pcfSpread = 2.0;
+    float pcfSpread = 1.75;
     if (cascadeIndex == 1)
         pcfSpread *= 1.5;
     if (cascadeIndex == 2)

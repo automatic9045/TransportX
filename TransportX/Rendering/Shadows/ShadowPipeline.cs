@@ -17,7 +17,7 @@ namespace TransportX.Rendering.Shadows
     public class ShadowPipeline : IDisposable
     {
         private const int ChunkCount = 5;
-        private const int Resolution = 2048;
+        private const int Resolution = 1024;
         private const int CascadeCount = 3;
 
         private static readonly IReadOnlyList<float> CascadeRadii = [100, 250, 1000];
