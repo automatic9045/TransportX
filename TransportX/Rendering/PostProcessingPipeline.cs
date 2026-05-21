@@ -19,6 +19,7 @@ namespace TransportX.Rendering
 
         private readonly ID3D11VertexShader VertexShader;
 
+        private readonly ID3D11PixelShader DeferredLightingPixelShader;
         private readonly ID3D11PixelShader ExtractPixelShader;
         private readonly ID3D11PixelShader DownsamplePixelShader;
         private readonly ID3D11PixelShader UpsamplePixelShader;
@@ -41,6 +42,9 @@ namespace TransportX.Rendering
 
             Blob vsBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = Context.Device.CreateVertexShader(vsBlob);
+
+            Blob deferredLightingPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.DeferredLightingPS.hlsl", "main", "PS", "ps_5_0");
+            DeferredLightingPixelShader = Context.Device.CreatePixelShader(deferredLightingPSBlob);
 
             Blob extractPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.ExtractPS.hlsl", "main", "PS", "ps_5_0");
             ExtractPixelShader = Context.Device.CreatePixelShader(extractPSBlob);
@@ -117,6 +121,7 @@ namespace TransportX.Rendering
 
             VertexShader.Dispose();
 
+            DeferredLightingPixelShader.Dispose();
             ExtractPixelShader.Dispose();
             DownsamplePixelShader.Dispose();
             UpsamplePixelShader.Dispose();
@@ -171,19 +176,36 @@ namespace TransportX.Rendering
             Context.PSSetConstantBuffer(1, BlurBuffer);
 
 
-            // 1. Extract
+            // 1. Deferred Lighting
+
+            Context.OMSetBlendState(OpaqueBlendState);
+            Context.OMSetRenderTargets(Buffer.ResolvedHdrBuffer.RenderTargetView, null);
+            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
+
+            Context.PSSetShader(DeferredLightingPixelShader);
+            Context.PSSetShaderResource(0, Buffer.AmbientBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(1, Buffer.DirectionalBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(2, Buffer.RawShadowBuffer.ShaderResourceView);
+            Context.Draw(3, 0);
+
+            Context.PSSetShaderResource(0, null!);
+            Context.PSSetShaderResource(1, null!);
+            Context.PSSetShaderResource(2, null!);
+
+
+            // 2. Extract
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.BloomMips[0].RenderTargetView, null);
             Context.RSSetViewport(0, 0, Buffer.BloomMips[0].Size.Width, Buffer.BloomMips[0].Size.Height);
 
             Context.PSSetShader(ExtractPixelShader);
-            Context.PSSetShaderResource(0, Buffer.HdrBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
             Context.Draw(3, 0);
             Context.PSSetShaderResource(0, null!);
 
 
-            // 2. Downsample
+            // 3. Downsample
 
             Context.PSSetShader(DownsamplePixelShader);
 
@@ -206,7 +228,7 @@ namespace TransportX.Rendering
             }
 
 
-            // 3. Upsample
+            // 4. Upsample
 
             Context.OMSetBlendState(AdditiveBlendState);
             Context.PSSetShader(UpsamplePixelShader);
@@ -230,21 +252,21 @@ namespace TransportX.Rendering
             }
 
 
-            // 4. Composite
+            // 5. Composite
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
             Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
 
             Context.PSSetShader(CompositePixelShader);
-            Context.PSSetShaderResource(0, Buffer.HdrBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
             Context.PSSetShaderResource(1, Buffer.BloomMips[0].ShaderResourceView);
             Context.Draw(3, 0);
             Context.PSSetShaderResource(0, null!);
             Context.PSSetShaderResource(1, null!);
 
 
-            // 5. FXAA (Antialiasing)
+            // 6. FXAA (Antialiasing)
 
             Context.OMSetRenderTargets(renderTarget, null);
             Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);

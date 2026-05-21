@@ -52,8 +52,7 @@ namespace TransportX.Rendering
         internal static readonly int Size = Marshal.SizeOf<SceneConstants>();
 
 
-        public Matrix4x4 View;
-        public Matrix4x4 Projection;
+        public Matrix4x4 ViewProjection;
         public Vector3 CameraPosition = Vector3.Zero;
         public float Padding1;
         public Vector3 LightColor = Vector3.Zero;
@@ -93,7 +92,8 @@ namespace TransportX.Rendering
         public Matrix4x4 LightViewProjection3;
         public Vector4 SplitDepths;
         public float Resolution;
-        public Vector3 Padding;
+        public float ZPullback;
+        public Vector2 Padding;
 
         public CSMSamplingConstants()
         {

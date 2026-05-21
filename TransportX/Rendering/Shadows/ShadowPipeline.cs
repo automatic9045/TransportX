@@ -20,7 +20,7 @@ namespace TransportX.Rendering.Shadows
         private const int Resolution = 1024;
         private const int CascadeCount = 3;
 
-        private static readonly IReadOnlyList<float> CascadeRadii = [100, 250, 1000];
+        private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
 
 
         protected readonly IDXHost DXHost;
@@ -39,7 +39,7 @@ namespace TransportX.Rendering.Shadows
 
         protected readonly Cascade[] Cascades = new Cascade[CascadeCount];
 
-        protected uint FrameCount { get; private set; } = 0;
+        private uint FrameCount = 0;
 
         public ShadowPipeline(IDXHost dxHost, InputElementDescription[] elements, ID3D11Buffer instanceBuffer, ID3D11Buffer materialBuffer)
         {
@@ -198,8 +198,9 @@ namespace TransportX.Rendering.Shadows
 
             bool Skip(int cascadeIndex)
             {
-                int updateSpan = 1 << cascadeIndex;
-                return FrameCount % updateSpan != 0;
+                return false;
+                //int updateSpan = 1 << cascadeIndex;
+                //return FrameCount % updateSpan != 0;
             }
         }
 
@@ -213,6 +214,7 @@ namespace TransportX.Rendering.Shadows
                 LightViewProjection3 = Matrix4x4.Identity,
                 SplitDepths = new Vector4(Cascades[0].SplitDepth, Cascades[1].SplitDepth, Cascades[2].SplitDepth, 0),
                 Resolution = Resolution,
+                ZPullback = (ChunkCount + 1) * Chunk.Size,
             };
             DXHost.Context.UpdateSubresource(csmConstants, CSMSamplingConstantsBuffer);
             DXHost.Context.PSSetConstantBuffer(3, CSMSamplingConstantsBuffer);

@@ -1,7 +1,6 @@
 ﻿cbuffer SceneBuffer : register(b0)
 {
-    float4x4 View;
-    float4x4 Projection;
+    float4x4 ViewProjection;
 }
 
 struct VS_IN
@@ -33,8 +32,7 @@ VS_OUT main(VS_IN input)
     VS_OUT output;
 
     float4 worldPosition = mul(input.Position, input.World);
-    output.Position = mul(worldPosition, View);
-    output.Position = mul(output.Position, Projection);
+    output.Position = mul(worldPosition, ViewProjection);
 
     output.WorldPosition = worldPosition.xyz;
 

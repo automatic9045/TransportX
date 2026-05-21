@@ -15,14 +15,19 @@ namespace TransportX.Rendering
     {
         public const int BloomMipCount = 5;
 
+
         private readonly ID3D11DeviceContext Context;
         private readonly ID3D11DepthStencilView DepthStencil;
 
         public Vector2 Size { get; }
 
-        public RenderTexture HdrBuffer { get; }
-        public IReadOnlyList<RenderTexture> BloomMips { get; }
+        public RenderTexture AmbientBuffer { get; }
+        public RenderTexture DirectionalBuffer { get; }
+        public RenderTexture RawShadowBuffer { get; }
 
+        public RenderTexture ResolvedHdrBuffer { get; }
+
+        public IReadOnlyList<RenderTexture> BloomMips { get; }
         public RenderTexture LdrBuffer { get; }
 
         public PostProcessingBuffer(ID3D11DeviceContext context, ID3D11DepthStencilView depthStencil, Vector2 size)
@@ -37,18 +42,23 @@ namespace TransportX.Rendering
                 Height = (uint)size.Y,
                 MipLevels = 1,
                 ArraySize = 1,
-                Format = Format.R11G11B10_Float,
                 SampleDescription = new SampleDescription(1, 0),
                 Usage = ResourceUsage.Default,
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
             };
 
-            HdrBuffer = new RenderTexture(Context.Device, desc);
+            desc.Format = Format.R11G11B10_Float;
+            AmbientBuffer = new RenderTexture(Context.Device, desc);
+            DirectionalBuffer = new RenderTexture(Context.Device, desc);
+            ResolvedHdrBuffer = new RenderTexture(Context.Device, desc);
 
+            desc.Format = Format.R16_Float;
+            RawShadowBuffer = new RenderTexture(Context.Device, desc);
+
+            desc.Format = Format.R11G11B10_Float;
             RenderTexture[] bloomMips = new RenderTexture[BloomMipCount];
             uint mipWidth = (uint)size.X / 2;
             uint mipHeight = (uint)size.Y / 2;
-
             for (int i = 0; i < BloomMipCount; i++)
             {
                 desc.Width = uint.Max(1, mipWidth);
@@ -59,7 +69,6 @@ namespace TransportX.Rendering
                 mipWidth /= 2;
                 mipHeight /= 2;
             }
-
             BloomMips = bloomMips;
 
             desc = desc with
@@ -73,7 +82,10 @@ namespace TransportX.Rendering
 
         public void Dispose()
         {
-            HdrBuffer.Dispose();
+            AmbientBuffer.Dispose();
+            DirectionalBuffer.Dispose();
+            RawShadowBuffer.Dispose();
+            ResolvedHdrBuffer.Dispose();
 
             for (int i = 0; i < BloomMipCount; i++)
             {
@@ -85,8 +97,16 @@ namespace TransportX.Rendering
 
         public void Initialize()
         {
-            Context.OMSetRenderTargets(HdrBuffer.RenderTargetView, DepthStencil);
-            Context.ClearRenderTargetView(HdrBuffer.RenderTargetView, Colors.Gray);
+            ReadOnlySpan<ID3D11RenderTargetView> renderTargets = [
+                AmbientBuffer.RenderTargetView,
+                DirectionalBuffer.RenderTargetView,
+                RawShadowBuffer.RenderTargetView
+            ];
+            Context.OMSetRenderTargets(renderTargets, DepthStencil);
+
+            Context.ClearRenderTargetView(AmbientBuffer.RenderTargetView, Colors.Gray);
+            Context.ClearRenderTargetView(DirectionalBuffer.RenderTargetView, Colors.Black);
+            Context.ClearRenderTargetView(RawShadowBuffer.RenderTargetView, Colors.White);
             Context.ClearDepthStencilView(DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
         }
     }

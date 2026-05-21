@@ -156,7 +156,7 @@ namespace TransportX.Rendering
             BlendDescription blendDesc = new()
             {
                 AlphaToCoverageEnable = true,
-                IndependentBlendEnable = false,
+                IndependentBlendEnable = true,
             };
             blendDesc.RenderTarget[0] = new RenderTargetBlendDescription()
             {
@@ -167,6 +167,21 @@ namespace TransportX.Rendering
                 SourceBlendAlpha = Blend.One,
                 DestinationBlendAlpha = Blend.Zero,
                 BlendOperationAlpha = BlendOperation.Add,
+                RenderTargetWriteMask = ColorWriteEnable.All,
+            };
+            blendDesc.RenderTarget[1] = new RenderTargetBlendDescription()
+            {
+                BlendEnable = false,
+                RenderTargetWriteMask = ColorWriteEnable.All,
+            };
+            blendDesc.RenderTarget[2] = new RenderTargetBlendDescription()
+            {
+                BlendEnable = false,
+                RenderTargetWriteMask = ColorWriteEnable.All,
+            };
+            blendDesc.RenderTarget[3] = new RenderTargetBlendDescription()
+            {
+                BlendEnable = false,
                 RenderTargetWriteMask = ColorWriteEnable.All,
             };
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
@@ -237,8 +252,7 @@ namespace TransportX.Rendering
 
             SceneConstants sceneConstants = new()
             {
-                View = Matrix4x4.Transpose(camera.View),
-                Projection = Matrix4x4.Transpose(camera.Projection),
+                ViewProjection = Matrix4x4.Transpose(camera.View * camera.Projection),
                 CameraPosition = camera.WorldPose.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
