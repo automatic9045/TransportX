@@ -16,8 +16,7 @@ namespace TransportX.Rendering.Shadows
 {
     public class ShadowPipeline : IDisposable
     {
-        private const int ChunkCount = 5;
-        private const int Resolution = 1024;
+        private const int ChunkCount = 2;
         private const int CascadeCount = 3;
 
         private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
@@ -26,6 +25,7 @@ namespace TransportX.Rendering.Shadows
         protected readonly IDXHost DXHost;
         protected readonly ID3D11Buffer InstanceBuffer;
         protected readonly ID3D11Buffer MaterialBuffer;
+        protected readonly ShadowOptions Options;
 
         protected readonly ShadowMap ShadowMap;
         protected readonly ShadowCamera ShadowCamera;
@@ -41,18 +41,19 @@ namespace TransportX.Rendering.Shadows
 
         private uint FrameCount = 0;
 
-        public ShadowPipeline(IDXHost dxHost, InputElementDescription[] elements, ID3D11Buffer instanceBuffer, ID3D11Buffer materialBuffer)
+        public ShadowPipeline(IDXHost dxHost, InputElementDescription[] inputElements, ID3D11Buffer instanceBuffer, ID3D11Buffer materialBuffer, ShadowOptions options)
         {
             DXHost = dxHost;
             InstanceBuffer = instanceBuffer;
             MaterialBuffer = materialBuffer;
+            Options = options;
 
-            ShadowMap = new ShadowMap(DXHost.Device, Resolution, CascadeCount);
+            ShadowMap = new ShadowMap(DXHost.Device, Options.Resolution, CascadeCount);
             ShadowCamera = new ShadowCamera(ChunkCount);
 
             using Blob shadowVsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
             ShadowVertexShader = DXHost.Device.CreateVertexShader(shadowVsBlob);
-            ShadowInputLayout = DXHost.Device.CreateInputLayout(elements, shadowVsBlob);
+            ShadowInputLayout = DXHost.Device.CreateInputLayout(inputElements, shadowVsBlob);
             ShadowConstantsBuffer = DXHost.Device.CreateBuffer(new BufferDescription((uint)ShadowConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default));
             CSMSamplingConstantsBuffer = DXHost.Device.CreateBuffer(new BufferDescription((uint)CSMSamplingConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default));
 
@@ -98,6 +99,8 @@ namespace TransportX.Rendering.Shadows
 
         public void Render(Vector3 lightDirection, Camera camera, WorldBase world)
         {
+            if (Options.Resolution <= 0) return;
+
             ShadowCamera.LocateChunk(camera);
 
             Vector3 lightDir = Vector3.Normalize(lightDirection);
@@ -108,7 +111,7 @@ namespace TransportX.Rendering.Shadows
                 if (Skip(i)) continue;
 
                 float radius = CascadeRadii[i];
-                float texelsPerUnit = Resolution / (radius * 2);
+                float texelsPerUnit = Options.Resolution / (radius * 2);
 
                 Vector3 upVector = Vector3.UnitY;
                 if (0.999f < float.Abs(Vector3.Dot(lightDir, Vector3.UnitY)))
@@ -206,16 +209,34 @@ namespace TransportX.Rendering.Shadows
 
         public void Bind()
         {
-            CSMSamplingConstants csmConstants = new()
+            CSMSamplingConstants csmConstants;
+            if (Options.Resolution <= 0)
             {
-                LightViewProjection0 = Matrix4x4.Transpose(Cascades[0].LightViewProjection),
-                LightViewProjection1 = Matrix4x4.Transpose(Cascades[1].LightViewProjection),
-                LightViewProjection2 = Matrix4x4.Transpose(Cascades[2].LightViewProjection),
-                LightViewProjection3 = Matrix4x4.Identity,
-                SplitDepths = new Vector4(Cascades[0].SplitDepth, Cascades[1].SplitDepth, Cascades[2].SplitDepth, 0),
-                Resolution = Resolution,
-                ZPullback = (ChunkCount + 1) * Chunk.Size,
-            };
+                csmConstants = new()
+                {
+                    LightViewProjection0 = Matrix4x4.Identity,
+                    LightViewProjection1 = Matrix4x4.Identity,
+                    LightViewProjection2 = Matrix4x4.Identity,
+                    LightViewProjection3 = Matrix4x4.Identity,
+                    SplitDepths = new Vector4(CascadeRadii[0], CascadeRadii[1], CascadeRadii[2], 0),
+                    Resolution = 1,
+                    ZPullback = 0,
+                };
+            }
+            else
+            {
+                csmConstants = new()
+                {
+                    LightViewProjection0 = Matrix4x4.Transpose(Cascades[0].LightViewProjection),
+                    LightViewProjection1 = Matrix4x4.Transpose(Cascades[1].LightViewProjection),
+                    LightViewProjection2 = Matrix4x4.Transpose(Cascades[2].LightViewProjection),
+                    LightViewProjection3 = Matrix4x4.Identity,
+                    SplitDepths = new Vector4(Cascades[0].SplitDepth, Cascades[1].SplitDepth, Cascades[2].SplitDepth, 0),
+                    Resolution = Options.Resolution,
+                    ZPullback = (ChunkCount + 1) * Chunk.Size,
+                };
+            }
+
             DXHost.Context.UpdateSubresource(csmConstants, CSMSamplingConstantsBuffer);
             DXHost.Context.PSSetConstantBuffer(3, CSMSamplingConstantsBuffer);
 

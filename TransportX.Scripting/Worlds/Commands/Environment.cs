@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
+using TransportX.Data;
 using TransportX.Diagnostics;
 using TransportX.Environment;
 using TransportX.Rendering;
@@ -29,7 +30,7 @@ namespace TransportX.Scripting.Worlds.Commands
         protected EnvironmentProfile? CreateEnvironment(string path)
         {
             string fullPath = Path.Combine(World.BaseDirectory, path);
-            Data.Environment.EnvironmentProfile? data = Data.XmlSerializer<Data.Environment.EnvironmentProfile>.FromXml(fullPath, World.ErrorCollector);
+            Data.Environment.EnvironmentProfile? data = XmlSerializer<Data.Environment.EnvironmentProfile>.FromXml(fullPath, World.ErrorCollector);
             if (data is null) return null;
 
             World.ErrorCollector.ReportRange(data.Errors);

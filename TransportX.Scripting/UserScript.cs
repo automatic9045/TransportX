@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
+using TransportX.Data;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.IO;
@@ -35,7 +36,7 @@ namespace TransportX.Scripting
         {
             string manifestPath = Path.ChangeExtension(filePath, ".manifest.xml");
             ScriptManifest manifest = !Path.Exists(manifestPath) ? new()
-                : Data.XmlSerializer<ScriptManifest>.FromXml(manifestPath, errorCollector) ?? new();
+                : XmlSerializer<ScriptManifest>.FromXml(manifestPath, errorCollector) ?? new();
 
             ScriptOptions options = ScriptOptionFactory.Default.WithFilePath(filePath);
             string localBaseDirectory = Path.GetDirectoryName(filePath)!;

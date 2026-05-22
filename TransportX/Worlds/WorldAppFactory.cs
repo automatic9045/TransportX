@@ -9,11 +9,13 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 
 using TransportX.Cameras;
+using TransportX.Data;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering;
+using TransportX.Rendering.Shadows;
 
 namespace TransportX.Worlds
 {
@@ -31,6 +33,9 @@ namespace TransportX.Worlds
 
         public IApp Create(IAppHost host, WorldAppParameters parameters)
         {
+            ErrorCollector errorCollector = new();
+            Config config = Config.Import(errorCollector);
+
             DXHost dxHost = new();
 
             IWindow window = host.Platform.Window;
@@ -63,7 +68,15 @@ namespace TransportX.Worlds
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
             dxClient.SwapChain!.Present(1, PresentFlags.None);
 
-            Renderer renderer = new(host.Platform, dxHost, dxClient);
+            RendererOptions rendererOptions = new()
+            {
+                ShadowOptions = new ShadowOptions()
+                {
+                    Resolution = config.ShadowResolution,
+                },
+            };
+            Renderer renderer = new(host.Platform, dxHost, dxClient, rendererOptions);
+
             PhysicsHost physicsHost = PhysicsHost.Create();
 
             TimeManager updateTimeManager = new();
@@ -72,7 +85,6 @@ namespace TransportX.Worlds
 
             Camera camera = new();
 
-            ErrorCollector errorCollector = new();
             WorldBuilder worldBuilder = new(parameters.WorldInfo)
             {
                 Platform = host.Platform,

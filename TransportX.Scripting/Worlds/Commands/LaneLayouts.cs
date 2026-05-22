@@ -9,11 +9,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Data;
 using TransportX.Diagnostics;
 using TransportX.Network;
 
 using TransportX.Scripting.Collections;
-using TransportX.Scripting.Data;
 
 namespace TransportX.Scripting.Worlds.Commands
 {

@@ -23,6 +23,7 @@ namespace TransportX.Rendering
         protected readonly Platform Platform;
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
+        protected readonly RendererOptions Options;
 
         protected readonly ID3D11VertexShader VertexShader;
         protected readonly ID3D11PixelShader PixelShader;
@@ -40,17 +41,17 @@ namespace TransportX.Rendering
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
 
-        protected readonly ShadowPipeline ShadowManager;
-
+        protected readonly ShadowPipeline Shadow;
         protected readonly PostProcessingPipeline PostProcess;
 
         private readonly ID3D11ShaderResourceView BrdfLutTexture;
 
-        public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient)
+        public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient, RendererOptions options)
         {
             Platform = platform;
             DXHost = dxHost;
             DXClient = dxClient;
+            Options = options;
 
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
@@ -186,7 +187,7 @@ namespace TransportX.Rendering
             };
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
 
-            ShadowManager = new ShadowPipeline(DXHost, elements, InstanceBuffer, MaterialBuffer);
+            Shadow = new ShadowPipeline(DXHost, elements, InstanceBuffer, MaterialBuffer, Options.ShadowOptions);
 
             PostProcess = new PostProcessingPipeline(DXHost.Context);
 
@@ -214,8 +215,7 @@ namespace TransportX.Rendering
             RasterizerState.Dispose();
             BlendState.Dispose();
 
-            ShadowManager.Dispose();
-
+            Shadow.Dispose();
             PostProcess.Dispose();
 
             BrdfLutTexture.Dispose();
@@ -272,7 +272,7 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetShaderResource(11, environment.IBL.SpecularTexture!);
 
 
-            ShadowManager.Render(world.DirectionalLight.Direction, camera, world);
+            Shadow.Render(world.DirectionalLight.Direction, camera, world);
 
             PostProcess.Setup(DXClient.DepthStencil, (Vector2)size);
 
@@ -284,7 +284,7 @@ namespace TransportX.Rendering
             DXHost.Context.VSSetShader(VertexShader);
             DXHost.Context.IASetInputLayout(InputLayout);
 
-            ShadowManager.Bind();
+            Shadow.Bind();
 
             CameraDrawContext cameraContext = new()
             {
