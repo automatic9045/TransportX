@@ -39,7 +39,9 @@ namespace TransportX.Sample.LV290.Vehicles
         private readonly AudioSet Audios;
 
         private readonly KeyObserver ResetKey;
-        private WorldPose InitialWorldPose = new(0, 0, Pose.NaN);
+
+        private bool IsInitialWorldPoseSet = false;
+        private WorldPose InitialWorldPose = WorldPose.Zero;
 
         public override string Title { get; } = "サンプルバス";
         public override string Description { get; } = "動作確認用のバスです。";
@@ -92,7 +94,11 @@ namespace TransportX.Sample.LV290.Vehicles
 
         public override void SubTick(TimeSpan elapsed)
         {
-            if (Pose.HasNaN(InitialWorldPose.Pose)) InitialWorldPose = WorldPose;
+            if (!IsInitialWorldPoseSet)
+            {
+                InitialWorldPose = WorldPose;
+                IsInitialWorldPoseSet = true;
+            }
             if (ResetKey.IsPressed)
             {
                 Locate(InitialWorldPose);
