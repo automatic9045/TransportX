@@ -17,7 +17,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public Camera(ScriptWorld world)
         {
             World = world;
-            Locate(new WorldPose(0, 0, new Pose(Chunk.Size / 2, 0, Chunk.Size / 2)));
+            Locate(new WorldPose(0, 0, new Pose(Chunk.Size / 2, 10, Chunk.Size / 2)));
         }
 
         public void Locate(WorldPose worldPose)
