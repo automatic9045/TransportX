@@ -6,25 +6,20 @@ using System.Threading.Tasks;
 
 namespace TransportX.Environment
 {
-    public class EnvironmentProfile : IDisposable
+    public class EnvironmentProfile
     {
         public static readonly EnvironmentProfile Default = new()
         {
-            IBL = IBL.Default,
-            Bloom = Bloom.Default,
+            IBL = IBLProfile.Default,
+            Bloom = BloomProfile.Default,
         };
 
 
-        public required IBL IBL { get; init; }
-        public required Bloom Bloom { get; init; }
+        public required IBLProfile IBL { get; init; }
+        public required BloomProfile Bloom { get; init; }
 
         public EnvironmentProfile()
         {
-        }
-
-        public void Dispose()
-        {
-            IBL.Dispose();
         }
     }
 }

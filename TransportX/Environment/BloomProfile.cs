@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace TransportX.Environment
 {
-    public class Bloom
+    public class BloomProfile
     {
-        public static readonly Bloom Default = new()
+        public static readonly BloomProfile Default = new()
         {
             Threshold = 2,
             Intensity = 0.2f,
@@ -25,7 +25,7 @@ namespace TransportX.Environment
         public required float SoftKnee { get; init; }
         public required Vector3 Tint { get; init; }
 
-        public Bloom()
+        public BloomProfile()
         {
         }
     }

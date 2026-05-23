@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Silk.NET.Maths;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -38,14 +37,12 @@ namespace TransportX.Rendering
         protected readonly ID3D11Buffer SceneBuffer;
 
         protected readonly ID3D11SamplerState TextureSamplerState;
-        protected readonly ID3D11SamplerState BrdfSamplerState;
         protected readonly ID3D11RasterizerState RasterizerState;
         protected readonly ID3D11BlendState BlendState;
 
         protected readonly ShadowPipeline Shadow;
+        protected readonly IBLPipeline IBL;
         protected readonly PostProcessingPipeline PostProcess;
-
-        private readonly ID3D11ShaderResourceView BrdfLutTexture;
 
         public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient, RendererOptions options)
         {
@@ -53,6 +50,7 @@ namespace TransportX.Rendering
             DXHost = dxHost;
             DXClient = dxClient;
             Options = options;
+
 
             Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
@@ -62,6 +60,7 @@ namespace TransportX.Rendering
 
             Blob debugPsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
             DebugPixelShader = DXHost.Device.CreatePixelShader(debugPsBlob);
+
 
             InputElementDescription[] elements = [
                 new InputElementDescription("POSITION", 0, Format.R32G32B32_Float, 0, 0, InputClassification.PerVertexData, 0),
@@ -77,6 +76,7 @@ namespace TransportX.Rendering
             ];
 
             InputLayout = DXHost.Device.CreateInputLayout(elements, vsBlob.AsSpan());
+
 
             BufferDescription instanceBufferDesc = new()
             {
@@ -115,6 +115,7 @@ namespace TransportX.Rendering
             };
             SceneBuffer = DXHost.Device.CreateBuffer(sceneBufferDesc);
 
+
             SamplerDescription samplerDesc = new()
             {
                 Filter = Filter.Anisotropic,
@@ -127,18 +128,6 @@ namespace TransportX.Rendering
                 MaxLOD = float.MaxValue,
             };
             TextureSamplerState = DXHost.Device.CreateSamplerState(samplerDesc);
-
-            SamplerDescription brdfSamplerDesc = new()
-            {
-                Filter = Filter.MinMagMipLinear,
-                AddressU = TextureAddressMode.Clamp,
-                AddressV = TextureAddressMode.Clamp,
-                AddressW = TextureAddressMode.Clamp,
-                ComparisonFunc = ComparisonFunction.Never,
-                MinLOD = 0,
-                MaxLOD = float.MaxValue,
-            };
-            BrdfSamplerState = DXHost.Device.CreateSamplerState(brdfSamplerDesc);
 
             RasterizerDescription rasterizerDesc = new RasterizerDescription()
             {
@@ -188,14 +177,22 @@ namespace TransportX.Rendering
             };
             BlendState = DXHost.Device.CreateBlendState(blendDesc);
 
-            Shadow = new ShadowPipeline(DXHost, elements, InstanceBuffer, MaterialBuffer, Options.ShadowOptions);
+
+            Shadow = new ShadowPipeline(DXHost, elements, Options.ShadowOptions)
+            {
+                InstanceBuffer = InstanceBuffer,
+                MaterialBuffer = MaterialBuffer,
+            };
+
+            IBL = new IBLPipeline(DXHost)
+            {
+                PixelShader = PixelShader,
+                InstanceBuffer = InstanceBuffer,
+                MaterialBuffer = MaterialBuffer,
+                SceneBuffer = SceneBuffer,
+            };
 
             PostProcess = new PostProcessingPipeline(DXHost.Context);
-
-            Stream brdfLutStream = ShaderFactory.GetShaderStream("Brdf.dds")!;
-            byte[] brdfLutData = new byte[brdfLutStream.Length];
-            brdfLutStream.ReadExactly(brdfLutData);
-            BrdfLutTexture = new DDSTextureFactory(DXHost.Device).CreateFromMemory(brdfLutData);
         }
 
         public void Dispose()
@@ -212,14 +209,11 @@ namespace TransportX.Rendering
             SceneBuffer.Dispose();
 
             TextureSamplerState.Dispose();
-            BrdfSamplerState.Dispose();
             RasterizerState.Dispose();
             BlendState.Dispose();
 
             Shadow.Dispose();
             PostProcess.Dispose();
-
-            BrdfLutTexture.Dispose();
         }
 
         public void Draw(Camera camera, WorldBase world)
@@ -245,9 +239,6 @@ namespace TransportX.Rendering
             DXHost.Context.PSSetConstantBuffer(2, SceneBuffer);
 
             DXHost.Context.PSSetSampler(0, TextureSamplerState);
-            DXHost.Context.PSSetSampler(1, BrdfSamplerState);
-
-            DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
 
             camera.UpdateProjection(size);
 
@@ -269,12 +260,7 @@ namespace TransportX.Rendering
             };
             DXHost.Context.UpdateSubresource(environmentConstants, EnvironmentBuffer);
 
-            DXHost.Context.PSSetShaderResource(10, environment.IBL.DiffuseTexture!);
-            DXHost.Context.PSSetShaderResource(11, environment.IBL.SpecularTexture!);
-
-
-            Shadow.Render(world.DirectionalLight.Direction, camera, world);
-
+            Shadow.Render(world.DirectionalLight.Direction, world);
             PostProcess.Setup(DXClient.DepthStencil, size);
 
             DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
@@ -285,7 +271,10 @@ namespace TransportX.Rendering
             DXHost.Context.VSSetShader(VertexShader);
             DXHost.Context.IASetInputLayout(InputLayout);
 
+            if (!IBL.IsGenerated) IBL.Generate(camera, world);
+
             Shadow.Bind();
+            IBL.Bind();
 
             CameraDrawContext cameraContext = new()
             {

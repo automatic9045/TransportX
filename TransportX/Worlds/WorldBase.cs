@@ -83,8 +83,6 @@ namespace TransportX.Worlds
             Chunks.Dispose();
             Bodies.Dispose();
 
-            DefaultEnvironment.Dispose();
-
             Models.Dispose();
         }
 

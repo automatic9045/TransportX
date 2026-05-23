@@ -68,14 +68,6 @@ namespace TransportX.Worlds
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
             dxClient.SwapChain!.Present(1, PresentFlags.None);
 
-            RendererOptions rendererOptions = new()
-            {
-                ShadowOptions = new ShadowOptions()
-                {
-                    Resolution = config.ShadowResolution,
-                },
-            };
-            Renderer renderer = new(host.Platform, dxHost, dxClient, rendererOptions);
 
             PhysicsHost physicsHost = PhysicsHost.Create();
 
@@ -108,6 +100,16 @@ namespace TransportX.Worlds
 
                 world = new EmptyWorld(worldBuilder);
             }
+
+
+            RendererOptions rendererOptions = new()
+            {
+                ShadowOptions = new ShadowOptions()
+                {
+                    Resolution = config.ShadowResolution,
+                },
+            };
+            Renderer renderer = new(host.Platform, dxHost, dxClient, rendererOptions);
 
             WorldAppDependencies info = new()
             {

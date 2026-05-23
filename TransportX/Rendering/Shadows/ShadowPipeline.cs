@@ -23,8 +23,6 @@ namespace TransportX.Rendering.Shadows
 
 
         protected readonly IDXHost DXHost;
-        protected readonly ID3D11Buffer InstanceBuffer;
-        protected readonly ID3D11Buffer MaterialBuffer;
         protected readonly ShadowOptions Options;
 
         protected readonly ShadowMap ShadowMap;
@@ -41,11 +39,12 @@ namespace TransportX.Rendering.Shadows
 
         private uint FrameCount = 0;
 
-        public ShadowPipeline(IDXHost dxHost, InputElementDescription[] inputElements, ID3D11Buffer instanceBuffer, ID3D11Buffer materialBuffer, ShadowOptions options)
+        public required ID3D11Buffer InstanceBuffer { protected get; init; }
+        public required ID3D11Buffer MaterialBuffer { protected get; init; }
+
+        public ShadowPipeline(IDXHost dxHost, InputElementDescription[] inputElements, ShadowOptions options)
         {
             DXHost = dxHost;
-            InstanceBuffer = instanceBuffer;
-            MaterialBuffer = materialBuffer;
             Options = options;
 
             ShadowMap = new ShadowMap(DXHost.Device, Options.Resolution, CascadeCount);
@@ -97,14 +96,14 @@ namespace TransportX.Rendering.Shadows
             ShadowRasterizerState.Dispose();
         }
 
-        public void Render(Vector3 lightDirection, Camera camera, WorldBase world)
+        public void Render(Vector3 lightDirection, WorldBase world)
         {
             if (Options.Resolution <= 0) return;
 
-            ShadowCamera.LocateChunk(camera);
+            ShadowCamera.LocateChunk(world.Camera);
 
             Vector3 lightDir = Vector3.Normalize(lightDirection);
-            Vector3 cameraPosition = camera.WorldPose.Pose.Position;
+            Vector3 cameraPosition = world.Camera.WorldPose.Pose.Position;
 
             for (int i = 0; i < CascadeCount; i++)
             {
