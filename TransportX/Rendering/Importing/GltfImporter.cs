@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using SharpGLTF.IO;
 using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using GltfMaterial = SharpGLTF.Schema2.Material;
@@ -42,7 +43,7 @@ namespace TransportX.Rendering.Importing
 
         public Model Import(string path, bool isForVisual, bool makeLH)
         {
-            if (!makeLH) throw new NotSupportedException();
+            if (!makeLH) throw new NotSupportedException("glTF 形式では、左手系で定義することはできません。");
 
             try
             {
@@ -351,7 +352,22 @@ namespace TransportX.Rendering.Importing
                         MaterialChannel? emissiveChannel = gltfMaterial.FindChannel("Emissive");
                         if (emissiveChannel.HasValue)
                         {
-                            emissive = (Vector3)emissiveChannel.Value.Parameters[0].Value;
+                            IReadOnlyList<IMaterialParameter> parameters = emissiveChannel.Value.Parameters;
+                            for (int j = 0; j < parameters.Count; j++)
+                            {
+                                IMaterialParameter parameter = parameters[j];
+                                switch (parameter.Name)
+                                {
+                                    case "RGB":
+                                        emissive = (Vector3)parameter.Value;
+                                        break;
+
+                                    case "EmissiveStrength":
+                                        emissive *= (float)parameter.Value;
+                                        break;
+                                }
+                            }
+
                             emissiveTexture = CreateTextureRef(emissiveChannel.Value.Texture);
                         }
 
