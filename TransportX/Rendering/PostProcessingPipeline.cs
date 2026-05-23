@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Environment;
 
@@ -143,7 +144,7 @@ namespace TransportX.Rendering
             Buffer = null;
         }
 
-        public void Setup(ID3D11DepthStencilView depthStencil, Vector2 size)
+        public void Setup(ID3D11DepthStencilView depthStencil, SizeI size)
         {
             if (Buffer is null || size != Buffer.Size)
             {
@@ -180,7 +181,7 @@ namespace TransportX.Rendering
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.ResolvedHdrBuffer.RenderTargetView, null);
-            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
+            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
             Context.PSSetShader(DeferredLightingPixelShader);
             Context.PSSetShaderResource(0, Buffer.AmbientBuffer.ShaderResourceView);
@@ -256,7 +257,7 @@ namespace TransportX.Rendering
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
-            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
+            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
             Context.PSSetShader(CompositePixelShader);
             Context.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
@@ -269,7 +270,7 @@ namespace TransportX.Rendering
             // 6. FXAA (Antialiasing)
 
             Context.OMSetRenderTargets(renderTarget, null);
-            Context.RSSetViewport(0, 0, Buffer.Size.X, Buffer.Size.Y);
+            Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
             Context.PSSetShader(FxaaPixelShader);
             Context.PSSetShaderResource(0, Buffer.LdrBuffer.ShaderResourceView);

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 using Silk.NET.Input;
+using Vortice.Mathematics;
 
 using TransportX.Input;
 
@@ -20,7 +20,7 @@ namespace TransportX.Cameras
 
         private readonly KeyObserver Reset;
 
-        public Vector2 ClientSize { get; set; } = Vector2.Zero;
+        public SizeI ClientSize { get; set; } = SizeI.Empty;
 
         public ViewpointInput(InputManager inputManager, ViewpointSet viewpoints)
         {

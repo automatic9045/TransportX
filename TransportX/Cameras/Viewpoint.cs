@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Mathematics;
+
 namespace TransportX.Cameras
 {
     public abstract class Viewpoint : WorldObject
@@ -15,11 +17,11 @@ namespace TransportX.Cameras
         {
         }
 
-        public virtual void Move(Vector2 offset, Vector2 clientSize)
+        public virtual void Move(Vector2 offset, SizeI clientSize)
         {
         }
 
-        public virtual void Rotate(Vector2 offset, Vector2 clientSize)
+        public virtual void Rotate(Vector2 offset, SizeI clientSize)
         {
         }
 
@@ -75,9 +77,9 @@ namespace TransportX.Cameras
                 Update(InitialAngle);
             }
 
-            public void Rotate(Vector2 velocity, Vector2 clientSize)
+            public void Rotate(Vector2 velocity, SizeI clientSize)
             {
-                Vector2 angle = Angle + new Vector2(-velocity.Y / float.Max(1, clientSize.Y), -velocity.X / float.Max(1, clientSize.X));
+                Vector2 angle = Angle + new Vector2(-velocity.Y / int.Max(1, clientSize.Height), -velocity.X / int.Max(1, clientSize.Width));
                 Update(angle);
             }
 
@@ -113,7 +115,7 @@ namespace TransportX.Cameras
             Locate(worldPose);
         }
 
-        public override void Move(Vector2 offset, Vector2 clientSize)
+        public override void Move(Vector2 offset, SizeI clientSize)
         {
             Vector2 amount = 0.1f * new Vector2(-offset.X, offset.Y);
 
@@ -129,7 +131,7 @@ namespace TransportX.Cameras
             Locate(worldPose);
         }
 
-        public override void Rotate(Vector2 offset, Vector2 clientSize)
+        public override void Rotate(Vector2 offset, SizeI clientSize)
         {
             Rotator.Rotate(1.5f * Perspective * offset, clientSize);
             Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(WorldPose.Pose.Position, Rotator.Rotation));
@@ -181,7 +183,7 @@ namespace TransportX.Cameras
         {
         }
 
-        public override void Rotate(Vector2 offset, Vector2 clientSize)
+        public override void Rotate(Vector2 offset, SizeI clientSize)
         {
             Rotator.Rotate(1.5f * Perspective * offset, clientSize);
         }
@@ -233,7 +235,7 @@ namespace TransportX.Cameras
         {
         }
 
-        public override void Rotate(Vector2 offset, Vector2 clientSize)
+        public override void Rotate(Vector2 offset, SizeI clientSize)
         {
             Rotator.Rotate(-1.5f * Translator.ZoomRatio * offset, clientSize);
         }

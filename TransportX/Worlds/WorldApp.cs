@@ -126,7 +126,7 @@ namespace TransportX.Worlds
         {
             if (IsDisposed) return;
 
-            ViewpointInput.ClientSize = (Vector2)Host.Platform.Window.Size;
+            ViewpointInput.ClientSize = new SizeI(Host.Platform.Window.Size.X, Host.Platform.Window.Size.Y);
 
             UpdateTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
             TimeSpan elapsed = UpdateTimeManager.DeltaTime;

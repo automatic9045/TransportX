@@ -10,6 +10,7 @@ using Silk.NET.Maths;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using Vortice.Mathematics;
 
 using TransportX.Cameras;
 using TransportX.Environment;
@@ -226,8 +227,8 @@ namespace TransportX.Rendering
             if (DXClient.DepthStencil is null) throw new InvalidOperationException();
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();
 
-            Vector2D<int> size = Platform.Window.Size;
-            if (size.X == 0 || size.Y == 0)
+            SizeI size = new(Platform.Window.Size.X, Platform.Window.Size.Y);
+            if (size.Width == 0 || size.Height == 0)
             {
                 PostProcess.Reset();
                 return;
@@ -235,7 +236,7 @@ namespace TransportX.Rendering
 
             DXHost.Context.RSSetState(RasterizerState);
             DXHost.Context.OMSetBlendState(BlendState);
-            DXHost.Context.RSSetViewport(0, 0, size.X, size.Y);
+            DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
 
             DXHost.Context.VSSetConstantBuffer(0, SceneBuffer);
 
@@ -248,7 +249,7 @@ namespace TransportX.Rendering
 
             DXHost.Context.PSSetShaderResource(100, BrdfLutTexture);
 
-            camera.UpdateProjection((Vector2)size);
+            camera.UpdateProjection(size);
 
             SceneConstants sceneConstants = new()
             {
@@ -274,9 +275,9 @@ namespace TransportX.Rendering
 
             Shadow.Render(world.DirectionalLight.Direction, camera, world);
 
-            PostProcess.Setup(DXClient.DepthStencil, (Vector2)size);
+            PostProcess.Setup(DXClient.DepthStencil, size);
 
-            DXHost.Context.RSSetViewport(0, 0, size.X, size.Y);
+            DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
             DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil!, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             DXHost.Context.RSSetState(RasterizerState);
