@@ -9,7 +9,7 @@ cbuffer PostProcessBuffer : register(b0)
     float BloomScatter;
     float BloomSoftKnee;
     float3 BloomTint;
-    float _Padding;
+    float Exposure;
 }
 
 struct PS_IN
@@ -21,6 +21,7 @@ struct PS_IN
 float4 main(PS_IN input) : SV_TARGET
 {
     float3 color = InputTexture.Sample(LinearSampler, input.TexCoord).rgb;
+    color *= Exposure;
 
     float brightness = max(color.r, max(color.g, color.b));
 

@@ -216,7 +216,7 @@ namespace TransportX.Rendering
             PostProcess.Dispose();
         }
 
-        public void Draw(Camera camera, WorldBase world)
+        public void Draw(Camera camera, WorldBase world, TimeSpan elapsed)
         {
             if (DXClient.DepthStencil is null) throw new InvalidOperationException();
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();
@@ -291,7 +291,7 @@ namespace TransportX.Rendering
             camera.DrawChunks(cameraContext, world.Chunks);
             camera.DrawBodies(cameraContext, world.Bodies);
 
-            PostProcess.RenderTo(DXClient.RenderTarget!, environment);
+            PostProcess.RenderTo(DXClient.RenderTarget!, environment, elapsed);
 
             DXHost.Context.PSSetShaderResource(12, null!);
         }

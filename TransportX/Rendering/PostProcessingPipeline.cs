@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +17,15 @@ namespace TransportX.Rendering
 {
     public class PostProcessingPipeline : IDisposable
     {
+        private const float AdaptationSpeed = 2;
+
+
         private readonly ID3D11DeviceContext Context;
 
         private readonly ID3D11VertexShader VertexShader;
 
         private readonly ID3D11PixelShader DeferredLightingPixelShader;
+        private readonly ID3D11PixelShader LuminanceExtractPixelShader;
         private readonly ID3D11PixelShader ExtractPixelShader;
         private readonly ID3D11PixelShader DownsamplePixelShader;
         private readonly ID3D11PixelShader UpsamplePixelShader;
@@ -37,6 +42,8 @@ namespace TransportX.Rendering
 
         private PostProcessingBuffer? Buffer = null;
 
+        private float Exposure = 1;
+
         public PostProcessingPipeline(ID3D11DeviceContext context)
         {
             Context = context;
@@ -46,6 +53,9 @@ namespace TransportX.Rendering
 
             Blob deferredLightingPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.DeferredLightingPS.hlsl", "main", "PS", "ps_5_0");
             DeferredLightingPixelShader = Context.Device.CreatePixelShader(deferredLightingPSBlob);
+
+            Blob luminanceExtractPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.LuminanceExtractPS.hlsl", "main", "PS", "ps_5_0");
+            LuminanceExtractPixelShader = Context.Device.CreatePixelShader(luminanceExtractPSBlob);
 
             Blob extractPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.ExtractPS.hlsl", "main", "PS", "ps_5_0");
             ExtractPixelShader = Context.Device.CreatePixelShader(extractPSBlob);
@@ -155,7 +165,7 @@ namespace TransportX.Rendering
             Buffer.Initialize();
         }
 
-        public void RenderTo(ID3D11RenderTargetView renderTarget, EnvironmentProfile environment)
+        public void RenderTo(ID3D11RenderTargetView renderTarget, EnvironmentProfile environment, TimeSpan elapsed)
         {
             if (Buffer is null) throw new InvalidOperationException();
 
@@ -166,6 +176,7 @@ namespace TransportX.Rendering
                 BloomScatter = environment.Bloom.Scatter,
                 BloomSoftKnee = environment.Bloom.SoftKnee,
                 BloomTint = environment.Bloom.Tint.ToLinear(),
+                Exposure = Exposure,
             };
             Context.UpdateSubresource(postProcessConstants, PostProcessBuffer);
 
@@ -186,7 +197,7 @@ namespace TransportX.Rendering
             Context.PSSetShader(DeferredLightingPixelShader);
             Context.PSSetShaderResource(0, Buffer.AmbientBuffer.ShaderResourceView);
             Context.PSSetShaderResource(1, Buffer.DirectionalBuffer.ShaderResourceView);
-            Context.PSSetShaderResource(2, Buffer.RawShadowBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(2, Buffer.RawShadowDepthBuffer.ShaderResourceView);
             Context.Draw(3, 0);
 
             Context.PSSetShaderResource(0, null!);
@@ -194,7 +205,36 @@ namespace TransportX.Rendering
             Context.PSSetShaderResource(2, null!);
 
 
-            // 2. Extract
+            // 2. Luminance Extraction
+
+            Context.OMSetRenderTargets(Buffer.LuminanceBuffer.RenderTargetView, null);
+            Context.RSSetViewport(0, 0, 1, 1);
+            Context.PSSetShader(LuminanceExtractPixelShader);
+            Context.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
+            Context.PSSetShaderResource(1, Buffer.RawShadowDepthBuffer.ShaderResourceView);
+            Context.Draw(3, 0);
+
+            Context.PSSetShaderResource(0, null!);
+            Context.PSSetShaderResource(1, null!);
+
+            Context.CopyResource(Buffer.StagingTexture, Buffer.LuminanceBuffer.Texture);
+            MappedSubresource map = Context.Map(Buffer.StagingTexture, 0, MapMode.Read, MapFlags.None);
+            float sceneLuminanceLog;
+            unsafe
+            {
+                sceneLuminanceLog = (float)Unsafe.Read<Half>(map.DataPointer.ToPointer());
+            }
+            Context.Unmap(Buffer.StagingTexture, 0);
+
+            float targetExposure = 0.18f / (float.Exp(sceneLuminanceLog) + 0.0001f);
+            float minExposure = 0.01f;
+            float maxExposure = 5;
+            targetExposure = float.Clamp(targetExposure, minExposure, maxExposure);
+            float speed = (Exposure < targetExposure) ? 0.5f : 1.5f;
+            Exposure = float.Lerp(Exposure, targetExposure, float.Min(1, (float)elapsed.TotalSeconds * speed));
+
+
+            // 3. Extract
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.BloomMips[0].RenderTargetView, null);
@@ -206,7 +246,7 @@ namespace TransportX.Rendering
             Context.PSSetShaderResource(0, null!);
 
 
-            // 3. Downsample
+            // 4. Downsample
 
             Context.PSSetShader(DownsamplePixelShader);
 
@@ -229,7 +269,7 @@ namespace TransportX.Rendering
             }
 
 
-            // 4. Upsample
+            // 5. Upsample
 
             Context.OMSetBlendState(AdditiveBlendState);
             Context.PSSetShader(UpsamplePixelShader);
@@ -253,7 +293,7 @@ namespace TransportX.Rendering
             }
 
 
-            // 5. Composite
+            // 6. Composite
 
             Context.OMSetBlendState(OpaqueBlendState);
             Context.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
@@ -267,7 +307,7 @@ namespace TransportX.Rendering
             Context.PSSetShaderResource(1, null!);
 
 
-            // 6. FXAA (Antialiasing)
+            // 7. FXAA (Antialiasing)
 
             Context.OMSetRenderTargets(renderTarget, null);
             Context.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);

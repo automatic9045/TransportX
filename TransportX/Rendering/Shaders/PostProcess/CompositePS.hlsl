@@ -10,7 +10,7 @@ cbuffer PostProcessBuffer : register(b0)
     float BloomScatter;
     float BloomSoftKnee;
     float3 BloomTint;
-    float _Padding;
+    float Exposure;
 }
 
 struct PS_IN
@@ -34,6 +34,7 @@ float4 main(PS_IN input) : SV_TARGET
     float3 hdrColor = HDRTexture.Sample(LinearSampler, input.TexCoord).rgb;
     float3 bloomColor = BloomTexture.Sample(LinearSampler, input.TexCoord).rgb;
 
+    hdrColor *= Exposure;
     hdrColor += bloomColor * BloomTint * BloomIntensity;
 
     float3 ldrColor = ACESFilm(hdrColor);

@@ -22,9 +22,11 @@ namespace TransportX.Rendering
 
         public RenderTexture AmbientBuffer { get; }
         public RenderTexture DirectionalBuffer { get; }
-        public RenderTexture RawShadowBuffer { get; }
-
         public RenderTexture ResolvedHdrBuffer { get; }
+        public RenderTexture RawShadowDepthBuffer { get; }
+
+        public RenderTexture LuminanceBuffer { get; }
+        public ID3D11Texture2D StagingTexture { get; }
 
         public IReadOnlyList<RenderTexture> BloomMips { get; }
         public RenderTexture LdrBuffer { get; }
@@ -51,8 +53,34 @@ namespace TransportX.Rendering
             DirectionalBuffer = new RenderTexture(Context.Device, desc);
             ResolvedHdrBuffer = new RenderTexture(Context.Device, desc);
 
-            desc.Format = Format.R16_Float;
-            RawShadowBuffer = new RenderTexture(Context.Device, desc);
+            desc.Format = Format.R16G16_Float;
+            RawShadowDepthBuffer = new RenderTexture(Context.Device, desc);
+
+            Texture2DDescription luminanceDesc = new()
+            {
+                Width = 1,
+                Height = 1,
+                MipLevels = 1,
+                ArraySize = 1,
+                Format = Format.R16_Float,
+                SampleDescription = new SampleDescription(1, 0),
+                BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                Usage = ResourceUsage.Default,
+            };
+            LuminanceBuffer = new RenderTexture(Context.Device, luminanceDesc);
+
+            Texture2DDescription stagingDesc = new()
+            {
+                Width = 1,
+                Height = 1,
+                MipLevels = 1,
+                ArraySize = 1,
+                Format = Format.R16_Float,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = ResourceUsage.Staging,
+                CPUAccessFlags = CpuAccessFlags.Read,
+            };
+            StagingTexture = Context.Device.CreateTexture2D(stagingDesc);
 
             desc.Format = Format.R11G11B10_Float;
             RenderTexture[] bloomMips = new RenderTexture[BloomMipCount];
@@ -83,8 +111,10 @@ namespace TransportX.Rendering
         {
             AmbientBuffer.Dispose();
             DirectionalBuffer.Dispose();
-            RawShadowBuffer.Dispose();
             ResolvedHdrBuffer.Dispose();
+            RawShadowDepthBuffer.Dispose();
+            LuminanceBuffer.Dispose();
+            StagingTexture.Dispose();
 
             for (int i = 0; i < BloomMipCount; i++)
             {
@@ -99,13 +129,13 @@ namespace TransportX.Rendering
             ReadOnlySpan<ID3D11RenderTargetView> renderTargets = [
                 AmbientBuffer.RenderTargetView,
                 DirectionalBuffer.RenderTargetView,
-                RawShadowBuffer.RenderTargetView
+                RawShadowDepthBuffer.RenderTargetView
             ];
             Context.OMSetRenderTargets(renderTargets, DepthStencil);
 
             Context.ClearRenderTargetView(AmbientBuffer.RenderTargetView, Colors.Gray);
             Context.ClearRenderTargetView(DirectionalBuffer.RenderTargetView, Colors.Black);
-            Context.ClearRenderTargetView(RawShadowBuffer.RenderTargetView, Colors.White);
+            Context.ClearRenderTargetView(RawShadowDepthBuffer.RenderTargetView, Colors.White);
             Context.ClearDepthStencilView(DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
         }
     }

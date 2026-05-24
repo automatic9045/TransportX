@@ -13,6 +13,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Rendering\Shaders\Brdf.dds" />
     <EmbeddedResource Include="Rendering\Shaders\DebugPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Shaders\PostProcess\LuminanceExtractPS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\FxaaPS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\UpsamplePS.hlsl" />
     <EmbeddedResource Include="Rendering\Shaders\PostProcess\DownsamplePS.hlsl" />

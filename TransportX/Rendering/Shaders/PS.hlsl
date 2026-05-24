@@ -71,7 +71,7 @@ struct PS_OUT
 {
     float4 Ambient : SV_Target0;
     float4 Directional : SV_Target1;
-    float4 RawShadow : SV_Target2;
+    float4 RawShadowDepth : SV_Target2;
 };
 
 static const float PI = 3.14159265359;
@@ -124,7 +124,7 @@ float2 Hash22(float2 p)
     return frac(p * float2(437.5, 377.1)) * 2.0 - 1.0;
 }
 
-float2 CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float viewDistance, float2 screenPos)
+float CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float viewDistance, float2 screenPos)
 {
     float3 l = normalize(-lightDir);
     float nDotL = dot(normal, l);
@@ -176,9 +176,7 @@ float2 CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float vi
     projCoords.x = projCoords.x * 0.5 + 0.5;
     projCoords.y = projCoords.y * -0.5 + 0.5;
     if (projCoords.x < 0.0 || 1.0 < projCoords.x || projCoords.y < 0.0 || 1.0 < projCoords.y || projCoords.z < 0.0 || 1.0 < projCoords.z)
-    {
-        return float2(1.0, float(cascadeIndex));
-    }
+        return 1.0;
 
     float currentDepth = projCoords.z;
     float zFar = ZPullback + radius;
@@ -211,7 +209,7 @@ float2 CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float vi
     float shadowFactor = shadow / float(numSamples);
     float shadowFade = saturate(nDotL * 5.0);
 
-    return float2(shadowFactor * shadowFade, float(cascadeIndex));
+    return shadowFactor * shadowFade;
 }
 
 PS_OUT main(PS_IN input)
@@ -277,7 +275,7 @@ PS_OUT main(PS_IN input)
     float3 diffuseRatio = (float3(1.0, 1.0, 1.0) - specularRatio) * (1.0 - metallic);
 
     float viewDistance = distance(input.WorldPosition, CameraPosition);
-    float2 shadowResult = CalculateShadow(input.WorldPosition, geometricNormal, LightDirection, viewDistance, input.Position.xy);
+    float shadow = CalculateShadow(input.WorldPosition, geometricNormal, LightDirection, viewDistance, input.Position.xy);
 
     float3 radianceOutUnshadowed = (diffuseRatio * baseColor.rgb / PI + specular) * LightColor * LightIntensity * nDotL;
 
@@ -302,6 +300,6 @@ PS_OUT main(PS_IN input)
     PS_OUT output;
     output.Ambient = float4(ambientPlusEmissive, baseColor.a);
     output.Directional = float4(radianceOutUnshadowed, 1.0);
-    output.RawShadow = float4(shadowResult.x, shadowResult.y, 0.0, 0.0);
+    output.RawShadowDepth = float4(shadow, input.Position.z, 0.0, 0.0);
     return output;
 }

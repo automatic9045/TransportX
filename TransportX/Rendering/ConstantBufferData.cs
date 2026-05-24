@@ -112,7 +112,7 @@ namespace TransportX.Rendering
         public float BloomScatter;
         public float BloomSoftKnee;
         public Vector3 BloomTint;
-        public float Padding;
+        public float Exposure;
 
         public PostProcessConstants()
         {
