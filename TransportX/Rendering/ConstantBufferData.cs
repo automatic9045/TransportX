@@ -58,7 +58,7 @@ namespace TransportX.Rendering
         public Vector3 LightColor = Vector3.Zero;
         public float Padding2;
         public Vector3 LightDirection = Vector3.Zero;
-        public float LightIntensity = 1;
+        public float LightIntensity = 0;
 
         public SceneConstants()
         {

@@ -248,7 +248,7 @@ namespace TransportX.Rendering
                 CameraPosition = camera.WorldPose.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
-                LightIntensity = world.DirectionalLight.Intensity,
+                LightIntensity = world.DirectionalLight.Intensity * 0.001f,
             };
             DXHost.Context.UpdateSubresource(sceneConstants, SceneBuffer);
 

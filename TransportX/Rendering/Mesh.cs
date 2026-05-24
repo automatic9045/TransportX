@@ -120,7 +120,7 @@ namespace TransportX.Rendering
             MaterialConstants materialConstants = new()
             {
                 BaseColor = Material.BaseColor,
-                Emissive = Material.Emissive,
+                Emissive = Material.Emissive * 0.001f,
                 Roughness = Material.Roughness,
                 Metallic = Material.Metallic,
 
