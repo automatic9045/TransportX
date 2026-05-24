@@ -11,6 +11,10 @@ cbuffer PostProcessBuffer : register(b0)
     float BloomSoftKnee;
     float3 BloomTint;
     float Exposure;
+    float ToneMapA;
+    float ToneMapD;
+    float ToneMapB;
+    float ToneMapC;
 }
 
 struct PS_IN
@@ -19,14 +23,10 @@ struct PS_IN
     float2 TexCoord : TEXCOORD;
 };
 
-float3 ACESFilm(float3 x)
+float3 LottesToneMapper(float3 x)
 {
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
-    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
+    x = max(x, 0.0);
+    return pow(x, ToneMapA) / (pow(x, ToneMapD) * ToneMapB + ToneMapC);
 }
 
 float4 main(PS_IN input) : SV_TARGET
@@ -37,7 +37,8 @@ float4 main(PS_IN input) : SV_TARGET
     hdrColor *= Exposure;
     hdrColor += bloomColor * BloomTint * BloomIntensity;
 
-    float3 ldrColor = ACESFilm(hdrColor);
+    float3 ldrColor = LottesToneMapper(hdrColor);
+    ldrColor = saturate(ldrColor);
 
     return float4(ldrColor, 1.0);
 }

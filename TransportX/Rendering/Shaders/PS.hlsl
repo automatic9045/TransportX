@@ -281,15 +281,18 @@ PS_OUT main(PS_IN input)
 
     float3 diffuseIBLRatio = (1.0 - FresnelSchlickRoughness(nDotV, baseReflectivity, roughness)) * (1.0 - metallic);
 
-    float MAX_MIP_LEVEL = 7.0;
+    static const float MAX_MIP_LEVEL = 7.0;
+    static const float3 LUMINANCE_COEFFICIENTS = float3(0.2126, 0.7152, 0.0722);
 
     float3 irradiance = EnvironmentIBLTexture.SampleLevel(TextureSampler, normal, MAX_MIP_LEVEL).rgb;
-    float3 grayIBL = dot(irradiance, float3(0.299, 0.587, 0.114));
-    irradiance = lerp(grayIBL, irradiance, IBLSaturation);
-
+    float3 grayIrradiance = dot(irradiance, LUMINANCE_COEFFICIENTS);
+    irradiance = lerp(grayIrradiance, irradiance, IBLSaturation);
     float3 diffuseIBL = irradiance * baseColor.rgb;
-
+    
     float3 prefilteredColor = EnvironmentIBLTexture.SampleLevel(TextureSampler, r, roughness * MAX_MIP_LEVEL).rgb;
+    float3 grayPrefiltered = dot(prefilteredColor, LUMINANCE_COEFFICIENTS);
+    prefilteredColor = lerp(grayPrefiltered, prefilteredColor, IBLSaturation);
+    
     float2 envBRDF = BrdfLutTexture.Sample(BrdfSampler, float2(nDotV, roughness)).rg;
     float3 specularIBL = prefilteredColor * (baseReflectivity * envBRDF.x + envBRDF.y);
     specularIBL *= pow(saturate(1.0 - roughness * 0.625), 2.0);

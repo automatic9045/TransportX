@@ -17,7 +17,14 @@ namespace TransportX.Environment
         };
 
 
+        /// <summary>
+        /// 環境光の強度を取得・設定します。
+        /// </summary>
         public required float Intensity { get; init; }
+
+        /// <summary>
+        /// 環境光の彩度を取得・設定します。
+        /// </summary>
         public required float Saturation { get; init; }
 
         public IBLProfile()

@@ -45,6 +45,21 @@ namespace TransportX.Scripting.Worlds.Commands
                     SoftKnee = data.Bloom.SoftKnee.Value,
                     Tint = data.Bloom.Tint.Value.ToVector3(),
                 },
+                ToneMap = new ToneMapProfile()
+                {
+                    Contrast = data.ToneMap.Contrast.Value,
+                    Shoulder = data.ToneMap.Shoulder.Value,
+                    MaxLuminance = data.ToneMap.MaxLuminance.Value,
+                    MidtoneScale = data.ToneMap.MidtoneScale.Value,
+                },
+                Exposure = new ExposureProfile()
+                {
+                    Key = data.Exposure.Key.Value,
+                    Min = data.Exposure.Min.Value,
+                    Max = data.Exposure.Max.Value,
+                    DarkAdaptationSpeed = data.Exposure.DarkAdaptationSpeed.Value,
+                    LightAdaptationSpeed = data.Exposure.LightAdaptationSpeed.Value,
+                },
             };
 
             return environment;

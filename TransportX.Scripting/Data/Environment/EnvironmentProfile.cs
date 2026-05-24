@@ -16,8 +16,10 @@ namespace TransportX.Scripting.Data.Environment
     {
         public IBL IBL = new();
         public Bloom Bloom = new();
+        public ToneMap ToneMap = new();
+        public Exposure Exposure = new();
 
         [XmlIgnore]
-        public Error[] Errors => [.. IBL.Errors, .. Bloom.Errors];
+        public Error[] Errors => [.. IBL.Errors, .. Bloom.Errors, .. ToneMap.Errors, .. Exposure.Errors];
     }
 }

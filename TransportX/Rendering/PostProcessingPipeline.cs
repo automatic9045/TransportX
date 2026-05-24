@@ -42,7 +42,7 @@ namespace TransportX.Rendering
 
         private PostProcessingBuffer? Buffer = null;
 
-        private float Exposure = 1;
+        private float Exposure = 0;
 
         public PostProcessingPipeline(ID3D11DeviceContext context)
         {
@@ -169,23 +169,10 @@ namespace TransportX.Rendering
         {
             if (Buffer is null) throw new InvalidOperationException();
 
-            PostProcessConstants postProcessConstants = new()
-            {
-                BloomThreshold = environment.Bloom.Threshold,
-                BloomIntensity = environment.Bloom.Intensity,
-                BloomScatter = environment.Bloom.Scatter,
-                BloomSoftKnee = environment.Bloom.SoftKnee,
-                BloomTint = environment.Bloom.Tint.ToLinear(),
-                Exposure = Exposure,
-            };
-            Context.UpdateSubresource(postProcessConstants, PostProcessBuffer);
-
             Context.IASetInputLayout(null);
             Context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             Context.VSSetShader(VertexShader);
             Context.PSSetSampler(0, SamplerState);
-            Context.PSSetConstantBuffer(0, PostProcessBuffer);
-            Context.PSSetConstantBuffer(1, BlurBuffer);
 
 
             // 1. Deferred Lighting
@@ -226,12 +213,46 @@ namespace TransportX.Rendering
             }
             Context.Unmap(Buffer.StagingTexture, 0);
 
-            float targetExposure = 0.18f / (float.Exp(sceneLuminanceLog) + 0.0001f);
-            float minExposure = 0.01f;
-            float maxExposure = 5;
-            targetExposure = float.Clamp(targetExposure, minExposure, maxExposure);
-            float speed = (Exposure < targetExposure) ? 0.5f : 1.5f;
-            Exposure = float.Lerp(Exposure, targetExposure, float.Min(1, (float)elapsed.TotalSeconds * speed));
+            float targetExposure = environment.Exposure.Key / (float.Exp(sceneLuminanceLog) + 0.0001f);
+            targetExposure = float.Clamp(targetExposure, environment.Exposure.Min, environment.Exposure.Max);
+            float adaptationSpeed = Exposure < targetExposure ? environment.Exposure.DarkAdaptationSpeed : environment.Exposure.LightAdaptationSpeed;
+            Exposure = float.Lerp(Exposure, targetExposure, float.Min(1, (float)elapsed.TotalSeconds * adaptationSpeed));
+
+
+            float grayIn = environment.Exposure.Key;
+            float grayOut = grayIn * environment.ToneMap.MidtoneScale;
+
+            float a = environment.ToneMap.Contrast;
+            float d = environment.ToneMap.Shoulder;
+            float powMidInA = float.Pow(grayIn, a);
+            float powHdrMaxA = float.Pow(environment.ToneMap.MaxLuminance, a);
+            float powMidInAD = float.Pow(grayIn, a * d);
+            float powHdrMaxAD = float.Pow(environment.ToneMap.MaxLuminance, a * d);
+
+            float denominator = (powHdrMaxAD - powMidInAD) * grayOut;
+            if (denominator < 0.00001f && -0.00001f < denominator) denominator = 0.00001f;
+
+            float b = (-powMidInA + powHdrMaxA * grayOut) / denominator;
+            float c = (powHdrMaxAD * powMidInA - powHdrMaxA * powMidInAD * grayOut) / denominator;
+
+
+            PostProcessConstants postProcessConstants = new()
+            {
+                BloomThreshold = environment.Bloom.Threshold,
+                BloomIntensity = environment.Bloom.Intensity,
+                BloomScatter = environment.Bloom.Scatter,
+                BloomSoftKnee = environment.Bloom.SoftKnee,
+                BloomTint = environment.Bloom.Tint.ToLinear(),
+                Exposure = Exposure,
+                ToneMapA = a,
+                ToneMapD = a * d,
+                ToneMapB = b,
+                ToneMapC = c,
+            };
+            Context.UpdateSubresource(postProcessConstants, PostProcessBuffer);
+
+            Context.PSSetConstantBuffer(0, PostProcessBuffer);
+            Context.PSSetConstantBuffer(1, BlurBuffer);
 
 
             // 3. Extract

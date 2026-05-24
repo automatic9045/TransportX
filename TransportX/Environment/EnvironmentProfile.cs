@@ -12,11 +12,15 @@ namespace TransportX.Environment
         {
             IBL = IBLProfile.Default,
             Bloom = BloomProfile.Default,
+            Exposure = ExposureProfile.Default,
+            ToneMap = ToneMapProfile.Default,
         };
 
 
         public required IBLProfile IBL { get; init; }
         public required BloomProfile Bloom { get; init; }
+        public required ExposureProfile Exposure { get; init; }
+        public required ToneMapProfile ToneMap { get; init; }
 
         public EnvironmentProfile()
         {

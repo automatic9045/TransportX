@@ -7,8 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-using TransportX.Diagnostics;
-
 namespace TransportX.Scripting.Data.Environment
 {
     public class Bloom : XmlSerializable

@@ -113,6 +113,10 @@ namespace TransportX.Rendering
         public float BloomSoftKnee;
         public Vector3 BloomTint;
         public float Exposure;
+        public float ToneMapA;
+        public float ToneMapD;
+        public float ToneMapB;
+        public float ToneMapC;
 
         public PostProcessConstants()
         {
