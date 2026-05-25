@@ -19,7 +19,9 @@ float4 main(PS_IN input) : SV_Target0
     float spatialBlur = 0.0;
     float totalWeight = 0.0;
 
-    const float weights[25] =
+    const float blurRadius = 1.0;
+
+    /*const float weights[25] =
     {
         1, 4, 6, 4, 1,
         4, 16, 24, 16, 4,
@@ -27,8 +29,6 @@ float4 main(PS_IN input) : SV_Target0
         4, 16, 24, 16, 4,
         1, 4, 6, 4, 1
     };
-
-    float blurRadius = 1.0;
 
     [unroll]
     for (int x = -2; x <= 2; ++x)
@@ -41,6 +41,22 @@ float4 main(PS_IN input) : SV_Target0
 
             float w = weights[(x + 2) + (y + 2) * 5];
 
+            spatialBlur += neighborShadow * w;
+            totalWeight += w;
+        }
+    }*/
+
+    const float weights[9] = { 1, 2, 1, 2, 4, 2, 1, 2, 1 };
+
+    [unroll]
+    for (int x = -1; x <= 1; ++x)
+    {
+        [unroll]
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offsetUV = uv + float2(x, y) * texelSize * blurRadius;
+            float neighborShadow = RawShadowTexture.SampleLevel(Sampler, offsetUV, 0).r;
+            float w = weights[(x + 1) + (y + 1) * 3];
             spatialBlur += neighborShadow * w;
             totalWeight += w;
         }
