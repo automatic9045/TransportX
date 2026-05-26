@@ -15,11 +15,11 @@ namespace TransportX.Scripting.Data.Environment
     public class EnvironmentProfile
     {
         public IBL IBL = new();
-        public Bloom Bloom = new();
-        public ToneMap ToneMap = new();
         public Exposure Exposure = new();
+        public ToneMap ToneMap = new();
+        public Bloom Bloom = new();
 
         [XmlIgnore]
-        public Error[] Errors => [.. IBL.Errors, .. Bloom.Errors, .. ToneMap.Errors, .. Exposure.Errors];
+        public Error[] Errors => [.. IBL.Errors, .. Exposure.Errors, .. ToneMap.Errors, .. Bloom.Errors];
     }
 }
