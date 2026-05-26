@@ -141,7 +141,7 @@ Environment.SetDefault("Environment1.xml");
 
 DirectionalLight.SetColor("#FFFFFF");
 DirectionalLight.SetDirection(-1, -4, 2);
-DirectionalLight.SetIntensity(3);
+DirectionalLight.SetIntensity(100000);
 
 Background.Add("Background");
 

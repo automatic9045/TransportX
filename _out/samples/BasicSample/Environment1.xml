@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <EnvironmentProfile DiffuseTexturePath="hello">
     <IBL>
-        <DiffuseTexturePath>Models\IBL\DiffuseHDR.dds</DiffuseTexturePath>
-        <SpecularTexturePath>Models\IBL\SpecularHDR.dds</SpecularTexturePath>
-        <Intensity>0.4</Intensity>
-        <Saturation>0.3</Saturation>
+        <Intensity>1</Intensity>
+        <Saturation>0.25</Saturation>
     </IBL>
+    <Exposure>
+        <Key>0.118</Key>
+        <Min>0.01</Min>
+        <Max>5</Max>
+        <DarkAdaptationSpeed>0.5</DarkAdaptationSpeed>
+        <LightAdaptationSpeed>1.5</LightAdaptationSpeed>
+    </Exposure>
+    <ToneMap>
+        <Contrast>1.6</Contrast>
+        <Shoulder>0.977</Shoulder>
+        <MaxLuminance>12</MaxLuminance>
+        <MidtoneScale>1.5</MidtoneScale>
+    </ToneMap>
     <Bloom>
         <Threshold>2</Threshold>
         <Intensity>0.2</Intensity>

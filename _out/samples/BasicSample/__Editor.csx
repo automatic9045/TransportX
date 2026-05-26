@@ -12,8 +12,10 @@ global using System.Threading.Tasks;
 
 global using TransportX;
 global using TransportX.Scripting;
-global using TransportX.Scripting.Commands;
-global using TransportX.Scripting.Components;
+global using TransportX.Scripting.Worlds;
+global using TransportX.Scripting.Worlds.Commands;
+global using TransportX.Scripting.Worlds.Commands.Extensions;
+global using TransportX.Scripting.Worlds.Components;
 global using TransportX.Domains.RoadTraffic.Scripting;
 global using TransportX.Domains.RoadTraffic.Scripting.Commands;
 
