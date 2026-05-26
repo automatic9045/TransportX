@@ -108,6 +108,11 @@ namespace TransportX.Rendering
                 {
                     foreach (Vector3 vertex in mesh.Vertices)
                     {
+                        if (!float.IsFinite(vertex.X) || !float.IsFinite(vertex.Y) || !float.IsFinite(vertex.Z))
+                        {
+                            throw new InvalidOperationException();
+                        }
+
                         pointBuffer[i] = vertex;
                         i++;
                     }
