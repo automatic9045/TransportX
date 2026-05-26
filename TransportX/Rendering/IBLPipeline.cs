@@ -108,8 +108,8 @@ namespace TransportX.Rendering
 
             for (int i = 0; i < 6; i++)
             {
-                DXHost.Context.OMSetRenderTargets(CubeTexture.RenderTargetViews[i], null);
-                DXHost.Context.ClearRenderTargetView(CubeTexture.RenderTargetViews[i], new Color4(0, 0, 0, 1));
+                DXHost.Context.OMSetRenderTargets(CubeTexture.RenderTargetViews[i]);
+                DXHost.Context.ClearRenderTargetView(CubeTexture.RenderTargetViews[i], Colors.Gray);
 
                 Matrix4x4 view = Matrix4x4.CreateLookAtLeftHanded(cameraPosition, targets[i], ups[i]);
 

@@ -12,7 +12,7 @@ namespace TransportX.Environment
     {
         public static readonly IBLProfile Default = new()
         {
-            Intensity = 0,
+            Intensity = 1,
             Saturation = 0,
         };
 
