@@ -21,13 +21,13 @@ namespace TransportX.Rendering
 
         public static Vector4 ToSrgb(this Vector4 linearColor)
         {
-            float power = 1.0f / 2.2f;
+            float power = 1 / 2.2f;
             return new Vector4(float.Pow(linearColor.X, power), float.Pow(linearColor.Y, power), float.Pow(linearColor.Z, power), linearColor.W);
         }
 
         public static Vector3 ToSrgb(this Vector3 linearColor)
         {
-            float power = 1.0f / 2.2f;
+            float power = 1 / 2.2f;
             return new Vector3(float.Pow(linearColor.X, power), float.Pow(linearColor.Y, power), float.Pow(linearColor.Z, power));
         }
     }
