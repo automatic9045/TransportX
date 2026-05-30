@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Backend
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct MaterialConstants

@@ -46,7 +46,7 @@ namespace TransportX.Network
                 model.Draw(context);
             }
 
-            if (context.Pass == RenderPass.Network)
+            if (context.Layer == RenderLayer.Network)
             {
                 foreach (ILanePath path in Paths)
                 {

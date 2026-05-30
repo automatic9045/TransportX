@@ -92,13 +92,13 @@ namespace TransportX.Spatial
 
         public override void Draw(in TransformedDrawContext context)
         {
-            switch (context.Pass)
+            switch (context.Layer)
             {
-                case RenderPass.Normal:
+                case RenderLayer.Normal:
                     base.Draw(context);
                     break;
 
-                case RenderPass.Colliders:
+                case RenderLayer.Colliders:
                 {
                     if (Model.ColliderDebugModel is null) return;
                     if (!IsActive) return;
@@ -107,11 +107,7 @@ namespace TransportX.Spatial
                     BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
                     if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
-                    InstanceData instanceData = new()
-                    {
-                        World = Matrix4x4.Transpose(world),
-                    };
-                    context.RenderQueue.Submit(context.Pass, Model.ColliderDebugModel, instanceData);
+                    context.DrawModel(Model.ColliderDebugModel, world);
                     break;
                 }
             }

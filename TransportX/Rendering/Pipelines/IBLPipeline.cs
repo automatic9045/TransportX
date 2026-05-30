@@ -11,11 +11,11 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 
 using TransportX.Cameras;
-using TransportX.Environment;
+using TransportX.Rendering.Backend;
 using TransportX.Spatial;
 using TransportX.Worlds;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Pipelines
 {
     public class IBLPipeline : IDisposable
     {
@@ -131,7 +131,7 @@ namespace TransportX.Rendering
                     View = view,
                     Projection = projection,
                     Frustum = new BoundingFrustum(view * projection),
-                    Pass = RenderPass.Normal
+                    Layer = RenderLayer.Normal
                 };
 
                 foreach (TransformedModel model in world.BackgroundModels)
@@ -142,7 +142,7 @@ namespace TransportX.Rendering
 
                 DXHost.Context.PSSetShader(PixelShader);
 
-                RenderQueue.Render(RenderPass.Normal, new DrawContext()
+                RenderQueue.Render(RenderLayer.Normal, new DrawContext()
                 {
                     DeviceContext = DXHost.Context,
                     InstanceBuffer = InstanceBuffer,

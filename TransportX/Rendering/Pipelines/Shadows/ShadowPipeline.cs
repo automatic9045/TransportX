@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 
-using TransportX.Cameras;
+using TransportX.Rendering.Backend;
 using TransportX.Spatial;
 using TransportX.Worlds;
 
-namespace TransportX.Rendering.Shadows
+namespace TransportX.Rendering.Pipelines.Shadows
 {
     public class ShadowPipeline : IDisposable
     {
@@ -50,7 +50,7 @@ namespace TransportX.Rendering.Shadows
             ShadowMap = new ShadowMap(DXHost.Device, Options.Resolution, CascadeCount);
             ShadowCamera = new ShadowCamera();
 
-            using Blob shadowVsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
+            using Blob shadowVsBlob = ShaderFactory.CompileFromResource("ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
             ShadowVertexShader = DXHost.Device.CreateVertexShader(shadowVsBlob);
             ShadowInputLayout = DXHost.Device.CreateInputLayout(inputElements, shadowVsBlob);
             ShadowConstantsBuffer = DXHost.Device.CreateBuffer(new BufferDescription((uint)ShadowConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default));
@@ -190,7 +190,7 @@ namespace TransportX.Rendering.Shadows
                 DXHost.Context.UpdateSubresource(shadowConstants, ShadowConstantsBuffer);
                 DXHost.Context.VSSetConstantBuffer(1, ShadowConstantsBuffer);
 
-                renderQueue.Render(RenderPass.Normal, new DrawContext()
+                renderQueue.Render(RenderLayer.Normal, new DrawContext()
                 {
                     DeviceContext = context.DeviceContext,
                     InstanceBuffer = context.InstanceBuffer,

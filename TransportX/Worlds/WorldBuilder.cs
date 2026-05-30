@@ -12,7 +12,7 @@ using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
 using TransportX.Physics;
-using TransportX.Rendering;
+using TransportX.Rendering.Backend;
 
 namespace TransportX.Worlds
 {

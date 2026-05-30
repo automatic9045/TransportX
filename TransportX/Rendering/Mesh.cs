@@ -10,6 +10,8 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Rendering.Backend;
+
 namespace TransportX.Rendering
 {
     public class Mesh : IMesh

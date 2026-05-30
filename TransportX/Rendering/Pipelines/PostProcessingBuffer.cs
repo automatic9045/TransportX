@@ -8,7 +8,9 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
-namespace TransportX.Rendering
+using TransportX.Rendering.Backend;
+
+namespace TransportX.Rendering.Pipelines
 {
     public class PostProcessingBuffer : IDisposable
     {

@@ -11,6 +11,7 @@ using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
 using TransportX.Rendering;
+using TransportX.Rendering.Backend;
 
 namespace TransportX.Extensions.Rendering
 {

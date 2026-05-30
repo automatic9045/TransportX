@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
+using TransportX.Rendering.Backend;
 using TransportX.Spatial;
 
 namespace TransportX.Rendering
@@ -21,10 +22,19 @@ namespace TransportX.Rendering
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
         public required BoundingFrustum Frustum { get; init; }
-        public RenderPass Pass { get; init; } = RenderPass.Normal;
+        public RenderLayer Layer { get; init; } = RenderLayer.Normal;
 
         public TransformedDrawContext()
         {
+        }
+
+        public void DrawModel(IModel model, Matrix4x4 world)
+        {
+            InstanceData instanceData = new()
+            {
+                World = Matrix4x4.Transpose(world),
+            };
+            RenderQueue.Submit(Layer, model, instanceData);
         }
     }
 }

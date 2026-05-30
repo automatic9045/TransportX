@@ -14,15 +14,16 @@ using Vortice.Mathematics;
 using TransportX.Bodies;
 using TransportX.Cameras;
 using TransportX.Environment;
-using TransportX.Rendering.Shadows;
+using TransportX.Rendering.Backend;
+using TransportX.Rendering.Pipelines.Shadows;
 using TransportX.Spatial;
 using TransportX.Worlds;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Pipelines
 {
     public class Renderer : IDisposable
     {
-        private static readonly RenderPass[] AllLayers = Enum.GetValues<RenderPass>();
+        private static readonly RenderLayer[] AllLayers = Enum.GetValues<RenderLayer>();
 
 
         protected readonly Platform Platform;
@@ -60,13 +61,13 @@ namespace TransportX.Rendering
             Options = options;
 
 
-            Blob vsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "VS.hlsl", "main", "VS", "vs_5_0");
+            Blob vsBlob = ShaderFactory.CompileFromResource("VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = DXHost.Device.CreateVertexShader(vsBlob);
 
-            Blob psBlob = ShaderFactory.CompileFromResource(DXHost.Device, "PS.hlsl", "main", "PS", "ps_5_0");
+            Blob psBlob = ShaderFactory.CompileFromResource("PS.hlsl", "main", "PS", "ps_5_0");
             PixelShader = DXHost.Device.CreatePixelShader(psBlob);
 
-            Blob debugPsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
+            Blob debugPsBlob = ShaderFactory.CompileFromResource("DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
             DebugPixelShader = DXHost.Device.CreatePixelShader(debugPsBlob);
 
 
@@ -331,12 +332,12 @@ namespace TransportX.Rendering
 
         protected void SubmitChunks(IRenderQueue renderQueue, Camera camera, in CameraDrawContext context, ChunkCollection chunks, int drawChunkCount)
         {
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal)) Draw(context, RenderPass.Normal);
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Network)) Draw(context, RenderPass.Network);
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal)) Draw(context, RenderLayer.Normal);
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders)) Draw(context, RenderLayer.Colliders);
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Network)) Draw(context, RenderLayer.Network);
 
 
-            void Draw(in CameraDrawContext context, RenderPass layer)
+            void Draw(in CameraDrawContext context, RenderLayer layer)
             {
                 for (int i = drawChunkCount - 1; 0 <= i; i--)
                 {
@@ -355,7 +356,7 @@ namespace TransportX.Rendering
                                     View = camera.View,
                                     Projection = camera.Projection,
                                     Frustum = camera.Frustum,
-                                    Pass = layer,
+                                    Layer = layer,
                                 };
                                 chunk!.Draw(drawContext);
                             }
@@ -379,7 +380,7 @@ namespace TransportX.Rendering
                     View = camera.View,
                     Projection = camera.Projection,
                     Frustum = camera.Frustum,
-                    Pass = RenderPass.Normal,
+                    Layer = RenderLayer.Normal,
                 };
 
                 if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal))
@@ -391,7 +392,7 @@ namespace TransportX.Rendering
                 {
                     drawContext = drawContext with
                     {
-                        Pass = RenderPass.Colliders,
+                        Layer = RenderLayer.Colliders,
                     };
                     body.Draw(drawContext);
                 }
@@ -400,7 +401,7 @@ namespace TransportX.Rendering
                 {
                     drawContext = drawContext with
                     {
-                        Pass = RenderPass.Traffic,
+                        Layer = RenderLayer.Traffic,
                     };
                     body.Draw(drawContext);
                 }
@@ -409,9 +410,9 @@ namespace TransportX.Rendering
 
         protected void Flush(IRenderQueue renderQueue, in CameraDrawContext context)
         {
-            foreach (RenderPass layer in AllLayers)
+            foreach (RenderLayer layer in AllLayers)
             {
-                ID3D11PixelShader? shader = layer == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
+                ID3D11PixelShader? shader = layer == RenderLayer.Normal ? context.PixelShader : context.DebugPixelShader;
                 context.DeviceContext.PSSetShader(shader);
 
                 renderQueue.Render(layer, new DrawContext()

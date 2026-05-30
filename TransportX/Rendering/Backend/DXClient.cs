@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
-using TransportX.Rendering;
-
-namespace TransportX
+namespace TransportX.Rendering.Backend
 {
     public class DXClient : IDXClient, IDisposable
     {

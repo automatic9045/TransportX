@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 using SharpGen.Runtime;
 using Vortice.D3DCompiler;
 using Vortice.Direct3D;
-using Vortice.Direct3D11;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Pipelines
 {
     internal class ShaderFactory
     {
@@ -23,7 +22,7 @@ namespace TransportX.Rendering
             return Assembly.GetManifestResourceStream(typeof(ShaderFactory), $"Shaders.{name}");
         }
 
-        public static Blob CompileFromResource(ID3D11Device device, string fileName, string entryPoint, string sourceName, string profile)
+        public static Blob CompileFromResource(string fileName, string entryPoint, string sourceName, string profile)
         {
             using Stream s = GetShaderStream(fileName)!;
             using StreamReader sr = new(s);

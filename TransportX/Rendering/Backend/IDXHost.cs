@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.XAudio2;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Backend
 {
     public interface IDXHost
     {

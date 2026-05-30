@@ -9,11 +9,11 @@ using Vortice.Direct3D11;
 
 using TransportX.Collections;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Backend
 {
     public class RenderQueue : IRenderQueue
     {
-        private readonly ConcurrentDictionary<RenderPass, ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>> Instances = [];
+        private readonly ConcurrentDictionary<RenderLayer, ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>> Instances = [];
 
         public RenderQueue()
         {
@@ -21,41 +21,41 @@ namespace TransportX.Rendering
 
         public void Clear()
         {
-            foreach (ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perPass in Instances.Values)
+            foreach (ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perLayer in Instances.Values)
             {
-                foreach (PooledBuffer<InstanceData> perModel in perPass.Values)
+                foreach (PooledBuffer<InstanceData> perModel in perLayer.Values)
                 {
                     perModel.Clear();
                 }
             }
         }
 
-        public void Submit(RenderPass pass, IModel model, in InstanceData instance)
+        public void Submit(RenderLayer layer, IModel model, in InstanceData instance)
         {
-            ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perPass = Instances.GetOrAdd(pass, pass => []);
+            ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perLayer = Instances.GetOrAdd(layer, layer => []);
 
-            if (!perPass.TryGetValue(model, out PooledBuffer<InstanceData>? perModel))
+            if (!perLayer.TryGetValue(model, out PooledBuffer<InstanceData>? perModel))
             {
                 PooledBuffer<InstanceData> newBuffer = [];
-                if (perPass.TryAdd(model, newBuffer))
+                if (perLayer.TryAdd(model, newBuffer))
                 {
                     perModel = newBuffer;
                 }
                 else
                 {
                     newBuffer.Dispose();
-                    perModel = perPass[model];
+                    perModel = perLayer[model];
                 }
             }
 
             perModel.Add(instance);
         }
 
-        public unsafe void Render(RenderPass pass, in DrawContext context)
+        public unsafe void Render(RenderLayer layer, in DrawContext context)
         {
-            if (!Instances.TryGetValue(pass, out ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>? perPass)) return;
+            if (!Instances.TryGetValue(layer, out ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>? perLayer)) return;
 
-            foreach ((IModel model, PooledBuffer<InstanceData> perModel) in perPass)
+            foreach ((IModel model, PooledBuffer<InstanceData> perModel) in perLayer)
             {
                 if (perModel.Count == 0) continue;
 

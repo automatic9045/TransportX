@@ -10,9 +10,7 @@ using Vortice.Direct3D11.Debug;
 using Vortice.DXGI;
 using Vortice.XAudio2;
 
-using TransportX.Rendering;
-
-namespace TransportX
+namespace TransportX.Rendering.Backend
 {
     public class DXHost : IDXHost, IDisposable
     {

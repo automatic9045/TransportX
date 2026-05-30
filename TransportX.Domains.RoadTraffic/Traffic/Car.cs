@@ -124,7 +124,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override void Draw(in TransformedDrawContext context)
         {
             base.Draw(context);
-            if (IsEnabled && context.Pass == RenderPass.Traffic) Sensor.Draw(context);
+            if (IsEnabled && context.Layer == RenderLayer.Traffic) Sensor.Draw(context);
         }
     }
 }

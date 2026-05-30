@@ -14,8 +14,9 @@ using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
 using TransportX.Physics;
-using TransportX.Rendering;
-using TransportX.Rendering.Shadows;
+using TransportX.Rendering.Backend;
+using TransportX.Rendering.Pipelines;
+using TransportX.Rendering.Pipelines.Shadows;
 
 namespace TransportX.Worlds
 {

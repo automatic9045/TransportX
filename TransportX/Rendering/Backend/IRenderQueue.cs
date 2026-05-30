@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Backend
 {
     public interface IRenderQueue
     {
         void Clear();
-        void Submit(RenderPass pass, IModel model, in InstanceData instance);
-        void Render(RenderPass pass, in DrawContext context);
+        void Submit(RenderLayer layer, IModel model, in InstanceData instance);
+        void Render(RenderLayer layer, in DrawContext context);
     }
 }

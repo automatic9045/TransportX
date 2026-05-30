@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransportX.Rendering
 {
-    public enum RenderPass
+    public enum RenderLayer
     {
         Normal,
         Colliders,

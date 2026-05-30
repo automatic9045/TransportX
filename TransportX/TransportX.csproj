@@ -11,19 +11,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Rendering\Shaders\Brdf.dds" />
-    <EmbeddedResource Include="Rendering\Shaders\DebugPS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\LuminanceExtractPS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\FxaaPS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\UpsamplePS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\DownsamplePS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\CompositePS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\ExtractPS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\DeferredLightingPS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PostProcess\VS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\ShadowVS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\PS.hlsl" />
-    <EmbeddedResource Include="Rendering\Shaders\VS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\Brdf.dds" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\DebugPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\LuminanceExtractPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\FxaaPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\UpsamplePS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\DownsamplePS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\CompositePS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\ExtractPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\DeferredLightingPS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PostProcess\VS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\ShadowVS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\PS.hlsl" />
+    <EmbeddedResource Include="Rendering\Pipelines\Shaders\VS.hlsl" />
   </ItemGroup>
 
   <ItemGroup>

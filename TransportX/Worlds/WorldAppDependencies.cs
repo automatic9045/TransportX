@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using TransportX.Cameras;
 using TransportX.Input;
 using TransportX.Physics;
-using TransportX.Rendering;
+using TransportX.Rendering.Backend;
+using TransportX.Rendering.Pipelines;
 
 namespace TransportX.Worlds
 {

@@ -12,8 +12,9 @@ using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
 using TransportX.Environment;
+using TransportX.Rendering.Backend;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Pipelines
 {
     public class PostProcessingPipeline : IDisposable
     {
@@ -48,28 +49,28 @@ namespace TransportX.Rendering
         {
             Context = context;
 
-            Blob vsBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.VS.hlsl", "main", "VS", "vs_5_0");
+            Blob vsBlob = ShaderFactory.CompileFromResource("PostProcess.VS.hlsl", "main", "VS", "vs_5_0");
             VertexShader = Context.Device.CreateVertexShader(vsBlob);
 
-            Blob deferredLightingPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.DeferredLightingPS.hlsl", "main", "PS", "ps_5_0");
+            Blob deferredLightingPSBlob = ShaderFactory.CompileFromResource("PostProcess.DeferredLightingPS.hlsl", "main", "PS", "ps_5_0");
             DeferredLightingPixelShader = Context.Device.CreatePixelShader(deferredLightingPSBlob);
 
-            Blob luminanceExtractPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.LuminanceExtractPS.hlsl", "main", "PS", "ps_5_0");
+            Blob luminanceExtractPSBlob = ShaderFactory.CompileFromResource("PostProcess.LuminanceExtractPS.hlsl", "main", "PS", "ps_5_0");
             LuminanceExtractPixelShader = Context.Device.CreatePixelShader(luminanceExtractPSBlob);
 
-            Blob extractPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.ExtractPS.hlsl", "main", "PS", "ps_5_0");
+            Blob extractPSBlob = ShaderFactory.CompileFromResource("PostProcess.ExtractPS.hlsl", "main", "PS", "ps_5_0");
             ExtractPixelShader = Context.Device.CreatePixelShader(extractPSBlob);
 
-            Blob downsamplePSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.DownsamplePS.hlsl", "main", "PS", "ps_5_0");
+            Blob downsamplePSBlob = ShaderFactory.CompileFromResource("PostProcess.DownsamplePS.hlsl", "main", "PS", "ps_5_0");
             DownsamplePixelShader = Context.Device.CreatePixelShader(downsamplePSBlob);
 
-            Blob upsamplePSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.UpsamplePS.hlsl", "main", "PS", "ps_5_0");
+            Blob upsamplePSBlob = ShaderFactory.CompileFromResource("PostProcess.UpsamplePS.hlsl", "main", "PS", "ps_5_0");
             UpsamplePixelShader = Context.Device.CreatePixelShader(upsamplePSBlob);
 
-            Blob compositePSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.CompositePS.hlsl", "main", "PS", "ps_5_0");
+            Blob compositePSBlob = ShaderFactory.CompileFromResource("PostProcess.CompositePS.hlsl", "main", "PS", "ps_5_0");
             CompositePixelShader = Context.Device.CreatePixelShader(compositePSBlob);
 
-            Blob fxaaPSBlob = ShaderFactory.CompileFromResource(Context.Device, "PostProcess.FxaaPS.hlsl", "main", "PS", "ps_5_0");
+            Blob fxaaPSBlob = ShaderFactory.CompileFromResource("PostProcess.FxaaPS.hlsl", "main", "PS", "ps_5_0");
             FxaaPixelShader = Context.Device.CreatePixelShader(fxaaPSBlob);
 
             SamplerDescription samplerDesc = new()

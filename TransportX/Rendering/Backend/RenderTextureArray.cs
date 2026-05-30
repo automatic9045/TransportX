@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Backend
 {
     public class RenderTextureArray : IDisposable
     {

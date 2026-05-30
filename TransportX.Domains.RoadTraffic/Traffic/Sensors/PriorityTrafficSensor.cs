@@ -187,7 +187,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
         public void Draw(in TransformedDrawContext context)
         {
-            if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
+            if (context.Layer != RenderLayer.Traffic) throw new InvalidOperationException();
 
             DebugVisual.Target = Target;
             DebugVisual.IsTargetOncoming = IsTargetOncoming;

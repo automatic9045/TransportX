@@ -13,6 +13,7 @@ using TransportX.Input;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Rendering;
+using TransportX.Rendering.Backend;
 using TransportX.Spatial;
 using TransportX.Traffic;
 using TransportX.Worlds;
@@ -97,13 +98,10 @@ namespace TransportX.Avatars
         {
             base.Draw(context);
 
-            if (context.Pass == RenderPass.Traffic)
+            if (context.Layer == RenderLayer.Traffic)
             {
-                InstanceData instanceData = new()
-                {
-                    World = Matrix4x4.Transpose((WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
-                };
-                context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
+                Matrix4x4 world = (WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+                context.DrawModel(DebugModel, world);
             }
         }
     }

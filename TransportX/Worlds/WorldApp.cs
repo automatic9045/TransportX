@@ -13,7 +13,8 @@ using TransportX.Cameras;
 using TransportX.Data;
 using TransportX.Input;
 using TransportX.Physics;
-using TransportX.Rendering;
+using TransportX.Rendering.Backend;
+using TransportX.Rendering.Pipelines;
 using TransportX.Spatial;
 
 namespace TransportX.Worlds

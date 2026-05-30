@@ -41,7 +41,7 @@ namespace TransportX.Extensions.Traffic
 
         public void Draw(in TransformedDrawContext context)
         {
-            if (context.Pass != RenderPass.Traffic) throw new InvalidOperationException();
+            if (context.Layer != RenderLayer.Traffic) throw new InvalidOperationException();
             if (Target is null) return;
 
             if (Model is null)
@@ -51,11 +51,6 @@ namespace TransportX.Extensions.Traffic
                 DebugName = DebugName;
             }
 
-            InstanceData instanceData = new()
-            {
-                World = Matrix4x4.Transpose((Origin.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
-            };
-
             float lengthShift = IsTargetOncoming ? 0 : Target.Length;
             Vector3 worldDelta = Origin.GetOffset(Target) - Target.WorldPose.Pose.Direction * lengthShift;
             Vector3 localDelta = Vector3.Transform(worldDelta, Quaternion.Inverse(Origin.WorldPose.Pose.Orientation));
@@ -63,7 +58,8 @@ namespace TransportX.Extensions.Traffic
             Mesh!.Material.BaseColor = DebugColor.ToLinear();
             Mesh.SetVector(context.DeviceContext, localDelta);
 
-            context.RenderQueue.Submit(context.Pass, Model, instanceData);
+            Matrix4x4 world = (Origin.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+            context.DrawModel(Model, world);
         }
     }
 }

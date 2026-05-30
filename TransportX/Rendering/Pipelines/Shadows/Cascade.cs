@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering.Shadows
+namespace TransportX.Rendering.Pipelines.Shadows
 {
     public readonly struct Cascade
     {

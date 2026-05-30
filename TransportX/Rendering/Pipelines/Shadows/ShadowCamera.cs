@@ -9,7 +9,7 @@ using Vortice.Mathematics;
 
 using TransportX.Cameras;
 
-namespace TransportX.Rendering.Shadows
+namespace TransportX.Rendering.Pipelines.Shadows
 {
     public class ShadowCamera : Camera
     {

@@ -91,7 +91,7 @@ namespace TransportX.Spatial
 
         public override void Draw(in TransformedDrawContext context)
         {
-            if (IsVisible && context.Pass == RenderPass.Normal)
+            if (IsVisible && context.Layer == RenderLayer.Normal)
             {
                 for (int i = 0; i < Children.Count; i++)
                 {

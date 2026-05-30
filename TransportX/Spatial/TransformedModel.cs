@@ -44,17 +44,13 @@ namespace TransportX.Spatial
         public virtual void Draw(in TransformedDrawContext context)
         {
             if (!IsVisible) return;
-            if (context.Pass != RenderPass.Normal) return;
+            if (context.Layer != RenderLayer.Normal) return;
 
             Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
             BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
             if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
-            InstanceData instanceData = new()
-            {
-                World = Matrix4x4.Transpose(world),
-            };
-            context.RenderQueue.Submit(context.Pass, Model, instanceData);
+            context.DrawModel(Model, world);
         }
     }
 }

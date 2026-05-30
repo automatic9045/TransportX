@@ -108,7 +108,7 @@ namespace TransportX.Network
 
         public void Draw(in TransformedDrawContext context)
         {
-            if (context.Pass != RenderPass.Network) throw new InvalidOperationException();
+            if (context.Layer != RenderLayer.Network) throw new InvalidOperationException();
 
             if (DebugModel is null)
             {
@@ -172,16 +172,12 @@ namespace TransportX.Network
                 DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
             }
 
-            InstanceData instanceData = new()
-            {
-                World = Matrix4x4.Transpose((Owner.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4()),
-            };
-
             Vector4 linearDebugColor = DebugColor.ToLinear();
             DebugSpineMaterial!.BaseColor = linearDebugColor;
             DebugWingMaterial!.BaseColor = new Vector4(linearDebugColor.AsVector3(), DebugColor.W * 0.25f);
 
-            context.RenderQueue.Submit(context.Pass, DebugModel, instanceData);
+            Matrix4x4 world = (Owner.WorldPose.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+            context.DrawModel(DebugModel, world);
         }
     }
 }
