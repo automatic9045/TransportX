@@ -11,15 +11,20 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Bodies;
 using TransportX.Cameras;
 using TransportX.Environment;
 using TransportX.Rendering.Shadows;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 namespace TransportX.Rendering
 {
     public class Renderer : IDisposable
     {
+        private static readonly RenderPass[] AllLayers = Enum.GetValues<RenderPass>();
+
+
         protected readonly Platform Platform;
         protected readonly IDXHost DXHost;
         protected readonly IDXClient DXClient;
@@ -43,6 +48,9 @@ namespace TransportX.Rendering
         protected readonly ShadowPipeline Shadow;
         protected readonly IBLPipeline IBL;
         protected readonly PostProcessingPipeline PostProcess;
+
+        protected readonly RenderQueue MainRenderQueue = new();
+        protected readonly RenderQueue ShadowRenderQueue = new();
 
         public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient, RendererOptions options)
         {
@@ -216,7 +224,7 @@ namespace TransportX.Rendering
             PostProcess.Dispose();
         }
 
-        public void Draw(Camera camera, WorldBase world, TimeSpan elapsed)
+        public void Render(Camera camera, WorldBase world, TimeSpan elapsed)
         {
             if (DXClient.DepthStencil is null) throw new InvalidOperationException();
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();
@@ -260,7 +268,20 @@ namespace TransportX.Rendering
             };
             DXHost.Context.UpdateSubresource(environmentConstants, EnvironmentBuffer);
 
-            Shadow.Render(world.DirectionalLight.Direction, world);
+            CameraDrawContext cameraContext = new()
+            {
+                DeviceContext = DXHost.Context,
+                PixelShader = PixelShader,
+                DebugPixelShader = DebugPixelShader,
+                InstanceBuffer = InstanceBuffer,
+                MaterialBuffer = MaterialBuffer,
+            };
+
+            Shadow.UpdateCamera(world.DirectionalLight.Direction, world);
+            SubmitChunks(ShadowRenderQueue, Shadow.ShadowCamera, cameraContext, world.Chunks, Options.ShadowOptions.DrawChunkCount);
+            SubmitBodies(ShadowRenderQueue, Shadow.ShadowCamera, cameraContext, world.Bodies);
+            Shadow.Render(ShadowRenderQueue, cameraContext);
+
             PostProcess.Setup(DXClient.DepthStencil, size);
 
             DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
@@ -276,24 +297,133 @@ namespace TransportX.Rendering
             Shadow.Bind();
             IBL.Bind();
 
-            CameraDrawContext cameraContext = new()
-            {
-                DeviceContext = DXHost.Context,
-                PixelShader = PixelShader,
-                DebugPixelShader = DebugPixelShader,
-                InstanceBuffer = InstanceBuffer,
-                MaterialBuffer = MaterialBuffer,
-            };
-
-            camera.DrawBackground(cameraContext, world.BackgroundModels);
+            SubmitBackground(MainRenderQueue, camera, cameraContext, world.BackgroundModels);
+            Flush(MainRenderQueue, cameraContext);
             DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            camera.DrawChunks(cameraContext, world.Chunks);
-            camera.DrawBodies(cameraContext, world.Bodies);
+            SubmitChunks(MainRenderQueue, camera, cameraContext, world.Chunks, Options.DrawChunkCount);
+            SubmitBodies(MainRenderQueue, camera, cameraContext, world.Bodies);
+            Flush(MainRenderQueue, cameraContext);
 
             PostProcess.RenderTo(DXClient.RenderTarget!, environment, elapsed);
 
             DXHost.Context.PSSetShaderResource(12, null!);
+        }
+
+        protected void SubmitBackground(IRenderQueue renderQueue, Camera camera, in CameraDrawContext context, IEnumerable<TransformedModel> models)
+        {
+            TransformedDrawContext drawContext = new()
+            {
+                DeviceContext = context.DeviceContext,
+                RenderQueue = renderQueue,
+                ChunkOffset = ChunkOffset.Identity,
+                View = camera.View,
+                Projection = camera.Projection,
+                Frustum = camera.Frustum,
+            };
+
+            foreach (TransformedModel model in models)
+            {
+                model.Pose = new Pose(camera.WorldPose.Pose.Position);
+                model.Draw(drawContext);
+            }
+        }
+
+        protected void SubmitChunks(IRenderQueue renderQueue, Camera camera, in CameraDrawContext context, ChunkCollection chunks, int drawChunkCount)
+        {
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal)) Draw(context, RenderPass.Normal);
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
+            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Network)) Draw(context, RenderPass.Network);
+
+
+            void Draw(in CameraDrawContext context, RenderPass layer)
+            {
+                for (int i = drawChunkCount - 1; 0 <= i; i--)
+                {
+                    for (int x = camera.WorldPose.ChunkX - i; x <= camera.WorldPose.ChunkX + i; x++)
+                    {
+                        int dz = int.Abs(x - camera.WorldPose.ChunkX) == i ? 1 : i * 2;
+                        for (int z = camera.WorldPose.ChunkZ - i; z <= camera.WorldPose.ChunkZ + i; z += dz)
+                        {
+                            if (chunks.TryGetValue(x, z, out Chunk? chunk))
+                            {
+                                TransformedDrawContext drawContext = new()
+                                {
+                                    DeviceContext = context.DeviceContext,
+                                    RenderQueue = renderQueue,
+                                    ChunkOffset = new ChunkOffset(x - camera.WorldPose.ChunkX, z - camera.WorldPose.ChunkZ),
+                                    View = camera.View,
+                                    Projection = camera.Projection,
+                                    Frustum = camera.Frustum,
+                                    Pass = layer,
+                                };
+                                chunk!.Draw(drawContext);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        protected void SubmitBodies(IRenderQueue renderQueue, Camera camera, in CameraDrawContext context, IReadOnlyList<RigidBody> bodies)
+        {
+            for (int i = 0; i < bodies.Count; i++)
+            {
+                RigidBody body = bodies[i];
+
+                TransformedDrawContext drawContext = new()
+                {
+                    DeviceContext = context.DeviceContext,
+                    RenderQueue = renderQueue,
+                    ChunkOffset = camera.GetChunkOffset(body),
+                    View = camera.View,
+                    Projection = camera.Projection,
+                    Frustum = camera.Frustum,
+                    Pass = RenderPass.Normal,
+                };
+
+                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal))
+                {
+                    body.Draw(drawContext);
+                }
+
+                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders))
+                {
+                    drawContext = drawContext with
+                    {
+                        Pass = RenderPass.Colliders,
+                    };
+                    body.Draw(drawContext);
+                }
+
+                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Traffic))
+                {
+                    drawContext = drawContext with
+                    {
+                        Pass = RenderPass.Traffic,
+                    };
+                    body.Draw(drawContext);
+                }
+            }
+        }
+
+        protected void Flush(IRenderQueue renderQueue, in CameraDrawContext context)
+        {
+            foreach (RenderPass layer in AllLayers)
+            {
+                ID3D11PixelShader? shader = layer == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
+                context.DeviceContext.PSSetShader(shader);
+
+                renderQueue.Render(layer, new DrawContext()
+                {
+                    DeviceContext = context.DeviceContext,
+                    InstanceBuffer = context.InstanceBuffer,
+                    InstanceCount = 0,
+                    MaterialBuffer = context.MaterialBuffer,
+                });
+            }
+
+            renderQueue.Clear();
         }
     }
 }

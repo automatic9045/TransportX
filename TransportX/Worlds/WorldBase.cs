@@ -28,6 +28,7 @@ namespace TransportX.Worlds
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
         public IPhysicsHost PhysicsHost { get; }
+        public WorldOptions Options { get; }
         public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext AppContext { get; }
         public PluginLoadContext WorldContext { get; }
@@ -63,6 +64,7 @@ namespace TransportX.Worlds
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
             PhysicsHost = builder.PhysicsHost;
+            Options = builder.Options;
             ErrorCollector = builder.ErrorCollector;
             AppContext = builder.AppContext;
             WorldContext = context;
@@ -128,18 +130,18 @@ namespace TransportX.Worlds
         public virtual void SubTick(TimeSpan elapsed)
         {
             ComponentEngine.SubTick(elapsed);
-            Bodies.SubTick(elapsed, Camera, Camera.DrawChunkCount);
+            Bodies.SubTick(elapsed, Camera.WorldPose, Options.SimulationChunkCount);
             Camera.UpdateView();
-            Chunks.SetCameraPosition(Camera, Camera.DrawChunkCount);
-            Bodies.SetCameraPosition(Camera, Camera.DrawChunkCount);
+            Chunks.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
+            Bodies.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
             ComponentEngine.Tick(elapsed, TimeManager.Now);
             Bodies.Tick(elapsed);
-            Chunks.SetCameraPosition(Camera, Camera.DrawChunkCount);
-            Bodies.SetCameraPosition(Camera, Camera.DrawChunkCount);
+            Chunks.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
+            Bodies.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
         }
 
         public virtual AvatarBase CreateAvatar(string path, string? identifier)

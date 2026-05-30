@@ -8,6 +8,7 @@ namespace TransportX.Rendering.Shadows
 {
     public readonly struct ShadowOptions
     {
+        public required int DrawChunkCount { get; init; }
         public required int Resolution { get; init; }
     }
 }

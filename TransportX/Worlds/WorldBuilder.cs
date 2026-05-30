@@ -24,6 +24,7 @@ namespace TransportX.Worlds
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
+        public required WorldOptions Options { get; init; }
         public required IErrorCollector ErrorCollector { get; init; }
         public required PluginLoadContext AppContext { get; init; }
         public required TimeManager TimeManager { get; init; }

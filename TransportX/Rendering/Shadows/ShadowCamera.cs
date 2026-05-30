@@ -13,10 +13,9 @@ namespace TransportX.Rendering.Shadows
 {
     public class ShadowCamera : Camera
     {
-        public ShadowCamera(int chunkCount) : base()
+        public ShadowCamera() : base()
         {
             VisibleLayers = VisualLayers.Normal;
-            DrawChunkCount = chunkCount;
         }
 
         public void LocateChunk(IWorldObject obj)

@@ -5,24 +5,15 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
 using Vortice.Mathematics;
 using Vortice.XAudio2;
 
-using TransportX.Bodies;
-using TransportX.Rendering;
 using TransportX.Spatial;
 
 namespace TransportX.Cameras
 {
     public class Camera : WorldObject
     {
-        private static readonly RenderPass[] AllPasses = Enum.GetValues<RenderPass>();
-
-
-        protected readonly RenderQueue RenderQueue = new();
-
-        public int DrawChunkCount { get; set; } = 3;
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; }
 
@@ -54,128 +45,6 @@ namespace TransportX.Cameras
             Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
             Frustum = new(View * Projection);
-        }
-
-        public void DrawBackground(in CameraDrawContext context, IEnumerable<TransformedModel> models)
-        {
-            if (!VisibleLayers.HasFlag(VisualLayers.Normal)) return;
-
-            TransformedDrawContext drawContext = new()
-            {
-                DeviceContext = context.DeviceContext,
-                RenderQueue = RenderQueue,
-                ChunkOffset = ChunkOffset.Identity,
-                View = View,
-                Projection = Projection,
-                Frustum = Frustum,
-            };
-
-            foreach (TransformedModel model in models)
-            {
-                model.Pose = new Pose(WorldPose.Pose.Position);
-                model.Draw(drawContext);
-            }
-
-            Flush(context);
-        }
-
-        public void DrawChunks(in CameraDrawContext context, ChunkCollection chunks)
-        {
-            if (VisibleLayers.HasFlag(VisualLayers.Normal)) Draw(context, RenderPass.Normal);
-            if (VisibleLayers.HasFlag(VisualLayers.Colliders)) Draw(context, RenderPass.Colliders);
-            if (VisibleLayers.HasFlag(VisualLayers.Network)) Draw(context, RenderPass.Network);
-
-            Flush(context);
-
-
-            void Draw(in CameraDrawContext context, RenderPass pass)
-            {
-                for (int i = DrawChunkCount - 1; 0 <= i; i--)
-                {
-                    for (int x = WorldPose.ChunkX - i; x <= WorldPose.ChunkX + i; x++)
-                    {
-                        int dz = int.Abs(x - WorldPose.ChunkX) == i ? 1 : i * 2;
-                        for (int z = WorldPose.ChunkZ - i; z <= WorldPose.ChunkZ + i; z += dz)
-                        {
-                            if (chunks.TryGetValue(x, z, out Chunk? chunk))
-                            {
-                                TransformedDrawContext drawContext = new()
-                                {
-                                    DeviceContext = context.DeviceContext,
-                                    RenderQueue = RenderQueue,
-                                    ChunkOffset = new ChunkOffset(x - WorldPose.ChunkX, z - WorldPose.ChunkZ),
-                                    View = View,
-                                    Projection = Projection,
-                                    Frustum = Frustum,
-                                    Pass = pass,
-                                };
-                                chunk!.Draw(drawContext);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public void DrawBodies(in CameraDrawContext context, IEnumerable<RigidBody> bodies)
-        {
-            foreach (RigidBody body in bodies)
-            {
-                TransformedDrawContext drawContext = new()
-                {
-                    DeviceContext = context.DeviceContext,
-                    RenderQueue = RenderQueue,
-                    ChunkOffset = GetChunkOffset(body),
-                    View = View,
-                    Projection = Projection,
-                    Frustum = Frustum,
-                    Pass = RenderPass.Normal,
-                };
-
-                if (VisibleLayers.HasFlag(VisualLayers.Normal))
-                {
-                    body.Draw(drawContext);
-                }
-
-                if (VisibleLayers.HasFlag(VisualLayers.Colliders))
-                {
-                    drawContext = drawContext with
-                    {
-                        Pass = RenderPass.Colliders,
-                    };
-                    body.Draw(drawContext);
-                }
-
-                if (VisibleLayers.HasFlag(VisualLayers.Traffic))
-                {
-                    drawContext = drawContext with
-                    {
-                        Pass = RenderPass.Traffic,
-                    };
-                    body.Draw(drawContext);
-                }
-            }
-
-            Flush(context);
-        }
-
-        protected void Flush(in CameraDrawContext context)
-        {
-            foreach (RenderPass pass in AllPasses)
-            {
-                ID3D11PixelShader? shader = pass == RenderPass.Normal ? context.PixelShader : context.DebugPixelShader;
-                context.DeviceContext.PSSetShader(shader);
-
-                RenderQueue.Render(pass, new DrawContext()
-                {
-                    DeviceContext = context.DeviceContext,
-                    InstanceBuffer = context.InstanceBuffer,
-                    InstanceCount = 0,
-                    MaterialBuffer = context.MaterialBuffer,
-                });
-            }
-
-            RenderQueue.Clear();
         }
 
 

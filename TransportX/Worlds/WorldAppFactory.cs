@@ -69,6 +69,11 @@ namespace TransportX.Worlds
             dxClient.SwapChain!.Present(1, PresentFlags.None);
 
 
+            WorldOptions worldOptions = new()
+            {
+                SimulationChunkCount = config.SimulationChunkCount,
+            };
+
             PhysicsHost physicsHost = PhysicsHost.Create();
 
             TimeManager updateTimeManager = new();
@@ -83,6 +88,7 @@ namespace TransportX.Worlds
                 DXHost = dxHost,
                 DXClient = dxClient,
                 PhysicsHost = physicsHost,
+                Options = worldOptions,
                 ErrorCollector = errorCollector,
                 AppContext = host.Context,
                 TimeManager = updateTimeManager,
@@ -104,8 +110,10 @@ namespace TransportX.Worlds
 
             RendererOptions rendererOptions = new()
             {
+                DrawChunkCount = config.DrawChunkCount,
                 ShadowOptions = new ShadowOptions()
                 {
+                    DrawChunkCount = config.ShadowDrawChunkCount,
                     Resolution = config.ShadowResolution,
                 },
             };

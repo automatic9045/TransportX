@@ -141,7 +141,7 @@ namespace TransportX.Worlds
         {
             RenderTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
 
-            OnDraw(RenderTimeManager.DeltaTime);
+            OnRender(RenderTimeManager.DeltaTime);
             DXClient.SwapChain!.Present(1, PresentFlags.None);
         }
 
@@ -168,9 +168,9 @@ namespace TransportX.Worlds
             World.Tick(elapsed);
         }
 
-        protected virtual void OnDraw(TimeSpan elapsed)
+        protected virtual void OnRender(TimeSpan elapsed)
         {
-            Renderer.Draw(Camera, World, elapsed);
+            Renderer.Render(Camera, World, elapsed);
         }
     }
 }

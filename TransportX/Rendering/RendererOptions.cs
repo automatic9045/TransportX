@@ -10,6 +10,7 @@ namespace TransportX.Rendering
 {
     public readonly struct RendererOptions
     {
+        public required int DrawChunkCount { get; init; }
         public required ShadowOptions ShadowOptions { get; init; }
     }
 }

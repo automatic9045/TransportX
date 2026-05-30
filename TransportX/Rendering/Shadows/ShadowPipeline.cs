@@ -16,7 +16,6 @@ namespace TransportX.Rendering.Shadows
 {
     public class ShadowPipeline : IDisposable
     {
-        private const int ChunkCount = 2;
         private const int CascadeCount = 3;
 
         private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
@@ -26,7 +25,6 @@ namespace TransportX.Rendering.Shadows
         protected readonly ShadowOptions Options;
 
         protected readonly ShadowMap ShadowMap;
-        protected readonly ShadowCamera ShadowCamera;
 
         protected readonly ID3D11VertexShader ShadowVertexShader;
         protected readonly ID3D11InputLayout ShadowInputLayout;
@@ -42,13 +40,15 @@ namespace TransportX.Rendering.Shadows
         public required ID3D11Buffer InstanceBuffer { protected get; init; }
         public required ID3D11Buffer MaterialBuffer { protected get; init; }
 
+        public ShadowCamera ShadowCamera { get; }
+
         public ShadowPipeline(IDXHost dxHost, InputElementDescription[] inputElements, ShadowOptions options)
         {
             DXHost = dxHost;
             Options = options;
 
             ShadowMap = new ShadowMap(DXHost.Device, Options.Resolution, CascadeCount);
-            ShadowCamera = new ShadowCamera(ChunkCount);
+            ShadowCamera = new ShadowCamera();
 
             using Blob shadowVsBlob = ShaderFactory.CompileFromResource(DXHost.Device, "ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
             ShadowVertexShader = DXHost.Device.CreateVertexShader(shadowVsBlob);
@@ -96,7 +96,7 @@ namespace TransportX.Rendering.Shadows
             ShadowRasterizerState.Dispose();
         }
 
-        public void Render(Vector3 lightDirection, WorldBase world)
+        public void UpdateCamera(Vector3 lightDirection, WorldBase world)
         {
             if (Options.Resolution <= 0) return;
 
@@ -135,7 +135,7 @@ namespace TransportX.Rendering.Shadows
                 Matrix4x4.Invert(baseLightView, out Matrix4x4 inverseBaseLightView);
                 Vector3 sphereCenter = Vector3.Transform(centerLightSpace, inverseBaseLightView);
 
-                float zPullback = (ChunkCount + 1) * Chunk.Size;
+                float zPullback = (Options.DrawChunkCount + 1) * Chunk.Size;
                 Vector3 lightPos = sphereCenter - (lightDir * zPullback);
 
                 Matrix4x4 lightView = new(
@@ -156,15 +156,17 @@ namespace TransportX.Rendering.Shadows
                 };
             }
 
-            CameraDrawContext shadowContext = new()
-            {
-                DeviceContext = DXHost.Context,
-                PixelShader = null,
-                DebugPixelShader = null,
-                InstanceBuffer = InstanceBuffer,
-                MaterialBuffer = MaterialBuffer,
-            };
+            Cascade lastCascade = Cascades[CascadeCount - 1];
+            ShadowCamera.UpdateFromLight(lastCascade.LightView, lastCascade.LightProjection);
 
+            unchecked
+            {
+                FrameCount++;
+            }
+        }
+
+        public void Render(IRenderQueue renderQueue, in CameraDrawContext context)
+        {
             DXHost.Context.VSSetShader(ShadowVertexShader);
             DXHost.Context.IASetInputLayout(ShadowInputLayout);
             DXHost.Context.RSSetState(ShadowRasterizerState);
@@ -188,22 +190,23 @@ namespace TransportX.Rendering.Shadows
                 DXHost.Context.UpdateSubresource(shadowConstants, ShadowConstantsBuffer);
                 DXHost.Context.VSSetConstantBuffer(1, ShadowConstantsBuffer);
 
-                ShadowCamera.DrawChunks(shadowContext, world.Chunks);
-                ShadowCamera.DrawBodies(shadowContext, world.Bodies);
+                renderQueue.Render(RenderPass.Normal, new DrawContext()
+                {
+                    DeviceContext = context.DeviceContext,
+                    InstanceBuffer = context.InstanceBuffer,
+                    InstanceCount = 0,
+                    MaterialBuffer = context.MaterialBuffer,
+                });
             }
 
-            unchecked
-            {
-                FrameCount++;
-            }
+            renderQueue.Clear();
+        }
 
-
-            bool Skip(int cascadeIndex)
-            {
-                return false;
-                //int updateSpan = 1 << cascadeIndex;
-                //return FrameCount % updateSpan != 0;
-            }
+        protected bool Skip(int cascadeIndex)
+        {
+            return false;
+            //int updateSpan = 1 << cascadeIndex;
+            //return FrameCount % updateSpan != 0;
         }
 
         public void Bind()
@@ -232,7 +235,7 @@ namespace TransportX.Rendering.Shadows
                     LightViewProjection3 = Matrix4x4.Identity,
                     SplitDepths = new Vector4(Cascades[0].SplitDepth, Cascades[1].SplitDepth, Cascades[2].SplitDepth, 0),
                     Resolution = Options.Resolution,
-                    ZPullback = (ChunkCount + 1) * Chunk.Size,
+                    ZPullback = (Options.DrawChunkCount + 1) * Chunk.Size,
                 };
             }
 
