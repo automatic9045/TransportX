@@ -208,7 +208,7 @@ namespace TransportX.Rendering.Pipelines
                     model.Draw(drawContext);
                 }
 
-                RenderQueue.Render(RenderLayer.Normal, new DrawContext()
+                RenderQueue.Render(new DrawContext()
                 {
                     DeviceContext = RenderContext.DeviceContext,
                     InstanceBuffer = InstanceBuffer,

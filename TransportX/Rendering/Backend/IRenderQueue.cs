@@ -9,7 +9,7 @@ namespace TransportX.Rendering.Backend
     public interface IRenderQueue
     {
         void Clear();
-        void Submit(RenderLayer layer, IModel model, in InstanceData instance);
-        void Render(RenderLayer layer, in DrawContext context);
+        void Submit(IModel model, in InstanceData instance);
+        void Render(in DrawContext context);
     }
 }

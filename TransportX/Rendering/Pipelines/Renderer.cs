@@ -32,6 +32,7 @@ namespace TransportX.Rendering.Pipelines
         protected readonly ShadowPass Shadow;
         protected readonly IBLPass IBL;
         protected readonly PostProcessingPass PostProcess;
+        protected readonly DebugPass Debug;
 
         public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient, RendererOptions options)
         {
@@ -118,6 +119,13 @@ namespace TransportX.Rendering.Pipelines
             };
 
             PostProcess = new PostProcessingPass(RenderContext);
+
+            Debug = new DebugPass(RenderContext, inputElements)
+            {
+                InstanceBuffer = InstanceBuffer,
+                MaterialBuffer = MaterialBuffer,
+                SceneBuffer = SceneBuffer,
+            };
         }
 
         public void Dispose()
@@ -126,6 +134,7 @@ namespace TransportX.Rendering.Pipelines
             Shadow.Dispose();
             IBL.Dispose();
             PostProcess.Dispose();
+            Debug.Dispose();
 
             InstanceBuffer.Dispose();
             MaterialBuffer.Dispose();
@@ -151,7 +160,7 @@ namespace TransportX.Rendering.Pipelines
             PostProcess.Setup(DXClient.DepthStencil, size);
 
             DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
-            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil!, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
+            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             if (!IBL.IsGenerated)
             {
@@ -162,7 +171,8 @@ namespace TransportX.Rendering.Pipelines
             IBL.Bind();
 
             Opaque.Render(DXClient.DepthStencil, camera, world, Options.DrawChunkCount, size);
-            PostProcess.RenderTo(DXClient.RenderTarget!, world.DefaultEnvironment, elapsed);
+            PostProcess.RenderTo(DXClient.RenderTarget, world.DefaultEnvironment, elapsed);
+            Debug.RenderTo(DXClient.RenderTarget, camera, world, Options.DrawChunkCount, size);
 
             DXHost.Context.PSSetShaderResource(12, null!);
         }

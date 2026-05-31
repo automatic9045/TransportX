@@ -17,13 +17,9 @@ namespace TransportX.Rendering.Pipelines
 {
     public class OpaquePass : IDisposable
     {
-        private static readonly RenderLayer[] AllLayers = Enum.GetValues<RenderLayer>();
-
-
         protected readonly RenderContext RenderContext;
 
         protected readonly GraphicsPipelineState PipelineState;
-        protected readonly GraphicsPipelineState DebugPipelineState;
         protected readonly ID3D11SamplerState TextureSamplerState;
 
         protected readonly RenderQueue RenderQueue = new();
@@ -43,9 +39,6 @@ namespace TransportX.Rendering.Pipelines
 
             Blob psBlob = ShaderFactory.CompileFromResource("PS.hlsl", "main", "PS", "ps_5_0");
             ID3D11PixelShader pixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(psBlob);
-
-            Blob debugPsBlob = ShaderFactory.CompileFromResource("DebugPS.hlsl", "main", "DebugPS", "ps_5_0");
-            ID3D11PixelShader debugPixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(debugPsBlob);
 
             ID3D11InputLayout inputLayout = RenderContext.DeviceContext.Device.CreateInputLayout(elements, vsBlob.AsSpan());
 
@@ -105,12 +98,7 @@ namespace TransportX.Rendering.Pipelines
                 RasterizerState = rasterizerState,
                 BlendState = blendState,
                 DepthStencilState = null,
-                PrimitiveTopology = PrimitiveTopology.TriangleList
-            };
-
-            DebugPipelineState = PipelineState with
-            {
-                PixelShader = debugPixelShader,
+                PrimitiveTopology = PrimitiveTopology.TriangleList,
             };
 
 
@@ -131,8 +119,6 @@ namespace TransportX.Rendering.Pipelines
         public void Dispose()
         {
             PipelineState.Dispose();
-            DebugPipelineState.PixelShader!.Dispose();
-
             TextureSamplerState.Dispose();
         }
 
@@ -166,32 +152,28 @@ namespace TransportX.Rendering.Pipelines
             };
             RenderContext.DeviceContext.UpdateSubresource(environmentConstants, EnvironmentBuffer);
 
+            RenderContext.ApplyState(PipelineState);
+
             RenderQueue.SubmitBackground(RenderContext.DeviceContext, camera, world.BackgroundModels);
-            Flush(RenderQueue);
+            Flush();
             RenderContext.DeviceContext.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            RenderQueue.SubmitChunks(RenderContext.DeviceContext, camera, world.Chunks, drawChunkCount);
-            RenderQueue.SubmitBodies(RenderContext.DeviceContext, camera, world.Bodies);
-            Flush(RenderQueue);
+            RenderQueue.SubmitChunks(RenderContext.DeviceContext, camera, world.Chunks, RenderLayer.Normal, drawChunkCount);
+            RenderQueue.SubmitBodies(RenderContext.DeviceContext, camera, world.Bodies, RenderLayer.Normal);
+            Flush();
 
-        }
 
-        protected void Flush(IRenderQueue renderQueue)
-        {
-            foreach (RenderLayer layer in AllLayers)
+            void Flush()
             {
-                RenderContext.ApplyState(layer == RenderLayer.Normal ? PipelineState : DebugPipelineState);
-
-                renderQueue.Render(layer, new DrawContext()
+                RenderQueue.Render(new DrawContext()
                 {
                     DeviceContext = RenderContext.DeviceContext,
                     InstanceBuffer = InstanceBuffer,
                     InstanceCount = 0,
                     MaterialBuffer = MaterialBuffer,
                 });
+                RenderQueue.Clear();
             }
-
-            renderQueue.Clear();
         }
     }
 }

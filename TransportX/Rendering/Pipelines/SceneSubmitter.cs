@@ -33,44 +33,38 @@ namespace TransportX.Rendering.Pipelines
             }
         }
 
-        public static void SubmitChunks(this IRenderQueue renderQueue, ID3D11DeviceContext deviceContext, Camera camera, ChunkCollection chunks, int drawChunkCount)
+        public static void SubmitChunks(this IRenderQueue renderQueue,
+            ID3D11DeviceContext deviceContext, Camera camera, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
         {
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal)) Draw(RenderLayer.Normal);
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders)) Draw(RenderLayer.Colliders);
-            if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Network)) Draw(RenderLayer.Network);
-
-
-            void Draw(RenderLayer layer)
+            for (int i = drawChunkCount - 1; 0 <= i; i--)
             {
-                for (int i = drawChunkCount - 1; 0 <= i; i--)
+                for (int x = camera.WorldPose.Chunk.X - i; x <= camera.WorldPose.Chunk.X + i; x++)
                 {
-                    for (int x = camera.WorldPose.Chunk.X - i; x <= camera.WorldPose.Chunk.X + i; x++)
+                    int dz = int.Abs(x - camera.WorldPose.Chunk.X) == i ? 1 : i * 2;
+                    for (int z = camera.WorldPose.Chunk.Z - i; z <= camera.WorldPose.Chunk.Z + i; z += dz)
                     {
-                        int dz = int.Abs(x - camera.WorldPose.Chunk.X) == i ? 1 : i * 2;
-                        for (int z = camera.WorldPose.Chunk.Z - i; z <= camera.WorldPose.Chunk.Z + i; z += dz)
+                        ChunkIndex chunkIndex = new(x, z);
+                        if (chunks.TryGetValue(chunkIndex, out Chunk? chunk))
                         {
-                            ChunkIndex chunkIndex = new ChunkIndex(x, z);
-                            if (chunks.TryGetValue(chunkIndex, out Chunk? chunk))
+                            TransformedDrawContext drawContext = new()
                             {
-                                TransformedDrawContext drawContext = new()
-                                {
-                                    DeviceContext = deviceContext,
-                                    RenderQueue = renderQueue,
-                                    ChunkOffset = chunkIndex - camera.WorldPose.Chunk,
-                                    View = camera.View,
-                                    Projection = camera.Projection,
-                                    Frustum = camera.Frustum,
-                                    Layer = layer,
-                                };
-                                chunk!.Draw(drawContext);
-                            }
+                                DeviceContext = deviceContext,
+                                RenderQueue = renderQueue,
+                                ChunkOffset = chunkIndex - camera.WorldPose.Chunk,
+                                View = camera.View,
+                                Projection = camera.Projection,
+                                Frustum = camera.Frustum,
+                                Layer = layer,
+                            };
+                            chunk!.Draw(drawContext);
                         }
                     }
                 }
             }
         }
 
-        public static void SubmitBodies(this IRenderQueue renderQueue, ID3D11DeviceContext deviceContext, Camera camera, IReadOnlyList<RigidBody> bodies)
+        public static void SubmitBodies(this IRenderQueue renderQueue,
+            ID3D11DeviceContext deviceContext, Camera camera, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
         {
             for (int i = 0; i < bodies.Count; i++)
             {
@@ -84,31 +78,9 @@ namespace TransportX.Rendering.Pipelines
                     View = camera.View,
                     Projection = camera.Projection,
                     Frustum = camera.Frustum,
-                    Layer = RenderLayer.Normal,
+                    Layer = layer,
                 };
-
-                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Normal))
-                {
-                    body.Draw(drawContext);
-                }
-
-                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders))
-                {
-                    drawContext = drawContext with
-                    {
-                        Layer = RenderLayer.Colliders,
-                    };
-                    body.Draw(drawContext);
-                }
-
-                if (camera.VisibleLayers.HasFlag(Camera.VisualLayers.Traffic))
-                {
-                    drawContext = drawContext with
-                    {
-                        Layer = RenderLayer.Traffic,
-                    };
-                    body.Draw(drawContext);
-                }
+                body.Draw(drawContext);
             }
         }
     }

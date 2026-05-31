@@ -204,10 +204,10 @@ namespace TransportX.Rendering.Pipelines
                 RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
                 RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, ShadowCamera, chunks, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, ShadowCamera, bodies);
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, ShadowCamera, chunks, RenderLayer.Normal, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, ShadowCamera, bodies, RenderLayer.Normal);
 
-                RenderQueue.Render(RenderLayer.Normal, new DrawContext()
+                RenderQueue.Render(new DrawContext()
                 {
                     DeviceContext = RenderContext.DeviceContext,
                     InstanceBuffer = InstanceBuffer,

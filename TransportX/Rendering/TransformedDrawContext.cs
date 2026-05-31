@@ -34,7 +34,7 @@ namespace TransportX.Rendering
             {
                 World = Matrix4x4.Transpose(world),
             };
-            RenderQueue.Submit(Layer, model, instanceData);
+            RenderQueue.Submit(model, instanceData);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace TransportX.Rendering.Backend
 {
     public class RenderQueue : IRenderQueue
     {
-        private readonly ConcurrentDictionary<RenderLayer, ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>> Instances = [];
+        private readonly ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> Instances = [];
 
         public RenderQueue()
         {
@@ -21,41 +21,34 @@ namespace TransportX.Rendering.Backend
 
         public void Clear()
         {
-            foreach (ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perLayer in Instances.Values)
+            foreach (PooledBuffer<InstanceData> perModel in Instances.Values)
             {
-                foreach (PooledBuffer<InstanceData> perModel in perLayer.Values)
-                {
-                    perModel.Clear();
-                }
+                perModel.Clear();
             }
         }
 
-        public void Submit(RenderLayer layer, IModel model, in InstanceData instance)
+        public void Submit(IModel model, in InstanceData instance)
         {
-            ConcurrentDictionary<IModel, PooledBuffer<InstanceData>> perLayer = Instances.GetOrAdd(layer, layer => []);
-
-            if (!perLayer.TryGetValue(model, out PooledBuffer<InstanceData>? perModel))
+            if (!Instances.TryGetValue(model, out PooledBuffer<InstanceData>? perModel))
             {
                 PooledBuffer<InstanceData> newBuffer = [];
-                if (perLayer.TryAdd(model, newBuffer))
+                if (Instances.TryAdd(model, newBuffer))
                 {
                     perModel = newBuffer;
                 }
                 else
                 {
                     newBuffer.Dispose();
-                    perModel = perLayer[model];
+                    perModel = Instances[model];
                 }
             }
 
             perModel.Add(instance);
         }
 
-        public unsafe void Render(RenderLayer layer, in DrawContext context)
+        public unsafe void Render(in DrawContext context)
         {
-            if (!Instances.TryGetValue(layer, out ConcurrentDictionary<IModel, PooledBuffer<InstanceData>>? perLayer)) return;
-
-            foreach ((IModel model, PooledBuffer<InstanceData> perModel) in perLayer)
+            foreach ((IModel model, PooledBuffer<InstanceData> perModel) in Instances)
             {
                 if (perModel.Count == 0) continue;
 
