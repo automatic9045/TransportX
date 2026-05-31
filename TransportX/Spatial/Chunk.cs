@@ -17,15 +17,13 @@ namespace TransportX.Spatial
 
         private bool IsFar = false;
 
-        public int X { get; }
-        public int Z { get; }
+        public ChunkIndex Index { get; }
         public List<TransformedModel> Models { get; } = [];
         public List<NetworkElement> Network { get; } = [];
 
-        public Chunk(int x, int z)
+        public Chunk(ChunkIndex index)
         {
-            X = x;
-            Z = z;
+            Index = index;
         }
 
         public void Dispose()
@@ -47,9 +45,9 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetFromCamera(ChunkOffset fromCamera, int computeChunkCount)
+        public void SetFromCamera(ChunkIndex fromCamera, int computeChunkCount)
         {
-            bool isFar = computeChunkCount < int.Abs(fromCamera.DeltaX) + 1 || computeChunkCount < int.Abs(fromCamera.DeltaZ) + 1;
+            bool isFar = computeChunkCount < int.Abs(fromCamera.X) + 1 || computeChunkCount < int.Abs(fromCamera.Z) + 1;
             if (IsFar && isFar) return;
 
             foreach (TransformedModel model in Models)

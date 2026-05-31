@@ -17,7 +17,7 @@ namespace TransportX
         public WorldPose WorldPose { get; private set; }
         public virtual Vector3 Velocity => Vector3.Zero;
 
-        public event Action<ChunkOffset>? Moved;
+        public event MovedEventHandler? Moved;
 
         public WorldObject(WorldPose worldPose)
         {
@@ -28,9 +28,9 @@ namespace TransportX
         {
         }
 
-        protected ChunkOffset Locate(WorldPose worldPose)
+        protected ChunkIndex Locate(WorldPose worldPose)
         {
-            if (WorldPose == worldPose) return ChunkOffset.Identity;
+            if (WorldPose == worldPose) return ChunkIndex.Zero;
 
             WorldPose = worldPose;
             Moved?.Invoke(worldPose.NormalizedOffset);
@@ -38,24 +38,18 @@ namespace TransportX
             return worldPose.NormalizedOffset;
         }
 
-        protected ChunkOffset Locate(IWorldObject attachTo, Pose pose)
+        protected ChunkIndex Locate(ChunkIndex chunkIndex, Pose pose)
         {
-            WorldPose worldPose = new(attachTo.WorldPose.ChunkX, attachTo.WorldPose.ChunkZ, pose);
+            WorldPose worldPose = new(chunkIndex, pose);
             return Locate(worldPose);
         }
 
-        protected ChunkOffset Locate(IWorldObject attachTo)
+        protected ChunkIndex Move(Pose delta)
         {
-            return Locate(attachTo.WorldPose);
-        }
-
-        protected ChunkOffset Move(Pose delta)
-        {
-            WorldPose worldPose = new(WorldPose.ChunkX, WorldPose.ChunkZ, delta * WorldPose.Pose);
+            WorldPose worldPose = delta * WorldPose;
             return Locate(worldPose);
         }
 
-        public ChunkOffset GetChunkOffset(IWorldObject to) => ((IWorldObject)this).GetChunkOffset(to);
         public Vector3 GetOffset(IWorldObject to) => ((IWorldObject)this).GetOffset(to);
     }
 }

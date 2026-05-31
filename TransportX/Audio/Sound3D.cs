@@ -52,13 +52,13 @@ namespace TransportX.Audio
             return new Sound3D(masteringVoice, x3dAudio, stream, sourceVoice);
         }
 
-        public void Update(Listener listener, int cameraX, int cameraZ)
+        public void Update(Listener listener, ChunkIndex cameraChunkIndex)
         {
             if (AttachedTo is not null)
             {
                 Emitter.OrientFront = AttachedTo.WorldPose.Pose.Direction;
                 Emitter.OrientTop = AttachedTo.WorldPose.Pose.Up;
-                Emitter.Position = AttachedTo.WorldPose.Pose.Position + new ChunkOffset(AttachedTo.WorldPose.ChunkX - cameraX, AttachedTo.WorldPose.ChunkZ - cameraZ).Position;
+                Emitter.Position = AttachedTo.WorldPose.Pose.Position + (AttachedTo.WorldPose.Chunk - cameraChunkIndex).Position;
                 Emitter.Velocity = AttachedTo.Velocity;
             }
 

@@ -8,8 +8,19 @@ using TransportX.Spatial;
 
 namespace TransportX.Cameras
 {
-    public readonly record struct CameraPose(int ChunkX, int ChunkZ, Vector3 Position, Vector2 Angle)
+    public readonly record struct CameraPose
     {
+        public ChunkIndex Chunk { get; }
+        public Vector3 Position { get; }
+        public Vector2 Angle { get; }
+
+        public CameraPose(ChunkIndex chunk, Vector3 position, Vector2 angle)
+        {
+            Chunk = chunk;
+            Position = position;
+            Angle = angle;
+        }
+
         public static CameraPose FromWorldPose(WorldPose worldPose)
         {
             Vector3 direction = worldPose.Pose.Direction;
@@ -19,7 +30,7 @@ namespace TransportX.Cameras
             float pitch = float.Atan2(-direction.Y, xzLength);
 
             Vector2 angle = new(pitch, yaw);
-            return new CameraPose(worldPose.ChunkX, worldPose.ChunkZ, worldPose.Pose.Position, angle);
+            return new CameraPose(worldPose.Chunk, worldPose.Pose.Position, angle);
         }
     }
 }

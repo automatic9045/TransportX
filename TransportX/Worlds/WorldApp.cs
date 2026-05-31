@@ -112,7 +112,7 @@ namespace TransportX.Worlds
             if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
             {
                 WorldPose worldPose = viewpoint.WorldPose;
-                save.FreeViewpointPose = new CameraPose(worldPose.ChunkX, worldPose.ChunkZ, worldPose.Pose.Position, viewpoint.Angle);
+                save.FreeViewpointPose = new CameraPose(worldPose.Chunk, worldPose.Pose.Position, viewpoint.Angle);
             }
             save.Export();
 
@@ -162,7 +162,7 @@ namespace TransportX.Worlds
 
         protected virtual void OnTick(TimeSpan elapsed)
         {
-            string chunkText = $"({Camera.WorldPose.ChunkX}, {Camera.WorldPose.ChunkZ})";
+            string chunkText = $"({Camera.WorldPose.Chunk.X}, {Camera.WorldPose.Chunk.Z})";
             string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
             Host.Platform.Window.Title = $"TransportX {chunkText}; {coordText} @ {RenderTimeManager.Frequency:f0} fps";
 

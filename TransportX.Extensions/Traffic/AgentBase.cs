@@ -9,6 +9,7 @@ using TransportX.Bodies;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Rendering;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 namespace TransportX.Extensions.Traffic
@@ -90,14 +91,14 @@ namespace TransportX.Extensions.Traffic
             LaneTracker.Tick(Driver.Acceleration, elapsed);
             if (!LaneTracker.IsEnabled)
             {
-                Spatial.WorldPose worldPose = new(0, 0, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
+                Spatial.WorldPose worldPose = new(ChunkIndex.Zero, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
                 Locate(worldPose);
                 return;
             }
 
             LanePathView pathView = new(Path!, Heading);
             PoseSolver.Tick(LaneTracker.History, pathView, pathView.ToViewS(S), elapsed);
-            Locate(PoseSolver);
+            Locate(PoseSolver.WorldPose);
         }
 
         public override void Draw(in TransformedDrawContext context)

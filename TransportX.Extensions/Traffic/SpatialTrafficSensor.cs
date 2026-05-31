@@ -70,8 +70,8 @@ namespace TransportX.Extensions.Traffic
                 if (!obstacle.IsEnabled) continue;
                 if (ObstacleSkipCondition(obstacle)) continue;
 
-                ChunkOffset offset = Origin.GetChunkOffset(obstacle);
-                if (1 < int.Abs(offset.DeltaX) || 1 < int.Abs(offset.DeltaZ)) continue;
+                ChunkIndex offset = obstacle.WorldPose.Chunk - Origin.WorldPose.Chunk;
+                if (1 < int.Abs(offset.X) || 1 < int.Abs(offset.Z)) continue;
 
                 Vector3 delta = obstacle.WorldPose.Pose.Position + offset.Position - Origin.WorldPose.Pose.Position;
                 float maxDistance = minSurfaceDistance + LaneTracker.Length + obstacle.Length + ObstacleDetectMargin;
@@ -151,7 +151,7 @@ namespace TransportX.Extensions.Traffic
             public readonly float S { get; }
             public readonly float SVelocity { get; }
 
-            public event Action<ChunkOffset>? Moved
+            public event MovedEventHandler? Moved
             {
                 add => throw new NotSupportedException();
                 remove => throw new NotSupportedException();

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Cameras;
+using TransportX.Spatial;
 
 namespace TransportX.Data
 {
@@ -42,6 +43,7 @@ namespace TransportX.Data
                     string[] chunkText = saveContent[1].Split(',');
                     int chunkX = int.Parse(chunkText[0]);
                     int chunkZ = int.Parse(chunkText[1]);
+                    ChunkIndex chunkIndex = new(chunkX, chunkZ);
 
                     string[] positionText = saveContent[2].Split(',');
                     Vector3 position = new(float.Parse(positionText[0]), float.Parse(positionText[1]), float.Parse(positionText[2]));
@@ -49,7 +51,7 @@ namespace TransportX.Data
                     string[] angleText = saveContent[3].Split(',');
                     Vector2 angle = new(float.Parse(angleText[0]), float.Parse(angleText[1]));
 
-                    freeViewpointPose = new CameraPose(chunkX, chunkZ, position, angle);
+                    freeViewpointPose = new CameraPose(chunkIndex, position, angle);
                 }
             }
             catch { }
@@ -70,7 +72,7 @@ namespace TransportX.Data
                 if (FreeViewpointPose.HasValue)
                 {
                     CameraPose pose = FreeViewpointPose.Value;
-                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{pose.ChunkX},{pose.ChunkZ}"));
+                    saveContentBuilder.AppendLine(FormattableString.Invariant($"{pose.Chunk.X},{pose.Chunk.Z}"));
                     saveContentBuilder.AppendLine(FormattableString.Invariant($"{pose.Position.X},{pose.Position.Y},{pose.Position.Z}"));
                     saveContentBuilder.AppendLine(FormattableString.Invariant($"{pose.Angle.X},{pose.Angle.Y}"));
                 }

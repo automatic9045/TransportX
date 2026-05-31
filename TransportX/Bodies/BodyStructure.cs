@@ -146,7 +146,7 @@ namespace TransportX.Bodies
             if (model is MergedKinematicTransformedModel mergedModel) mergedModel.Dispose();
         }
 
-        public void SetFromCamera(ChunkOffset fromCamera)
+        public void SetFromCamera(ChunkIndex fromCamera)
         {
             foreach (TransformedModel model in Items)
             {

@@ -212,7 +212,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             public readonly float S { get; }
             public readonly float SVelocity => 0;
 
-            public event Action<ChunkOffset>? Moved
+            public event MovedEventHandler? Moved
             {
                 add => throw new NotSupportedException();
                 remove => throw new NotSupportedException();

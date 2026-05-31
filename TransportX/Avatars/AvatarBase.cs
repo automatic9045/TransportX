@@ -87,7 +87,7 @@ namespace TransportX.Avatars
             DebugModel.Dispose();
         }
 
-        public new ChunkOffset TeleportTo(WorldPose worldPose)
+        public new ChunkIndex TeleportTo(WorldPose worldPose)
         {
             return base.TeleportTo(worldPose);
         }

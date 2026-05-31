@@ -14,9 +14,10 @@ namespace TransportX
         WorldPose WorldPose { get; }
         Vector3 Velocity { get; }
 
-        event Action<ChunkOffset>? Moved;
+        event MovedEventHandler? Moved;
 
-        sealed ChunkOffset GetChunkOffset(IWorldObject to) => WorldPose.GetChunkOffset(to.WorldPose);
         sealed Vector3 GetOffset(IWorldObject to) => WorldPose.GetOffset(to.WorldPose);
     }
+
+    public delegate void MovedEventHandler(ChunkIndex chunkOffset);
 }

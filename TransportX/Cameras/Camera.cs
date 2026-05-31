@@ -30,7 +30,7 @@ namespace TransportX.Cameras
 
         public void UpdateView()
         {
-            Locate(Viewpoints.Current);
+            Locate(Viewpoints.Current.WorldPose);
 
             Listener.OrientFront = WorldPose.Pose.Direction;
             Listener.OrientTop = WorldPose.Pose.Up;

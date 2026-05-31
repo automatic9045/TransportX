@@ -111,7 +111,7 @@ namespace TransportX.Cameras
         public void Locate(CameraPose cameraPose)
         {
             Rotator.Update(cameraPose.Angle);
-            Spatial.WorldPose worldPose = new(cameraPose.ChunkX, cameraPose.ChunkZ, new Pose(cameraPose.Position, Rotator.Rotation));
+            Spatial.WorldPose worldPose = new(cameraPose.Chunk, new Pose(cameraPose.Position, Rotator.Rotation));
             Locate(worldPose);
         }
 
@@ -175,7 +175,7 @@ namespace TransportX.Cameras
 
             void UpdateLocation()
             {
-                Locate(Source, Rotator.RotationPose * Offset * Source.WorldPose.Pose);
+                Locate(Rotator.RotationPose * Offset * Source.WorldPose);
             }
         }
 
@@ -226,7 +226,7 @@ namespace TransportX.Cameras
 
             void UpdateLocation()
             {
-                Locate(Source, Translator.TranslationPose * Rotator.RotationPose * Offset * Source.WorldPose.Pose);
+                Locate(Translator.TranslationPose * Rotator.RotationPose * Offset * Source.WorldPose);
             }
         }
 

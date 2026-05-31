@@ -42,14 +42,14 @@ namespace TransportX.Bodies
             Structure.Dispose();
         }
 
-        public virtual void SetFromCamera(ChunkOffset fromCamera)
+        public virtual void SetFromCamera(ChunkIndex fromCamera)
         {
             Structure.SetFromCamera(fromCamera);
         }
 
-        protected virtual ChunkOffset TeleportTo(WorldPose worldPose)
+        protected virtual ChunkIndex TeleportTo(WorldPose worldPose)
         {
-            ChunkOffset chunkOffset = Locate(worldPose);
+            ChunkIndex chunkOffset = Locate(worldPose);
             foreach (TransformedModel model in Structure)
             {
                 model.Pose = model.BasePose * WorldPose.Pose;
@@ -62,8 +62,8 @@ namespace TransportX.Bodies
         {
             if (Structure.RootModel is null) return;
 
-            WorldPose worldPose = new(WorldPose.ChunkX, WorldPose.ChunkZ, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
-            ChunkOffset chunkOffset = Locate(worldPose);
+            WorldPose worldPose = new(WorldPose.Chunk, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
+            ChunkIndex chunkOffset = Locate(worldPose);
             if (!chunkOffset.IsZero)
             {
                 foreach (TransformedModel model in Structure)

@@ -23,7 +23,7 @@ namespace TransportX.Bodies
         {
             foreach (RigidBody body in this)
             {
-                ChunkOffset fromCamera = cameraWorldPose.GetChunkOffset(body.WorldPose);
+                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraWorldPose.Chunk;
                 body.SetFromCamera(fromCamera);
             }
         }
@@ -33,7 +33,7 @@ namespace TransportX.Bodies
             foreach (RigidBody body in this)
             {
                 body.SubTick(elapsed);
-                ChunkOffset fromCamera = cameraWorldPose.GetChunkOffset(body.WorldPose);
+                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraWorldPose.Chunk;
                 body.SetFromCamera(fromCamera);
             }
         }

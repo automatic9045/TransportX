@@ -110,8 +110,8 @@ namespace TransportX.Sample.LV290.Vehicles
                 }
             }
 
-            if (World.Options.SimulationChunkCount <= int.Abs(Camera.WorldPose.ChunkX - WorldPose.ChunkX)
-                || World.Options.SimulationChunkCount <= int.Abs(Camera.WorldPose.ChunkZ - WorldPose.ChunkZ))
+            ChunkIndex offset = Camera.WorldPose.Chunk - WorldPose.Chunk;
+            if (World.Options.SimulationChunkCount <= int.Abs(offset.X) || World.Options.SimulationChunkCount <= int.Abs(offset.Z))
             {
                 Structure.Freeze();
                 return;

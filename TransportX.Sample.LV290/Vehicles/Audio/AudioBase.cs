@@ -32,7 +32,7 @@ namespace TransportX.Sample.LV290.Vehicles.Audio
                 sound.SetPitch(pitch);
             }
 
-            sound.Update(camera.Listener, camera.WorldPose.ChunkX, camera.WorldPose.ChunkZ);
+            sound.Update(camera.Listener, camera.WorldPose.Chunk);
         }
     }
 }

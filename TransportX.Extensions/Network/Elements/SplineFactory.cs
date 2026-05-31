@@ -50,7 +50,7 @@ namespace TransportX.Extensions.Network.Elements
             Finalizer = fromPort =>
             {
                 NetworkElement targetElement = targetPort.Owner;
-                ChunkOffset offset = GetChunkOffset(targetElement);
+                ChunkIndex offset = targetElement.WorldPose.Chunk - WorldPose.Chunk;
                 Pose to = targetPort.Offset * targetElement.WorldPose.Pose * offset.Pose;
 
                 BezierSpline spline = new(WorldPose, to, OutletLayout, handleScale)
@@ -108,7 +108,7 @@ namespace TransportX.Extensions.Network.Elements
                 segments.Add(segment);
 
                 Pose pose = segment.GetLocalPose(slicedCurve.Length);
-                ChunkOffset chunkOffset = Move(pose);
+                ChunkIndex chunkOffset = Move(pose);
 
                 if (!chunkOffset.IsZero)
                 {

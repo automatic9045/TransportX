@@ -16,21 +16,15 @@ namespace TransportX.Scripting.Worlds.Commands
     public class ChunkCommand
     {
         private readonly ScriptWorld World;
-        private readonly int X;
-        private readonly int Z;
-
         private readonly Chunk Target;
 
         private int SplineCounter = 0;
         private int JunctionCounter = 0;
 
-        internal ChunkCommand(ScriptWorld world, int x, int z)
+        internal ChunkCommand(ScriptWorld world, ChunkIndex index)
         {
             World = world;
-            X = x;
-            Z = z;
-
-            Target = World.Chunks.GetOrAdd(X, Z);
+            Target = World.Chunks.GetOrAdd(index);
         }
 
         public TransformedModel PutProp(string modelKey, Pose pose)
@@ -61,7 +55,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public SplineFactoryCommand BeginSpline(string? templateKey, Pose pose, NetworkPort? sourcePort = null)
         {
-            WorldPose worldPose = new(X, Z, pose);
+            WorldPose worldPose = new(Target.Index, pose);
 
             SplineFactoryCommand? factoryCommand = null;
             if (templateKey is not null)
@@ -107,7 +101,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public JunctionFactoryCommand PutJunction(string templateKey, Pose pose)
         {
-            WorldPose worldPose = new(X, Z, pose);
+            WorldPose worldPose = new(Target.Index, pose);
 
             JunctionFactoryCommand factoryCommand;
             if (World.Commander.Network.Templates.Junctions.TryGetValue(templateKey, out JunctionTemplate? template))
@@ -140,12 +134,12 @@ namespace TransportX.Scripting.Worlds.Commands
 
         internal string CreateSplineDebugName(string? templateKey)
         {
-            return $"{templateKey ?? "Spline"}_{X};{Z};{SplineCounter++}";
+            return $"{templateKey ?? "Spline"}_{Target.Index.X};{Target.Index.Z};{SplineCounter++}";
         }
 
         internal string CreateJunctionDebugName(string? templateKey)
         {
-            return $"{templateKey ?? "Junction"}_{X};{Z};{JunctionCounter++}";
+            return $"{templateKey ?? "Junction"}_{Target.Index.X};{Target.Index.Z};{JunctionCounter++}";
         }
     }
 }

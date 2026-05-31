@@ -40,7 +40,7 @@ namespace TransportX.Spatial
                 ? Create(physicsHost, collidableModel, pose) : new TransformedModel(model, pose);
         }
 
-        public override bool SetFromCamera(ChunkOffset fromCamera)
+        public override bool SetFromCamera(ChunkIndex fromCamera)
         {
             bool isChanged = base.SetFromCamera(fromCamera);
             if (isChanged)

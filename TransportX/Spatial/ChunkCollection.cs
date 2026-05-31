@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,15 +11,23 @@ using TransportX.Components;
 
 namespace TransportX.Spatial
 {
-    public class ChunkCollection : IEnumerable<Chunk>, IDisposable
+    public class ChunkCollection : IReadOnlyCollection<Chunk>, IDisposable
     {
-        private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, Chunk>> Items = new();
+        private readonly ConcurrentDictionary<ChunkIndex, Chunk> Items = new();
+
+        public Chunk this[ChunkIndex index]
+        {
+            get => TryGetValue(index, out Chunk? result) ? result! : throw new KeyNotFoundException();
+            set => Add(value, true);
+        }
 
         public Chunk this[int x, int z]
         {
-            get => TryGetValue(x, z, out Chunk? result) ? result! : throw new KeyNotFoundException();
-            set => Add(value, true);
+            get => this[new ChunkIndex(x, z)];
+            set => this[new ChunkIndex(x, z)] = value;
         }
+
+        public int Count => Items.Count;
 
         public ChunkCollection()
         {
@@ -41,59 +50,51 @@ namespace TransportX.Spatial
         {
             foreach (Chunk chunk in this)
             {
-                ChunkOffset fromCamera = new(chunk.X - cameraWorldPose.ChunkX, chunk.Z - cameraWorldPose.ChunkZ);
+                ChunkIndex fromCamera = chunk.Index - cameraWorldPose.Chunk;
                 chunk.SetFromCamera(fromCamera, computeChunkCount);
             }
         }
 
-        public bool TryGetValue(int x, int z, out Chunk? result)
+        public bool TryGetValue(ChunkIndex index, [MaybeNullWhen(false)] out Chunk result)
         {
-            ConcurrentDictionary<int, Chunk> xDictionary = FilterByX(x);
-            return xDictionary.TryGetValue(z, out result);
+            return Items.TryGetValue(index, out result);
         }
 
         public void Add(Chunk item, bool allowOverwrite)
         {
-            ConcurrentDictionary<int, Chunk> xDictionary = FilterByX(item.X);
             if (allowOverwrite)
             {
-                xDictionary.AddOrUpdate(item.Z, item, (_, _) => item);
+                Items.AddOrUpdate(item.Index, item, (_, _) => item);
             }
             else
             {
-                if (!xDictionary.TryAdd(item.Z, item)) throw new ArgumentException("項目は既に存在します。", nameof(item));
+                if (!Items.TryAdd(item.Index, item)) throw new ArgumentException("項目は既に存在します。", nameof(item));
             }
         }
 
         public void Add(Chunk item) => Add(item, false);
 
-        public Chunk GetOrAdd(int x, int z, Func<int, int, Chunk>? itemFactory = null)
+        public Chunk GetOrAdd(ChunkIndex index, Func<ChunkIndex, Chunk>? itemFactory = null)
         {
-            if (TryGetValue(x, z, out Chunk? result))
+            if (TryGetValue(index, out Chunk? result))
             {
                 return result!;
             }
             else
             {
-                itemFactory ??= (x, z) => new Chunk(x, z);
-                Chunk item = itemFactory(x, z);
+                itemFactory ??= index => new Chunk(index);
+                Chunk item = itemFactory(index);
                 Add(item);
                 return item;
             }
         }
 
-        public Chunk GetOrAddFor(IWorldObject worldObject, Func<int, int, Chunk>? itemFactory = null)
+        public Chunk GetOrAddFor(IWorldObject worldObject, Func<ChunkIndex, Chunk>? itemFactory = null)
         {
-            return GetOrAdd(worldObject.WorldPose.ChunkX, worldObject.WorldPose.ChunkZ, itemFactory);
+            return GetOrAdd(worldObject.WorldPose.Chunk, itemFactory);
         }
 
-        private ConcurrentDictionary<int, Chunk> FilterByX(int x)
-        {
-            ConcurrentDictionary<int, Chunk> result = Items.GetOrAdd(x, new ConcurrentDictionary<int, Chunk>());
-            return result;
-        }
-
-        public IEnumerator<Chunk> GetEnumerator() => Items.Values.Select(x => x.Values).SelectMany(x => x).GetEnumerator();
+        public IEnumerator<Chunk> GetEnumerator() => Items.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -17,7 +17,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public Camera(ScriptWorld world)
         {
             World = world;
-            Locate(new WorldPose(0, 0, new Pose(Chunk.Size / 2, 10, Chunk.Size / 2)));
+            Locate(new WorldPose(ChunkIndex.Zero, new Pose(Chunk.Size / 2, 10, Chunk.Size / 2)));
         }
 
         public void Locate(WorldPose worldPose)
@@ -28,8 +28,9 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void Locate(int chunkX, int chunkZ, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
+            ChunkIndex chunkIndex = new(chunkX, chunkZ);
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            WorldPose worldPose = new(chunkX, chunkZ, position.ToPose());
+            WorldPose worldPose = new(chunkIndex, position.ToPose());
             Locate(worldPose);
         }
     }

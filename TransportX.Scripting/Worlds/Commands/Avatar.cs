@@ -50,8 +50,9 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void Locate(int chunkX, int chunkZ, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
         {
+            ChunkIndex chunkIndex = new(chunkX, chunkZ);
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            WorldPose worldPose = new(chunkX, chunkZ, position.ToPose());
+            WorldPose worldPose = new(chunkIndex, position.ToPose());
             Locate(worldPose);
         }
 
