@@ -5,9 +5,9 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering.Pipelines.Shadows
+namespace TransportX.Rendering.Pipelines
 {
-    public readonly struct Cascade
+    public readonly struct ShadowCascade
     {
         public required Matrix4x4 LightView { get; init; }
         public required Matrix4x4 LightProjection { get; init; }

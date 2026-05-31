@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Rendering.Pipelines.Shadows
+namespace TransportX.Rendering.Pipelines
 {
     public readonly struct ShadowOptions
     {

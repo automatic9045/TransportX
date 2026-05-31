@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Vortice.Mathematics;
 
 using TransportX.Cameras;
+using TransportX.Spatial;
 
-namespace TransportX.Rendering.Pipelines.Shadows
+namespace TransportX.Rendering.Pipelines
 {
     public class ShadowCamera : Camera
     {
@@ -18,9 +19,9 @@ namespace TransportX.Rendering.Pipelines.Shadows
             VisibleLayers = VisualLayers.Normal;
         }
 
-        public void LocateChunk(IWorldObject obj)
+        public void LocateChunk(ChunkIndex chunkIndex)
         {
-            Locate(obj, Pose.Identity);
+            Locate(chunkIndex, Pose.Identity);
         }
 
         public void UpdateFromLight(Matrix4x4 lightView, Matrix4x4 lightProjection)

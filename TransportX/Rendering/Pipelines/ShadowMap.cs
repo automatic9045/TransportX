@@ -8,7 +8,7 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 
-namespace TransportX.Rendering.Pipelines.Shadows
+namespace TransportX.Rendering.Pipelines
 {
     public class ShadowMap : IDisposable
     {

@@ -16,7 +16,6 @@ using TransportX.Input;
 using TransportX.Physics;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
-using TransportX.Rendering.Pipelines.Shadows;
 
 namespace TransportX.Worlds
 {

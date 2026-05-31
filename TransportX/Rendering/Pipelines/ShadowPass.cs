@@ -8,65 +8,49 @@ using System.Threading.Tasks;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 
+using TransportX.Bodies;
 using TransportX.Rendering.Backend;
 using TransportX.Spatial;
-using TransportX.Worlds;
+using TransportX.Cameras;
 
-namespace TransportX.Rendering.Pipelines.Shadows
+namespace TransportX.Rendering.Pipelines
 {
-    public class ShadowPipeline : IDisposable
+    public class ShadowPass : IDisposable
     {
         private const int CascadeCount = 3;
 
         private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
 
 
-        protected readonly IDXHost DXHost;
+        protected readonly RenderContext RenderContext;
         protected readonly ShadowOptions Options;
 
+        protected readonly GraphicsPipelineState PipelineState;
+        protected readonly ID3D11SamplerState ComparisonSamplerState;
+        protected readonly ID3D11Buffer ShadowBuffer;
+        protected readonly ID3D11Buffer SamplingBuffer;
+
         protected readonly ShadowMap ShadowMap;
+        protected readonly ShadowCamera ShadowCamera;
 
-        protected readonly ID3D11VertexShader ShadowVertexShader;
-        protected readonly ID3D11InputLayout ShadowInputLayout;
-        protected readonly ID3D11Buffer ShadowConstantsBuffer;
-        protected readonly ID3D11Buffer CSMSamplingConstantsBuffer;
-        protected readonly ID3D11SamplerState ShadowComparisonSampler;
-        protected readonly ID3D11RasterizerState ShadowRasterizerState;
+        protected readonly RenderQueue RenderQueue = new();
 
-        protected readonly Cascade[] Cascades = new Cascade[CascadeCount];
+        protected readonly ShadowCascade[] Cascades = new ShadowCascade[CascadeCount];
 
         private uint FrameCount = 0;
 
         public required ID3D11Buffer InstanceBuffer { protected get; init; }
         public required ID3D11Buffer MaterialBuffer { protected get; init; }
 
-        public ShadowCamera ShadowCamera { get; }
-
-        public ShadowPipeline(IDXHost dxHost, InputElementDescription[] inputElements, ShadowOptions options)
+        public ShadowPass(RenderContext renderContext, InputElementDescription[] inputElements, ShadowOptions options)
         {
-            DXHost = dxHost;
+            RenderContext = renderContext;
             Options = options;
 
-            ShadowMap = new ShadowMap(DXHost.Device, Options.Resolution, CascadeCount);
-            ShadowCamera = new ShadowCamera();
 
             using Blob shadowVsBlob = ShaderFactory.CompileFromResource("ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
-            ShadowVertexShader = DXHost.Device.CreateVertexShader(shadowVsBlob);
-            ShadowInputLayout = DXHost.Device.CreateInputLayout(inputElements, shadowVsBlob);
-            ShadowConstantsBuffer = DXHost.Device.CreateBuffer(new BufferDescription((uint)ShadowConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default));
-            CSMSamplingConstantsBuffer = DXHost.Device.CreateBuffer(new BufferDescription((uint)CSMSamplingConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default));
-
-            SamplerDescription shadowSampDesc = new()
-            {
-                Filter = Filter.ComparisonMinMagMipLinear,
-                AddressU = TextureAddressMode.Clamp,
-                AddressV = TextureAddressMode.Clamp,
-                AddressW = TextureAddressMode.Clamp,
-                ComparisonFunc = ComparisonFunction.LessEqual,
-                MinLOD = 0,
-                MaxLOD = float.MaxValue,
-            };
-            ShadowComparisonSampler = DXHost.Device.CreateSamplerState(shadowSampDesc);
+            ID3D11VertexShader vertexShader = RenderContext.DeviceContext.Device.CreateVertexShader(shadowVsBlob);
+            ID3D11InputLayout inputLayout = RenderContext.DeviceContext.Device.CreateInputLayout(inputElements, shadowVsBlob);
 
             RasterizerDescription shadowRasterizerDesc = new()
             {
@@ -81,29 +65,61 @@ namespace TransportX.Rendering.Pipelines.Shadows
                 ScissorEnable = false,
                 SlopeScaledDepthBias = 0,
             };
-            ShadowRasterizerState = DXHost.Device.CreateRasterizerState(shadowRasterizerDesc);
+            ID3D11RasterizerState rasterizerState = RenderContext.DeviceContext.Device.CreateRasterizerState(shadowRasterizerDesc);
+
+            PipelineState = new GraphicsPipelineState()
+            {
+                VertexShader = vertexShader,
+                PixelShader = null,
+                InputLayout = inputLayout,
+
+                RasterizerState = rasterizerState,
+                BlendState = null,
+                DepthStencilState = null,
+            };
+
+
+            SamplerDescription samplerDesc = new()
+            {
+                Filter = Filter.ComparisonMinMagMipLinear,
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Clamp,
+                AddressW = TextureAddressMode.Clamp,
+                ComparisonFunc = ComparisonFunction.LessEqual,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue,
+            };
+            ComparisonSamplerState = RenderContext.DeviceContext.Device.CreateSamplerState(samplerDesc);
+
+            BufferDescription shadowBufferDesc = new((uint)ShadowConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default);
+            ShadowBuffer = RenderContext.DeviceContext.Device.CreateBuffer(shadowBufferDesc);
+
+            BufferDescription samplingBufferDesc = new((uint)CSMSamplingConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default);
+            SamplingBuffer = RenderContext.DeviceContext.Device.CreateBuffer(samplingBufferDesc);
+
+
+            ShadowMap = new ShadowMap(RenderContext.DeviceContext.Device, Options.Resolution, CascadeCount);
+            ShadowCamera = new ShadowCamera();
         }
 
         public void Dispose()
         {
-            ShadowMap.Dispose();
+            PipelineState.Dispose();
+            ComparisonSamplerState.Dispose();
+            ShadowBuffer.Dispose();
+            SamplingBuffer.Dispose();
 
-            ShadowVertexShader.Dispose();
-            ShadowInputLayout.Dispose();
-            ShadowConstantsBuffer.Dispose();
-            CSMSamplingConstantsBuffer.Dispose();
-            ShadowComparisonSampler.Dispose();
-            ShadowRasterizerState.Dispose();
+            ShadowMap.Dispose();
         }
 
-        public void UpdateCamera(Vector3 lightDirection, WorldBase world)
+        public void UpdateCamera(Vector3 lightDirection, Camera camera)
         {
             if (Options.Resolution <= 0) return;
 
-            ShadowCamera.LocateChunk(world.Camera);
+            ShadowCamera.LocateChunk(camera.WorldPose.Chunk);
 
             Vector3 lightDir = Vector3.Normalize(lightDirection);
-            Vector3 cameraPosition = world.Camera.WorldPose.Pose.Position;
+            Vector3 cameraPosition = camera.WorldPose.Pose.Position;
 
             for (int i = 0; i < CascadeCount; i++)
             {
@@ -156,7 +172,7 @@ namespace TransportX.Rendering.Pipelines.Shadows
                 };
             }
 
-            Cascade lastCascade = Cascades[CascadeCount - 1];
+            ShadowCascade lastCascade = Cascades[CascadeCount - 1];
             ShadowCamera.UpdateFromLight(lastCascade.LightView, lastCascade.LightProjection);
 
             unchecked
@@ -165,21 +181,19 @@ namespace TransportX.Rendering.Pipelines.Shadows
             }
         }
 
-        public void Render(IRenderQueue renderQueue, in CameraDrawContext context)
+        public void Render(ChunkCollection chunks, IReadOnlyList<RigidBody> bodies)
         {
-            DXHost.Context.VSSetShader(ShadowVertexShader);
-            DXHost.Context.IASetInputLayout(ShadowInputLayout);
-            DXHost.Context.RSSetState(ShadowRasterizerState);
+            RenderContext.ApplyState(PipelineState);
 
             for (int i = 0; i < CascadeCount; i++)
             {
                 if (Skip(i)) continue;
 
-                Cascade cascade = Cascades[i];
+                ShadowCascade cascade = Cascades[i];
 
-                DXHost.Context.OMSetRenderTargets((ID3D11RenderTargetView)null!, ShadowMap.DepthStencilViews[i]);
-                DXHost.Context.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
-                DXHost.Context.RSSetViewport(0, 0, ShadowMap.Resolution, ShadowMap.Resolution);
+                RenderContext.DeviceContext.OMSetRenderTargets((ID3D11RenderTargetView)null!, ShadowMap.DepthStencilViews[i]);
+                RenderContext.DeviceContext.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
+                RenderContext.DeviceContext.RSSetViewport(0, 0, ShadowMap.Resolution, ShadowMap.Resolution);
 
                 ShadowCamera.UpdateFromLight(cascade.LightView, cascade.LightProjection);
 
@@ -187,19 +201,21 @@ namespace TransportX.Rendering.Pipelines.Shadows
                 {
                     LightViewProjection = Matrix4x4.Transpose(cascade.LightViewProjection),
                 };
-                DXHost.Context.UpdateSubresource(shadowConstants, ShadowConstantsBuffer);
-                DXHost.Context.VSSetConstantBuffer(1, ShadowConstantsBuffer);
+                RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
+                RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
 
-                renderQueue.Render(RenderLayer.Normal, new DrawContext()
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, ShadowCamera, chunks, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, ShadowCamera, bodies);
+
+                RenderQueue.Render(RenderLayer.Normal, new DrawContext()
                 {
-                    DeviceContext = context.DeviceContext,
-                    InstanceBuffer = context.InstanceBuffer,
+                    DeviceContext = RenderContext.DeviceContext,
+                    InstanceBuffer = InstanceBuffer,
                     InstanceCount = 0,
-                    MaterialBuffer = context.MaterialBuffer,
+                    MaterialBuffer = MaterialBuffer,
                 });
+                RenderQueue.Clear();
             }
-
-            renderQueue.Clear();
         }
 
         protected bool Skip(int cascadeIndex)
@@ -239,11 +255,11 @@ namespace TransportX.Rendering.Pipelines.Shadows
                 };
             }
 
-            DXHost.Context.UpdateSubresource(csmConstants, CSMSamplingConstantsBuffer);
-            DXHost.Context.PSSetConstantBuffer(3, CSMSamplingConstantsBuffer);
+            RenderContext.DeviceContext.UpdateSubresource(csmConstants, SamplingBuffer);
+            RenderContext.DeviceContext.PSSetConstantBuffer(3, SamplingBuffer);
 
-            DXHost.Context.PSSetShaderResource(12, ShadowMap.ShaderResourceView);
-            DXHost.Context.PSSetSampler(2, ShadowComparisonSampler);
+            RenderContext.DeviceContext.PSSetShaderResource(12, ShadowMap.ShaderResourceView);
+            RenderContext.DeviceContext.PSSetSampler(2, ComparisonSamplerState);
         }
     }
 }
