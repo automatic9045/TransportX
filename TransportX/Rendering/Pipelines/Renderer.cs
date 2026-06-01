@@ -172,7 +172,7 @@ namespace TransportX.Rendering.Pipelines
 
             Opaque.Render(DXClient.DepthStencil, camera, world, Options.DrawChunkCount, size);
             PostProcess.RenderTo(DXClient.RenderTarget, world.DefaultEnvironment, elapsed);
-            Debug.RenderTo(DXClient.RenderTarget, camera, world, Options.DrawChunkCount, size);
+            Debug.RenderTo(DXClient.RenderTarget, DXClient.DepthStencil, camera, world, Options.DrawChunkCount, size);
 
             DXHost.Context.PSSetShaderResource(12, null!);
         }

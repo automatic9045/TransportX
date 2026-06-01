@@ -75,10 +75,12 @@ namespace TransportX.Rendering.Pipelines
             PipelineState.Dispose();
         }
 
-        public void RenderTo(ID3D11RenderTargetView renderTarget, Camera camera, WorldBase world, int drawChunkCount, SizeI size)
+        public void RenderTo(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, Camera camera, WorldBase world, int drawChunkCount, SizeI size)
         {
-            RenderContext.DeviceContext.OMSetRenderTargets(renderTarget, null);
+            RenderContext.DeviceContext.OMSetRenderTargets(renderTarget, depthStencil);
             RenderContext.DeviceContext.RSSetViewport(0, 0, size.Width, size.Height);
+
+            RenderContext.DeviceContext.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             RenderContext.DeviceContext.VSSetConstantBuffer(0, SceneBuffer);
             RenderContext.DeviceContext.PSSetConstantBuffer(0, MaterialBuffer);

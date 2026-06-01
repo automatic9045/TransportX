@@ -116,9 +116,9 @@ namespace TransportX.Rendering
 
                 DepthStencilDescription dDesc = new()
                 {
-                    DepthEnable = false,
+                    DepthEnable = true,
                     DepthWriteMask = DepthWriteMask.All,
-                    DepthFunc = ComparisonFunction.Always,
+                    DepthFunc = ComparisonFunction.LessEqual,
                     StencilEnable = false,
                 };
                 DepthState = context.DeviceContext.Device.CreateDepthStencilState(dDesc);
