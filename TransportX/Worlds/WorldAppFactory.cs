@@ -33,17 +33,17 @@ namespace TransportX.Worlds
 
         public IApp Create(IAppHost host, WorldAppParameters parameters)
         {
-            ErrorCollector errorCollector = new();
-            Config config = Config.Import(errorCollector);
-
-            DXHost dxHost = new();
-
             IWindow window = host.Platform.Window;
             if (window.Native is null || window.Native.Win32 is null)
             {
                 throw new NotSupportedException("Windows 環境以外では実行できません。");
             }
             nint hwnd = window.Native.Win32.Value.Hwnd;
+
+            ErrorCollector errorCollector = new(host.Platform.Window);
+            Config config = Config.Import(errorCollector);
+
+            DXHost dxHost = new();
 
             SwapChainDescription1 swapChainDesc = new()
             {

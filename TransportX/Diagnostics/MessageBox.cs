@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,12 +14,14 @@ namespace TransportX.Diagnostics
     {
         private static readonly Sdl Sdl = Sdl.GetApi();
 
-        public static unsafe void Show(string message, string? title = null, MessageBoxFlags flags = MessageBoxFlags.None)
+        public static unsafe void Show(string message, string? title = null, MessageBoxFlags flags = MessageBoxFlags.None, Silk.NET.Windowing.IWindow? window = null)
         {
-            Sdl.ShowSimpleMessageBox((uint)flags, title, message, null);
+            nint pWindow = window?.Native?.Sdl ?? nint.Zero;
+            Sdl.ShowSimpleMessageBox((uint)flags, title, message, (Window*)pWindow);
         }
 
-        public static unsafe bool Show(string message, ReadOnlySpan<Button> buttons, string? title, MessageBoxFlags flags, out Button result)
+        public static unsafe bool Show(string message, ReadOnlySpan<Button> buttons, string? title, MessageBoxFlags flags, Silk.NET.Windowing.IWindow? window,
+            [MaybeNullWhen(false)] out Button result)
         {
             byte* pMessage = (byte*)SilkMarshal.StringToPtr(message, NativeStringEncoding.UTF8);
             byte* pTitle = (byte*)SilkMarshal.StringToPtr(title, NativeStringEncoding.UTF8);
@@ -35,7 +38,8 @@ namespace TransportX.Diagnostics
             {
                 fixed (MessageBoxButtonData* pButtons = rawButtons)
                 {
-                    MessageBoxData data = new((uint)flags, null, pTitle, pMessage, buttons.Length, pButtons);
+                    nint pWindow = window?.Native?.Sdl ?? nint.Zero;
+                    MessageBoxData data = new((uint)flags, (Window*)pWindow, pTitle, pMessage, buttons.Length, pButtons);
 
                     int buttonId = 0;
                     Sdl.ShowMessageBox(ref data, ref buttonId);

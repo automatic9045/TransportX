@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Silk.NET.Input;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
+using Silk.NET.Windowing.Sdl;
 
 using TransportX.Dependency;
 using TransportX.Diagnostics;
@@ -27,6 +28,8 @@ namespace TransportX.Player
 
         public Game()
         {
+            SdlWindowing.Use();
+
             WindowOptions options = WindowOptions.Default with
             {
                 API = GraphicsAPI.None,
@@ -49,7 +52,11 @@ namespace TransportX.Player
         public void Dispose()
         {
             Input?.Dispose();
-            Window.Dispose();
+            try
+            {
+                Window.Dispose();
+            }
+            catch (InvalidOperationException) { } // OnRender 中に例外がスローされ、キャッチされなかった場合、Window.Dispose にてスローされた例外で上書きされてしまうため
         }
 
         private void OnLoad()
@@ -110,7 +117,7 @@ namespace TransportX.Player
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), "読込中にエラーが発生しました", MessageBoxFlags.Error);
+                    MessageBox.Show(ex.ToString(), "アプリケーション読込中にエラーが発生しました", MessageBoxFlags.Error);
                     return false;
                 }
 
@@ -121,6 +128,7 @@ namespace TransportX.Player
         private void OnClosing()
         {
             Session?.App.Dispose();
+            Session = null;
         }
 
         public void Run()

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Silk.NET.SDL;
+using Silk.NET.Windowing;
 
 namespace TransportX.Diagnostics
 {
@@ -15,14 +16,16 @@ namespace TransportX.Diagnostics
 
 
         private readonly List<Error> ErrorsKey = [];
+        private readonly IWindow ParentWindow;
 
         public IReadOnlyList<Error> Errors => ErrorsKey;
         public bool HasFatalError => Errors.Any(error => error.Level == ErrorLevel.Fatal);
 
         public event EventHandler<ErrorEventArgs>? Reported;
 
-        public ErrorCollector()
+        public ErrorCollector(IWindow parentWindow)
         {
+            ParentWindow = parentWindow;
         }
 
         public void Report(Error error)
@@ -33,14 +36,14 @@ namespace TransportX.Diagnostics
             ReadOnlySpan<MessageBox.Button> buttons = error.Exception is null ? [OKButton] : [OKButton, DetailButton];
 
             MessageBox.Show($"{error}\n\nスタックトレース:\n{error.Exception?.StackTrace ?? error.StackTrace.ToString()}",
-                buttons, "読込中にエラーが発生しました", MessageBoxFlags.Error, out MessageBox.Button result);
+                buttons, "読込中にエラーが発生しました", MessageBoxFlags.Error, ParentWindow, out MessageBox.Button? result);
 
             if (result == DetailButton) ReportInnerException(error.Exception!, 1);
 
 
             void ReportInnerException(Exception exception, int count)
             {
-                MessageBox.Show(exception.ToString(), $"読込中にエラーが発生しました - 内部例外 {count}", MessageBoxFlags.Error);
+                MessageBox.Show(exception.ToString(), $"読込中にエラーが発生しました - 内部例外 {count}", MessageBoxFlags.Error, ParentWindow);
                 if (exception.InnerException is not null) ReportInnerException(exception.InnerException, count + 1);
             }
         }
