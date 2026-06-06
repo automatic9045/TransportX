@@ -22,14 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void Add(string modelKey)
         {
-            if (!World.Models.TryGetValue(modelKey, out IModel? model))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"モデル '{modelKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                model = Model.Empty();
-            }
-
+            IModel model = World.Models.GetModel(modelKey);
             TransformedModel transformedModel = new(model, Pose.Identity);
             World.BackgroundModels.Add(transformedModel);
         }

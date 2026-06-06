@@ -19,7 +19,7 @@ using TransportX.Rendering.Importing;
 
 namespace TransportX.Rendering
 {
-    internal class ModelFactory : IDisposable
+    public class ModelFactory : IDisposable
     {
         private readonly IWICImagingFactory WICFactory = new();
 

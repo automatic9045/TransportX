@@ -157,12 +157,7 @@ namespace TransportX.Scripting.Worlds.Commands
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
-                IModel? model;
-                if (key == string.Empty || !World.ModelsKey.GetValue(key, out model))
-                {
-                    model = Model.Empty();
-                }
-
+                IModel model = World.Models.GetModel(key);
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);

@@ -84,7 +84,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting
                 }
 
                 string key = (string)attribute;
-                if (!World.Models.TryGetValue(key, out IModel? model))
+                if (!World.Models.TryGetModel(key, out IModel? model))
                 {
                     ReportError($"モデル '{key}' が見つかりません。", attribute);
                     return null;

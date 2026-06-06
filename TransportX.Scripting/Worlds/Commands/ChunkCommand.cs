@@ -29,14 +29,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public TransformedModel PutProp(string modelKey, Pose pose)
         {
-            if (!World.Models.TryGetValue(modelKey, out IModel? model))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"モデル '{modelKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                model = Model.Empty();
-            }
-
+            IModel model = World.Models.GetModel(modelKey);
             TransformedModel transformedModel = KinematicTransformedModel.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             Target.Models.Add(transformedModel);
             return transformedModel;

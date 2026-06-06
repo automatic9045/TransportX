@@ -17,30 +17,22 @@ namespace TransportX.Scripting.Worlds.Commands
 {
     internal class ModelListInterpreter
     {
-        private readonly ScriptWorld World;
         private readonly Parser Parser;
+        private readonly ModelFactory Factory;
         private readonly string BaseDirectory;
-        private readonly string ModelPath;
-
-        private readonly IErrorCollector ErrorCollector = IErrorCollector.Default();
+        private readonly IErrorCollector ErrorCollector;
 
         private bool MakeLH = true;
-        private Func<Model> ModelFactory;
+        private ModelLoader ModelLoadFunc;
 
-        public event EventHandler<Diagnostics.ErrorEventArgs>? ErrorReported
+        public ModelListInterpreter(Parser parser, ModelFactory factory, string baseDirectory, IErrorCollector errorCollector)
         {
-            add => ErrorCollector.Reported += value;
-            remove => ErrorCollector.Reported -= value;
-        }
-
-        public ModelListInterpreter(ScriptWorld world, Parser parser, string baseDirectory, string modelPath)
-        {
-            World = world;
             Parser = parser;
+            Factory = factory;
             BaseDirectory = baseDirectory;
-            ModelPath = modelPath;
+            ErrorCollector = errorCollector;
 
-            ModelFactory = () => Model.Load(World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
+            ModelLoadFunc = modelPath => Factory.Load(modelPath, MakeLH);
         }
 
         public void ReadCommand(string commandText)
@@ -52,85 +44,73 @@ namespace TransportX.Scripting.Worlds.Commands
             }
             else if (function.Signature == ModelListSignatures.NonCollision)
             {
-                ModelFactory = () => Model.Load(World.DXHost.Context, ErrorCollector, ModelPath, MakeLH);
+                ModelLoadFunc = modelPath => Factory.Load(modelPath, MakeLH);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox1)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
-                ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
+                ModelLoadFunc = modelPath => Factory.LoadWithBoundingBox(modelPath, MakeLH, material);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox2)
             {
-                ModelFactory = () => CollidableModel.LoadWithBoundingBox(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
+                ModelLoadFunc = modelPath => Factory.LoadWithBoundingBox(modelPath, MakeLH, ColliderMaterial.Default);
             }
             else if (function.Signature == ModelListSignatures.ConvexHull1)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
-                ModelFactory = () => CollidableModel.LoadWithConvexHull(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, material);
+                ModelLoadFunc = modelPath => Factory.LoadWithConvexHull(modelPath, MakeLH, material);
             }
             else if (function.Signature == ModelListSignatures.ConvexHull2)
             {
-                ModelFactory = () => CollidableModel.LoadWithConvexHull(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ColliderMaterial.Default);
+                ModelLoadFunc = modelPath => Factory.LoadWithConvexHull(modelPath, MakeLH, ColliderMaterial.Default);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel1)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
                 ColliderMaterial material = CreateMaterial(1);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, material, false);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, collisionModelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel2)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, false);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel3)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, material, false);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, modelPath, MakeLH, material, false);
             }
             else if (function.Signature == ModelListSignatures.ClosedModel4)
             {
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, false);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, modelPath, MakeLH, ColliderMaterial.Default, false);
             }
             else if (function.Signature == ModelListSignatures.OpenModel1)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
                 ColliderMaterial material = CreateMaterial(1);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, material, true);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, collisionModelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel2)
             {
                 string collisionModelPath = Path.Combine(BaseDirectory, (string)function.Args[0]);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, true);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, collisionModelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel3)
             {
                 ColliderMaterial material = CreateMaterial(0);
 
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, material, true);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, modelPath, MakeLH, material, true);
             }
             else if (function.Signature == ModelListSignatures.OpenModel4)
             {
-                ModelFactory = () => CollidableModel.Load(
-                    World.DXHost.Context, World.PhysicsHost.Simulation, ErrorCollector, ModelPath, MakeLH, ModelPath, MakeLH, ColliderMaterial.Default, true);
+                ModelLoadFunc = modelPath => Factory.LoadWithCollisionModel(modelPath, MakeLH, modelPath, MakeLH, ColliderMaterial.Default, true);
             }
             else
             {
@@ -147,10 +127,13 @@ namespace TransportX.Scripting.Worlds.Commands
             }
         }
 
-        public Model Build()
+        public Model Build(string modelPath)
         {
-            Model model = ModelFactory();
+            Model model = ModelLoadFunc(modelPath);
             return model;
         }
+
+
+        private delegate Model ModelLoader(string modelPath);
     }
 }

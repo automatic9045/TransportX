@@ -106,14 +106,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public TransformedModelTemplate PutProp(string modelKey, Pose pose)
         {
-            if (!World.Models.TryGetValue(modelKey, out IModel? model))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"モデル '{modelKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                model = Model.Empty();
-            }
-
+            IModel model = World.Models.GetModel(modelKey);
             TransformedModelTemplate prop = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             PropsKey.Add(prop);
             return prop;

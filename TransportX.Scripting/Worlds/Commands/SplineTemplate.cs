@@ -37,19 +37,7 @@ namespace TransportX.Scripting.Worlds.Commands
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
-                IModel? model;
-                if (key == string.Empty)
-                {
-                    model = Model.Empty();
-                }
-                else if (!World.Models.TryGetValue(key, out model))
-                {
-                    ScriptError error = new(ErrorLevel.Error, $"モデル '{key}' が見つかりません。");
-                    World.ErrorCollector.Report(error);
-
-                    model = Model.Empty();
-                }
-
+                IModel model = World.Models.GetModel(key);
                 return KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineProp prop = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
