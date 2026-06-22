@@ -64,7 +64,7 @@ namespace TransportX.Sample.LV290.Vehicles
         {
             ResetKey = InputManager.ObserveKey(Key.R);
 
-            ModelFactory modelFactory = new(DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
+            using LocalModelFactory modelFactory = new(DXHost.Context, PhysicsHost.Simulation, ErrorCollector, new Vector4(0, 1, 0, 1));
             SoundFactory soundFactory = new(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, this);
             BusModels = new ModelSet(PhysicsHost.Simulation, Structure, modelFactory);
             Inputs = [new KeyboardInput(InputManager, () => Vector3.Dot(Velocity, WorldPose.Pose.Direction))];

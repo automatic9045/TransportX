@@ -9,7 +9,6 @@ using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuPhysics.Constraints;
 
-using TransportX;
 using TransportX.Bodies;
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -20,6 +19,7 @@ namespace TransportX.Sample.LV290.Vehicles
     internal class ModelSet : IDisposable
     {
         private readonly List<IDisposable> Disposables = [];
+        private readonly IModelBundle Bundle;
 
         public DynamicTransformedModel Body { get; }
 
@@ -46,20 +46,22 @@ namespace TransportX.Sample.LV290.Vehicles
         public Constraint<AngularAxisMotor> BrakeMotorRL { get; }
         public Constraint<AngularAxisMotor> BrakeMotorRR { get; }
 
-        public ModelSet(Simulation simulation, BodyStructure structure, ModelFactory modelFactory)
+        public ModelSet(Simulation simulation, BodyStructure structure, LocalModelFactory modelFactory)
         {
+            Dictionary<string, IModel> models = [];
+
             ColliderMaterial bodyMaterial = new(0.6f, 2, new SpringSettings(30, 1));
             ColliderMaterial wheelMaterial = new(1, 0.5f, new SpringSettings(30, 1));
 
             CollidableModel bodyModel = modelFactory.WithConvexHull(@"Models\LV290N.glb", true, bodyMaterial);
-            Disposables.Add(bodyModel);
+            RegisterModel(bodyModel);
 
             CollidableModel frontDoor1Model = modelFactory.WithBoundingBox(@"Models\FrontDoor1.glb", true, bodyMaterial);
             CollidableModel frontDoor2Model = modelFactory.WithBoundingBox(@"Models\FrontDoor2.glb", true, bodyMaterial);
             CollidableModel rearDoorModel = modelFactory.WithBoundingBox(@"Models\RearDoor.glb", true, bodyMaterial);
-            Disposables.Add(frontDoor1Model);
-            Disposables.Add(frontDoor2Model);
-            Disposables.Add(rearDoorModel);
+            RegisterModel(frontDoor1Model);
+            RegisterModel(frontDoor2Model);
+            RegisterModel(rearDoorModel);
 
             Model wheelFLModelBase = modelFactory.NonCollision(@"Models_Kuusemi\WheelFL.glb", true);
             Model wheelRLModelBase = modelFactory.NonCollision(@"Models_Kuusemi\WheelRL.glb", true);
@@ -76,12 +78,12 @@ namespace TransportX.Sample.LV290.Vehicles
             Cylinder axleFShape = new(0.1f, 2.103f);
             ColliderBase<Cylinder> axleFCollider = ColliderFactory.Cylinder(simulation, axleFShape, default, wheelRotation);
             CollidableModel axleFModel = new(axleFCollider);
-            Disposables.Add(axleFModel);
+            RegisterModel(axleFModel);
 
             Cylinder axleRShape = new(0.1f, 1.81f);
             ColliderBase<Cylinder> axleRCollider = ColliderFactory.Cylinder(simulation, axleRShape, default, wheelRotation);
             CollidableModel axleRModel = new(axleRCollider);
-            Disposables.Add(axleRModel);
+            RegisterModel(axleRModel);
 
             AxleF = structure.AttachDynamic(axleFModel, 400, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -Spec.FrontOverhang));
             AxleR = structure.AttachDynamic(axleFModel, 700, ColliderGroupHandle.Skip, new SixDoF(0, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase));
@@ -89,16 +91,20 @@ namespace TransportX.Sample.LV290.Vehicles
 
             Cylinder wheelFShape = new(0.48f, 0.277f);
             CollidableModel wheelFLModel = modelFactory.WithCylinder(wheelFLModelBase, wheelFShape, wheelMaterial, wheelRotation);
-            Disposables.Add(wheelFLModel);
+            RegisterModel(wheelFLModel);
 
             Cylinder wheelRShape = new(0.48f, 0.57f);
             CollidableModel wheelRLModel = modelFactory.WithCylinder(wheelRLModelBase, wheelRShape, wheelMaterial, wheelRotation);
-            Disposables.Add(wheelRLModel);
+            RegisterModel(wheelRLModel);
 
             WheelFL = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(-1.0515f, 0.4756f, -Spec.FrontOverhang));
             WheelFR = structure.AttachDynamic(wheelFLModel, 100, new SixDoF(1.0515f, 0.4756f, -Spec.FrontOverhang, 0, float.Pi, 0));
             WheelRL = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(-0.905f, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase));
             WheelRR = structure.AttachDynamic(wheelRLModel, 280, new SixDoF(0.905f, 0.4756f, -Spec.FrontOverhang - Spec.Wheelbase, 0, float.Pi, 0));
+
+
+            Bundle = new ModelBundle($"Avatar.LV290_{Guid.NewGuid()}", models, modelFactory.Textures.ToArray());
+            Disposables.Add(Bundle);
 
 
             AxleToWheelFL = ConnectAxleToWheel(AxleF, WheelFL);
@@ -200,6 +206,12 @@ namespace TransportX.Sample.LV290.Vehicles
 
                 ConstraintHandle handle = simulation.Solver.Add(axle.Handle, wheel.Handle, motor);
                 return new Constraint<AngularAxisMotor>(simulation, handle);
+            }
+
+
+            void RegisterModel(IModel model)
+            {
+                models.Add(Guid.NewGuid().ToString(), model);
             }
         }
 

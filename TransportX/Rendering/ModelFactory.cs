@@ -30,7 +30,10 @@ namespace TransportX.Rendering
         private readonly IModelImporter AssimpImporter;
         private readonly IModelImporter GltfImporter;
 
+        private readonly ModelBuilder Builder;
+
         public bool IsCollisionSupported => Simulation is not null;
+        public IReadOnlyCollection<ID3D11ShaderResourceView> Textures => Builder.Textures;
 
         public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, IErrorCollector errorCollector)
         {
@@ -40,6 +43,8 @@ namespace TransportX.Rendering
 
             AssimpImporter = new AssimpImporter(ErrorCollector);
             GltfImporter = new GltfImporter(ErrorCollector);
+
+            Builder = new(Context, WICFactory, ErrorCollector);
         }
 
         public void Dispose()
@@ -64,8 +69,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
-            return builder.Create(modelData, baseDirectory, visualModelPath);
+            return Builder.Create(modelData, baseDirectory, visualModelPath);
         }
 
         private void CheckCollisionSupported()
@@ -80,8 +84,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
-            Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
+            Model baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
 
             Box box = new(baseModel.BoundingBox.Width, baseModel.BoundingBox.Height, baseModel.BoundingBox.Depth);
             Pose colliderOffset = new(baseModel.BoundingBox.Center);
@@ -97,8 +100,7 @@ namespace TransportX.Rendering
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
-            ModelBuilder builder = new(Context, WICFactory, ErrorCollector);
-            Model baseModel = builder.Create(modelData, baseDirectory, visualModelPath);
+            Model baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
 
             Simulation!.BufferPool.Take(modelData.Meshes.Sum(mesh => mesh.Vertices.Length), out Buffer<Vector3> pointBuffer);
             try

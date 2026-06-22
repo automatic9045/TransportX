@@ -9,11 +9,11 @@ namespace TransportX.Scripting.Worlds.Commands.Functions
 {
     public class Parser
     {
-        private static readonly Regex StringRegex = new Regex("^\"(.*)\"$");
-        private static readonly Regex IntegerRegex = new Regex("^[+-]?[0-9]+$");
-        private static readonly Regex RealRegex = new Regex(@"^[+-]?[0-9]*\.[0-9]+$");
+        private static readonly Regex StringRegex = new("^\"(.*)\"$");
+        private static readonly Regex IntegerRegex = new("^[+-]?[0-9]+$");
+        private static readonly Regex RealRegex = new(@"^[+-]?[0-9]*\.[0-9]+$");
 
-        private static readonly Regex LiteralEscapingRegex = new Regex(@"\\.");
+        private static readonly Regex LiteralEscapingRegex = new(@"\\.");
 
 
         private readonly IReadOnlyDictionary<string, IReadOnlyDictionary<int, FunctionSignature>> Signatures;

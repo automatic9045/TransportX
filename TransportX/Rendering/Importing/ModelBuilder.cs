@@ -17,14 +17,17 @@ namespace TransportX.Rendering.Importing
 {
     internal class ModelBuilder
     {
-        private readonly Dictionary<string, ID3D11ShaderResourceView> LoadedTextures = [];
-
         private readonly ID3D11DeviceContext Context;
         private readonly IErrorCollector ErrorCollector;
 
         private readonly IWICImagingFactory WIC;
         private readonly WICTextureFactory WICFactory;
         private readonly DDSTextureFactory DDSFactory;
+
+        private readonly Dictionary<string, ID3D11ShaderResourceView> SharedTextures = [];
+
+        private readonly HashSet<ID3D11ShaderResourceView> TexturesKey = [];
+        public IReadOnlyCollection<ID3D11ShaderResourceView> Textures => TexturesKey;
 
         public ModelBuilder(ID3D11DeviceContext context, IWICImagingFactory wic, IErrorCollector errorCollector)
         {
@@ -38,6 +41,8 @@ namespace TransportX.Rendering.Importing
 
         public unsafe Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
         {
+            Dictionary<string, ID3D11ShaderResourceView> loadedTextures = [];
+
             Rendering.Mesh[] meshes = new Rendering.Mesh[model.Meshes.Length];
             for (int i = 0; i < meshes.Length; i++)
             {
@@ -80,14 +85,14 @@ namespace TransportX.Rendering.Importing
                     string combinedKey = $"*orm|{keyO}|{keyR}|{keyM}";
 
                     ID3D11ShaderResourceView? ormTexture = null;
-                    if (LoadedTextures.TryGetValue(combinedKey, out ID3D11ShaderResourceView? cachedTexture))
+                    if (loadedTextures.TryGetValue(combinedKey, out ID3D11ShaderResourceView? cachedTexture))
                     {
                         ormTexture = cachedTexture;
                     }
                     else if (materialData.MetallicTexture.HasValue && keyO == keyR && keyR == keyM)
                     {
                         ormTexture = LoadTexture(materialData.MetallicTexture.Value, true, model.EmbeddedTextures, textureErrorCollector);
-                        if (ormTexture is not null) LoadedTextures.Add(combinedKey, ormTexture);
+                        if (ormTexture is not null) loadedTextures.Add(combinedKey, ormTexture);
                     }
                     else
                     {
@@ -117,7 +122,7 @@ namespace TransportX.Rendering.Importing
                                 try
                                 {
                                     ormTexture = WICFactory.CreateFromMerged(occlusionStream, roughnessStream, metallicStream, true);
-                                    LoadedTextures.Add(combinedKey, ormTexture);
+                                    loadedTextures.Add(combinedKey, ormTexture);
                                 }
                                 catch (Exception ex)
                                 {
@@ -135,47 +140,55 @@ namespace TransportX.Rendering.Importing
                             {
                                 IWICStream stream = WIC.CreateStream();
 
-                                if (textureRef.Type == TextureReference.TextureType.File)
+                                try
                                 {
-                                    string extension = Path.GetExtension(textureRef.Key).ToLowerInvariant();
-                                    switch (extension)
+                                    if (textureRef.Type == TextureReference.TextureType.File)
                                     {
-                                        case ".dds":
-                                        case ".tga":
-                                        case ".ktx":
-                                        case ".ktx2":
-                                            ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
-                                                $"{extension} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
-                                                $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
-                                            textureErrorCollector.Report(error);
-
-                                            stream.Dispose();
-                                            return null;
-                                    }
-
-                                    string path = Path.Combine(baseDirectory, textureRef.Key);
-                                    stream.Initialize(path, FileAccess.Read);
-                                }
-                                else if (textureRef.Type == TextureReference.TextureType.Embedded)
-                                {
-                                    if (embeddedTextures.TryGetValue(textureRef.Key, out EmbeddedTexture texture))
-                                    {
-                                        if (texture.Format != TextureFormat.WIC)
+                                        string extension = Path.GetExtension(textureRef.Key).ToLowerInvariant();
+                                        switch (extension)
                                         {
-                                            ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
-                                                $"{texture.Format} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
-                                                $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
-                                            textureErrorCollector.Report(error);
+                                            case ".dds":
+                                            case ".tga":
+                                            case ".ktx":
+                                            case ".ktx2":
+                                                ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
+                                                    $"{extension} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
+                                                    $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
+                                                textureErrorCollector.Report(error);
 
-                                            stream.Dispose();
-                                            return null;
+                                                stream.Dispose();
+                                                return null;
                                         }
 
-                                        stream.Initialize(texture.Data.Span);
+                                        string path = Path.Combine(baseDirectory, textureRef.Key);
+                                        stream.Initialize(path, FileAccess.Read);
                                     }
-                                }
+                                    else if (textureRef.Type == TextureReference.TextureType.Embedded)
+                                    {
+                                        if (embeddedTextures.TryGetValue(textureRef.Key, out EmbeddedTexture texture))
+                                        {
+                                            if (texture.Format != TextureFormat.WIC)
+                                            {
+                                                ModelLoadError error = new(ModelLoadError.ErrorSource.Data, ModelLoadError.ErrorTarget.Visual, ErrorLevel.Error,
+                                                    $"{texture.Format} 形式の PBR テクスチャ '{textureRef.Key}' は PBR ORM テクスチャの合成に使用できません。" +
+                                                    $"ORM テクスチャの合成は WIC 形式のみ対応しています。", sourceLocation);
+                                                textureErrorCollector.Report(error);
 
-                                return stream;
+                                                stream.Dispose();
+                                                return null;
+                                            }
+
+                                            stream.Initialize(texture.Data.Span);
+                                        }
+                                    }
+
+                                    return stream;
+                                }
+                                catch
+                                {
+                                    stream.Dispose();
+                                    throw;
+                                }
                             }
                         }
                         finally
@@ -210,7 +223,12 @@ namespace TransportX.Rendering.Importing
                 ID3D11ShaderResourceView? LoadTexture(
                     TextureReference textureRef, bool isLinear, IReadOnlyDictionary<string, EmbeddedTexture> embeddedTextures, IErrorCollector errorCollector)
                 {
-                    if (LoadedTextures.TryGetValue(textureRef.Key, out ID3D11ShaderResourceView? texture))
+                    if (loadedTextures.TryGetValue(textureRef.Key, out ID3D11ShaderResourceView? texture))
+                    {
+                        return texture;
+                    }
+
+                    if (textureRef.Type == TextureReference.TextureType.File && SharedTextures.TryGetValue(textureRef.Key, out texture))
                     {
                         return texture;
                     }
@@ -323,14 +341,21 @@ namespace TransportX.Rendering.Importing
 
                     if (texture is not null)
                     {
-                        LoadedTextures.Add(textureRef.Key, texture);
+                        loadedTextures.Add(textureRef.Key, texture);
+
+                        if (textureRef.Type == TextureReference.TextureType.File)
+                        {
+                            SharedTextures.Add(textureRef.Key, texture);
+                        }
                     }
 
                     return texture;
                 }
             }
 
-            return new Rendering.Model(meshes, LoadedTextures.Values.ToArray());
+            TexturesKey.UnionWith(loadedTextures.Values);
+
+            return new Rendering.Model(meshes);
         }
     }
 }

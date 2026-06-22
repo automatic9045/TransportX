@@ -30,6 +30,27 @@ namespace TransportX.Rendering
         public ID3D11ShaderResourceView? ORMTexture { get; set; } = null;
         public ID3D11ShaderResourceView? EmissiveTexture { get; set; } = null;
 
+        public string? DebugName
+        {
+            get => field;
+            set
+            {
+                field = value;
+
+                if (value is null)
+                {
+                    BaseColorTexture?.DebugName = NormalTexture?.DebugName = ORMTexture?.DebugName = EmissiveTexture?.DebugName = null;
+                }
+                else
+                {
+                    BaseColorTexture?.DebugName = $"{value}_BaseColorTexture";
+                    NormalTexture?.DebugName = $"{value}_NormalTexture";
+                    ORMTexture?.DebugName = $"{value}_ORMTexture";
+                    EmissiveTexture?.DebugName = $"{value}_EmissiveTexture";
+                }
+            }
+        } = null;
+
         public Material()
         {
         }

@@ -27,7 +27,7 @@ namespace TransportX.Scripting.Worlds.Commands
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal IModelBundle LoadList(string key, string path)
+        public IModelBundle LoadList(string key, string path)
         {
             return LoadListInternal(key, path);
         }
@@ -141,9 +141,16 @@ namespace TransportX.Scripting.Worlds.Commands
                     }
                 }
 
-                ModelBundle bundle = new(key, models);
-                return bundle;
+                ModelBundle bundle = new(key, models, factory.Textures.ToArray());
                 if (World.Models.AdoptBundle(bundle))
+                {
+                    return bundle;
+                }
+                else
+                {
+                    bundle.Dispose();
+                    return ModelBundle.Empty(key);
+                }
             }
             catch (Exception ex)
             {

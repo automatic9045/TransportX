@@ -17,6 +17,7 @@ namespace TransportX.Rendering
     public class Mesh : IMesh
     {
         private readonly ID3D11ShaderResourceView?[] TextureViews;
+        private readonly ID3D11Buffer[] SetVertexBuffersArray;
 
         public ID3D11Buffer VertexBuffer { get; }
         public ID3D11Buffer IndexBuffer { get; }
@@ -33,7 +34,7 @@ namespace TransportX.Rendering
 
                 if (value is null)
                 {
-                    VertexBuffer.DebugName = IndexBuffer.DebugName = null;
+                    VertexBuffer.DebugName = IndexBuffer.DebugName = Material.DebugName = null;
                 }
                 else
                 {
@@ -57,6 +58,9 @@ namespace TransportX.Rendering
                 Material.ORMTexture,
                 Material.EmissiveTexture
             ];
+
+            SetVertexBuffersArray = new ID3D11Buffer[2];
+            SetVertexBuffersArray[0] = VertexBuffer;
         }
 
         public static unsafe Mesh Create(ID3D11Device device, Vertex[] vertices, int[] indices, Material material,
@@ -113,8 +117,8 @@ namespace TransportX.Rendering
 
         public void Draw(in DrawContext context)
         {
-            context.DeviceContext.IASetVertexBuffers(0, 2,
-                [VertexBuffer, context.InstanceBuffer], [(uint)Vertex.Size, (uint)InstanceData.Size], [0, 0]);
+            SetVertexBuffersArray[1] = context.InstanceBuffer;
+            context.DeviceContext.IASetVertexBuffers(0, 2, SetVertexBuffersArray, [(uint)Vertex.Size, (uint)InstanceData.Size], [0, 0]);
 
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
             context.DeviceContext.IASetPrimitiveTopology(Topology);

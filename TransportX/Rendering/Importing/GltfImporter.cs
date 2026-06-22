@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using SharpGLTF.IO;
 using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
 using GltfMaterial = SharpGLTF.Schema2.Material;
@@ -45,25 +44,38 @@ namespace TransportX.Rendering.Importing
         {
             if (!makeLH) throw new NotSupportedException("glTF 形式では、左手系で定義することはできません。");
 
+            string baseDirectory = Path.GetDirectoryName(path)!;
+            string modelFileName = Path.GetFileName(path);
+
             try
             {
                 ModelRoot modelRoot;
                 try
                 {
-                    string baseDirectory = Path.GetDirectoryName(path)!;
-                    string modelFileName = Path.GetFileName(path);
                     ReadContext context = ReadContext.Create(assetPath =>
                     {
                         string assetFullPath = Path.GetFullPath(Path.Combine(baseDirectory, assetPath));
                         if (File.Exists(assetFullPath))
                         {
-                            return File.ReadAllBytes(assetFullPath);
+                            string extension = Path.GetExtension(assetFullPath).ToLowerInvariant();
+                            switch (extension)
+                            {
+                                case ".bmp":
+                                case ".dds":
+                                case ".jpeg":
+                                case ".jpg":
+                                case ".png":
+                                    return DummyPngData;
+
+                                default:
+                                    return File.ReadAllBytes(assetFullPath);
+                            }
                         }
                         else
                         {
                             if (assetPath == modelFileName) throw new FileNotFoundException();
 
-                            ReportError(ModelLoadError.ErrorSource.Data, ErrorLevel.Error, $"テクスチャファイル '{assetFullPath}' が見つかりませんでした。");
+                            ReportError(ModelLoadError.ErrorSource.Data, ErrorLevel.Error, $"アセットファイル '{assetFullPath}' が見つかりませんでした。");
                             return DummyPngData;
                         }
                     });
@@ -80,7 +92,7 @@ namespace TransportX.Rendering.Importing
                 }
 
 
-                List<Mesh> meshes = new List<Mesh>();
+                List<Mesh> meshes = [];
                 foreach (Node node in modelRoot.DefaultScene.VisualChildren)
                 {
                     CreateMeshes(node, Matrix4x4.Identity);
@@ -414,14 +426,12 @@ namespace TransportX.Rendering.Importing
                     if (texture is null) return null;
 
                     Image image = texture.PrimaryImage;
-                    if (image.Content.IsEmpty)
+                    if (image.Content.SourcePath is not null)
                     {
-                        if (!string.IsNullOrEmpty(image.Content.SourcePath))
-                        {
-                            return new TextureReference(TextureReference.TextureType.File, image.Content.SourcePath);
-                        }
+                        string sourcePath = Path.GetFullPath(Path.Combine(baseDirectory, image.Content.SourcePath));
+                        return new TextureReference(TextureReference.TextureType.File, sourcePath);
                     }
-                    else
+                    else if (!image.Content.IsEmpty)
                     {
                         return new TextureReference(TextureReference.TextureType.Embedded, $"*{image.LogicalIndex}");
                     }

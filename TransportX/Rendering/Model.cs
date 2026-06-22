@@ -15,7 +15,7 @@ namespace TransportX.Rendering
 {
     public class Model : IModel
     {
-        public static Model Empty() => new([], [])
+        public static Model Empty() => new([])
         {
             DebugName = "Empty",
         };
@@ -25,7 +25,6 @@ namespace TransportX.Rendering
 
         public BoundingBox BoundingBox { get; }
         public IReadOnlyList<IMesh> VisualMeshes { get; }
-        public IReadOnlyList<ID3D11ShaderResourceView> Textures { get; }
 
         public virtual string? DebugName
         {
@@ -33,24 +32,22 @@ namespace TransportX.Rendering
             set
             {
                 field = value;
-                for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = value;
 
                 if (value is null)
                 {
-                    for (int i = 0; i < Textures.Count; i++) Textures[i].DebugName = null;
+                    for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = null;
                 }
                 else
                 {
 
-                    for (int i = 0; i < Textures.Count; i++) Textures[i].DebugName = $"{value}_ShaderResourceView";
+                    for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = $"{value}_Material";
                 }
             }
         } = null;
 
-        public Model(IReadOnlyList<IMesh> visualMeshes, IReadOnlyList<ID3D11ShaderResourceView> textures)
+        public Model(IReadOnlyList<IMesh> visualMeshes)
         {
             VisualMeshes = visualMeshes;
-            Textures = textures;
 
             BoundingBox boundingBox = VisualMeshes.Count == 0 ? default : VisualMeshes[0].BoundingBox;
             for (int i = 1; i < VisualMeshes.Count; i++)
@@ -72,11 +69,6 @@ namespace TransportX.Rendering
         {
             if (IsDisposed) throw new InvalidOperationException();
             IsDisposed = true;
-
-            for (int i = 0; i < Textures.Count; i++)
-            {
-                Textures[i].Dispose();
-            }
 
             for (int i = 0; i < VisualMeshes.Count; i++)
             {
@@ -105,17 +97,17 @@ namespace TransportX.Rendering
             set => ColliderDebugModel?.DebugName = base.DebugName = value;
         }
 
-        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, IReadOnlyList<ID3D11ShaderResourceView> textures, ICollider collider) : base(visualMeshes, textures)
+        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, ICollider collider) : base(visualMeshes)
         {
             Collider = collider;
         }
 
-        public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.VisualMeshes, baseModel.Textures, collider)
+        public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.VisualMeshes, collider)
         {
             DebugName = baseModel.DebugName;
         }
 
-        public CollidableModel(ICollider collider) : this([], [], collider)
+        public CollidableModel(ICollider collider) : this([], collider)
         {
         }
 

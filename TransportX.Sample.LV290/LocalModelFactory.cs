@@ -11,29 +11,35 @@ using BepuPhysics;
 using BepuPhysics.Collidables;
 using Vortice.Direct3D11;
 
-using TransportX;
 using TransportX.Diagnostics;
 using TransportX.Physics;
 using TransportX.Rendering;
 
 namespace TransportX.Sample.LV290
 {
-    internal class ModelFactory
+    internal class LocalModelFactory : IDisposable
     {
         private static readonly string BaseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
 
         private readonly ID3D11DeviceContext Context;
         private readonly Simulation Simulation;
-        private readonly IErrorCollector ErrorCollector;
+        private readonly ModelFactory Factory;
         private readonly Vector4 DebugModelColor;
 
-        public ModelFactory(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector, Vector4 debugModelColor)
+        public IReadOnlyCollection<ID3D11ShaderResourceView> Textures => Factory.Textures;
+
+        public LocalModelFactory(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector, Vector4 debugModelColor)
         {
             Context = context;
             Simulation = simulation;
-            ErrorCollector = errorCollector;
+            Factory = new ModelFactory(Context, simulation, errorCollector);
             DebugModelColor = debugModelColor;
+        }
+
+        public void Dispose()
+        {
+            Factory.Dispose();
         }
 
         private static string GetAbsolutePath(string relativePath)
@@ -44,7 +50,7 @@ namespace TransportX.Sample.LV290
 
         public Model NonCollision(string visualPath, bool makeLH)
         {
-            Model model = Model.Load(Context, ErrorCollector, GetAbsolutePath(visualPath), makeLH);
+            Model model = Factory.Load(GetAbsolutePath(visualPath), makeLH);
             model.DebugName = Path.GetFileNameWithoutExtension(visualPath);
             return model;
         }
@@ -52,7 +58,7 @@ namespace TransportX.Sample.LV290
         public CollidableModel WithCollisionModel(
             string visualPath, bool makeVisualLH, string collisionPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
-            CollidableModel model = CollidableModel.Load(Context, Simulation, ErrorCollector,
+            CollidableModel model = Factory.LoadWithCollisionModel(
                 GetAbsolutePath(visualPath), makeVisualLH, GetAbsolutePath(collisionPath), makeCollisionLH, material, isOpen);
             model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
@@ -62,7 +68,7 @@ namespace TransportX.Sample.LV290
 
         public CollidableModel WithBoundingBox(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithBoundingBox(Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
+            CollidableModel model = Factory.LoadWithBoundingBox(GetAbsolutePath(path), makeLH, material);
             model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
@@ -71,7 +77,7 @@ namespace TransportX.Sample.LV290
 
         public CollidableModel WithConvexHull(string path, bool makeLH, ColliderMaterial material)
         {
-            CollidableModel model = CollidableModel.LoadWithConvexHull(Context, Simulation, ErrorCollector, GetAbsolutePath(path), makeLH, material);
+            CollidableModel model = Factory.LoadWithConvexHull(GetAbsolutePath(path), makeLH, material);
             model.CreateColliderDebugModel(Context.Device);
             model.ColliderDebugModel!.Color = DebugModelColor;
             model.DebugName = Path.GetFileNameWithoutExtension(path);
