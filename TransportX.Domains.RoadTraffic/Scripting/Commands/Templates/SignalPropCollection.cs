@@ -25,7 +25,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands.Templates
 
         public void Add(TransformedModelTemplate prop, ISignalController controller, string groupKey, SignalLampRole role)
         {
-            if ((prop as KinematicTransformedModelTemplate)?.CanMerge ?? false)
+            if ((prop as StaticTransformedModelTemplate)?.CanMerge ?? false)
             {
                 throw new ArgumentException("信号ストラクチャーは結合不可能である必要があります。", nameof(prop));
             }

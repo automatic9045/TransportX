@@ -34,7 +34,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineProp> props)
         {
-            List<KinematicTransformedModelTemplate> modelsToMerge = [];
+            List<StaticTransformedModelTemplate> modelsToMerge = [];
             foreach (SplineProp prop in props)
             {
                 for (int i = 0; i < prop.Count; i++)
@@ -45,9 +45,9 @@ namespace TransportX.Extensions.Network.Elements
                     TransformedModelTemplate template = prop.Models[i % prop.Models.Count];
                     Pose curvePose = GetSpanPose(s, prop.Span);
 
-                    if (template is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
+                    if (template is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                     {
-                        KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, template.Pose * curvePose * WorldPose.Pose);
+                        StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Model, template.Pose * curvePose * WorldPose.Pose);
                         modelsToMerge.Add(compiled);
                     }
                     else
@@ -60,7 +60,7 @@ namespace TransportX.Extensions.Network.Elements
 
             if (0 < modelsToMerge.Count)
             {
-                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, modelsToMerge);
+                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, modelsToMerge);
                 mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);

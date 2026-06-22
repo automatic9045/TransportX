@@ -36,7 +36,7 @@ namespace TransportX.Bodies
             PhysicsHost = physicsHost;
         }
 
-        private T AttachCollidable<T>(T collidable, ColliderGroupHandle group) where T : CollidableTransformedModel
+        private T AttachCollidable<T>(T collidable, ColliderGroupHandle group) where T : BodyTransformedModel
         {
             PhysicsHost.SetGroup(collidable.Handle, group);
 
@@ -136,14 +136,14 @@ namespace TransportX.Bodies
         {
             foreach (TransformedModel model in Items)
             {
-                if (model is MergedKinematicTransformedModel mergedModel) mergedModel.Dispose();
+                if (model is CollidableTransformedModel collidableModel) collidableModel.Dispose();
             }
         }
 
         public void Detach(TransformedModel model)
         {
             Items.Remove(model);
-            if (model is MergedKinematicTransformedModel mergedModel) mergedModel.Dispose();
+            if (model is CollidableTransformedModel collidableModel) collidableModel.Dispose();
         }
 
         public void SetFromCamera(ChunkIndex fromCamera)
@@ -160,7 +160,7 @@ namespace TransportX.Bodies
 
             foreach (TransformedModel model in Items)
             {
-                if (model is CollidableTransformedModel collidableModel) collidableModel.Freeze();
+                if (model is BodyTransformedModel bodyModel) bodyModel.Freeze();
             }
         }
 
@@ -171,7 +171,7 @@ namespace TransportX.Bodies
 
             foreach (TransformedModel model in Items)
             {
-                if (model is CollidableTransformedModel collidableModel) collidableModel.Unfreeze();
+                if (model is BodyTransformedModel bodyModel) bodyModel.Unfreeze();
             }
         }
 

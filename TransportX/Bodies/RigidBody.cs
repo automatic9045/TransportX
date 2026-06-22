@@ -16,9 +16,9 @@ namespace TransportX.Bodies
         public BodyStructure Structure { get; }
 
         public override Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
-            : Structure.RootModel is CollidableTransformedModel collidable ? collidable.Velocity : Vector3.Zero;
+            : Structure.RootModel is BodyTransformedModel bodyModel ? bodyModel.Velocity : Vector3.Zero;
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
-            : Structure.RootModel is CollidableTransformedModel collidable ? collidable.AngularVelocity : Vector3.Zero;
+            : Structure.RootModel is BodyTransformedModel bodyModel ? bodyModel.AngularVelocity : Vector3.Zero;
 
         public RigidBody(IPhysicsHost physicsHost, WorldPose worldPose) : base(worldPose)
         {

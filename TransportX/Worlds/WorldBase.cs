@@ -97,7 +97,12 @@ namespace TransportX.Worlds
 
         protected virtual void Validate()
         {
-            List<BodyHandle> validHandles = Enumerable.Range(0, PhysicsHost.Simulation.Bodies.HandleToLocation.Length)
+            List<StaticHandle> validStaticHandles = Enumerable.Range(0, PhysicsHost.Simulation.Statics.HandleToIndex.Length)
+                .Select(i => new StaticHandle(i))
+                .Where(PhysicsHost.Simulation.Statics.StaticExists)
+                .ToList();
+
+            List<BodyHandle> validBodyHandles = Enumerable.Range(0, PhysicsHost.Simulation.Bodies.HandleToLocation.Length)
                 .Select(i => new BodyHandle(i))
                 .Where(PhysicsHost.Simulation.Bodies.BodyExists)
                 .ToList();
@@ -112,9 +117,14 @@ namespace TransportX.Worlds
                 RemoveAttachedHandles(body.Structure);
             }
 
-            if (validHandles.Count != 0)
+            if (validStaticHandles.Count != 0)
             {
-                throw new Exception($"正常に管理されていない物理モデルを {validHandles.Count} 個検出しました。これは不正な衝突判定を生じさせる原因となります。");
+                throw new Exception($"正常に管理されていない物理モデル (静的) を {validStaticHandles.Count} 個検出しました。これは不正な衝突判定を生じさせる原因となります。");
+            }
+
+            if (validBodyHandles.Count != 0)
+            {
+                throw new Exception($"正常に管理されていない物理モデル (剛体) を {validBodyHandles.Count} 個検出しました。これは不正な衝突判定を生じさせる原因となります。");
             }
 
 
@@ -122,7 +132,16 @@ namespace TransportX.Worlds
             {
                 foreach (TransformedModel model in models)
                 {
-                    if (model is CollidableTransformedModel collidable) validHandles.Remove(collidable.Handle);
+                    switch (model)
+                    {
+                        case BodyTransformedModel bodyModel:
+                            validBodyHandles.Remove(bodyModel.Handle);
+                            break;
+
+                        case StaticTransformedModel staticModel:
+                            validStaticHandles.Remove(staticModel.Handle);
+                            break;
+                    }
                 }
             }
         }

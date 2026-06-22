@@ -49,12 +49,12 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> props)
         {
-            List<KinematicTransformedModelTemplate> propsToMerge = [];
+            List<StaticTransformedModelTemplate> propsToMerge = [];
             foreach (TransformedModelTemplate prop in props)
             {
-                if (prop is KinematicTransformedModelTemplate kinematic && kinematic.CanMerge)
+                if (prop is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                 {
-                    KinematicTransformedModelTemplate compiled = new(physicsHost, kinematic.Model, prop.Pose * WorldPose.Pose);
+                    StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Model, prop.Pose * WorldPose.Pose);
                     propsToMerge.Add(compiled);
                 }
                 else
@@ -66,7 +66,7 @@ namespace TransportX.Extensions.Network.Elements
 
             if (0 < propsToMerge.Count)
             {
-                MergedKinematicTransformedModel mergedModel = MergedKinematicTransformedModel.Create(physicsHost, propsToMerge);
+                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, propsToMerge);
                 mergedModel.Model.CreateColliderDebugModel(device);
                 mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);

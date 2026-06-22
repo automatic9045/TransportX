@@ -12,14 +12,8 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class DynamicTransformedModel : CollidableTransformedModel
+    public class DynamicTransformedModel : BodyTransformedModel
     {
-        public override Pose Pose
-        {
-            get => ColliderPose;
-            set => ColliderPose = value;
-        }
-
         internal protected DynamicTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
             : base(physicsHost, model, description, basePose)
         {
@@ -45,20 +39,6 @@ namespace TransportX.Spatial
         public static DynamicTransformedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Pose basePose)
         {
             return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
-        }
-
-        public override bool SetFromCamera(ChunkIndex fromCamera)
-        {
-            ChunkIndex delta = fromCamera - FromCamera;
-
-            bool isChanged = base.SetFromCamera(fromCamera);
-            if (isChanged)
-            {
-                PhysicsHost.Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose.Position += delta.Position;
-            }
-
-            return isChanged;
         }
 
         public void Shift(ChunkIndex offset)

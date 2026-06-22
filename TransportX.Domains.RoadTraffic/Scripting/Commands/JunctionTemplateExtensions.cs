@@ -41,7 +41,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
             });
 
             TransformedModelTemplate prop = template.PutProp(modelKey, pose);
-            (prop as KinematicTransformedModelTemplate)?.ProhibitMerge();
+            (prop as StaticTransformedModelTemplate)?.ProhibitMerge();
             component.Add(prop, controller, groupKey, (SignalLampRole)lamp);
 
             return prop;

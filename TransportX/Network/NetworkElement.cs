@@ -35,7 +35,7 @@ namespace TransportX.Network
 
         public void Dispose()
         {
-            foreach (TransformedModel model in Models) (model as MergedKinematicTransformedModel)?.Dispose();
+            foreach (TransformedModel model in Models) (model as CollidableTransformedModel)?.Dispose();
             foreach (ILanePath path in Paths) path.Dispose();
         }
 

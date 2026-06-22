@@ -107,7 +107,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public TransformedModelTemplate PutProp(string modelKey, Pose pose)
         {
             IModel model = World.Models.GetModel(modelKey);
-            TransformedModelTemplate prop = KinematicTransformedModelTemplate.CreateKinematicOrNonCollision(World.PhysicsHost, model, pose);
+            TransformedModelTemplate prop = StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
             PropsKey.Add(prop);
             return prop;
         }

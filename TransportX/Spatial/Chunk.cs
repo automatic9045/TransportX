@@ -28,7 +28,7 @@ namespace TransportX.Spatial
 
         public void Dispose()
         {
-            foreach (TransformedModel model in Models) (model as MergedKinematicTransformedModel)?.Dispose();
+            foreach (TransformedModel model in Models) (model as CollidableTransformedModel)?.Dispose();
             foreach (NetworkElement element in Network) element.Dispose();
         }
 

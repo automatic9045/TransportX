@@ -13,13 +13,9 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public abstract class CollidableTransformedModel : TransformedModel
+    public abstract class CollidableTransformedModel : TransformedModel, IDisposable
     {
         protected readonly IPhysicsHost PhysicsHost;
-        protected readonly BodyDescription Description;
-
-        private Pose FrozenPose = Pose.Identity;
-        private BodyVelocity FrozenBodyVelocity = default;
 
         public new ICollidableModel Model { get; }
 
@@ -28,13 +24,10 @@ namespace TransportX.Spatial
         /// </summary>
         public ChunkIndex FromCamera { get; private set; } = ChunkIndex.Zero;
 
-        public bool IsActive { get; private set; } = true;
-
-        public BodyHandle Handle { get; }
-        public BodyReference Body => PhysicsHost.Simulation.Bodies[Handle];
-
-        public Vector3 Velocity => Pose.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
-        public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
+        /// <summary>
+        /// 物理モデルの姿勢を物理モデル座標系のままの形で取得・設定します。
+        /// </summary>
+        protected abstract Pose ColliderRawPose { get; set; }
 
         /// <summary>
         /// 物理モデルの姿勢を、<see cref="TransformedModel"/> 座標系に変換した形で取得・設定します。
@@ -43,29 +36,23 @@ namespace TransportX.Spatial
         /// <see cref="TransformedModel"/> 座標系はモデルが位置するプレートを基準とする一方、物理モデル座標系は視点が位置するプレートを基準とするため、
         /// <see cref="ICollider.Offset"/> と <see cref="FromCamera"/> プロパティの値を参照して変換されます。
         /// </remarks>
-        protected Pose ColliderPose
+        protected virtual Pose ColliderPose
         {
-            get => Model.Collider.OffsetInverse * Body.Pose.ToPose() * FromCamera.PoseInverse;
-            set
-            {
-                PhysicsHost.Simulation.Awakener.AwakenBody(Handle);
-                Body.Pose = (Model.Collider.Offset * value * FromCamera.Pose).Validated().ToRigidPose();
-            }
+            get => Model.Collider.OffsetInverse * ColliderRawPose * FromCamera.PoseInverse;
+            set => ColliderRawPose = (Model.Collider.Offset * value * FromCamera.Pose).Validated();
         }
 
         public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
         public Pose ColliderToBase => Model.Collider.Offset * BasePose;
 
-        internal protected CollidableTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
+        protected CollidableTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, Pose basePose)
             : base(model, basePose, false)
         {
             PhysicsHost = physicsHost;
             Model = model;
-            Description = description;
-
-            Handle = PhysicsHost.Simulation.Bodies.Add(description);
-            PhysicsHost.SetMaterial(Handle, Model.Collider.Material);
         }
+
+        public abstract void Dispose();
 
         /// <summary>
         /// 視点が位置するプレートと、このモデルが位置するプレートの位置関係を設定します。
@@ -101,9 +88,8 @@ namespace TransportX.Spatial
                 case RenderLayer.Colliders:
                 {
                     if (Model.ColliderDebugModel is null) return;
-                    if (!IsActive) return;
 
-                    Matrix4x4 world = Body.Pose.ToPose().ToMatrix4x4();
+                    Matrix4x4 world = ColliderRawPose.ToMatrix4x4();
                     BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
                     if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
@@ -111,31 +97,6 @@ namespace TransportX.Spatial
                     break;
                 }
             }
-        }
-
-        public void Freeze()
-        {
-            if (!IsActive) return;
-
-            FrozenPose = Pose;
-            FrozenBodyVelocity = Body.Velocity;
-
-            Body.Velocity = default;
-            IsActive = false;
-        }
-
-        public void Unfreeze()
-        {
-            if (IsActive) return;
-
-            IsActive = true;
-            Pose = FrozenPose;
-            Body.Velocity = FrozenBodyVelocity;
-        }
-
-        public virtual void Remove()
-        {
-            PhysicsHost.Simulation.Bodies.Remove(Handle);
         }
     }
 }

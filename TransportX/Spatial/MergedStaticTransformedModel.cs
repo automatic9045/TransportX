@@ -9,19 +9,17 @@ using BepuPhysics;
 using BepuPhysics.Collidables;
 using ColliderMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
-using Vortice.Direct3D11;
-using Vortice.Mathematics;
 
 using TransportX.Physics;
 using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class MergedKinematicTransformedModel : KinematicTransformedModel, IDisposable
+    public class MergedStaticTransformedModel : StaticTransformedModel, IDisposable
     {
         protected readonly IReadOnlyList<TransformedModel> Children;
 
-        protected MergedKinematicTransformedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, BodyDescription description, List<TransformedModel> children)
+        protected MergedStaticTransformedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, StaticDescription description, List<TransformedModel> children)
             : base(physicsHost, physicsWrapper, description, Pose.Identity)
         {
             Children = children;
@@ -32,7 +30,7 @@ namespace TransportX.Spatial
             return collider is ColliderBase<ColliderMesh>;
         }
 
-        public static MergedKinematicTransformedModel Create(IPhysicsHost physicsHost, IReadOnlyList<KinematicTransformedModelTemplate> sources)
+        public static MergedStaticTransformedModel Create(IPhysicsHost physicsHost, IReadOnlyList<StaticTransformedModelTemplate> sources)
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
@@ -43,7 +41,7 @@ namespace TransportX.Spatial
             int writeIndex = 0;
             for (int i = 0; i < sources.Count; i++)
             {
-                KinematicTransformedModelTemplate source = sources[i];
+                StaticTransformedModelTemplate source = sources[i];
 
                 if (source.Model.Collider is ColliderBase<ColliderMesh> meshCollider)
                 {
@@ -80,12 +78,13 @@ namespace TransportX.Spatial
                 DebugName = $"Merged{{{sources[0].Model.DebugName}, others: {sources.Count - 1}}}",
             };
 
-            BodyDescription desc = BodyDescription.CreateKinematic(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex, 0.01f);
-            return new MergedKinematicTransformedModel(physicsHost, physicsWrapper, desc, children);
+            StaticDescription desc = new(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex);
+            return new MergedStaticTransformedModel(physicsHost, physicsWrapper, desc, children);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            base.Dispose();
             Model.Dispose();
         }
 
