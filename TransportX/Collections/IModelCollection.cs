@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Collections;
 using TransportX.Rendering;
 
-namespace TransportX.Worlds
+namespace TransportX.Collections
 {
     public interface IModelCollection : IDisposable
     {

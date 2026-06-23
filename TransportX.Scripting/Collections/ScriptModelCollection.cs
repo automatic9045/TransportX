@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using TransportX.Collections;
 using TransportX.Diagnostics;
 using TransportX.Rendering;
-using TransportX.Worlds;
 
 namespace TransportX.Scripting.Collections
 {
