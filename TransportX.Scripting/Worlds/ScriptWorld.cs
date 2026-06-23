@@ -19,6 +19,18 @@ namespace TransportX.Scripting.Worlds
         public override IModelCollection Models => ModelsKey;
         internal ScriptModelCollection ModelsKey { get; }
 
+        public new EnvironmentProfile DefaultEnvironment
+        {
+            get => base.DefaultEnvironment;
+            set => base.DefaultEnvironment = value;
+        }
+
+        public new TransportX.Worlds.DirectionalLight DirectionalLight
+        {
+            get => base.DirectionalLight;
+            set => base.DirectionalLight = value;
+        }
+
         public string ScriptPath { get; }
         public Commander Commander { get; }
 
@@ -50,16 +62,6 @@ namespace TransportX.Scripting.Worlds
         {
             Commander.Triggers.Tick(elapsed);
             base.Tick(elapsed);
-        }
-
-        internal void SetDefaultEnvironment(EnvironmentProfile value)
-        {
-            DefaultEnvironment = value;
-        }
-
-        internal void SetDirectionalLight(TransportX.Worlds.DirectionalLight value)
-        {
-            DirectionalLight = value;
         }
     }
 }

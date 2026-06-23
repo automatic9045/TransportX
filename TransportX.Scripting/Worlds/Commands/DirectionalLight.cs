@@ -27,10 +27,10 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void SetColor(Vector3 value)
         {
-            World.SetDirectionalLight(World.DirectionalLight with
+            World.DirectionalLight = World.DirectionalLight with
             {
                 Color = value,
-            });
+            };
         }
 
         public void SetColor(string colorText)
@@ -51,10 +51,10 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void SetDirection(Vector3 value)
         {
-            World.SetDirectionalLight(World.DirectionalLight with
+            World.DirectionalLight = World.DirectionalLight with
             {
                 Direction = Vector3.Normalize(value),
-            });
+            };
         }
 
         public void SetDirection(double x, double y, double z)
@@ -65,10 +65,10 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void SetIntensity(double value)
         {
-            World.SetDirectionalLight(World.DirectionalLight with
+            World.DirectionalLight = World.DirectionalLight with
             {
                 Intensity = (float)value,
-            });
+            };
         }
     }
 }
