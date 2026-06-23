@@ -5,12 +5,20 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnableDynamicLoading>true</EnableDynamicLoading>
+    <OutputPath>$(DataOutputPath)Automatic9045\LV290\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyVersion>0.4.60522.1</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TransportX.Extensions\TransportX.Extensions.csproj" />
-    <ProjectReference Include="..\TransportX\TransportX.csproj" />
+    <ProjectReference Include="..\TransportX.Extensions\TransportX.Extensions.csproj">
+      <Private>False</Private>
+      <ExcludeAssets>runtime;native</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\TransportX\TransportX.csproj">
+      <Private>False</Private>
+      <ExcludeAssets>runtime;native</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
