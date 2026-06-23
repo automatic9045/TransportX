@@ -5,6 +5,6 @@
     <Author>automatic9045</Author>
     <Path>$(bin)TransportX.Scripting.dll</Path>
     <Args>
-        <Arg>BasicSample\World.csx</Arg>
+        <Arg>Automatic9045\BasicSample\World.csx</Arg>
     </Args>
 </WorldInfo>
