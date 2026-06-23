@@ -163,24 +163,14 @@ namespace TransportX.Worlds
             Bodies.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
         }
 
-        public virtual AvatarBase CreateAvatar(string path, string? identifier)
+        public virtual AvatarBase CreateAvatar(IAvatarInfo avatarInfo)
         {
-            AvatarBuilder builder = new()
+            AvatarBuilder builder = new(avatarInfo)
             {
-                Platform = Platform,
-                DXHost = DXHost,
-                DXClient = DXClient,
-                PhysicsHost = PhysicsHost,
-                ErrorCollector = ErrorCollector,
-                AppContext = AppContext,
-                WorldContext = WorldContext,
-                TimeManager = TimeManager,
-                InputManager = InputManager,
-                Camera = Camera,
                 World = this,
             };
 
-            AvatarBase avatar = builder.Build(path, identifier);
+            AvatarBase avatar = builder.Build();
             Bodies.Add(avatar);
 
             return avatar;

@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 using TransportX.IO;
-using TransportX.Worlds;
 
-namespace TransportX.Player.Launcher
+namespace TransportX.Worlds
 {
-    public sealed class WorldInfo : IWorldInfo
+    public class WorldInfo : IWorldInfo
     {
-        private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(WorldInfo));
+        private static readonly XmlSerializer Serializer = new(typeof(WorldInfo));
 
 
         public string Title { get; set; } = "無題のワールド";
@@ -42,28 +41,24 @@ namespace TransportX.Player.Launcher
         [XmlIgnore]
         IReadOnlyList<string> IWorldInfo.Args => Args;
 
-        internal void Serialize(string path)
+        public void Serialize(string path)
         {
-            using (StreamWriter sw = new StreamWriter(path, false, Encoding.UTF8))
-            {
-                Serializer.Serialize(sw, this);
-            }
+            using StreamWriter sw = new(path, false, Encoding.UTF8);
+            Serializer.Serialize(sw, this);
         }
 
-        internal static WorldInfo Deserialize(string path, bool generateIfNotExists)
+        public static WorldInfo Deserialize(string path, bool generateIfNotExists)
         {
             if (!File.Exists(path) && generateIfNotExists)
             {
-                WorldInfo empty = new WorldInfo();
+                WorldInfo empty = new();
                 empty.Serialize(path);
             }
 
-            using (StreamReader sr = new StreamReader(path, Encoding.UTF8))
-            {
-                WorldInfo result = (WorldInfo)Serializer.Deserialize(sr)!;
-                result.InfoPath = path;
-                return result;
-            }
+            using StreamReader sr = new(path, Encoding.UTF8);
+            WorldInfo result = (WorldInfo)Serializer.Deserialize(sr)!;
+            result.InfoPath = path;
+            return result;
         }
     }
 }

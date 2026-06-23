@@ -43,10 +43,6 @@ namespace TransportX.Sample.LV290.Vehicles
         private bool IsInitialWorldPoseSet = false;
         private WorldPose InitialWorldPose = WorldPose.Zero;
 
-        public override string Title { get; } = "サンプルバス";
-        public override string Description { get; } = "動作確認用のバスです。";
-        public override string Author { get; } = "automatic9045";
-
         public override Viewpoint DriverViewpoint { get; }
         public override Viewpoint BirdViewpoint { get; }
 

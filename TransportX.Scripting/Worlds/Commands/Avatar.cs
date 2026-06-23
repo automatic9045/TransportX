@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Avatars;
 using TransportX.Diagnostics;
 using TransportX.Spatial;
 
@@ -20,12 +21,20 @@ namespace TransportX.Scripting.Worlds.Commands
             World = world;
         }
 
-        public void Load(string path, string? identifier = null)
+        public void Load(string path)
         {
-            string avatarPath = Path.Combine(World.BaseDirectory, path);
+            if (Path.GetExtension(path).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                ScriptError error = new(ErrorLevel.Error, "アバターの dll ファイルを直接指定することはできません。xml 形式のアバター情報ファイルを指定してください。");
+                World.ErrorCollector.Report(error);
+                return;
+            }
+
             try
             {
-                World.Avatar = World.CreateAvatar(avatarPath, identifier);
+                string absolutePath = Path.Combine(BaseDirectory.Find() ?? World.BaseDirectory, path);
+                IAvatarInfo info = AvatarInfo.Deserialize(absolutePath, false);
+                World.Avatar = World.CreateAvatar(info);
             }
             catch (Exception ex)
             {

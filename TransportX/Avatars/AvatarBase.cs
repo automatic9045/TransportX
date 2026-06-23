@@ -24,10 +24,7 @@ namespace TransportX.Avatars
     {
         private readonly IDebugModel DebugModel;
 
-        public abstract string Title { get; }
-        public abstract string Description { get; }
-        public abstract string Author { get; }
-
+        public IAvatarInfo Info { get; }
         public Platform Platform { get; }
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
@@ -41,6 +38,9 @@ namespace TransportX.Avatars
         public Camera Camera { get; }
         public WorldBase World { get; }
 
+        public string Location { get; protected set; }
+        public string BaseDirectory { get; protected set; }
+
         public abstract Viewpoint DriverViewpoint { get; }
         public abstract Viewpoint BirdViewpoint { get; }
 
@@ -53,7 +53,6 @@ namespace TransportX.Avatars
         public abstract EntityDirection Heading { get; }
         public abstract float S { get; }
         public abstract float SVelocity { get; }
-        float ITrafficEntity.SVelocity => SVelocity;
 
         protected Vector4 DebugColor
         {
@@ -61,20 +60,24 @@ namespace TransportX.Avatars
             set => DebugModel.Color = value;
         }
 
-        public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.PhysicsHost)
+        public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.World.PhysicsHost)
         {
-            Platform = builder.Platform;
-            DXHost = builder.DXHost;
-            DXClient = builder.DXClient;
-            PhysicsHost = builder.PhysicsHost;
-            ErrorCollector = builder.ErrorCollector;
-            AppContext = builder.AppContext;
-            WorldContext = builder.WorldContext;
+            Info = builder.Info;
+            Platform = builder.World.Platform;
+            DXHost = builder.World.DXHost;
+            DXClient = builder.World.DXClient;
+            PhysicsHost = builder.World.PhysicsHost;
+            ErrorCollector = builder.World.ErrorCollector;
+            AppContext = builder.World.AppContext;
+            WorldContext = builder.World.WorldContext;
             AvatarContext = context;
-            TimeManager = builder.TimeManager;
-            InputManager = builder.InputManager;
-            Camera = builder.Camera;
+            TimeManager = builder.World.TimeManager;
+            InputManager = builder.World.InputManager;
+            Camera = builder.World.Camera;
             World = builder.World;
+
+            Location = builder.Info.Path;
+            BaseDirectory = System.IO.Path.GetDirectoryName(Location)!;
 
             DebugModel = this.CreateDebugModel(DXHost.Device);
             DebugModel.DebugName = GetType().Name;

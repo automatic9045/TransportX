@@ -6,40 +6,28 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Cameras;
 using TransportX.Dependency;
-using TransportX.Diagnostics;
-using TransportX.Input;
-using TransportX.Physics;
-using TransportX.Rendering.Backend;
 using TransportX.Worlds;
 
 namespace TransportX.Avatars
 {
     public class AvatarBuilder
     {
-        public required Platform Platform { get; init; }
-        public required IDXHost DXHost { get; init; }
-        public required IDXClient DXClient { get; init; }
-        public required IPhysicsHost PhysicsHost { get; init; }
-        public required IErrorCollector ErrorCollector { get; init; }
-        public required PluginLoadContext AppContext { get; init; }
-        public required PluginLoadContext WorldContext { get; init; }
-        public required ITimeManager TimeManager { get; init; }
-        public required InputManager InputManager { get; init; }
-        public required Camera Camera { get; init; }
+        public IAvatarInfo Info { get; }
+
         public required WorldBase World { get; init; }
 
-        public AvatarBuilder()
+        public AvatarBuilder(IAvatarInfo info)
         {
+            Info = info;
         }
 
-        internal protected AvatarBase Build(string path, string? identifier)
+        internal protected AvatarBase Build()
         {
-            if (!File.Exists(path)) throw new FileNotFoundException("アバターファイルが見つかりません。", path);
+            if (!File.Exists(Info.Path)) throw new FileNotFoundException("アバターファイルが見つかりません。", Info.Path);
 
-            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
-            WorldContext.Children.Add(context);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
+            World.WorldContext.Children.Add(context);
 
             Type[] avatarTypes = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(AvatarBase)))
@@ -47,12 +35,11 @@ namespace TransportX.Avatars
 
             if (avatarTypes.Length == 0)
             {
-                string fileName = Path.GetFileName(path);
-                throw new ArgumentException($"{fileName} にはアバターが定義されていません。", nameof(path));
+                throw new InvalidOperationException($"'{Info.Path}' にはアバターが定義されていません。");
             }
 
             Type avatarType;
-            if (identifier is null)
+            if (Info.Identifier is null)
             {
                 if (avatarTypes.Length == 1)
                 {
@@ -60,8 +47,7 @@ namespace TransportX.Avatars
                 }
                 else
                 {
-                    string fileName = Path.GetFileName(path);
-                    throw new ArgumentException($"{fileName} には 2 つ以上のアバターが定義されています。", nameof(path));
+                    throw new InvalidOperationException($"'{Info.Path}' には 2 つ以上のアバターが定義されています。");
                 }
             }
             else
@@ -70,7 +56,7 @@ namespace TransportX.Avatars
                 foreach (Type t in avatarTypes)
                 {
                     AvatarIdentifierAttribute? identifierAttribute = t.GetCustomAttribute<AvatarIdentifierAttribute>();
-                    if (identifierAttribute?.Identifier == identifier)
+                    if (identifierAttribute?.Identifier == Info.Identifier)
                     {
                         type = t;
                     }
@@ -78,15 +64,14 @@ namespace TransportX.Avatars
 
                 if (type is null)
                 {
-                    string fileName = Path.GetFileName(path);
-                    throw new ArgumentException($"{fileName} にはアバター '{identifier}' が定義されていません。", nameof(identifier));
+                    throw new InvalidOperationException($"'{Info.Path}' にはアバター '{Info.Identifier}' が定義されていません。");
                 }
                 avatarType = type;
             }
 
             ConstructorInfo constructor = avatarType.GetConstructor([typeof(PluginLoadContext), typeof(AvatarBuilder)])
                 ?? throw new ArgumentException($"{avatarType.Name} にはパラメータが " +
-                $"{nameof(PluginLoadContext)}, {nameof(AvatarBuilder)} のコンストラクタが定義されていません。", nameof(path));
+                $"{nameof(PluginLoadContext)}, {nameof(AvatarBuilder)} のコンストラクタが定義されていません。");
 
             AvatarBase avatar = (AvatarBase)constructor.Invoke([context, this]);
             return avatar;
