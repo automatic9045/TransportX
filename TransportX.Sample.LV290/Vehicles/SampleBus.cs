@@ -43,13 +43,6 @@ namespace TransportX.Sample.LV290.Vehicles
         private bool IsInitialWorldPoseSet = false;
         private WorldPose InitialWorldPose = WorldPose.Zero;
 
-        public override Viewpoint DriverViewpoint { get; }
-        public override Viewpoint BirdViewpoint { get; }
-
-        public override float Width => Spec.Width;
-        public override float Height => Spec.Height;
-        public override float Length => Spec.Length;
-
         public override bool IsEnabled => true;
         public override ILanePath? Path => null;
         public override EntityDirection Heading => EntityDirection.Forward;
@@ -74,6 +67,10 @@ namespace TransportX.Sample.LV290.Vehicles
 
             DriverViewpoint = new DriverViewpoint(this, new SixDoF(0.67f, 1.8f, -1.3f));
             BirdViewpoint = new BirdViewpoint(this, new SixDoF(0, 2, -3), 20, new Vector2(0.3f, 0));
+
+            Width = Spec.Width;
+            Height = Spec.Height;
+            Length = Spec.Length;
         }
 
         public override void Dispose()

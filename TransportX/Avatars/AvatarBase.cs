@@ -41,12 +41,12 @@ namespace TransportX.Avatars
         public string Location { get; protected set; }
         public string BaseDirectory { get; protected set; }
 
-        public abstract Viewpoint DriverViewpoint { get; }
-        public abstract Viewpoint BirdViewpoint { get; }
+        public Viewpoint DriverViewpoint { get; protected set; }
+        public Viewpoint BirdViewpoint { get; protected set; }
 
-        public abstract float Width { get; }
-        public abstract float Height { get; }
-        public abstract float Length { get; }
+        public float Width { get; protected set; } = 2;
+        public float Height { get; protected set; } = 2;
+        public float Length { get; protected set; } = 2;
 
         public abstract bool IsEnabled { get; }
         public abstract ILanePath? Path { get; }
@@ -78,6 +78,9 @@ namespace TransportX.Avatars
 
             Location = builder.Info.Path;
             BaseDirectory = System.IO.Path.GetDirectoryName(Location)!;
+
+            DriverViewpoint = new DriverViewpoint(this, new Pose(0, 1.5f, 0));
+            BirdViewpoint = new BirdViewpoint(this, Pose.Identity, 20, new Vector2(0.3f, 0));
 
             DebugModel = this.CreateDebugModel(DXHost.Device);
             DebugModel.DebugName = GetType().Name;
