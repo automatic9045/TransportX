@@ -8,6 +8,7 @@
     <OutputPath>$(DataOutputPath)Automatic9045\LV290\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyVersion>0.4.60522.1</AssemblyVersion>
+    <AssemblyName>LV290</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
