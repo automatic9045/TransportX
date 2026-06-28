@@ -15,8 +15,6 @@ namespace TransportX.Spatial
 {
     public abstract class CollidableTransformedModel : TransformedModel, IDisposable
     {
-        protected readonly IPhysicsHost PhysicsHost;
-
         public new ICollidableModel Model { get; }
 
         /// <summary>
@@ -45,10 +43,9 @@ namespace TransportX.Spatial
         public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
         public Pose ColliderToBase => Model.Collider.Offset * BasePose;
 
-        protected CollidableTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, Pose basePose)
+        protected CollidableTransformedModel(ICollidableModel model, Pose basePose)
             : base(model, basePose, false)
         {
-            PhysicsHost = physicsHost;
             Model = model;
         }
 

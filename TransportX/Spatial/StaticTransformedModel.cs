@@ -13,6 +13,7 @@ namespace TransportX.Spatial
 {
     public class StaticTransformedModel : CollidableTransformedModel
     {
+        protected readonly IPhysicsHost PhysicsHost;
         protected readonly StaticDescription Description;
 
         public StaticHandle Handle { get; }
@@ -37,8 +38,9 @@ namespace TransportX.Spatial
         }
 
         internal protected StaticTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, StaticDescription description, Pose pose)
-            : base(physicsHost, model, pose)
+            : base(model, pose)
         {
+            PhysicsHost = physicsHost;
             Description = description;
             Handle = PhysicsHost.Simulation.Statics.Add(description);
             PhysicsHost.SetMaterial(Handle, Model.Collider.Material);

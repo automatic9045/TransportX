@@ -15,6 +15,7 @@ namespace TransportX.Spatial
 {
     public abstract class BodyTransformedModel : CollidableTransformedModel
     {
+        protected readonly IPhysicsHost PhysicsHost;
         protected readonly BodyDescription Description;
 
         private Pose FrozenPose = Pose.Identity;
@@ -50,8 +51,9 @@ namespace TransportX.Spatial
         }
 
         protected BodyTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
-            : base(physicsHost, model, basePose)
+            : base(model, basePose)
         {
+            PhysicsHost = physicsHost;
             Description = description;
 
             Handle = PhysicsHost.Simulation.Bodies.Add(description);
