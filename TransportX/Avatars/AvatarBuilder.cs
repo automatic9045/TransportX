@@ -24,9 +24,10 @@ namespace TransportX.Avatars
 
         internal protected AvatarBase Build()
         {
-            if (!File.Exists(Info.Path)) throw new FileNotFoundException("アバターファイルが見つかりません。", Info.Path);
+            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Path));
+            if (!File.Exists(path)) throw new FileNotFoundException("アバターファイルが見つかりません。", path);
 
-            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
             World.WorldContext.Children.Add(context);
 
             Type[] avatarTypes = assembly.GetTypes()
@@ -35,7 +36,7 @@ namespace TransportX.Avatars
 
             if (avatarTypes.Length == 0)
             {
-                throw new InvalidOperationException($"'{Info.Path}' にはアバターが定義されていません。");
+                throw new InvalidOperationException($"'{path}' にはアバターが定義されていません。");
             }
 
             Type avatarType;
@@ -47,7 +48,7 @@ namespace TransportX.Avatars
                 }
                 else
                 {
-                    throw new InvalidOperationException($"'{Info.Path}' には 2 つ以上のアバターが定義されています。");
+                    throw new InvalidOperationException($"'{path}' には 2 つ以上のアバターが定義されています。");
                 }
             }
             else
@@ -64,7 +65,7 @@ namespace TransportX.Avatars
 
                 if (type is null)
                 {
-                    throw new InvalidOperationException($"'{Info.Path}' にはアバター '{Info.Identifier}' が定義されていません。");
+                    throw new InvalidOperationException($"'{path}' にはアバター '{Info.Identifier}' が定義されていません。");
                 }
                 avatarType = type;
             }

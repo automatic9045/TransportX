@@ -38,9 +38,10 @@ namespace TransportX.Worlds
 
         internal protected WorldBase Build()
         {
-            if (!File.Exists(Info.Path)) throw new FileNotFoundException("ワールドファイルが見つかりません。", Info.Path);
+            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Path));
+            if (!File.Exists(path)) throw new FileNotFoundException("ワールドファイルが見つかりません。", path);
 
-            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(Info.Path, out Assembly assembly);
+            PluginLoadContext context = PluginLoadContext.CreateAndLoadPlugin(path, out Assembly assembly);
             AppContext.Children.Add(context);
 
             Type[] worldTypes = assembly.GetTypes()
@@ -49,7 +50,7 @@ namespace TransportX.Worlds
 
             if (worldTypes.Length == 0)
             {
-                throw new InvalidOperationException($"'{Info.Path}' にはワールドが定義されていません。");
+                throw new InvalidOperationException($"'{path}' にはワールドが定義されていません。");
             }
 
             Type worldType;
@@ -61,7 +62,7 @@ namespace TransportX.Worlds
                 }
                 else
                 {
-                    throw new InvalidOperationException($"'{Info.Path}' には 2 つ以上のワールドが定義されています。");
+                    throw new InvalidOperationException($"'{path}' には 2 つ以上のワールドが定義されています。");
                 }
             }
             else
@@ -78,7 +79,7 @@ namespace TransportX.Worlds
 
                 if (type is null)
                 {
-                    throw new InvalidOperationException($"'{Info.Path}' にはワールド '{Info.Identifier}' が定義されていません。");
+                    throw new InvalidOperationException($"'{path}' にはワールド '{Info.Identifier}' が定義されていません。");
                 }
                 worldType = type;
             }
