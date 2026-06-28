@@ -174,6 +174,8 @@ namespace TransportX.Worlds
             AvatarBase avatar = builder.Build();
             Bodies.Add(avatar);
 
+            avatar.OnStart();
+
             return avatar;
         }
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using TransportX.Bodies;
 using TransportX.Cameras;
+using TransportX.Components;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
@@ -54,6 +55,9 @@ namespace TransportX.Avatars
         public abstract float S { get; }
         public abstract float SVelocity { get; }
 
+        public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
+        public ComponentEngine ComponentEngine { get; } = new();
+
         protected Vector4 DebugColor
         {
             get => DebugModel.Color;
@@ -89,8 +93,15 @@ namespace TransportX.Avatars
 
         public override void Dispose()
         {
+            ComponentEngine.Dispose();
             base.Dispose();
             DebugModel.Dispose();
+        }
+
+        public virtual void OnStart()
+        {
+            ComponentEngine.Register(Components);
+            ComponentEngine.OnStart();
         }
 
         public new ChunkIndex TeleportTo(WorldPose worldPose)
@@ -99,6 +110,18 @@ namespace TransportX.Avatars
         }
 
         public abstract bool Spawn(ILanePath path, EntityDirection heading, float s);
+
+        public override void SubTick(TimeSpan elapsed)
+        {
+            ComponentEngine.SubTick(elapsed);
+            base.SubTick(elapsed);
+        }
+
+        public override void Tick(TimeSpan elapsed)
+        {
+            ComponentEngine.Tick(elapsed, TimeManager.Now);
+            base.Tick(elapsed);
+        }
 
         public override void Draw(in TransformedDrawContext context)
         {
