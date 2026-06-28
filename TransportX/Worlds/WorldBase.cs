@@ -75,8 +75,6 @@ namespace TransportX.Worlds
 
             Location = builder.Info.Path;
             BaseDirectory = Path.GetDirectoryName(Location)!;
-
-            ComponentEngine.Register(Components);
         }
 
         public virtual void Dispose()
@@ -92,7 +90,10 @@ namespace TransportX.Worlds
         public virtual void OnStart()
         {
             Validate();
+
+            ComponentEngine.Register(Components);
             Chunks.RegisterComponents(ComponentEngine);
+
             ComponentEngine.OnStart();
         }
 
