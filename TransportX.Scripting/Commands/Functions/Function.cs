@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Scripting.Worlds.Commands.Functions
+namespace TransportX.Scripting.Commands.Functions
 {
     public class Function
     {

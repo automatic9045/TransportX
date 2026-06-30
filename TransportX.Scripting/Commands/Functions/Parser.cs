@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace TransportX.Scripting.Worlds.Commands.Functions
+namespace TransportX.Scripting.Commands.Functions
 {
     public class Parser
     {
