@@ -61,7 +61,7 @@ namespace TransportX.Scripting.Worlds
 
         public override void Tick(TimeSpan elapsed)
         {
-            Commander.Triggers.Tick(elapsed);
+            Commander.Tick(elapsed);
             base.Tick(elapsed);
         }
     }
