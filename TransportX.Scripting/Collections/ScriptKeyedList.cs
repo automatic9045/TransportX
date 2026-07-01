@@ -9,7 +9,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Scripting.Collections
 {
-    public class ScriptKeyedList<TKey, TValue> : KeyedList<TKey, TValue>, IReadOnlyKeyedList<TKey, TValue> where TKey : notnull
+    public class ScriptKeyedList<TKey, TValue> : KeyedList<TKey, TValue>, IReadOnlyScriptKeyedList<TKey, TValue> where TKey : notnull
     {
         private readonly IErrorCollector ErrorCollector;
         private readonly string ItemName;

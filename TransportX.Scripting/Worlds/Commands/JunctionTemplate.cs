@@ -22,12 +22,12 @@ namespace TransportX.Scripting.Worlds.Commands
     public class JunctionTemplate
     {
         private readonly ScriptKeyedList<string, PortDefinition> PortsKey;
-        public IReadOnlyKeyedList<string, PortDefinition> Ports => PortsKey;
+        public IReadOnlyScriptKeyedList<string, PortDefinition> Ports => PortsKey;
 
         private readonly List<(string Input, string Output)> Relays = [];
 
         private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
-        public IReadOnlyKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
+        public IReadOnlyScriptKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
 
         private readonly List<TransformedModelTemplate> PropsKey = [];
         public IReadOnlyList<TransformedModelTemplate> Props => PropsKey;

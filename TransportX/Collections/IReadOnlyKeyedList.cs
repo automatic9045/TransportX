@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TransportX.Collections
 {
-    public interface IReadOnlyKeyedList<TKey, TValue> : IReadOnlyList<TValue>
+    public interface IReadOnlyKeyedList<TKey, TValue> : IReadOnlyList<TValue> where TKey : notnull
     {
         TValue this[TKey key] { get; }
 
