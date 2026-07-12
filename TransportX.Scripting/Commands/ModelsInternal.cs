@@ -35,65 +35,43 @@ namespace TransportX.Scripting.Commands
         [MethodImpl(MethodImplOptions.NoInlining)]
         public ModelBundle LoadList(string key, string path, string defaultBaseDirectory)
         {
-            string listPath = Path.GetFullPath(Path.Combine(BaseDirectory.Find(3) ?? defaultBaseDirectory, path));
-            if (!File.Exists(listPath))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"モデルリスト '{listPath}' が見つかりませんでした。");
-                ErrorCollector.Report(error);
-                return ModelBundle.Empty(key);
-            }
+            using AssetList list = new(path, defaultBaseDirectory, "モデルリスト", [2, 3], ErrorCollector);
+            if (!list.IsValid) return ModelBundle.Empty(key);
 
             try
             {
-                using StreamReader sr = new(listPath);
-                string listDirectory = Path.GetDirectoryName(listPath)!;
-
                 Parser parser = new(ModelListSignatures.All);
 
-                int i = 0;
                 IErrorCollector factoryErrorCollector = IErrorCollector.Default();
                 factoryErrorCollector.Reported += (sender, e) =>
                 {
                     Error error = e.Error is ModelLoadError modelError && modelError.Source == ModelLoadError.ErrorSource.Reference
-                        ? modelError.ChangeSource(listPath, i + 1) : e.Error;
+                        ? modelError.ChangeSource(list.ListPath, list.LineNumber) : e.Error;
                     ErrorCollector.Report(error);
                 };
                 using ModelFactory factory = new(DXHost.Context, PhysicsHost.Simulation, factoryErrorCollector);
 
-                ModelListInterpreter interpreter = new(parser, PhysicsHost.Simulation, factory, listDirectory, factoryErrorCollector);
+                ModelListInterpreter interpreter = new(parser, PhysicsHost.Simulation, factory, list.ListDirectory, factoryErrorCollector);
 
                 ScriptDictionary<string, IModel> models = new(ErrorCollector, "モデル", key => Model.Empty());
-                for (; !sr.EndOfStream; i++)
-                {
-                    string[] line = sr.ReadLine()!.Split('\t', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    if (line.Length == 0) continue;
-                    if (line[0].StartsWith('#')) continue;
 
+                while (list.ReadLine(out string[] line))
+                {
                     try
                     {
-                        if (line.Length < 2)
-                        {
-                            Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。引数が不足しています。", listPath)
-                            {
-                                LineNumber = i + 1,
-                            };
-                            ErrorCollector.Report(error);
-                            continue;
-                        }
-
                         string modelKey = line[0];
                         string? modelPath =
                             line[1] == string.Empty || line[1].Equals("NONE", StringComparison.OrdinalIgnoreCase) ? null
-                            : Path.Combine(listDirectory, line[1]);
+                            : Path.Combine(list.ListDirectory, line[1]);
 
                         string commandListText = line.Length < 3 ? string.Empty : line[2].ToLowerInvariant();
                         if (!string.IsNullOrWhiteSpace(commandListText))
                         {
                             if (!commandListText.StartsWith('$'))
                             {
-                                Error error = new(ErrorLevel.Error, $"コマンド '{line[2]}' は無効です。冒頭に '$' がありません。", listPath)
+                                Error error = new(ErrorLevel.Error, $"コマンド '{line[2]}' は無効です。冒頭に '$' がありません。", list.ListPath)
                                 {
-                                    LineNumber = i + 1,
+                                    LineNumber = list.LineNumber,
                                 };
                                 ErrorCollector.Report(error);
                             }
@@ -120,9 +98,9 @@ namespace TransportX.Scripting.Commands
                     }
                     catch (Exception ex)
                     {
-                        Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。", listPath)
+                        Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。", list.ListPath)
                         {
-                            LineNumber = i + 1,
+                            LineNumber = list.LineNumber,
                             Exception = ex,
                         };
                         ErrorCollector.Report(error);
@@ -142,7 +120,7 @@ namespace TransportX.Scripting.Commands
             }
             catch (Exception ex)
             {
-                ScriptError error = new(ErrorLevel.Error, ex, $"モデルリスト '{listPath}' を読み込めませんでした。");
+                ScriptError error = new(ErrorLevel.Error, ex, $"モデルリスト '{list.ListPath}' を読み込めませんでした。");
                 ErrorCollector.Report(error);
                 return ModelBundle.Empty(key);
             }

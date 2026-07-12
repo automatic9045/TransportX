@@ -23,6 +23,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public CommonCommands.Input Input { get; }
         public Models Models { get; }
         public Network Network { get; }
+        public Sounds Sounds { get; }
         public Triggers Triggers { get; }
 
         internal Commander(ScriptWorld world)
@@ -40,6 +41,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Input = new CommonCommands.Input(world.InputManager, world.ErrorCollector, world);
             Models = new Models(world);
             Network = new Network(world);
+            Sounds = new Sounds(world);
             Triggers = new Triggers(world);
         }
 
@@ -58,6 +60,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Input = parent.Input;
             Models = parent.Models;
             Network = parent.Network;
+            Sounds = parent.Sounds;
             Triggers = parent.Triggers;
         }
 

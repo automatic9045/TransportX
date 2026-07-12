@@ -20,6 +20,9 @@ namespace TransportX.Scripting.Worlds
         public override IModelCollection Models => ModelsKey;
         internal ScriptModelCollection ModelsKey { get; }
 
+        internal ScriptSoundCollection SoundsKey { get; }
+        public override ISoundCollection Sounds => SoundsKey;
+
         public new EnvironmentProfile DefaultEnvironment
         {
             get => base.DefaultEnvironment;
@@ -38,6 +41,7 @@ namespace TransportX.Scripting.Worlds
         public ScriptWorld(PluginLoadContext context, WorldBuilder builder) : base(context, builder)
         {
             ModelsKey = new ScriptModelCollection(ErrorCollector);
+            SoundsKey = new ScriptSoundCollection(ErrorCollector);
 
             if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
 
