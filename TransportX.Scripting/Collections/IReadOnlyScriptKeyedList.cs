@@ -10,6 +10,8 @@ namespace TransportX.Scripting.Collections
 {
     public interface IReadOnlyScriptKeyedList<TKey, TValue> : IReadOnlyKeyedList<TKey, TValue> where TKey : notnull
     {
+        string ItemName { get; }
+
         bool GetValue(TKey key, out TValue value);
     }
 }

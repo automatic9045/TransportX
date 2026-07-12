@@ -13,12 +13,13 @@ namespace TransportX.Scripting.Collections
 {
     public class ScriptDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyScriptDictionary<TKey, TValue> where TKey : notnull
     {
-        private readonly Dictionary<TKey, TValue> Source = [];
+        private readonly IDictionary<TKey, TValue> Source;
         private ICollection<KeyValuePair<TKey, TValue>> SourceAsCollection => Source;
 
         private readonly IErrorCollector ErrorCollector;
-        private readonly string ItemName;
         private readonly Func<TKey, TValue> DefaultFactory;
+
+        public string ItemName { get; }
 
         public TValue this[TKey key]
         {
@@ -37,11 +38,17 @@ namespace TransportX.Scripting.Collections
         public int Count => Source.Count;
         public bool IsReadOnly => false;
 
-        public ScriptDictionary(IErrorCollector errorCollector, string itemName, Func<TKey, TValue> defaultFactory)
+        public ScriptDictionary(IDictionary<TKey, TValue> source, IErrorCollector errorCollector, string itemName, Func<TKey, TValue> defaultFactory)
         {
+            Source = source;
             ErrorCollector = errorCollector;
             ItemName = itemName;
             DefaultFactory = defaultFactory;
+        }
+
+        public ScriptDictionary(IErrorCollector errorCollector, string itemName, Func<TKey, TValue> defaultFactory)
+            : this(new Dictionary<TKey, TValue>(), errorCollector, itemName, defaultFactory)
+        {
         }
 
         public bool GetValue(TKey key, out TValue value)
