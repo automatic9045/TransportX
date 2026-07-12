@@ -1,46 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Vortice.Multimedia;
+
 using Vortice.XAudio2;
 
 namespace TransportX.Audio
 {
-    public class Sound : IDisposable
+    public class Sound : ISound
     {
-        public SoundStream Stream { get; }
+        protected readonly uint[]? DecodedPacketsInfo;
+        protected readonly float MaxFrequencyRatio;
+
         public IXAudio2SourceVoice SourceVoice { get; }
         public AudioBuffer Buffer { get; }
+
         public bool IsPlaying => 0 < SourceVoice.StateNoSamplesPlayed.BuffersQueued;
 
-        public float Volume { get; protected set; } = 1;
-        public float Pitch { get; protected set; } = 1;
-
-        public Sound(SoundStream stream, IXAudio2SourceVoice sourceVoice)
+        public virtual float Volume
         {
-            Stream = stream;
-            SourceVoice = sourceVoice;
-
-            Buffer = new AudioBuffer(Stream)
+            get => field;
+            set
             {
-                AudioBytes = (uint)Stream.Length,
-                LoopCount = XAudio2.NoLoopRegion,
-                LoopBegin = 0,
-                LoopLength = 0,
-                PlayBegin = 0,
-                PlayLength = 0,
-                Flags = BufferFlags.EndOfStream,
-            };
+                field = float.Max(0, value);
+                SourceVoice.SetVolume(field);
+            }
         }
 
-        public static Sound FromFile(IXAudio2 xaudio2, string filePath)
+        public virtual float Pitch
         {
-            SoundStream stream = new SoundStream(File.OpenRead(filePath));
-            IXAudio2SourceVoice sourceVoice = xaudio2.CreateSourceVoice(stream.Format!, maxFrequencyRatio: 5);
-            return new Sound(stream, sourceVoice);
+            get => field;
+            set
+            {
+                if (value <= 0) return;
+                field = value;
+                SourceVoice.SetFrequencyRatio(field, XAudio2.CommitNow);
+            }
+        }
+
+        public Sound(byte[] audioBytes, uint[]? decodedPacketsInfo, IXAudio2SourceVoice sourceVoice, float maxFrequencyRatio)
+        {
+            DecodedPacketsInfo = decodedPacketsInfo;
+            MaxFrequencyRatio = maxFrequencyRatio;
+            SourceVoice = sourceVoice;
+
+            Buffer = new AudioBuffer(audioBytes)
+            {
+                AudioBytes = (uint)audioBytes.Length,
+                LoopCount = XAudio2.NoLoopRegion,
+                Flags = BufferFlags.EndOfStream,
+            };
         }
 
         public void Dispose()
@@ -48,25 +58,17 @@ namespace TransportX.Audio
             SourceVoice.Stop();
             Buffer.Dispose();
             SourceVoice.Dispose();
-            Stream.Dispose();
-        }
-
-        public virtual void SetVolume(float volume)
-        {
-            Volume = volume;
-            SourceVoice.SetVolume(volume);
-        }
-
-        public virtual void SetPitch(float pitch)
-        {
-            Pitch = pitch;
-            SourceVoice.SetFrequencyRatio(pitch, XAudio2.CommitNow);
         }
 
         public virtual void Play(bool loop)
         {
+            if (IsPlaying)
+            {
+                Stop();
+            }
+
             Buffer.LoopCount = (uint)(loop ? XAudio2.LoopInfinite : XAudio2.NoLoopRegion);
-            SourceVoice.SubmitSourceBuffer(Buffer, Stream.DecodedPacketsInfo);
+            SourceVoice.SubmitSourceBuffer(Buffer, DecodedPacketsInfo);
             SourceVoice.Start();
         }
 

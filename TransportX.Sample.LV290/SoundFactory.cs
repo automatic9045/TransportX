@@ -36,14 +36,16 @@ namespace TransportX.Sample.LV290
         public Sound FromFile(string relativePath)
         {
             string path = Path.Combine(BaseDirectory, relativePath);
-            Sound sound = Sound.FromFile(XAudio2, path);
+            SoundAsset soundAsset = SoundAsset.FromFile(XAudio2, MasteringVoice, X3DAudio, path);
+            Sound sound = soundAsset.CreateSound(5);
             return sound;
         }
 
         public Sound3D FromFile3D(string relativePath, SixDoF offset)
         {
             string path = Path.Combine(BaseDirectory, relativePath);
-            Sound3D sound = Sound3D.FromFile(XAudio2, MasteringVoice, X3DAudio, path);
+            SoundAsset soundAsset = SoundAsset.FromFile(XAudio2, MasteringVoice, X3DAudio, path);
+            Sound3D sound = soundAsset.CreateSound3D(5);
             sound.AttachedTo = Locations.GetOrAdd(offset, new AttachableObject(Body, offset));
             return sound;
         }

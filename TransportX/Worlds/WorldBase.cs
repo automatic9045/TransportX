@@ -41,6 +41,7 @@ namespace TransportX.Worlds
         public string BaseDirectory { get; protected set; }
 
         public abstract IModelCollection Models { get; }
+        public abstract ISoundCollection Sounds { get; }
 
         public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
         public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;

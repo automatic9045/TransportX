@@ -12,6 +12,7 @@ namespace TransportX.Worlds
     internal class EmptyWorld : WorldBase
     {
         public override IModelCollection Models { get; } = new ModelCollection();
+        public override ISoundCollection Sounds { get; } = new SoundCollection();
 
         public EmptyWorld(WorldBuilder builder) : base(new PluginLoadContext(typeof(EmptyWorld).Assembly.Location), builder)
         {

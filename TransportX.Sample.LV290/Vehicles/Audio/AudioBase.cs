@@ -18,8 +18,8 @@ namespace TransportX.Sample.LV290.Vehicles.Audio
         {
             if (!sound.IsPlaying && 0.001 <= volume)
             {
-                sound.SetVolume(volume);
-                sound.SetPitch(pitch);
+                sound.Volume = volume;
+                sound.Pitch = pitch;
                 sound.Play(true);
             }
             else if (sound.IsPlaying && volume < 0.001)
@@ -28,8 +28,8 @@ namespace TransportX.Sample.LV290.Vehicles.Audio
             }
             else
             {
-                sound.SetVolume(volume);
-                sound.SetPitch(pitch);
+                sound.Volume = volume;
+                sound.Pitch = pitch;
             }
 
             sound.Update(camera.Listener, camera.WorldPose.Chunk);
