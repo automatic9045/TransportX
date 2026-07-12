@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
@@ -15,6 +12,7 @@ namespace TransportX.Scripting.Worlds.Commands
         private TickCommander? TickCommander = null;
 
         private event Action<Commander>? DisposeEvent;
+        private event Action<Commander>? StartEvent;
         private event Action<TickCommander>? TickEvent;
 
         internal Triggers(ScriptWorld world)
@@ -22,9 +20,14 @@ namespace TransportX.Scripting.Worlds.Commands
             World = world;
         }
 
-        public void OnDispose(Action<Commander> action)
+        private void OnDispose(Action<Commander> action)
         {
             DisposeEvent += action;
+        }
+
+        public void OnDispose(Action action)
+        {
+            OnDispose(_ => action());
         }
 
         public void OnDispose(string scriptPath)
@@ -33,9 +36,30 @@ namespace TransportX.Scripting.Worlds.Commands
             OnDispose(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
         }
 
-        public void OnTick(Action<TickCommander> action)
+        private void OnStart(Action<Commander> action)
+        {
+            StartEvent += action;
+        }
+
+        public void OnStart(Action action)
+        {
+            OnStart(_ => action());
+        }
+
+        public void OnStart(string scriptPath)
+        {
+            UserScript<Commander, object> script = UserScript<Commander, object>.FromFile(World.WorldContext, scriptPath, World.ErrorCollector, false);
+            OnStart(commander => script.RunAsync(commander, World.ErrorCollector).Wait());
+        }
+
+        private void OnTick(Action<TickCommander> action)
         {
             TickEvent += action;
+        }
+
+        public void OnTick(Action<TimeSpan> action)
+        {
+            OnTick(commander => action(commander.Elapsed));
         }
 
         public void OnTick(string scriptPath)
@@ -47,6 +71,11 @@ namespace TransportX.Scripting.Worlds.Commands
         internal void Dispose()
         {
             DisposeEvent?.Invoke(World.Commander);
+        }
+
+        internal void Start()
+        {
+            StartEvent?.Invoke(World.Commander);
         }
 
         internal void Tick(TimeSpan elapsed)

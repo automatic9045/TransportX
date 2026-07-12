@@ -13,5 +13,22 @@ namespace TransportX.Scripting.Worlds.Commands
         internal TickCommander(Commander parent) : base(parent)
         {
         }
+
+
+        public class Factory
+        {
+            public TickCommander Commander { get; }
+
+            public Factory(Commander parent)
+            {
+                Commander = new TickCommander(parent);
+            }
+
+            public TickCommander Tick(TimeSpan elapsed)
+            {
+                Commander.Elapsed = elapsed;
+                return Commander;
+            }
+        }
     }
 }

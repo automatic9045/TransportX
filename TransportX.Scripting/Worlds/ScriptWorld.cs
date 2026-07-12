@@ -64,5 +64,11 @@ namespace TransportX.Scripting.Worlds
             Commander.Tick(elapsed);
             base.Tick(elapsed);
         }
+
+        public override void OnStart()
+        {
+            base.OnStart();
+            Commander.OnStart();
+        }
     }
 }

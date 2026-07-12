@@ -76,6 +76,11 @@ namespace TransportX.Scripting.Worlds.Commands
             return Components.Get<T>();
         }
 
+        internal void OnStart()
+        {
+            Triggers.Start();
+        }
+
         internal void Tick(TimeSpan elapsed)
         {
             Input.Tick(elapsed);
