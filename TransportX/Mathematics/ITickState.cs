@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace TransportX.Mathematics
 {
-    public interface ITickState<TState> where TState : struct
+    public interface ITickState<T> where T : notnull
     {
+        T Key { get; }
+
         void OnEnter();
         void OnTick(TimeSpan elapsed, TimeSpan stateTime);
         void OnExit();
 
-        bool EvaluateTransition(TimeSpan elapsed, TimeSpan stateTime, out TState next);
+        bool EvaluateTransition(TimeSpan elapsed, TimeSpan stateTime, out T next);
     }
 }

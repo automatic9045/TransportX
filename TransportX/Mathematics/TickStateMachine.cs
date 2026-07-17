@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Collections;
+
 namespace TransportX.Mathematics
 {
     public class TickStateMachine<TState> where TState : struct
     {
-        private readonly ConcurrentDictionary<TState, ITickState<TState>> States = [];
+        private readonly KeyedList<TState, ITickState<TState>> States = new(state => state.Key);
 
         public TState State { get; private set; }
         public TimeSpan StateTime { get; private set; } = TimeSpan.Zero;
@@ -19,9 +21,9 @@ namespace TransportX.Mathematics
             State = initialState;
         }
 
-        public bool AddState(TState stateKey, ITickState<TState> state)
+        public void AddState(ITickState<TState> state)
         {
-            return States.TryAdd(stateKey, state);
+            States.Add(state);
         }
 
         public void TransitionTo(TState next)
