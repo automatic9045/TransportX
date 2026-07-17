@@ -10,5 +10,6 @@ namespace TransportX
     {
         double Frequency { get; }
         TimeSpan DeltaTime { get; }
+        DateTime Now { get; set; }
     }
 }
