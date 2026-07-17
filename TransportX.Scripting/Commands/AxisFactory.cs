@@ -130,7 +130,7 @@ namespace TransportX.Scripting.Commands
         {
             float floatEngageSpeed = (float)engageSpeed;
             float floatReleaseSpeed = (float)releaseSpeed;
-            return BindMinus(key, (instance, observer) => instance.Neutral < instance.Value ? floatEngageSpeed : floatReleaseSpeed);
+            return BindMinus(key, (instance, observer) => instance.Value < instance.Neutral ? floatEngageSpeed : floatReleaseSpeed);
         }
 
         public AxisFactory BindMinus(Key key, double speed) => BindMinus(key, speed, speed);
