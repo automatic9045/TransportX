@@ -16,7 +16,9 @@ namespace TransportX.Scripting.Input
         public float Max { get; }
 
         public required KeyBinding Plus { get; init; }
+        public required KeyBinding SecondaryPlus { get; init; }
         public required KeyBinding Minus { get; init; }
+        public required KeyBinding SecondaryMinus { get; init; }
         public required KeyBinding Reset { get; init; }
 
         public required TickFunc OnTick { get; init; }
@@ -39,7 +41,9 @@ namespace TransportX.Scripting.Input
             return new ScriptAxis(key, 0, 0, 0, 0)
             {
                 Plus = default,
+                SecondaryPlus = default,
                 Minus = default,
+                SecondaryMinus = default,
                 Reset = default,
                 OnTick = (_, _) => 0,
             };
@@ -48,7 +52,9 @@ namespace TransportX.Scripting.Input
         public void Dispose()
         {
             Plus.Observer?.Dispose();
+            SecondaryPlus.Observer?.Dispose();
             Minus.Observer?.Dispose();
+            SecondaryMinus.Observer?.Dispose();
             Reset.Observer?.Dispose();
         }
 
