@@ -41,7 +41,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Debug = new Debug(world);
             DirectionalLight = new DirectionalLight(world);
             Environment = new WorldEnvironment(world);
-            Input = new CommonCommands.Input(world.InputManager, world.ErrorCollector, world);
+            Input = new CommonCommands.Input(Signals, world.InputManager, world.ErrorCollector, world);
             Models = new Models(world);
             Network = new Network(world);
             Sounds = new Sounds(world);

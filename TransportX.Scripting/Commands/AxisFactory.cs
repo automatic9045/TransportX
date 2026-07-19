@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Silk.NET.Input;
 
 using TransportX.Diagnostics;
-using TransportX.Input;
 
 using TransportX.Scripting.Input;
 
@@ -255,6 +254,12 @@ namespace TransportX.Scripting.Commands
         public AxisFactory OnTick(ScriptAxis.TickFunc func)
         {
             OnTickFunc = func;
+            return this;
+        }
+
+        public AxisFactory ForwardToSignal(string floatSignalKey)
+        {
+            Parent.Signals.ForwardFloat(floatSignalKey, () => BuiltAxis is null ? 0 : BuiltAxis.Value);
             return this;
         }
 

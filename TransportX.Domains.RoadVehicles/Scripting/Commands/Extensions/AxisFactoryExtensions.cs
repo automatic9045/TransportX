@@ -57,12 +57,5 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Extensions
             float speed = float.Lerp(c, d, rate);
             return speed;
         }
-
-        public static AxisFactory ForwardToSignal(this AxisFactory factory, string signalKey)
-        {
-            ScriptAvatar avatar = (ScriptAvatar)factory.Context;
-            avatar.Commander.Signals.ForwardFloat(signalKey, () => factory.BuiltAxis!.Value);
-            return factory;
-        }
     }
 }

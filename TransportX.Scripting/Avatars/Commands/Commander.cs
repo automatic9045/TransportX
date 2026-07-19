@@ -15,10 +15,10 @@ namespace TransportX.Scripting.Avatars.Commands
         public ScriptAvatar Avatar { get; }
 
         public Components Components { get; }
-        public CommonCommands.Signals Signals { get; }
         public Debug Debug { get; }
         public CommonCommands.Input Input { get; }
         public Models Models { get; }
+        public CommonCommands.Signals Signals { get; }
         public Sounds Sounds { get; }
         public Spec Spec { get; }
         public Structure Structure { get; }
@@ -29,10 +29,11 @@ namespace TransportX.Scripting.Avatars.Commands
         {
             Avatar = avatar;
 
-            Components = new Components(avatar);
             Signals = new CommonCommands.Signals(avatar.SignalBus);
+
+            Components = new Components(avatar);
             Debug = new Debug(avatar);
-            Input = new CommonCommands.Input(avatar.InputManager, avatar.ErrorCollector, avatar);
+            Input = new CommonCommands.Input(Signals, avatar.InputManager, avatar.ErrorCollector, avatar);
             Models = new Models(avatar);
             Sounds = new Sounds(avatar);
             Spec = new Spec(avatar);

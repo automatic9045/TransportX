@@ -16,6 +16,7 @@ namespace TransportX.Scripting.Commands
     {
         private readonly object Context;
 
+        internal Signals Signals { get; }
         internal InputManager InputManager { get; }
         internal IErrorCollector ErrorCollector { get; }
 
@@ -25,8 +26,9 @@ namespace TransportX.Scripting.Commands
         private readonly ScriptKeyedList<string, IAxis> AxesKey;
         public IReadOnlyScriptKeyedList<string, IAxis> Axes => AxesKey;
 
-        internal Input(InputManager inputManager, IErrorCollector errorCollector, object context)
+        internal Input(Signals signals, InputManager inputManager, IErrorCollector errorCollector, object context)
         {
+            Signals = signals;
             InputManager = inputManager;
             ErrorCollector = errorCollector;
             Context = context;

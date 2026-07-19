@@ -73,6 +73,12 @@ namespace TransportX.Scripting.Commands
             return this;
         }
 
+        public ButtonFactory ForwardToSignal(string boolSignalKey)
+        {
+            Parent.Signals.ForwardBool(boolSignalKey, () => BuiltButton is null ? false : BuiltButton.IsPressed);
+            return this;
+        }
+
         public ScriptButton Build()
         {
             BuiltButton = new ScriptButton(Key)
