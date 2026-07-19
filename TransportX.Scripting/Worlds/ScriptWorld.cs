@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Collections;
+using TransportX.Communication;
 using TransportX.Dependency;
 using TransportX.Environment;
 using TransportX.Worlds;
@@ -22,6 +23,8 @@ namespace TransportX.Scripting.Worlds
 
         internal ScriptSoundCollection SoundsKey { get; }
         public override ISoundCollection Sounds => SoundsKey;
+
+        public SignalBus SignalBus { get; }
 
         public new EnvironmentProfile DefaultEnvironment
         {
@@ -42,6 +45,7 @@ namespace TransportX.Scripting.Worlds
         {
             ModelsKey = new ScriptModelCollection(ErrorCollector);
             SoundsKey = new ScriptSoundCollection(ErrorCollector);
+            SignalBus = new SignalBus();
 
             if (Info.Args.Count == 0) throw new InvalidOperationException("ワールドファイルのパスが指定されていません。");
 
