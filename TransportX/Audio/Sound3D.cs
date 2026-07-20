@@ -44,10 +44,12 @@ namespace TransportX.Audio
                 InnerRadius = 1,
                 InnerRadiusAngle = 0,
                 VolumeCurve = [
-                    new CurvePoint() { Distance = 0, DspSetting = 1 },
-                    new CurvePoint() { Distance = 0.1f, DspSetting = 0.3f },
-                    new CurvePoint() { Distance = 0.5f, DspSetting = 0.1f },
-                    new CurvePoint() { Distance = 1, DspSetting = 0 },
+                    new CurvePoint() { Distance = 0,     DspSetting = 1 },
+                    new CurvePoint() { Distance = 0.15f, DspSetting = 0.85f },
+                    new CurvePoint() { Distance = 0.25f, DspSetting = 0.7f },
+                    new CurvePoint() { Distance = 0.5f,  DspSetting = 0.3f },
+                    new CurvePoint() { Distance = 0.75f, DspSetting = 0.1f },
+                    new CurvePoint() { Distance = 1,     DspSetting = 0 },
                 ],
             };
 
