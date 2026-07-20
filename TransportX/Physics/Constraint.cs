@@ -29,12 +29,5 @@ namespace TransportX.Physics
             Simulation = simulation;
             Handle = handle;
         }
-
-        public void Update(Converter<TDescription, TDescription> updater)
-        {
-            TDescription oldDesc = Description;
-            TDescription newDesc = updater(oldDesc);
-            Description = newDesc;
-        }
     }
 }
