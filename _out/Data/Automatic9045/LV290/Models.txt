@@ -1,0 +1,8 @@
+Body_LV290N	Models\LV290N.glb	$OpenModel(0.6, 2, 30, 1)
+BifoldDoor_HingedPanel	Models\BifoldDoor_HingedPanel.glb	$ConvexHull(0.6, 2, 30, 1)
+BifoldDoor_GuidePanel	Models\BifoldDoor_GuidePanel.glb	$ConvexHull(0.6, 2, 30, 1)
+PocketDoor	Models\PocketDoor.glb	$ConvexHull(0.6, 2, 30, 1)
+WheelFL	Models_Kuusemi\WheelFL.glb	$Cylinder(0.48, 0.277, 0, 0, 0, 0, 0, 90)
+WheelRL	Models_Kuusemi\WheelRL.glb	$Cylinder(0.48, 0.57, 0, 0, 0, 0, 0, 90)
+AxleF	NONE	$Cylinder(0.1, 2.103, 0, 0, 0, 0, 0, 90)
+AxleR	NONE	$Cylinder(0.1, 1.81, 0, 0, 0, 0, 0, 90)

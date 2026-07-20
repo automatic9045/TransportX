@@ -1,0 +1,6 @@
+Engine	Sounds\Engine.wav
+EngineIdling	Sounds\EngineIdling.wav
+BifoldDoorOpen	Sounds\BifoldDoorOpen.wav
+BifoldDoorClose	Sounds\BifoldDoorClose.wav
+SlidingDoorOpen	Sounds\SlidingDoorOpen.wav
+SlidingDoorClose	Sounds\SlidingDoorOpen.wav

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<AvatarInfo>
+    <Title>LV290N</Title>
+    <Description>サンプル</Description>
+    <Author>automatic9045</Author>
+    <Path>$(bin)TransportX.Scripting.dll</Path>
+    <Args>
+        <Arg>Avatar.csx</Arg>
+    </Args>
+</AvatarInfo>

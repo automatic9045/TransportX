@@ -2,7 +2,7 @@
 
 Camera.Locate(-1, 0, 230, 8, 10, 0, 40, 0);
 
-Avatar.Load(@"..\LV290\LV290.dll");
+Avatar.Load(@"..\LV290\Avatar_LV290N.xml");
 Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
 
 Models.LoadList("Models.txt");
