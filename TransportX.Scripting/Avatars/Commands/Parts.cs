@@ -69,6 +69,18 @@ namespace TransportX.Scripting.Avatars.Commands
             return part;
         }
 
+        public bool CheckContains(Part part, string? errorMessage = null)
+        {
+            if (!All.TryGetValue(part.Key, out Part? inAll) || inAll != part)
+            {
+                ScriptError error = new(ErrorLevel.Error, errorMessage ?? $"指定されたパーツはこのアバターに登録されているものではありません。");
+                Avatar.ErrorCollector.Report(error);
+                return false;
+            }
+
+            return true;
+        }
+
         internal void RegisterComponents()
         {
             foreach (Part part in All)

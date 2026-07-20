@@ -13,6 +13,9 @@ namespace TransportX.Spatial
 {
     public class TransformedModel : IDrawable
     {
+        public static TransformedModel Empty() => new(Rendering.Model.Empty(), Pose.Identity);
+
+
         public IModel Model { get; }
 
         public Pose BasePose
