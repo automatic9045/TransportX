@@ -33,10 +33,10 @@ namespace TransportX.Rendering.Pipelines
                     Height = 1,
                     MipLevels = 1,
                     ArraySize = (uint)CascadeCount,
-                    Format = Format.R32_Float, // R32_Floatで直接データを流し込む
+                    Format = Format.R32_Float,
                     SampleDescription = new SampleDescription(1, 0),
                     Usage = ResourceUsage.Immutable,
-                    BindFlags = BindFlags.ShaderResource, // DSVは不要
+                    BindFlags = BindFlags.ShaderResource,
                     CPUAccessFlags = CpuAccessFlags.None,
                     MiscFlags = ResourceOptionFlags.None,
                 };

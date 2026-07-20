@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace TransportX.Components
 {
+    /// <summary>
+    /// コンポーネントを管理するエンジンを表します。
+    /// </summary>
     public class ComponentEngine : IDisposable
     {
         private readonly List<IComponent> All = [];

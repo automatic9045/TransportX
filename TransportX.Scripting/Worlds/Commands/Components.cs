@@ -19,6 +19,11 @@ namespace TransportX.Scripting.Worlds.Commands
             World = world;
         }
 
+        /// <summary>
+        /// ワールド全体にアタッチされているコンポーネントを取得します。指定したコンポーネントを初めて取得する場合は、自動的に新しいインスタンスが生成されます。
+        /// </summary>
+        /// <typeparam name="T">コンポーネントに対応するコマンドの型。</typeparam>
+        /// <returns><typeparamref name="T"/> 型のコンポーネントコマンド。</returns>
         public T Get<T>() where T : class, IWorldInstantiable<T>, IComponentCommand
         {
             T instance = (T)Instances.GetOrAdd(typeof(T), type =>

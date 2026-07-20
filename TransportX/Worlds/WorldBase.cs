@@ -50,7 +50,14 @@ namespace TransportX.Worlds
         public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
 
+        /// <summary>
+        /// ワールド全体にアタッチされているコンポーネントの一覧を取得します。
+        /// </summary>
         public IComponentCollection<IComponent> Components { get; } = new ComponentCollection<IComponent>();
+
+        /// <summary>
+        /// ワールドに関連する全てのコンポーネントを管理するエンジンを取得します。
+        /// </summary>
         public ComponentEngine ComponentEngine { get; } = new();
 
         public AvatarBase? Avatar
