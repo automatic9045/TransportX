@@ -12,5 +12,10 @@ namespace TransportX.Mathematics
         {
             return new SurfacePoint(point.X, point.Y, point.Z);
         }
+
+        public static implicit operator SurfacePoint((double X, double Y, double Z) point)
+        {
+            return new SurfacePoint((float)point.X, (float)point.Y, (float)point.Z);
+        }
     }
 }

@@ -12,5 +12,10 @@ namespace TransportX.Mathematics
         {
             return new CurvePoint(point.X, point.Y);
         }
+
+        public static implicit operator CurvePoint((double X, double Y) point)
+        {
+            return new CurvePoint((float)point.X, (float)point.Y);
+        }
     }
 }
