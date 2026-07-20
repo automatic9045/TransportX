@@ -41,6 +41,19 @@ namespace TransportX.Scripting.Collections
             return soundKey == string.Empty ? ISoundAsset.Empty : Sounds[soundKey];
         }
 
+        public bool GetSound(string soundKey, out ISoundAsset sound)
+        {
+            if (soundKey == string.Empty)
+            {
+                sound = ISoundAsset.Empty;
+                return true;
+            }
+            else
+            {
+                return Sounds.GetValue(soundKey, out sound);
+            }
+        }
+
         public bool TryGetSound(string soundKey, [MaybeNullWhen(false)] out ISoundAsset sound)
         {
             if (soundKey == string.Empty)

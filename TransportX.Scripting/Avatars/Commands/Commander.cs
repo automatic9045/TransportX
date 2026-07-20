@@ -61,6 +61,7 @@ namespace TransportX.Scripting.Avatars.Commands
         internal void Dispose()
         {
             Input.Dispose();
+            Sounds.Dispose();
             Structure.Dispose();
             Triggers.Dispose();
         }
@@ -93,6 +94,7 @@ namespace TransportX.Scripting.Avatars.Commands
         internal void Tick(TimeSpan elapsed)
         {
             Input.Tick(elapsed);
+            Sounds.Tick(elapsed);
             Triggers.Tick(elapsed);
         }
     }

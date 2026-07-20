@@ -39,8 +39,10 @@ namespace TransportX.Audio
             Emitter = new Emitter()
             {
                 ChannelCount = 1,
-                CurveDistanceScaler = 1,
+                CurveDistanceScaler = 50,
                 DopplerScaler = 1,
+                InnerRadius = 1,
+                InnerRadiusAngle = 0,
                 VolumeCurve = [
                     new CurvePoint() { Distance = 0, DspSetting = 1 },
                     new CurvePoint() { Distance = 0.1f, DspSetting = 0.3f },
