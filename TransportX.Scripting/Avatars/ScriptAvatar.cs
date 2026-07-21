@@ -12,6 +12,7 @@ using TransportX.Communication;
 using TransportX.Dependency;
 using TransportX.Network;
 using TransportX.Physics;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 using TransportX.Scripting.Avatars.Commands;
@@ -131,5 +132,7 @@ namespace TransportX.Scripting.Avatars
         {
             throw new NotSupportedException();
         }
+
+        public new ChunkIndex Locate(WorldPose worldPose) => base.Locate(worldPose);
     }
 }
