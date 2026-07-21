@@ -3,7 +3,7 @@ Copyright (c) 2026 automatic9045
 
 https://transportx.okaoka-depot.com
 
-TransportXとは、ユーザーが自由にマップや車両を作成できる3DCGバスシミュレーターです。作りたいものは何でも作れる、拡張性の高さが特長です。
+TransportXとは、ユーザーが自由にマップや車両を作成できる 3DCG バスシミュレーターです。理論上どのような機能も実現できる、極めて拡張性の高い設計が特長です。
 
 ## ライセンス
 [GPL-3.0](LICENSE.txt)
