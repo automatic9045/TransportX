@@ -85,7 +85,7 @@ namespace TransportX.Scripting.Avatars.Commands
         {
             BodyEnumerator enumerator = new();
             Avatar.PhysicsHost.Simulation.Solver.EnumerateConnectedBodyReferences(constraint.Handle, ref enumerator);
-            
+
             if (enumerator.Bodies.Count != 2)
             {
                 ScriptError error = new(ErrorLevel.Error, "2 体間制約以外には対応していません。");

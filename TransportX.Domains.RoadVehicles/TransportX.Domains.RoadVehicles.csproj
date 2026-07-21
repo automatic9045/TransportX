@@ -8,7 +8,7 @@
     <OutputPath>$(BinOutputPath)Plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\TransportX\TransportX.csproj">
       <ExcludeAssets>runtime;native</ExcludeAssets>

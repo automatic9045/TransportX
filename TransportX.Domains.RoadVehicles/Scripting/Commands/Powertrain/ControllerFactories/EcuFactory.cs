@@ -156,7 +156,7 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.Controll
 
                 AntiStall = AntiStallValue,
                 IdlingGains = IdlingGainsValue,
-                
+
                 NIdlingRpm = NIdlingRpm,
                 NonNIdlingRpm = NonNIdlingRpm,
                 LimitRpm = LimitRpmValue,

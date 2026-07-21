@@ -15,7 +15,7 @@ namespace TransportX.Domains.RoadTraffic.Network
         private readonly Plan[] Plans;
 
         private int Index = 0;
-        
+
         private bool IsFirstTick = true;
         private int ApplyStartIndex = 0;
         private int ApplyLength = 0;

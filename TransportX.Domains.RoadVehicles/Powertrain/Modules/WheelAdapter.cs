@@ -21,7 +21,7 @@ namespace TransportX.Domains.RoadVehicles.Powertrain.Modules
         public IReadOnlyList<Shaft> InputShafts { get; }
         public IReadOnlyList<Shaft> OutputShafts { get; } = [];
         public IReadOnlyList<IConstraint> Constraints { get; } = [];
-        
+
         public WheelAdapter(Shaft input, DynamicTransformedModel wheel, bool reverseDirection)
         {
             Input = input;
