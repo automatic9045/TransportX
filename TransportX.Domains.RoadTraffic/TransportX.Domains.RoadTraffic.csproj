@@ -7,7 +7,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <OutputPath>$(BinOutputPath)Plugins\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AssemblyVersion>0.4.60522.1</AssemblyVersion>
+    <AssemblyVersion>0.6.60721.1</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
