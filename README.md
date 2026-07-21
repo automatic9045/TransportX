@@ -16,7 +16,7 @@ TransportXとは、ユーザーが自由にマップや車両を作成できる3
 Copyright (c) .NET Foundation and Contributors
 
 ### [AssimpNetter](https://github.com/Saalvage/AssimpNetter) (Assimp: BSD-3-Clause, AssimpNetter: MIT)
-Copyright (c) 2012-2020 AssimpNet - Nicholas Woodfield
+Copyright (c) 2012-2020 AssimpNet - Nicholas Woodfield  
 Copyright (c) 2024-2026 AssimpNetter - Stefan Koch
 
 ### [bepuphysics v2](https://github.com/bepu/bepuphysics2) (Apache-2.0)
@@ -26,8 +26,8 @@ Copyright (c) Bepu Entertainment LLC
 Copyright (c) 2016 João Matos, Dimitar Dobrev
 
 ### [DirectXTexNet](https://github.com/deng0/DirectXTexNet) (MIT)
-Copyright (c) 2024 Dennis Gocke
-Copyright (c) 2016 Simon Taylor
+Copyright (c) 2024 Dennis Gocke  
+Copyright (c) 2016 Simon Taylor  
 Copyright (c) 2011-2024 Microsoft Corp
 
 ### [dotnet](https://github.com/dotnet/dotnet) (MIT)
@@ -46,7 +46,7 @@ Copyright (c) 2010-2017 Alexandre Mutel, 2017 Jeremy Koritzinsky
 Copyright (c) 2019 Vicente Penades
 
 ### [Silk.NET 2.X](https://github.com/dotnet/Silk.NET) (MIT)
-Copyright (c) 2019-2020 Ultz Limited
+Copyright (c) 2019-2020 Ultz Limited  
 Copyright (c) 2021- .NET Foundation and Contributors
 
 ### [Vortice.Windows](https://github.com/amerkoleci/Vortice.Windows) (MIT)
