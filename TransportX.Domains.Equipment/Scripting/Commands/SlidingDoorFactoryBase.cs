@@ -19,7 +19,9 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
     {
         private readonly DoorsBase Parent;
 
-        private DoorPanel? PanelValue = null;
+        private TransformedModel? PanelModel = null;
+        private float PanelWidth = 1;
+        private OpenDirection Direction = OpenDirection.Left;
 
         private AnimationProfile OpenAnimationValue = new([(0, 0), (1, 1)], new PidGains(1, 0, 0), TimeSpan.FromSeconds(1));
         private AnimationProfile CloseAnimationValue = new([(0, 0), (1, 1)], new PidGains(1, 0, 0), TimeSpan.FromSeconds(1));
@@ -40,7 +42,20 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
 
         public SlidingDoorFactoryBase Panel(TransformedModel model, double width)
         {
-            PanelValue = new DoorPanel(model, (float)width);
+            PanelModel = model;
+            PanelWidth = (float)width;
+            return this;
+        }
+
+        protected SlidingDoorFactoryBase OpenLeft()
+        {
+            Direction = OpenDirection.Left;
+            return this;
+        }
+
+        protected SlidingDoorFactoryBase OpenRight()
+        {
+            Direction = OpenDirection.Right;
             return this;
         }
 
@@ -90,15 +105,13 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
                 return BuiltDoor;
             }
 
-            if (!PanelValue.HasValue) return ReportAndCreateEmpty("ドアのパネルが指定されていません。");
-
-            DoorPanel Panel = PanelValue.Value;
+            if (PanelModel is null) return ReportAndCreateEmpty("ドアのパネルが指定されていません。");
 
             DoorAnimationProfile openProfile = CreateAnimationProfile(OpenAnimationValue);
             DoorAnimationProfile closeProfile = CreateAnimationProfile(CloseAnimationValue);
             DoorAnimator animator = new(openProfile, closeProfile, Restitution0Value, Restitution1Value);
 
-            SlidingDoor door = new(Panel.Model, Panel.Width)
+            SlidingDoor door = new(PanelModel, PanelWidth * (int)Direction)
             {
                 DoorSwitch = DoorSwitchValue,
                 Animator = animator,
@@ -110,7 +123,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
 
             SlidingDoorCommand ReportAndCreateEmpty(string message)
             {
-                ScriptError error = new(ErrorLevel.Error, "このドアは既にビルド済です。");
+                ScriptError error = new(ErrorLevel.Error, message);
                 Parent.ErrorCollector.Report(error);
                 return SlidingDoorCommand.Empty(Key);
             }

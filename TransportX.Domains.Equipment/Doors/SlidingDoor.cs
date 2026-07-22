@@ -24,9 +24,6 @@ namespace TransportX.Domains.Equipment.Doors
         }
 
 
-        //private const float Width = 1.005f;
-
-
         private readonly Pose PanelOrigin;
         private readonly float PanelWidth;
 
@@ -49,7 +46,7 @@ namespace TransportX.Domains.Equipment.Doors
             Animator.IsOpen = DoorSwitch.Value;
             Animator.Tick(elapsed);
 
-            Panel.BasePose = new Pose(0, 0, Animator.OpenRate * PanelWidth) * PanelOrigin;
+            Panel.BasePose = new Pose(0, 0, -Animator.OpenRate * PanelWidth) * PanelOrigin;
         }
     }
 }

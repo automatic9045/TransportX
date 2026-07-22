@@ -36,6 +36,8 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, double width) => (AvatarBifoldDoorFactory)base.HingedPanel(model, width);
         public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, double width) => (AvatarBifoldDoorFactory)base.GuidePanel(model, width);
         public new AvatarBifoldDoorFactory PanelThickness(double thickness) => (AvatarBifoldDoorFactory)base.PanelThickness(thickness);
+        public new AvatarBifoldDoorFactory OpenLeft() => (AvatarBifoldDoorFactory)base.OpenLeft();
+        public new AvatarBifoldDoorFactory OpenRight() => (AvatarBifoldDoorFactory)base.OpenRight();
         public new AvatarBifoldDoorFactory OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
             => (AvatarBifoldDoorFactory)base.OpenAnimation(pidGains, duration, curvePoints);
         public new AvatarBifoldDoorFactory OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)

@@ -28,6 +28,8 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? Panel(part, width) : this;
 
         public new AvatarSlidingDoorFactory Panel(TransformedModel model, double width) => (AvatarSlidingDoorFactory)base.Panel(model, width);
+        public new AvatarSlidingDoorFactory OpenLeft() => (AvatarSlidingDoorFactory)base.OpenLeft();
+        public new AvatarSlidingDoorFactory OpenRight() => (AvatarSlidingDoorFactory)base.OpenRight();
         public new AvatarSlidingDoorFactory OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
             => (AvatarSlidingDoorFactory)base.OpenAnimation(pidGains, duration, curvePoints);
         public new AvatarSlidingDoorFactory OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)

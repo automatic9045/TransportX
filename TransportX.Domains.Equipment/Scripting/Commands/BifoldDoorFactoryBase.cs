@@ -22,6 +22,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         private DoorPanel? HingedPanelValue = null;
         private DoorPanel? GuidePanelValue = null;
         private float PanelThicknessValue = 0.1f;
+        private OpenDirection DirectionValue = OpenDirection.Left;
 
         private AnimationProfile OpenAnimationValue = new([(0, 0), (1, 1)], new PidGains(1, 0, 0), TimeSpan.FromSeconds(1));
         private AnimationProfile CloseAnimationValue = new([(0, 0), (1, 1)], new PidGains(1, 0, 0), TimeSpan.FromSeconds(1));
@@ -55,6 +56,18 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         public BifoldDoorFactoryBase PanelThickness(double thickness)
         {
             PanelThicknessValue = (float)thickness;
+            return this;
+        }
+
+        public BifoldDoorFactoryBase OpenLeft()
+        {
+            DirectionValue = OpenDirection.Left;
+            return this;
+        }
+
+        public BifoldDoorFactoryBase OpenRight()
+        {
+            DirectionValue = OpenDirection.Right;
             return this;
         }
 
@@ -114,7 +127,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             DoorAnimationProfile closeProfile = CreateAnimationProfile(CloseAnimationValue);
             DoorAnimator animator = new(openProfile, closeProfile, Restitution0Value, Restitution1Value);
 
-            BifoldDoor door = new(hingedPanel.Model, guidePanel.Model, hingedPanel.Width, guidePanel.Width, PanelThicknessValue)
+            BifoldDoor door = new(hingedPanel.Model, guidePanel.Model, hingedPanel.Width, guidePanel.Width, PanelThicknessValue, DirectionValue)
             {
                 DoorSwitch = DoorSwitchValue,
                 Animator = animator,
@@ -126,7 +139,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
 
             BifoldDoorCommand ReportAndCreateEmpty(string message)
             {
-                ScriptError error = new(ErrorLevel.Error, "このドアは既にビルド済です。");
+                ScriptError error = new(ErrorLevel.Error, message);
                 Parent.ErrorCollector.Report(error);
                 return BifoldDoorCommand.Empty(Key);
             }
