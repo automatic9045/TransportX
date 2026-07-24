@@ -35,6 +35,12 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             return factory;
         }
 
+        public AvatarGlidingDoorFactory AddGliding(string key)
+        {
+            AvatarGlidingDoorFactory factory = new(this, key);
+            return factory;
+        }
+
         public AvatarSlidingDoorFactory AddSliding(string key)
         {
             AvatarSlidingDoorFactory factory = new(this, key);
