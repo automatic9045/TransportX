@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         private readonly DoorsBase Parent;
 
         private TransformedModel? PanelModel = null;
+        private Quaternion PanelOriginOffset = Quaternion.Identity;
         private float PanelWidth = 1;
         private OpenDirection Direction = OpenDirection.Left;
 
@@ -40,12 +42,22 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        public SlidingDoorFactoryBase Panel(TransformedModel model, double width)
+        protected SlidingDoorFactoryBase Panel(TransformedModel model, Quaternion originOffset, double width)
         {
             PanelModel = model;
+            PanelOriginOffset = originOffset;
             PanelWidth = (float)width;
             return this;
         }
+
+        protected SlidingDoorFactoryBase Panel(TransformedModel model, double rotationX, double rotationY, double rotationZ, double width)
+        {
+            SixDoF position = SixDoF.FromDegrees(0, 0, 0, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return Panel(model, position.ToQuaternion(), width);
+        }
+
+        protected SlidingDoorFactoryBase Panel(TransformedModel model, double width)
+            => Panel(model, Quaternion.Identity, width);
 
         protected SlidingDoorFactoryBase OpenLeft()
         {
@@ -59,38 +71,38 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             return this;
         }
 
-        public SlidingDoorFactoryBase OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        protected SlidingDoorFactoryBase OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             OpenAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
             return this;
         }
 
-        public SlidingDoorFactoryBase OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        protected SlidingDoorFactoryBase OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => OpenAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public SlidingDoorFactoryBase CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        protected SlidingDoorFactoryBase CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             CloseAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
             return this;
         }
 
-        public SlidingDoorFactoryBase CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        protected SlidingDoorFactoryBase CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => CloseAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public SlidingDoorFactoryBase Restitution(double restitution0, double restitution1)
+        protected SlidingDoorFactoryBase Restitution(double restitution0, double restitution1)
         {
             Restitution0Value = (float)restitution0;
             Restitution1Value = (float)restitution1;
             return this;
         }
 
-        public SlidingDoorFactoryBase DoorSwitch(Signal<bool> signal)
+        protected SlidingDoorFactoryBase DoorSwitch(Signal<bool> signal)
         {
             DoorSwitchValue = signal;
             return this;
         }
 
-        public SlidingDoorFactoryBase DoorSwitch(string signalKey)
+        protected SlidingDoorFactoryBase DoorSwitch(string signalKey)
         {
             Signal<bool> signal = Parent.Signals.Bool(signalKey);
             return DoorSwitch(signal);
@@ -111,7 +123,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             DoorAnimationProfile closeProfile = CreateAnimationProfile(CloseAnimationValue);
             DoorAnimator animator = new(openProfile, closeProfile, Restitution0Value, Restitution1Value);
 
-            SlidingDoor door = new(PanelModel, PanelWidth * (int)Direction)
+            SlidingDoor door = new(PanelModel, PanelOriginOffset, PanelWidth * (int)Direction)
             {
                 DoorSwitch = DoorSwitchValue,
                 Animator = animator,
@@ -141,7 +153,6 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         }
 
 
-        private readonly record struct DoorPanel(TransformedModel Model, float Width);
         private readonly record struct AnimationProfile(IReadOnlyCollection<CurvePoint> CurvePoints, PidGains PidGains, TimeSpan Duration);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace TransportX.Domains.Equipment.Doors
         {
             DoorAnimationProfile animationProfile = new(new Curve([(0, 0), (1, 1)]), new PidController() { K = new PidGains(1, 0, 0) }, TimeSpan.FromSeconds(1));
             DoorAnimator animator = new(animationProfile, animationProfile, 0, 0);
-            return new SlidingDoor(TransformedModel.Empty(), 1)
+            return new SlidingDoor(TransformedModel.Empty(), Quaternion.Identity, 1)
             {
                 Animator = animator,
                 DoorSwitch = new Signal<bool>(false),
@@ -25,6 +26,7 @@ namespace TransportX.Domains.Equipment.Doors
 
 
         private readonly Pose PanelOrigin;
+        private readonly Quaternion PanelOriginOffsetInverse;
         private readonly float PanelWidth;
 
         public TransformedModel Panel { get; }
@@ -34,10 +36,11 @@ namespace TransportX.Domains.Equipment.Doors
 
         public bool IsOpen => Animator.IsOpen;
 
-        public SlidingDoor(TransformedModel panel, float panelWidth)
+        public SlidingDoor(TransformedModel panel, Quaternion panelOriginOffset, float panelWidth)
         {
             Panel = panel;
-            PanelOrigin = Panel.BasePose;
+            PanelOrigin = panelOriginOffset * Panel.BasePose;
+            PanelOriginOffsetInverse = Quaternion.Inverse(panelOriginOffset);
             PanelWidth = panelWidth;
         }
 
@@ -46,7 +49,7 @@ namespace TransportX.Domains.Equipment.Doors
             Animator.IsOpen = DoorSwitch.Value;
             Animator.Tick(elapsed);
 
-            Panel.BasePose = new Pose(0, 0, -Animator.OpenRate * PanelWidth) * PanelOrigin;
+            Panel.BasePose = PanelOriginOffsetInverse * new Pose(0, 0, -Animator.OpenRate * PanelWidth) * PanelOrigin;
         }
     }
 }

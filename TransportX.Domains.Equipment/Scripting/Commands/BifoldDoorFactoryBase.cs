@@ -19,8 +19,8 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
     {
         private readonly DoorsBase Parent;
 
-        private DoorPanel? HingedPanelValue = null;
-        private DoorPanel? GuidePanelValue = null;
+        private BifoldDoor.Panel? HingedPanelValue = null;
+        private BifoldDoor.Panel? GuidePanelValue = null;
         private float PanelThicknessValue = 0.1f;
         private OpenDirection DirectionValue = OpenDirection.Left;
 
@@ -41,68 +41,90 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        public BifoldDoorFactoryBase HingedPanel(TransformedModel model, double width)
+        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, Pose originOffset, double width)
         {
-            HingedPanelValue = new DoorPanel(model, (float)width);
+            HingedPanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
             return this;
         }
 
-        public BifoldDoorFactoryBase GuidePanel(TransformedModel model, double width)
+        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
         {
-            GuidePanelValue = new DoorPanel(model, (float)width);
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return HingedPanel(model, position.ToPose(), width);
+        }
+
+        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double x, double y, double z, double width)
+            => HingedPanel(model, x, y, z, 0, 0, 0, width);
+        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double width)
+            => HingedPanel(model, 0, 0, 0, width);
+
+        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, Pose originOffset, double width)
+        {
+            GuidePanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
             return this;
         }
 
-        public BifoldDoorFactoryBase PanelThickness(double thickness)
+        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+        {
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return GuidePanel(model, position.ToPose(), width);
+        }
+
+        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double x, double y, double z, double width)
+            => GuidePanel(model, x, y, z, 0, 0, 0, width);
+        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double width)
+            => GuidePanel(model, 0, 0, 0, width);
+
+        protected BifoldDoorFactoryBase PanelThickness(double thickness)
         {
             PanelThicknessValue = (float)thickness;
             return this;
         }
 
-        public BifoldDoorFactoryBase OpenLeft()
+        protected BifoldDoorFactoryBase OpenLeft()
         {
             DirectionValue = OpenDirection.Left;
             return this;
         }
 
-        public BifoldDoorFactoryBase OpenRight()
+        protected BifoldDoorFactoryBase OpenRight()
         {
             DirectionValue = OpenDirection.Right;
             return this;
         }
 
-        public BifoldDoorFactoryBase OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        protected BifoldDoorFactoryBase OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             OpenAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
             return this;
         }
 
-        public BifoldDoorFactoryBase OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        protected BifoldDoorFactoryBase OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => OpenAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public BifoldDoorFactoryBase CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        protected BifoldDoorFactoryBase CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             CloseAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
             return this;
         }
 
-        public BifoldDoorFactoryBase CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        protected BifoldDoorFactoryBase CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => CloseAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public BifoldDoorFactoryBase Restitution(double restitution0, double restitution1)
+        protected BifoldDoorFactoryBase Restitution(double restitution0, double restitution1)
         {
             Restitution0Value = (float)restitution0;
             Restitution1Value = (float)restitution1;
             return this;
         }
 
-        public BifoldDoorFactoryBase DoorSwitch(Signal<bool> signal)
+        protected BifoldDoorFactoryBase DoorSwitch(Signal<bool> signal)
         {
             DoorSwitchValue = signal;
             return this;
         }
 
-        public BifoldDoorFactoryBase DoorSwitch(string signalKey)
+        protected BifoldDoorFactoryBase DoorSwitch(string signalKey)
         {
             Signal<bool> signal = Parent.Signals.Bool(signalKey);
             return DoorSwitch(signal);
@@ -120,14 +142,14 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             if (!HingedPanelValue.HasValue) return ReportAndCreateEmpty("ドアのヒンジパネルが指定されていません。");
             if (!GuidePanelValue.HasValue) return ReportAndCreateEmpty("ドアのガイドパネルが指定されていません。");
 
-            DoorPanel hingedPanel = HingedPanelValue.Value;
-            DoorPanel guidePanel = GuidePanelValue.Value;
+            BifoldDoor.Panel hingedPanel = HingedPanelValue.Value;
+            BifoldDoor.Panel guidePanel = GuidePanelValue.Value;
 
             DoorAnimationProfile openProfile = CreateAnimationProfile(OpenAnimationValue);
             DoorAnimationProfile closeProfile = CreateAnimationProfile(CloseAnimationValue);
             DoorAnimator animator = new(openProfile, closeProfile, Restitution0Value, Restitution1Value);
 
-            BifoldDoor door = new(hingedPanel.Model, guidePanel.Model, hingedPanel.Width, guidePanel.Width, PanelThicknessValue, DirectionValue)
+            BifoldDoor door = new(hingedPanel, guidePanel, PanelThicknessValue, DirectionValue)
             {
                 DoorSwitch = DoorSwitchValue,
                 Animator = animator,
@@ -157,7 +179,6 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         }
 
 
-        private readonly record struct DoorPanel(TransformedModel Model, float Width);
         private readonly record struct AnimationProfile(IReadOnlyCollection<CurvePoint> CurvePoints, PidGains PidGains, TimeSpan Duration);
     }
 }

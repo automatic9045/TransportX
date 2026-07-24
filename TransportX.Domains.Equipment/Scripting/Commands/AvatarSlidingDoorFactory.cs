@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,12 +22,19 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Parent = parent;
         }
 
-        public AvatarSlidingDoorFactory Panel(Part part, double width)
-            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? Panel(part.Model, width) : this;
+        public AvatarSlidingDoorFactory Panel(string partKey, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? Panel(part, rotationX, rotationY, rotationZ, width) : this;
 
-        public AvatarSlidingDoorFactory Panel(string partKey, double width)
-            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? Panel(part, width) : this;
+        public AvatarSlidingDoorFactory Panel(Part part, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? Panel(part.Model, rotationX, rotationY, rotationZ, width) : this;
 
+        public AvatarSlidingDoorFactory Panel(string partKey, double width) => Panel(partKey, 0, 0, 0, width);
+        public AvatarSlidingDoorFactory Panel(Part part, double width) => Panel(part, 0, 0, 0, width);
+
+        public new AvatarSlidingDoorFactory Panel(TransformedModel model, Quaternion originOffset, double width)
+            => (AvatarSlidingDoorFactory)base.Panel(model, originOffset, width);
+        public new AvatarSlidingDoorFactory Panel(TransformedModel model, double rotationX, double rotationY, double rotationZ, double width)
+            => (AvatarSlidingDoorFactory)base.Panel(model, rotationX, rotationY, rotationZ, width);
         public new AvatarSlidingDoorFactory Panel(TransformedModel model, double width) => (AvatarSlidingDoorFactory)base.Panel(model, width);
         public new AvatarSlidingDoorFactory OpenLeft() => (AvatarSlidingDoorFactory)base.OpenLeft();
         public new AvatarSlidingDoorFactory OpenRight() => (AvatarSlidingDoorFactory)base.OpenRight();

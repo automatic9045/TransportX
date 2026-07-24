@@ -44,9 +44,15 @@ namespace TransportX
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Quaternion ToQuaternion()
+        {
+            return Quaternion.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Pose ToPose()
         {
-            Quaternion rotation = Quaternion.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z);
+            Quaternion rotation = ToQuaternion();
             return new Pose(Translation, rotation);
         }
     }

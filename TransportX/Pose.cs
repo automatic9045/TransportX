@@ -62,6 +62,22 @@ namespace TransportX
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Pose operator *(in Pose pose, in Quaternion rotation)
+        {
+            Vector3 position = Vector3.Transform(pose.Position, rotation);
+            Quaternion orientation = rotation * pose.Orientation;
+            return new Pose(position, orientation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Pose operator *(in Quaternion rotation, in Pose pose)
+        {
+            Vector3 position = pose.Position;
+            Quaternion orientation = pose.Orientation * rotation;
+            return new Pose(position, orientation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Pose FromMatrix4x4(Matrix4x4 matrix)
         {
             if (!Matrix4x4.Decompose(matrix, out _, out Quaternion orientation, out Vector3 position))

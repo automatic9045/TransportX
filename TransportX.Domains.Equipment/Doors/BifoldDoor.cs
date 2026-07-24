@@ -18,11 +18,14 @@ namespace TransportX.Domains.Equipment.Doors
         {
             DoorAnimationProfile animationProfile = new(new Curve([(0, 0), (1, 1)]), new PidController() { K = new PidGains(1, 0, 0) }, TimeSpan.FromSeconds(1));
             DoorAnimator animator = new(animationProfile, animationProfile, 0, 0);
-            return new BifoldDoor(TransformedModel.Empty(), TransformedModel.Empty(), 1, 1, 0.1f, OpenDirection.Left)
+            return new BifoldDoor(CreatePanel(), CreatePanel(), 0.1f, OpenDirection.Left)
             {
                 Animator = animator,
                 DoorSwitch = new Signal<bool>(false),
             };
+
+
+            static Panel CreatePanel() => new(TransformedModel.Empty(), Pose.Identity, 1);
         }
 
 
@@ -31,6 +34,8 @@ namespace TransportX.Domains.Equipment.Doors
 
         private readonly Pose HingedPanelOrigin;
         private readonly Pose GuidePanelOrigin;
+        private readonly Pose HingedPanelOriginOffsetInverse;
+        private readonly Pose GuidePanelOriginOffsetInverse;
 
         public TransformedModel HingedPanel { get; }
         public TransformedModel GuidePanel { get; }
@@ -40,18 +45,19 @@ namespace TransportX.Domains.Equipment.Doors
 
         public bool IsOpen => Animator.IsOpen;
 
-        public BifoldDoor(TransformedModel hingedPanel, TransformedModel guidePanel, float hingedPanelWidth, float guidePanelWidth, float doorThickness, OpenDirection direction)
+        public BifoldDoor(Panel hingedPanel, Panel guidePanel, float panelThickness, OpenDirection direction)
         {
-            Coeff = new Coefficients(hingedPanelWidth, guidePanelWidth, doorThickness, direction);
+            Coeff = new Coefficients(hingedPanel.Width, guidePanel.Width, panelThickness, direction);
 
-            HingedPanel = hingedPanel;
-            GuidePanel = guidePanel;
+            HingedPanel = hingedPanel.Model;
+            GuidePanel = guidePanel.Model;
 
-            HingedPanelOrigin = HingedPanel.BasePose;
-            GuidePanelOrigin = GuidePanel.BasePose;
+            HingedPanelOrigin = hingedPanel.OriginOffset * HingedPanel.BasePose;
+            GuidePanelOrigin = guidePanel.OriginOffset * GuidePanel.BasePose;
+            HingedPanelOriginOffsetInverse = Pose.Inverse(hingedPanel.OriginOffset);
+            GuidePanelOriginOffsetInverse = Pose.Inverse(guidePanel.OriginOffset);
 
-            float zDiff = GuidePanelOrigin.Position.Z - HingedPanelOrigin.Position.Z;
-            SlideSign = zDiff < 0 ? 1 : -1;
+            SlideSign = GuidePanelOrigin.Position.Z - HingedPanelOrigin.Position.Z < 0 ? 1 : -1;
         }
 
         public void Tick(TimeSpan elapsed)
@@ -65,7 +71,7 @@ namespace TransportX.Domains.Equipment.Doors
             float sqrtPlus1 = float.Sqrt(1 + cosHingedPanelBase);
             float sqrtMinus1 = float.Sqrt(1 - cosHingedPanelBase);
             Quaternion rotation1 = new(0, Coeff.Direction * 0.5f * (sqrtPlus1 - sqrtMinus1), 0, 0.5f * (sqrtPlus1 + sqrtMinus1));
-            HingedPanel.BasePose = new Pose(Vector3.Zero, rotation1) * HingedPanelOrigin;
+            HingedPanel.BasePose = HingedPanelOriginOffsetInverse * new Pose(Vector3.Zero, rotation1) * HingedPanelOrigin;
 
             float cosHingedPanel = cosHingedPanelBase * Coeff.CosAlpha - sinHingedPanelBase * Coeff.SinAlpha;
             float sinHingedPanel = sinHingedPanelBase * Coeff.CosAlpha + cosHingedPanelBase * Coeff.SinAlpha;
@@ -87,7 +93,7 @@ namespace TransportX.Domains.Equipment.Doors
             float sqrtPlus2 = float.Sqrt(1 + cosGuidePanelBase);
             float sqrtMinus2 = float.Sqrt(1 - cosGuidePanelBase);
             Quaternion rotation2 = new(0, -Coeff.Direction * 0.5f * (sqrtPlus2 - sqrtMinus2), 0, 0.5f * (sqrtPlus2 + sqrtMinus2));
-            GuidePanel.BasePose = new Pose(0, 0, SlideSign * openWidth, rotation2) * GuidePanelOrigin;
+            GuidePanel.BasePose = GuidePanelOriginOffsetInverse * new Pose(0, 0, SlideSign * openWidth, rotation2) * GuidePanelOrigin;
 
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,7 +105,7 @@ namespace TransportX.Domains.Equipment.Doors
         {
             public float HingedPanelWidth { get; }
             public float GuidePanelWidth { get; }
-            public float HalfDoorThickness { get; }
+            public float HalfPanelThickness { get; }
             public int Direction { get; }
 
             public float HingedPanelLength { get; }
@@ -112,23 +118,26 @@ namespace TransportX.Domains.Equipment.Doors
             public float SinBeta { get; }
             public float CosBeta { get; }
 
-            public Coefficients(float hingedPanelWidth, float guidePanelWidth, float doorThickness, OpenDirection direction)
+            public Coefficients(float hingedPanelWidth, float guidePanelWidth, float panelThickness, OpenDirection direction)
             {
                 HingedPanelWidth = hingedPanelWidth;
                 GuidePanelWidth = guidePanelWidth;
-                HalfDoorThickness = doorThickness / 2;
+                HalfPanelThickness = panelThickness / 2;
                 Direction = (int)direction;
 
-                HingedPanelLength = float.Sqrt(HingedPanelWidth * HingedPanelWidth + HalfDoorThickness * HalfDoorThickness);
-                GuidePanelLength = float.Sqrt(GuidePanelWidth * GuidePanelWidth + HalfDoorThickness * HalfDoorThickness);
+                HingedPanelLength = float.Sqrt(HingedPanelWidth * HingedPanelWidth + HalfPanelThickness * HalfPanelThickness);
+                GuidePanelLength = float.Sqrt(GuidePanelWidth * GuidePanelWidth + HalfPanelThickness * HalfPanelThickness);
 
-                MaxOpenAngle = -float.Atan2(HalfDoorThickness, HingedPanelWidth) + float.Acos(float.Clamp(GuidePanelWidth / HingedPanelLength, -1, 1));
+                MaxOpenAngle = -float.Atan2(HalfPanelThickness, HingedPanelWidth) + float.Acos(float.Clamp(GuidePanelWidth / HingedPanelLength, -1, 1));
 
-                SinAlpha = HalfDoorThickness / HingedPanelLength;
+                SinAlpha = HalfPanelThickness / HingedPanelLength;
                 CosAlpha = HingedPanelWidth / HingedPanelLength;
-                SinBeta = HalfDoorThickness / HingedPanelLength;
+                SinBeta = HalfPanelThickness / HingedPanelLength;
                 CosBeta = GuidePanelWidth / GuidePanelLength;
             }
         }
+
+
+        public readonly record struct Panel(TransformedModel Model, Pose OriginOffset, float Width);
     }
 }

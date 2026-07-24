@@ -21,20 +21,50 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Parent = parent;
         }
 
-        public AvatarBifoldDoorFactory HingedPanel(Part part, double width)
-            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? HingedPanel(part.Model, width) : this;
+        public AvatarBifoldDoorFactory HingedPanel(string partKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? HingedPanel(part, x, y, z, rotationX, rotationY, rotationZ, width) : this;
+        public AvatarBifoldDoorFactory GuidePanel(string partKey, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? GuidePanel(part, x, y, z, rotationX, rotationY, rotationZ, width) : this;
 
-        public AvatarBifoldDoorFactory GuidePanel(Part part, double width)
-            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? GuidePanel(part.Model, width) : this;
+        public AvatarBifoldDoorFactory HingedPanel(Part part, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? HingedPanel(part.Model, x, y, z, rotationX, rotationY, rotationZ, width) : this;
+        public AvatarBifoldDoorFactory GuidePanel(Part part, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => Parent.Avatar.Commander.Structure.Parts.CheckContains(part) ? GuidePanel(part.Model, x, y, z, rotationX, rotationY, rotationZ, width) : this;
 
+        public AvatarBifoldDoorFactory HingedPanel(string partKey, double x, double y, double z, double width)
+            => HingedPanel(partKey, x, y, z, 0, 0, 0, width);
         public AvatarBifoldDoorFactory HingedPanel(string partKey, double width)
-            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? HingedPanel(part, width) : this;
-
+            => HingedPanel(partKey, 0, 0, 0, width);
+        public AvatarBifoldDoorFactory GuidePanel(string partKey, double x, double y, double z, double width)
+            => GuidePanel(partKey, x, y, z, 0, 0, 0, width);
         public AvatarBifoldDoorFactory GuidePanel(string partKey, double width)
-            => Parent.Avatar.Commander.Structure.Parts.All.GetValue(partKey, out Part part) ? GuidePanel(part, width) : this;
+            => GuidePanel(partKey, 0, 0, 0, width);
 
-        public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, double width) => (AvatarBifoldDoorFactory)base.HingedPanel(model, width);
-        public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, double width) => (AvatarBifoldDoorFactory)base.GuidePanel(model, width);
+        public AvatarBifoldDoorFactory HingedPanel(Part part, double x, double y, double z, double width)
+            => HingedPanel(part, x, y, z, 0, 0, 0, width);
+        public AvatarBifoldDoorFactory HingedPanel(Part part, double width)
+            => HingedPanel(part, 0, 0, 0, width);
+        public AvatarBifoldDoorFactory GuidePanel(Part part, double x, double y, double z, double width)
+            => GuidePanel(part, x, y, z, 0, 0, 0, width);
+        public AvatarBifoldDoorFactory GuidePanel(Part part, double width)
+            => GuidePanel(part, 0, 0, 0, width);
+
+        public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, Pose originOffset, double width)
+            => (AvatarBifoldDoorFactory)base.HingedPanel(model, originOffset, width);
+        public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => (AvatarBifoldDoorFactory)base.HingedPanel(model, x, y, z, rotationX, rotationY, rotationZ, width);
+        public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, double x, double y, double z, double width)
+            => (AvatarBifoldDoorFactory)base.HingedPanel(model, x, y, z, width);
+        public new AvatarBifoldDoorFactory HingedPanel(TransformedModel model, double width)
+            => (AvatarBifoldDoorFactory)base.HingedPanel(model, width);
+        public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, Pose originOffset, double width)
+            => (AvatarBifoldDoorFactory)base.GuidePanel(model, originOffset, width);
+        public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+            => (AvatarBifoldDoorFactory)base.GuidePanel(model, x, y, z, rotationX, rotationY, rotationZ, width);
+        public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, double x, double y, double z, double width)
+            => (AvatarBifoldDoorFactory)base.GuidePanel(model, x, y, z, width);
+        public new AvatarBifoldDoorFactory GuidePanel(TransformedModel model, double width)
+            => (AvatarBifoldDoorFactory)base.GuidePanel(model, width);
         public new AvatarBifoldDoorFactory PanelThickness(double thickness) => (AvatarBifoldDoorFactory)base.PanelThickness(thickness);
         public new AvatarBifoldDoorFactory OpenLeft() => (AvatarBifoldDoorFactory)base.OpenLeft();
         public new AvatarBifoldDoorFactory OpenRight() => (AvatarBifoldDoorFactory)base.OpenRight();
