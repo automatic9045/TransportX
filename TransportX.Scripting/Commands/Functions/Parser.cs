@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -157,11 +158,11 @@ namespace TransportX.Scripting.Commands.Functions
                 }
                 else if (RegexMatch(IntegerRegex, out match))
                 {
-                    return int.Parse(match.Value);
+                    return int.Parse(match.Value, CultureInfo.InvariantCulture);
                 }
                 else if (RegexMatch(RealRegex, out match))
                 {
-                    return float.Parse(match.Value);
+                    return float.Parse(match.Value, CultureInfo.InvariantCulture);
                 }
                 else
                 {

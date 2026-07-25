@@ -38,18 +38,21 @@ namespace TransportX.Data
             {
                 string[] saveContent = File.ReadAllLines(FilePath);
 
-                if (int.Parse(saveContent[0]) == Process.Id)
+                if (int.Parse(saveContent[0], CultureInfo.InvariantCulture) == Process.Id)
                 {
                     string[] chunkText = saveContent[1].Split(',');
-                    int chunkX = int.Parse(chunkText[0]);
-                    int chunkZ = int.Parse(chunkText[1]);
+                    int chunkX = int.Parse(chunkText[0], CultureInfo.InvariantCulture);
+                    int chunkZ = int.Parse(chunkText[1], CultureInfo.InvariantCulture);
                     ChunkIndex chunkIndex = new(chunkX, chunkZ);
 
                     string[] positionText = saveContent[2].Split(',');
-                    Vector3 position = new(float.Parse(positionText[0]), float.Parse(positionText[1]), float.Parse(positionText[2]));
+                    Vector3 position = new(
+                        float.Parse(positionText[0], CultureInfo.InvariantCulture),
+                        float.Parse(positionText[1], CultureInfo.InvariantCulture),
+                        float.Parse(positionText[2], CultureInfo.InvariantCulture));
 
                     string[] angleText = saveContent[3].Split(',');
-                    Vector2 angle = new(float.Parse(angleText[0]), float.Parse(angleText[1]));
+                    Vector2 angle = new(float.Parse(angleText[0], CultureInfo.InvariantCulture), float.Parse(angleText[1], CultureInfo.InvariantCulture));
 
                     freeViewpointPose = new CameraPose(chunkIndex, position, angle);
                 }
