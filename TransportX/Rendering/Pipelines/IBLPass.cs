@@ -11,7 +11,6 @@ using Vortice.Direct3D11;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
-using TransportX.Cameras;
 using TransportX.Rendering.Backend;
 using TransportX.Spatial;
 using TransportX.Worlds;
@@ -132,7 +131,7 @@ namespace TransportX.Rendering.Pipelines
             BrdfLutTexture.Dispose();
         }
 
-        public void Generate(Camera camera, WorldBase world)
+        public void Generate(WorldBase world, WorldPose cameraWorldPose)
         {
             Viewport originalViewport = RenderContext.DeviceContext.RSGetViewport();
             RenderContext.DeviceContext.RSSetViewport(0, 0, 128, 128);
@@ -153,7 +152,7 @@ namespace TransportX.Rendering.Pipelines
             RenderContext.DeviceContext.PSSetConstantBuffer(2, SceneBuffer);
             RenderContext.DeviceContext.PSSetSampler(0, TextureSamplerState);
 
-            Vector3 cameraPosition = camera.WorldPose.Pose.Position;
+            Vector3 cameraPosition = cameraWorldPose.Pose.Position;
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(float.Pi / 2, 1, 0.1f, 1000);
 
             ReadOnlySpan<Vector3> targets = [
@@ -191,14 +190,20 @@ namespace TransportX.Rendering.Pipelines
                 };
                 RenderContext.DeviceContext.UpdateSubresource(sceneConstants, SceneBuffer);
 
+                ViewContext viewContext = new()
+                {
+                    View = view,
+                    Projection = projection,
+                    Frustum = new BoundingFrustum(view * projection),
+                    WorldPose = cameraWorldPose,
+                };
+
                 TransformedDrawContext drawContext = new()
                 {
                     DeviceContext = RenderContext.DeviceContext,
                     RenderQueue = RenderQueue,
                     ChunkOffset = ChunkIndex.Zero,
-                    View = view,
-                    Projection = projection,
-                    Frustum = new BoundingFrustum(view * projection),
+                    ViewContext = viewContext,
                     Layer = RenderLayer.Normal
                 };
 

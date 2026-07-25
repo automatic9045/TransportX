@@ -12,11 +12,12 @@ using TransportX.Spatial;
 
 namespace TransportX.Rendering.Pipelines
 {
-    public class ShadowCamera : Camera
+    public class ShadowCamera : WorldObject
     {
+        public ICamera.VisualLayers VisibleLayers { get; set; } = ICamera.VisualLayers.Normal;
+
         public ShadowCamera() : base()
         {
-            VisibleLayers = VisualLayers.Normal;
         }
 
         public void LocateChunk(ChunkIndex chunkIndex)
@@ -24,13 +25,15 @@ namespace TransportX.Rendering.Pipelines
             Locate(chunkIndex, Pose.Identity);
         }
 
-        public void UpdateFromLight(Matrix4x4 lightView, Matrix4x4 lightProjection)
+        public ViewContext CreateViewContext(Matrix4x4 lightView, Matrix4x4 lightProjection)
         {
-            View = lightView;
-            Projection = lightProjection;
-
-            Matrix4x4 viewProj = lightView * lightProjection;
-            Frustum = new BoundingFrustum(viewProj);
+            return new ViewContext()
+            {
+                View = lightView,
+                Projection = lightProjection,
+                Frustum = new BoundingFrustum(lightView * lightProjection),
+                WorldPose = WorldPose,
+            };
         }
     }
 }

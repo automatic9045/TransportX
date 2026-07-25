@@ -19,9 +19,7 @@ namespace TransportX.Rendering
         public required ID3D11DeviceContext DeviceContext { get; init; }
         public required IRenderQueue RenderQueue { get; init; }
         public required ChunkIndex ChunkOffset { get; init; }
-        public required Matrix4x4 View { get; init; }
-        public required Matrix4x4 Projection { get; init; }
-        public required BoundingFrustum Frustum { get; init; }
+        public required ViewContext ViewContext { get; init; }
         public RenderLayer Layer { get; init; } = RenderLayer.Normal;
 
         public TransformedDrawContext()

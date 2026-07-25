@@ -11,6 +11,7 @@ using Vortice.Mathematics;
 
 using TransportX.Cameras;
 using TransportX.Rendering.Backend;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 namespace TransportX.Rendering.Pipelines
@@ -75,7 +76,8 @@ namespace TransportX.Rendering.Pipelines
             PipelineState.Dispose();
         }
 
-        public void RenderTo(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil, Camera camera, WorldBase world, int drawChunkCount, SizeI size)
+        public void RenderTo(ID3D11RenderTargetView renderTarget, ID3D11DepthStencilView depthStencil,
+            WorldBase world, ICamera.VisualLayers visibleLayers, in ViewContext viewContext, int drawChunkCount, SizeI size)
         {
             RenderContext.DeviceContext.OMSetRenderTargets(renderTarget, depthStencil);
             RenderContext.DeviceContext.RSSetViewport(0, 0, size.Width, size.Height);
@@ -92,20 +94,20 @@ namespace TransportX.Rendering.Pipelines
                 switch (layer)
                 {
                     case RenderLayer.Colliders:
-                        if (!camera.VisibleLayers.HasFlag(Camera.VisualLayers.Colliders)) continue;
+                        if (!visibleLayers.HasFlag(ICamera.VisualLayers.Colliders)) continue;
                         break;
 
                     case RenderLayer.Network:
-                        if (!camera.VisibleLayers.HasFlag(Camera.VisualLayers.Network)) continue;
+                        if (!visibleLayers.HasFlag(ICamera.VisualLayers.Network)) continue;
                         break;
 
                     case RenderLayer.Traffic:
-                        if (!camera.VisibleLayers.HasFlag(Camera.VisualLayers.Traffic)) continue;
+                        if (!visibleLayers.HasFlag(ICamera.VisualLayers.Traffic)) continue;
                         break;
                 }
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, camera, world.Chunks, layer, drawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, camera, world.Bodies, layer);
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, world.Chunks, layer, drawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, world.Bodies, layer);
 
                 RenderQueue.Render(new DrawContext()
                 {

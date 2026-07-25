@@ -13,11 +13,11 @@ namespace TransportX.Physics
 {
     public class DebugInput : IDisposable
     {
-        private static readonly Camera.VisualLayers[] Modes = [
-            Camera.VisualLayers.Normal,
-            Camera.VisualLayers.Normal | Camera.VisualLayers.Colliders,
-            Camera.VisualLayers.Normal | Camera.VisualLayers.Network,
-            Camera.VisualLayers.Normal | Camera.VisualLayers.Traffic,
+        private static readonly ICamera.VisualLayers[] Modes = [
+            ICamera.VisualLayers.Normal,
+            ICamera.VisualLayers.Normal | ICamera.VisualLayers.Colliders,
+            ICamera.VisualLayers.Normal | ICamera.VisualLayers.Network,
+            ICamera.VisualLayers.Normal | ICamera.VisualLayers.Traffic,
         ];
 
 

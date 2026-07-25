@@ -9,8 +9,8 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
-using TransportX.Cameras;
 using TransportX.Rendering.Backend;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 namespace TransportX.Rendering.Pipelines
@@ -122,7 +122,7 @@ namespace TransportX.Rendering.Pipelines
             TextureSamplerState.Dispose();
         }
 
-        public void Render(ID3D11DepthStencilView depthStencil, Camera camera, WorldBase world, int drawChunkCount, SizeI size)
+        public void Render(ID3D11DepthStencilView depthStencil, WorldBase world, in ViewContext viewContext, int drawChunkCount, SizeI size)
         {
             RenderContext.DeviceContext.RSSetViewport(0, 0, size.Width, size.Height);
             RenderContext.DeviceContext.PSSetSampler(0, TextureSamplerState);
@@ -133,12 +133,10 @@ namespace TransportX.Rendering.Pipelines
             RenderContext.DeviceContext.PSSetConstantBuffer(1, EnvironmentBuffer);
             RenderContext.DeviceContext.PSSetConstantBuffer(2, SceneBuffer);
 
-            camera.UpdateProjection(size);
-
             SceneConstants sceneConstants = new()
             {
-                ViewProjection = Matrix4x4.Transpose(camera.View * camera.Projection),
-                CameraPosition = camera.WorldPose.Pose.Position,
+                ViewProjection = Matrix4x4.Transpose(viewContext.View * viewContext.Projection),
+                CameraPosition = viewContext.WorldPose.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity * 0.001f,
@@ -154,12 +152,12 @@ namespace TransportX.Rendering.Pipelines
 
             RenderContext.ApplyState(PipelineState);
 
-            RenderQueue.SubmitBackground(RenderContext.DeviceContext, camera, world.BackgroundModels);
+            RenderQueue.SubmitBackground(RenderContext.DeviceContext, viewContext, world.BackgroundModels);
             Flush();
             RenderContext.DeviceContext.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            RenderQueue.SubmitChunks(RenderContext.DeviceContext, camera, world.Chunks, RenderLayer.Normal, drawChunkCount);
-            RenderQueue.SubmitBodies(RenderContext.DeviceContext, camera, world.Bodies, RenderLayer.Normal);
+            RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, world.Chunks, RenderLayer.Normal, drawChunkCount);
+            RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, world.Bodies, RenderLayer.Normal);
             Flush();
 
 

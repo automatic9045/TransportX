@@ -4,44 +4,43 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
 using TransportX.Bodies;
-using TransportX.Cameras;
 using TransportX.Rendering.Backend;
 using TransportX.Spatial;
-using Vortice.Direct3D11;
 
 namespace TransportX.Rendering.Pipelines
 {
     public static class SceneSubmitter
     {
-        public static void SubmitBackground(this IRenderQueue renderQueue, ID3D11DeviceContext deviceContext, Camera camera, IEnumerable<TransformedModel> models)
+        public static void SubmitBackground(this IRenderQueue renderQueue,
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, IEnumerable<TransformedModel> models)
         {
             TransformedDrawContext drawContext = new()
             {
                 DeviceContext = deviceContext,
                 RenderQueue = renderQueue,
                 ChunkOffset = ChunkIndex.Zero,
-                View = camera.View,
-                Projection = camera.Projection,
-                Frustum = camera.Frustum,
+                ViewContext = viewContext,
             };
 
             foreach (TransformedModel model in models)
             {
-                model.Pose = new Pose(camera.WorldPose.Pose.Position);
+                model.Pose = new Pose(viewContext.WorldPose.Pose.Position);
                 model.Draw(drawContext);
             }
         }
 
         public static void SubmitChunks(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, Camera camera, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
         {
             for (int i = drawChunkCount - 1; 0 <= i; i--)
             {
-                for (int x = camera.WorldPose.Chunk.X - i; x <= camera.WorldPose.Chunk.X + i; x++)
+                for (int x = viewContext.WorldPose.Chunk.X - i; x <= viewContext.WorldPose.Chunk.X + i; x++)
                 {
-                    int dz = int.Abs(x - camera.WorldPose.Chunk.X) == i ? 1 : i * 2;
-                    for (int z = camera.WorldPose.Chunk.Z - i; z <= camera.WorldPose.Chunk.Z + i; z += dz)
+                    int dz = int.Abs(x - viewContext.WorldPose.Chunk.X) == i ? 1 : i * 2;
+                    for (int z = viewContext.WorldPose.Chunk.Z - i; z <= viewContext.WorldPose.Chunk.Z + i; z += dz)
                     {
                         ChunkIndex chunkIndex = new(x, z);
                         if (chunks.TryGetValue(chunkIndex, out Chunk? chunk))
@@ -50,10 +49,8 @@ namespace TransportX.Rendering.Pipelines
                             {
                                 DeviceContext = deviceContext,
                                 RenderQueue = renderQueue,
-                                ChunkOffset = chunkIndex - camera.WorldPose.Chunk,
-                                View = camera.View,
-                                Projection = camera.Projection,
-                                Frustum = camera.Frustum,
+                                ChunkOffset = chunkIndex - viewContext.WorldPose.Chunk,
+                                ViewContext = viewContext,
                                 Layer = layer,
                             };
                             chunk!.Draw(drawContext);
@@ -64,7 +61,7 @@ namespace TransportX.Rendering.Pipelines
         }
 
         public static void SubmitBodies(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, Camera camera, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
         {
             for (int i = 0; i < bodies.Count; i++)
             {
@@ -74,10 +71,8 @@ namespace TransportX.Rendering.Pipelines
                 {
                     DeviceContext = deviceContext,
                     RenderQueue = renderQueue,
-                    ChunkOffset = body.WorldPose.Chunk - camera.WorldPose.Chunk,
-                    View = camera.View,
-                    Projection = camera.Projection,
-                    Frustum = camera.Frustum,
+                    ChunkOffset = body.WorldPose.Chunk - viewContext.WorldPose.Chunk,
+                    ViewContext = viewContext,
                     Layer = layer,
                 };
                 body.Draw(drawContext);

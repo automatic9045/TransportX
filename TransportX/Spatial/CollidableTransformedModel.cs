@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
 using Vortice.Mathematics;
 
 using TransportX.Physics;
@@ -88,7 +87,7 @@ namespace TransportX.Spatial
 
                     Matrix4x4 world = ColliderRawPose.ToMatrix4x4();
                     BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
-                    if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
+                    if (context.ViewContext.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
                     context.DrawModel(Model.ColliderDebugModel, world);
                     break;

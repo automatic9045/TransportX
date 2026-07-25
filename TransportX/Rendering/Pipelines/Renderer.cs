@@ -10,6 +10,7 @@ using Vortice.Mathematics;
 
 using TransportX.Cameras;
 using TransportX.Rendering.Backend;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 namespace TransportX.Rendering.Pipelines
@@ -154,7 +155,9 @@ namespace TransportX.Rendering.Pipelines
                 return;
             }
 
-            Shadow.UpdateCamera(world.DirectionalLight.Direction, world.Camera);
+            ViewContext viewContext = camera.CreateViewContext(size);
+
+            Shadow.UpdateCamera(world.DirectionalLight.Direction, viewContext);
             Shadow.Render(world.Chunks, world.Bodies);
 
             PostProcess.Setup(DXClient.DepthStencil, size);
@@ -164,15 +167,15 @@ namespace TransportX.Rendering.Pipelines
 
             if (!IBL.IsGenerated)
             {
-                IBL.Generate(camera, world);
+                IBL.Generate(world, camera.WorldPose);
             }
 
             Shadow.Bind();
             IBL.Bind();
 
-            Opaque.Render(DXClient.DepthStencil, camera, world, Options.DrawChunkCount, size);
+            Opaque.Render(DXClient.DepthStencil, world, viewContext, Options.DrawChunkCount, size);
             PostProcess.RenderTo(DXClient.RenderTarget, world.DefaultEnvironment, elapsed);
-            Debug.RenderTo(DXClient.RenderTarget, DXClient.DepthStencil, camera, world, Options.DrawChunkCount, size);
+            Debug.RenderTo(DXClient.RenderTarget, DXClient.DepthStencil, world, camera.VisibleLayers, viewContext, Options.DrawChunkCount, size);
 
             DXHost.Context.PSSetShaderResource(12, null!);
         }

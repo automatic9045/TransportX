@@ -11,7 +11,6 @@ using Vortice.Direct3D11;
 using TransportX.Bodies;
 using TransportX.Rendering.Backend;
 using TransportX.Spatial;
-using TransportX.Cameras;
 
 namespace TransportX.Rendering.Pipelines
 {
@@ -112,14 +111,14 @@ namespace TransportX.Rendering.Pipelines
             ShadowMap.Dispose();
         }
 
-        public void UpdateCamera(Vector3 lightDirection, Camera camera)
+        public void UpdateCamera(Vector3 lightDirection, in ViewContext viewContext)
         {
             if (Options.Resolution <= 0) return;
 
-            ShadowCamera.LocateChunk(camera.WorldPose.Chunk);
+            ShadowCamera.LocateChunk(viewContext.WorldPose.Chunk);
 
             Vector3 lightDir = Vector3.Normalize(lightDirection);
-            Vector3 cameraPosition = camera.WorldPose.Pose.Position;
+            Vector3 cameraPosition = viewContext.WorldPose.Pose.Position;
 
             for (int i = 0; i < CascadeCount; i++)
             {
@@ -172,9 +171,6 @@ namespace TransportX.Rendering.Pipelines
                 };
             }
 
-            ShadowCascade lastCascade = Cascades[CascadeCount - 1];
-            ShadowCamera.UpdateFromLight(lastCascade.LightView, lastCascade.LightProjection);
-
             unchecked
             {
                 FrameCount++;
@@ -195,7 +191,7 @@ namespace TransportX.Rendering.Pipelines
                 RenderContext.DeviceContext.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
                 RenderContext.DeviceContext.RSSetViewport(0, 0, ShadowMap.Resolution, ShadowMap.Resolution);
 
-                ShadowCamera.UpdateFromLight(cascade.LightView, cascade.LightProjection);
+                ViewContext viewContext = ShadowCamera.CreateViewContext(cascade.LightView, cascade.LightProjection);
 
                 ShadowConstants shadowConstants = new()
                 {
@@ -204,8 +200,8 @@ namespace TransportX.Rendering.Pipelines
                 RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
                 RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, ShadowCamera, chunks, RenderLayer.Normal, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, ShadowCamera, bodies, RenderLayer.Normal);
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, chunks, RenderLayer.Normal, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, bodies, RenderLayer.Normal);
 
                 RenderQueue.Render(new DrawContext()
                 {

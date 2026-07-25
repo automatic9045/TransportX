@@ -12,16 +12,14 @@ using TransportX.Spatial;
 
 namespace TransportX.Cameras
 {
-    public class Camera : WorldObject
+    public class Camera : WorldObject, ICamera
     {
+        private Matrix4x4 View = Matrix4x4.Identity;
+
         public Listener Listener { get; } = new Listener();
         public ViewpointSet Viewpoints { get; }
 
-        public VisualLayers VisibleLayers { get; set; } = VisualLayers.Normal;
-
-        public Matrix4x4 View { get; protected set; } = default;
-        public Matrix4x4 Projection { get; protected set; } = default;
-        public BoundingFrustum Frustum { get; protected set; } = default;
+        public ICamera.VisualLayers VisibleLayers { get; set; } = ICamera.VisualLayers.Normal;
 
         public Camera() : base()
         {
@@ -40,22 +38,19 @@ namespace TransportX.Cameras
             View = Pose.Inverse(WorldPose.Pose).ToMatrix4x4();
         }
 
-        public void UpdateProjection(SizeI clientSize)
+        public ViewContext CreateViewContext(SizeI clientSize)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
+            Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
-            Frustum = new(View * Projection);
-        }
+            BoundingFrustum frustum = new(View * projection);
 
-
-        [Flags]
-        public enum VisualLayers
-        {
-            None = 0b0000,
-            Normal = 0x0001,
-            Colliders = 0b0010,
-            Network = 0b0100,
-            Traffic = 0b1000,
+            return new ViewContext()
+            {
+                View = View,
+                Projection = projection,
+                Frustum = frustum,
+                WorldPose = WorldPose,
+            };
         }
     }
 }

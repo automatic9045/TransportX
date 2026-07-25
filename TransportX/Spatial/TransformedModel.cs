@@ -20,7 +20,7 @@ namespace TransportX.Spatial
 
         public Pose BasePose
         {
-            get => field;
+            get;
             set
             {
                 field = value;
@@ -51,7 +51,7 @@ namespace TransportX.Spatial
 
             Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
             BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
-            if (context.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
+            if (context.ViewContext.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
 
             context.DrawModel(Model, world);
         }
