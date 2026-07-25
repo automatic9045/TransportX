@@ -17,7 +17,6 @@ namespace TransportX.Rendering.Pipelines
     public class ShadowPass : IDisposable
     {
         private const int CascadeCount = 3;
-
         private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
 
 
@@ -33,10 +32,7 @@ namespace TransportX.Rendering.Pipelines
         protected readonly ShadowCamera ShadowCamera;
 
         protected readonly RenderQueue RenderQueue = new();
-
         protected readonly ShadowCascade[] Cascades = new ShadowCascade[CascadeCount];
-
-        private uint FrameCount = 0;
 
         public required ID3D11Buffer InstanceBuffer { protected get; init; }
         public required ID3D11Buffer MaterialBuffer { protected get; init; }
@@ -117,91 +113,85 @@ namespace TransportX.Rendering.Pipelines
 
             ShadowCamera.LocateChunk(viewContext.WorldPose.Chunk);
 
-            Vector3 lightDir = Vector3.Normalize(lightDirection);
-            Vector3 cameraPosition = viewContext.WorldPose.Pose.Position;
+            Matrix4x4.Invert(viewContext.View, out Matrix4x4 viewInverse);
+
+            float tanHalfFovX = 1.0f / viewContext.Projection.M11;
+            float tanHalfFovY = 1.0f / viewContext.Projection.M22;
 
             for (int i = 0; i < CascadeCount; i++)
             {
-                if (Skip(i)) continue;
+                float nearSplit = i == 0 ? 0.1f : CascadeRadii[i - 1];
+                float farSplit = CascadeRadii[i];
 
-                float radius = CascadeRadii[i];
-                float texelsPerUnit = Options.Resolution / (radius * 2);
+                float sliceCenterZ = 0.5f * (nearSplit + farSplit);
+                Vector3 sliceCenterView = new(0, 0, sliceCenterZ);
 
-                Vector3 upVector = Vector3.UnitY;
-                if (0.999f < float.Abs(Vector3.Dot(lightDir, Vector3.UnitY)))
+                Vector3 farCornerView = new(farSplit * tanHalfFovX, farSplit * tanHalfFovY, farSplit);
+                float sphereRadiusSquared = Vector3.DistanceSquared(sliceCenterView, farCornerView);
+                float sphereRadius = float.Sqrt(sphereRadiusSquared);
+
+                Vector3 sphereCenterWorld = Vector3.Transform(sliceCenterView, viewInverse);
+
+                float pullback = sphereRadius + (Options.DrawChunkCount + 1) * Chunk.Size;
+                Vector3 upVector = 0.99f < float.Abs(lightDirection.Y) ? Vector3.UnitZ : Vector3.UnitY;
+                Matrix4x4 shadowView = Matrix4x4.CreateLookAtLeftHanded(-lightDirection * pullback, Vector3.Zero, upVector);
+
+                Vector3 centerInLightSpace = Vector3.Transform(sphereCenterWorld, shadowView);
+
+                float minX = centerInLightSpace.X - sphereRadius;
+                float maxX = centerInLightSpace.X + sphereRadius;
+                float minY = centerInLightSpace.Y - sphereRadius;
+                float maxY = centerInLightSpace.Y + sphereRadius;
+
+                if (0 < Options.Resolution)
                 {
-                    upVector = Vector3.UnitZ;
+                    float worldUnitsPerTexel = sphereRadius * 2 / Options.Resolution;
+                    minX = float.Floor(minX / worldUnitsPerTexel) * worldUnitsPerTexel;
+                    maxX = minX + sphereRadius * 2;
+                    minY = float.Floor(minY / worldUnitsPerTexel) * worldUnitsPerTexel;
+                    maxY = minY + sphereRadius * 2;
                 }
-                Vector3 zAxis = lightDir;
-                Vector3 xAxis = Vector3.Normalize(Vector3.Cross(upVector, zAxis));
-                Vector3 yAxis = Vector3.Cross(zAxis, xAxis);
 
-                Matrix4x4 baseLightView = new(
-                    xAxis.X, yAxis.X, zAxis.X, 0,
-                    xAxis.Y, yAxis.Y, zAxis.Y, 0,
-                    xAxis.Z, yAxis.Z, zAxis.Z, 0,
-                    0, 0, 0, 1
-                );
+                float minZ = 0;
+                float maxZ = centerInLightSpace.Z + sphereRadius;
 
-                Vector3 centerLightSpace = Vector3.Transform(cameraPosition, baseLightView);
-                centerLightSpace.X = float.Floor(centerLightSpace.X * texelsPerUnit) / texelsPerUnit;
-                centerLightSpace.Y = float.Floor(centerLightSpace.Y * texelsPerUnit) / texelsPerUnit;
+                Matrix4x4 lightProjection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(minX, maxX, minY, maxY, minZ, maxZ);
 
-                Matrix4x4.Invert(baseLightView, out Matrix4x4 inverseBaseLightView);
-                Vector3 sphereCenter = Vector3.Transform(centerLightSpace, inverseBaseLightView);
-
-                float zPullback = (Options.DrawChunkCount + 1) * Chunk.Size;
-                Vector3 lightPos = sphereCenter - (lightDir * zPullback);
-
-                Matrix4x4 lightView = new(
-                    xAxis.X, yAxis.X, zAxis.X, 0,
-                    xAxis.Y, yAxis.Y, zAxis.Y, 0,
-                    xAxis.Z, yAxis.Z, zAxis.Z, 0,
-                    -Vector3.Dot(xAxis, lightPos), -Vector3.Dot(yAxis, lightPos), -Vector3.Dot(zAxis, lightPos), 1
-                );
-
-                Matrix4x4 lightProjection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(-radius, radius, -radius, radius, 0, zPullback + radius);
-
-                Cascades[i] = new()
+                Cascades[i] = new ShadowCascade()
                 {
-                    LightView = lightView,
+                    LightView = shadowView,
                     LightProjection = lightProjection,
-                    LightViewProjection = lightView * lightProjection,
-                    SplitDepth = radius,
+                    LightViewProjection = shadowView * lightProjection,
+                    SplitDepth = farSplit,
                 };
-            }
-
-            unchecked
-            {
-                FrameCount++;
             }
         }
 
         public void Render(ChunkCollection chunks, IReadOnlyList<RigidBody> bodies)
         {
+            if (Options.Resolution <= 0) return;
+
+            RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
             RenderContext.ApplyState(PipelineState);
 
             for (int i = 0; i < CascadeCount; i++)
             {
-                if (Skip(i)) continue;
-
                 ShadowCascade cascade = Cascades[i];
 
+                RenderContext.DeviceContext.RSSetViewport(0, 0, Options.Resolution, Options.Resolution);
                 RenderContext.DeviceContext.OMSetRenderTargets((ID3D11RenderTargetView)null!, ShadowMap.DepthStencilViews[i]);
                 RenderContext.DeviceContext.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
-                RenderContext.DeviceContext.RSSetViewport(0, 0, ShadowMap.Resolution, ShadowMap.Resolution);
 
-                ViewContext viewContext = ShadowCamera.CreateViewContext(cascade.LightView, cascade.LightProjection);
+                ViewContext shadowViewContext = ShadowCamera.CreateViewContext(cascade.LightView, cascade.LightProjection);
 
                 ShadowConstants shadowConstants = new()
                 {
                     LightViewProjection = Matrix4x4.Transpose(cascade.LightViewProjection),
                 };
                 RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
-                RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, chunks, RenderLayer.Normal, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, bodies, RenderLayer.Normal);
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, shadowViewContext, chunks, RenderLayer.Normal, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, shadowViewContext, bodies, RenderLayer.Normal);
 
                 RenderQueue.Render(new DrawContext()
                 {
@@ -212,13 +202,6 @@ namespace TransportX.Rendering.Pipelines
                 });
                 RenderQueue.Clear();
             }
-        }
-
-        protected bool Skip(int cascadeIndex)
-        {
-            return false;
-            //int updateSpan = 1 << cascadeIndex;
-            //return FrameCount % updateSpan != 0;
         }
 
         public void Bind()
