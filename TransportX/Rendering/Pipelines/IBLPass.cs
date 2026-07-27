@@ -194,7 +194,6 @@ namespace TransportX.Rendering.Pipelines
                 {
                     View = view,
                     Projection = projection,
-                    Frustum = new BoundingFrustum(view * projection),
                     WorldPose = cameraWorldPose,
                 };
 

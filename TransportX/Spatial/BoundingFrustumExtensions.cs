@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using Vortice.Mathematics;
 
-namespace TransportX.Rendering
+namespace TransportX.Spatial
 {
     public static class BoundingFrustumExtensions
     {

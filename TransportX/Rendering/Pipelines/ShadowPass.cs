@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Bodies;
 using TransportX.Rendering.Backend;
@@ -33,6 +34,7 @@ namespace TransportX.Rendering.Pipelines
 
         protected readonly RenderQueue RenderQueue = new();
         protected readonly ShadowCascade[] Cascades = new ShadowCascade[CascadeCount];
+        protected readonly BoundingSphere[] CascadeSpheres = new BoundingSphere[CascadeCount];
 
         public required ID3D11Buffer InstanceBuffer { protected get; init; }
         public required ID3D11Buffer MaterialBuffer { protected get; init; }
@@ -132,6 +134,8 @@ namespace TransportX.Rendering.Pipelines
 
                 Vector3 sphereCenterWorld = Vector3.Transform(sliceCenterView, viewInverse);
 
+                CascadeSpheres[i] = new BoundingSphere(sphereCenterWorld, sphereRadius);
+
                 float pullback = sphereRadius + (Options.DrawChunkCount + 1) * Chunk.Size;
                 Vector3 upVector = 0.99f < float.Abs(lightDirection.Y) ? Vector3.UnitZ : Vector3.UnitY;
                 Matrix4x4 shadowView = Matrix4x4.CreateLookAtLeftHanded(-lightDirection * pullback, Vector3.Zero, upVector);
@@ -190,8 +194,10 @@ namespace TransportX.Rendering.Pipelines
                 };
                 RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, shadowViewContext, chunks, RenderLayer.Normal, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, shadowViewContext, bodies, RenderLayer.Normal);
+                SphereCullingVolume culler = new(CascadeSpheres[i]);
+
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, shadowViewContext, culler, chunks, RenderLayer.Normal, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, shadowViewContext, culler, bodies, RenderLayer.Normal);
 
                 RenderQueue.Render(new DrawContext()
                 {

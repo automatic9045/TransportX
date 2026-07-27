@@ -156,8 +156,10 @@ namespace TransportX.Rendering.Pipelines
             Flush();
             RenderContext.DeviceContext.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, world.Chunks, RenderLayer.Normal, drawChunkCount);
-            RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, world.Bodies, RenderLayer.Normal);
+            FrustumCullingVolume culler = new(new BoundingFrustum(viewContext.View * viewContext.Projection));
+
+            RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, culler, world.Chunks, RenderLayer.Normal, drawChunkCount);
+            RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, culler, world.Bodies, RenderLayer.Normal);
             Flush();
 
 

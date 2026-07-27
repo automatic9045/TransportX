@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
+using Vortice.Mathematics;
 
 using TransportX.Bodies;
 using TransportX.Rendering.Backend;
@@ -32,8 +34,9 @@ namespace TransportX.Rendering.Pipelines
             }
         }
 
-        public static void SubmitChunks(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, in ViewContext viewContext, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
+        public static void SubmitChunks<TCuller>(this IRenderQueue renderQueue,
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
+            where TCuller : struct, ICullingVolume
         {
             for (int i = drawChunkCount - 1; 0 <= i; i--)
             {
@@ -53,15 +56,16 @@ namespace TransportX.Rendering.Pipelines
                                 ViewContext = viewContext,
                                 Layer = layer,
                             };
-                            chunk!.Draw(drawContext);
+                            chunk.Draw(drawContext, culler);
                         }
                     }
                 }
             }
         }
 
-        public static void SubmitBodies(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, in ViewContext viewContext, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
+        public static void SubmitBodies<TCuller>(this IRenderQueue renderQueue,
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
+            where TCuller : struct, ICullingVolume
         {
             for (int i = 0; i < bodies.Count; i++)
             {
@@ -75,7 +79,7 @@ namespace TransportX.Rendering.Pipelines
                     ViewContext = viewContext,
                     Layer = layer,
                 };
-                body.Draw(drawContext);
+                body.Draw(drawContext, culler);
             }
         }
     }

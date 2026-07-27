@@ -89,6 +89,8 @@ namespace TransportX.Rendering.Pipelines
 
             RenderContext.ApplyState(PipelineState);
 
+            FrustumCullingVolume culler = new(new BoundingFrustum(viewContext.View * viewContext.Projection));
+
             foreach (RenderLayer layer in DebugLayers)
             {
                 switch (layer)
@@ -106,8 +108,8 @@ namespace TransportX.Rendering.Pipelines
                         break;
                 }
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, world.Chunks, layer, drawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, world.Bodies, layer);
+                RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, culler, world.Chunks, layer, drawChunkCount);
+                RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, culler, world.Bodies, layer);
 
                 RenderQueue.Render(new DrawContext()
                 {

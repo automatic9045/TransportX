@@ -13,7 +13,6 @@ namespace TransportX.Spatial
     {
         public required Matrix4x4 View { get; init; }
         public required Matrix4x4 Projection { get; init; }
-        public required BoundingFrustum Frustum { get; init; }
         public required WorldPose WorldPose { get; init; }
     }
 }

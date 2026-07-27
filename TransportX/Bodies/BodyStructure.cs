@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
+using Vortice.Mathematics;
 
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -14,11 +15,11 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class BodyStructure : IReadOnlyList<TransformedModel>, IDisposable, IDrawable
+    public class BodyStructure : IReadOnlyList<TransformedModel>, IDisposable
     {
         protected readonly IPhysicsHost PhysicsHost;
 
-        protected readonly List<TransformedModel> Items = new List<TransformedModel>();
+        protected readonly List<TransformedModel> Items = [];
 
         public TransformedModel this[int index] => Items[index];
         public int Count => Items.Count;
@@ -175,9 +176,18 @@ namespace TransportX.Bodies
             }
         }
 
-        public void Draw(in TransformedDrawContext context)
+        public void Draw<TCuller>(in TransformedDrawContext context, in TCuller culler) where TCuller : struct, ICullingVolume
         {
-            foreach (TransformedModel model in Items) model.Draw(context);
+            foreach (TransformedModel model in Items)
+            {
+                Matrix4x4 world = (model.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+                BoundingBox worldBox = BoundingBox.Transform(model.Model.BoundingBox, world);
+
+                if (culler.Intersects(worldBox))
+                {
+                    model.Draw(context);
+                }
+            }
         }
     }
 }

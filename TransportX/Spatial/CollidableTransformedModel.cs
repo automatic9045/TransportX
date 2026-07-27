@@ -86,9 +86,6 @@ namespace TransportX.Spatial
                     if (Model.ColliderDebugModel is null) return;
 
                     Matrix4x4 world = ColliderRawPose.ToMatrix4x4();
-                    BoundingBox worldBox = BoundingBox.Transform(Model.ColliderDebugModel.BoundingBox, world);
-                    if (context.ViewContext.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
-
                     context.DrawModel(Model.ColliderDebugModel, world);
                     break;
                 }

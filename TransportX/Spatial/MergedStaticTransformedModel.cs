@@ -9,6 +9,7 @@ using BepuPhysics;
 using BepuPhysics.Collidables;
 using ColliderMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
+using Vortice.Mathematics;
 
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -71,9 +72,19 @@ namespace TransportX.Spatial
             Vector3 center = newMesh.ComputeOpenCenterOfMass();
             newMesh.Recenter(center);
 
+            BoundingBox boundingBox = BoundingBox.Zero;
+            for (int i = 0; i < sources.Count; i++)
+            {
+                Matrix4x4 sourceMatrix = sources[i].ColliderToBase.ToMatrix4x4();
+                BoundingBox sourceBox = BoundingBox.Transform(sources[i].Model.BoundingBox, sourceMatrix);
+
+                boundingBox = i == 0 ? sourceBox : BoundingBox.CreateMerged(boundingBox, sourceBox);
+            }
+
             ColliderMaterial material = sources[0].Model.Collider.Material;
             ColliderBase<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
-            CollidableModel physicsWrapper = new(newCollider)
+
+            CollidableModel physicsWrapper = new(boundingBox, newCollider)
             {
                 DebugName = $"Merged{{{sources[0].Model.DebugName}, others: {sources.Count - 1}}}",
             };

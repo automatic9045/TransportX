@@ -11,7 +11,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class RigidBody : WorldObject, IDisposable, IDrawable
+    public class RigidBody : WorldObject, IDisposable
     {
         public BodyStructure Structure { get; }
 
@@ -84,9 +84,9 @@ namespace TransportX.Bodies
         {
         }
 
-        public virtual void Draw(in TransformedDrawContext context)
+        public virtual void Draw<TCuller>(in TransformedDrawContext context, in TCuller culler) where TCuller : struct, ICullingVolume
         {
-            Structure.Draw(context);
+            Structure.Draw(context, culler);
         }
     }
 }

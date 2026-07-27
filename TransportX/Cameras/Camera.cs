@@ -42,13 +42,11 @@ namespace TransportX.Cameras
         {
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
                 Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
-            BoundingFrustum frustum = new(View * projection);
 
             return new ViewContext()
             {
                 View = View,
                 Projection = projection,
-                Frustum = frustum,
                 WorldPose = WorldPose,
             };
         }

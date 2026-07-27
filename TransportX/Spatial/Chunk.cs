@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
+using Vortice.Mathematics;
 
 using TransportX.Components;
 using TransportX.Network;
@@ -10,7 +13,7 @@ using TransportX.Rendering;
 
 namespace TransportX.Spatial
 {
-    public class Chunk : IDrawable, IDisposable
+    public class Chunk : IDisposable
     {
         public static readonly int Size = 250;
 
@@ -18,6 +21,7 @@ namespace TransportX.Spatial
         private bool IsFar = false;
 
         public ChunkIndex Index { get; }
+
         public List<TransformedModel> Models { get; } = [];
         public List<NetworkElement> Network { get; } = [];
 
@@ -66,16 +70,22 @@ namespace TransportX.Spatial
             IsFar = isFar;
         }
 
-        public void Draw(in TransformedDrawContext context)
+        public void Draw<TCuller>(in TransformedDrawContext context, in TCuller culler) where TCuller : struct, ICullingVolume
         {
             foreach (TransformedModel model in Models)
             {
-                model.Draw(context);
+                Matrix4x4 world = (model.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+                BoundingBox worldBox = BoundingBox.Transform(model.Model.BoundingBox, world);
+
+                if (culler.Intersects(worldBox))
+                {
+                    model.Draw(context);
+                }
             }
 
             foreach (NetworkElement element in Network)
             {
-                element.Draw(context);
+                element.Draw(context, culler);
             }
         }
     }

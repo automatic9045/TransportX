@@ -101,9 +101,9 @@ namespace TransportX.Extensions.Traffic
             Locate(PoseSolver.WorldPose);
         }
 
-        public override void Draw(in TransformedDrawContext context)
+        public override void Draw<TCuller>(in TransformedDrawContext context, in TCuller culler)
         {
-            base.Draw(context);
+            base.Draw(context, culler);
 
             if (context.Layer == RenderLayer.Traffic)
             {

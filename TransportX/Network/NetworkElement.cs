@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Mathematics;
+
 using TransportX.Collections;
 using TransportX.Components;
 using TransportX.Rendering;
@@ -12,7 +14,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Network
 {
-    public abstract class NetworkElement : WorldObject, IDrawable, IDisposable
+    public abstract class NetworkElement : WorldObject, IDisposable
     {
         public abstract IReadOnlyKeyedList<string, NetworkPort> Ports { get; }
         public abstract IReadOnlyList<ILanePath> Paths { get; }
@@ -39,11 +41,17 @@ namespace TransportX.Network
             foreach (ILanePath path in Paths) path.Dispose();
         }
 
-        public void Draw(in TransformedDrawContext context)
+        public void Draw<TCuller>(in TransformedDrawContext context, in TCuller culler) where TCuller : struct, ICullingVolume
         {
             foreach (TransformedModel model in Models)
             {
-                model.Draw(context);
+                Matrix4x4 world = (model.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+                BoundingBox worldBox = BoundingBox.Transform(model.Model.BoundingBox, world);
+
+                if (culler.Intersects(worldBox))
+                {
+                    model.Draw(context);
+                }
             }
 
             if (context.Layer == RenderLayer.Network)

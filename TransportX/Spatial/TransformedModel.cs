@@ -50,9 +50,6 @@ namespace TransportX.Spatial
             if (context.Layer != RenderLayer.Normal) return;
 
             Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
-            BoundingBox worldBox = BoundingBox.Transform(Model.BoundingBox, world);
-            if (context.ViewContext.Frustum.Contains(worldBox) == ContainmentType.Disjoint) return;
-
             context.DrawModel(Model, world);
         }
     }

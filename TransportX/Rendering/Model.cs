@@ -45,17 +45,24 @@ namespace TransportX.Rendering
             }
         } = null;
 
-        public Model(IReadOnlyList<IMesh> visualMeshes)
+        public Model(IReadOnlyList<IMesh> visualMeshes, BoundingBox boundingBox)
         {
             VisualMeshes = visualMeshes;
-
-            BoundingBox boundingBox = VisualMeshes.Count == 0 ? default : VisualMeshes[0].BoundingBox;
-            for (int i = 1; i < VisualMeshes.Count; i++)
-            {
-                boundingBox = BoundingBox.CreateMerged(boundingBox, VisualMeshes[i].BoundingBox);
-            }
-
             BoundingBox = boundingBox;
+        }
+
+        public Model(IReadOnlyList<IMesh> visualMeshes) : this(visualMeshes, ComputeBoundingBox(visualMeshes))
+        {
+        }
+
+        private static BoundingBox ComputeBoundingBox(IReadOnlyList<IMesh> visualMeshes)
+        {
+            BoundingBox boundingBox = visualMeshes.Count == 0 ? default : visualMeshes[0].BoundingBox;
+            for (int i = 1; i < visualMeshes.Count; i++)
+            {
+                boundingBox = BoundingBox.CreateMerged(boundingBox, visualMeshes[i].BoundingBox);
+            }
+            return boundingBox;
         }
 
         public static Model Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
@@ -97,6 +104,11 @@ namespace TransportX.Rendering
             set => ColliderDebugModel?.DebugName = base.DebugName = value;
         }
 
+        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, BoundingBox boundingBox, ICollider collider) : base(visualMeshes, boundingBox)
+        {
+            Collider = collider;
+        }
+
         public CollidableModel(IReadOnlyList<IMesh> visualMeshes, ICollider collider) : base(visualMeshes)
         {
             Collider = collider;
@@ -105,6 +117,10 @@ namespace TransportX.Rendering
         public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.VisualMeshes, collider)
         {
             DebugName = baseModel.DebugName;
+        }
+
+        public CollidableModel(BoundingBox boundingBox, ICollider collider) : this([], boundingBox, collider)
+        {
         }
 
         public CollidableModel(ICollider collider) : this([], collider)

@@ -31,7 +31,6 @@ namespace TransportX.Rendering.Pipelines
             {
                 View = lightView,
                 Projection = lightProjection,
-                Frustum = new BoundingFrustum(lightView * lightProjection),
                 WorldPose = WorldPose,
             };
         }

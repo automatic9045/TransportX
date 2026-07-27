@@ -179,7 +179,7 @@ float CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float vie
         return 1.0;
 
     float currentDepth = projCoords.z;
-    float zFar = ZPullback + radius;
+    float zFar = ZPullback + radius * 2.0;
 
     float depthBias = (texelSizeWorld * 0.01) / zFar;
 
