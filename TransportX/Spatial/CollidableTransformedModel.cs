@@ -36,7 +36,14 @@ namespace TransportX.Spatial
         protected virtual Pose ColliderPose
         {
             get => Model.Collider.OffsetInverse * ColliderRawPose * FromCamera.PoseInverse;
-            set => ColliderRawPose = (Model.Collider.Offset * value * FromCamera.Pose).Validated();
+            set
+            {
+                Pose pose = Model.Collider.Offset * value * FromCamera.Pose;
+#if DEBUG
+                pose = pose.Validated();
+#endif
+                ColliderRawPose = pose;
+            }
         }
 
         public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;

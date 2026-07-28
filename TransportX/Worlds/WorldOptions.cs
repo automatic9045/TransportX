@@ -9,5 +9,6 @@ namespace TransportX.Worlds
     public readonly struct WorldOptions
     {
         public required int SimulationChunkCount { get; init; }
+        public required bool IsDebugMode { get; init; }
     }
 }

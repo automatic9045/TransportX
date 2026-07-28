@@ -23,7 +23,7 @@ namespace TransportX.Data
 
         public int SimulationChunkCount
         {
-            get => field;
+            get;
             set
             {
                 if (value < 1) throw new InvalidOperationException($"{nameof(SimulationChunkCount)} は 1 以上である必要があります。");
@@ -33,7 +33,7 @@ namespace TransportX.Data
 
         public int DrawChunkCount
         {
-            get => field;
+            get;
             set
             {
                 if (value < 1) throw new InvalidOperationException($"{nameof(DrawChunkCount)} は 1 以上である必要があります。");
@@ -43,7 +43,7 @@ namespace TransportX.Data
 
         public int ShadowDrawChunkCount
         {
-            get => field;
+            get;
             set
             {
                 if (value < 1) throw new InvalidOperationException($"{nameof(ShadowDrawChunkCount)} は 1 以上である必要があります。");
@@ -53,13 +53,15 @@ namespace TransportX.Data
 
         public int ShadowResolution
         {
-            get => field;
+            get;
             set
             {
                 if (value < 0) throw new InvalidOperationException($"{nameof(ShadowResolution)} は 0 (影を描画しない) または 1 以上である必要があります。");
                 field = value;
             }
         } = 1024;
+
+        public bool IsDebugMode { get; set; }
 
         public static Config Import(IErrorCollector errorCollector)
         {

@@ -72,6 +72,7 @@ namespace TransportX.Worlds
             WorldOptions worldOptions = new()
             {
                 SimulationChunkCount = config.SimulationChunkCount,
+                IsDebugMode = config.IsDebugMode,
             };
 
             PhysicsHost physicsHost = PhysicsHost.Create();

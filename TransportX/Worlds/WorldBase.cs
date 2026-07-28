@@ -97,7 +97,11 @@ namespace TransportX.Worlds
 
         public virtual void OnStart()
         {
+#if DEBUG
             Validate();
+#else
+            if (Options.IsDebugMode) Validate();
+#endif
 
             ComponentEngine.Register(Components);
             Chunks.RegisterComponents(ComponentEngine);
