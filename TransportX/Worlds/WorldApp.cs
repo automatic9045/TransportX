@@ -21,6 +21,9 @@ namespace TransportX.Worlds
 {
     public class WorldApp : IApp
     {
+        private static readonly TimeSpan TitleUpdatingTime = TimeSpan.FromSeconds(0.125);
+
+
         protected readonly IAppHost Host;
 
         protected readonly DXHost DXHost;
@@ -39,6 +42,8 @@ namespace TransportX.Worlds
         protected readonly KeyObserver ReloadKeyObserver;
         protected readonly ViewpointInput ViewpointInput;
         protected readonly DebugInput DebugInput;
+
+        private TimeSpan TitleUpdatingAccumulator = TimeSpan.Zero;
 
         private TimeSpan ComputingAccumulator = TimeSpan.Zero;
         protected TimeSpan LimitComputingTime { get; set; } = TimeSpan.FromSeconds(1d / 60);
@@ -162,9 +167,15 @@ namespace TransportX.Worlds
 
         protected virtual void OnTick(TimeSpan elapsed)
         {
-            string chunkText = $"({Camera.WorldPose.Chunk.X}, {Camera.WorldPose.Chunk.Z})";
-            string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
-            Host.Platform.Window.Title = $"TransportX {chunkText}; {coordText} @ {RenderTimeManager.Frequency:f0} fps";
+            TitleUpdatingAccumulator += elapsed;
+            while (TitleUpdatingTime <= TitleUpdatingAccumulator)
+            {
+                string chunkText = $"({Camera.WorldPose.Chunk.X}, {Camera.WorldPose.Chunk.Z})";
+                string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
+                Host.Platform.Window.Title = $"TransportX {chunkText}; {coordText} @ {RenderTimeManager.Frequency:f0} fps";
+
+                TitleUpdatingAccumulator -= TitleUpdatingTime;
+            }
 
             World.Tick(elapsed);
         }
