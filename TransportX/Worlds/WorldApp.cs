@@ -34,8 +34,6 @@ namespace TransportX.Worlds
 
         protected readonly TimeManager UpdateTimeManager;
         protected readonly TimeManager RenderTimeManager;
-        protected readonly InputManager InputManager;
-        protected readonly Camera Camera;
 
         protected readonly WorldBase World;
 
@@ -62,12 +60,10 @@ namespace TransportX.Worlds
 
             UpdateTimeManager = dependencies.UpdateTimeManager;
             RenderTimeManager = dependencies.RenderTimeManager;
-            InputManager = dependencies.InputManager;
-            Camera = dependencies.Camera;
 
             World = dependencies.World;
 
-            ReloadKeyObserver = InputManager.ObserveKey(Key.F5);
+            ReloadKeyObserver = World.InputManager.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
             {
                 DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, new Color4(0, 0, 0));
@@ -76,8 +72,8 @@ namespace TransportX.Worlds
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
             };
 
-            ViewpointInput = new ViewpointInput(InputManager, Camera.Viewpoints);
-            DebugInput = new DebugInput(InputManager, Camera);
+            ViewpointInput = new ViewpointInput(World.InputManager, World.Camera.Viewpoints);
+            DebugInput = new DebugInput(World.InputManager, World.Camera);
 
             Host.Platform.Window.Update += OnUpdate;
             Host.Platform.Window.Render += OnRender;
@@ -86,7 +82,7 @@ namespace TransportX.Worlds
             Save save = Save.Import();
             if (save.FreeViewpointPose.HasValue)
             {
-                Camera.Viewpoints.Free.Locate(save.FreeViewpointPose.Value);
+                World.Camera.Viewpoints.Free.Locate(save.FreeViewpointPose.Value);
             }
 
             World.OnStart();
@@ -114,7 +110,7 @@ namespace TransportX.Worlds
             DXHost.Dispose();
 
             Save save = new();
-            if (Camera.Viewpoints.Current is FreeViewpoint viewpoint)
+            if (World.Camera.Viewpoints.Current is FreeViewpoint viewpoint)
             {
                 WorldPose worldPose = viewpoint.WorldPose;
                 save.FreeViewpointPose = new CameraPose(worldPose.Chunk, worldPose.Pose.Position, viewpoint.Angle);
@@ -170,8 +166,8 @@ namespace TransportX.Worlds
             TitleUpdatingAccumulator += elapsed;
             while (TitleUpdatingTime <= TitleUpdatingAccumulator)
             {
-                string chunkText = $"({Camera.WorldPose.Chunk.X}, {Camera.WorldPose.Chunk.Z})";
-                string coordText = $"({Camera.WorldPose.WorldPosition.X:F1}, {Camera.WorldPose.WorldPosition.Y:F1}, {Camera.WorldPose.WorldPosition.Z:F1})";
+                string chunkText = $"({World.Camera.WorldPose.Chunk.X}, {World.Camera.WorldPose.Chunk.Z})";
+                string coordText = $"({World.Camera.WorldPose.WorldPosition.X:F1}, {World.Camera.WorldPose.WorldPosition.Y:F1}, {World.Camera.WorldPose.WorldPosition.Z:F1})";
                 Host.Platform.Window.Title = $"TransportX {chunkText}; {coordText} @ {RenderTimeManager.Frequency:f0} fps";
 
                 TitleUpdatingAccumulator -= TitleUpdatingTime;
@@ -182,7 +178,7 @@ namespace TransportX.Worlds
 
         protected virtual void OnRender(TimeSpan elapsed)
         {
-            Renderer.Render(Camera, World, elapsed);
+            Renderer.Render(World.Camera, World, elapsed);
         }
     }
 }

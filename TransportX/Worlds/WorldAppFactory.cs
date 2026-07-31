@@ -129,8 +129,6 @@ namespace TransportX.Worlds
                 Renderer = renderer,
                 UpdateTimeManager = updateTimeManager,
                 RenderTimeManager = renderTimeManager,
-                InputManager = inputManager,
-                Camera = camera,
                 World = world,
             };
             return new WorldApp(info);
