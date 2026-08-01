@@ -27,8 +27,8 @@ namespace TransportX.Worlds
 
         protected readonly IAppHost Host;
 
-        protected readonly DXHost DXHost;
-        protected readonly DXClient DXClient;
+        protected readonly GraphicsHost GraphicsHost;
+        protected readonly GraphicsClient GraphicsClient;
         protected readonly AudioClient AudioClient;
         protected readonly PhysicsHost PhysicsHost;
 
@@ -55,8 +55,8 @@ namespace TransportX.Worlds
         {
             Host = dependencies.Host;
 
-            DXHost = dependencies.DXHost;
-            DXClient = dependencies.DXClient;
+            GraphicsHost = dependencies.GraphicsHost;
+            GraphicsClient = dependencies.GraphicsClient;
             AudioClient = dependencies.AudioClient;
             PhysicsHost = dependencies.PhysicsHost;
 
@@ -71,8 +71,8 @@ namespace TransportX.Worlds
             ReloadKeyObserver = World.InputManager.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
             {
-                DXHost.Context.ClearRenderTargetView(DXClient.RenderTarget, new Color4(0, 0, 0));
-                DXClient.SwapChain!.Present(1, PresentFlags.None);
+                GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.RenderTarget, new Color4(0, 0, 0));
+                GraphicsClient.SwapChain!.Present(1, PresentFlags.None);
 
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
             };
@@ -113,11 +113,11 @@ namespace TransportX.Worlds
             PhysicsHost.Dispose();
             Renderer.Dispose();
 
-            DXHost.Context.ClearState();
-            DXHost.Context.Flush();
+            GraphicsHost.Context.ClearState();
+            GraphicsHost.Context.Flush();
 
-            DXClient.Dispose();
-            DXHost.Dispose();
+            GraphicsClient.Dispose();
+            GraphicsHost.Dispose();
 
             Save save = new();
             if (Viewpoints.Current is FreeViewpoint viewpoint)
@@ -154,14 +154,14 @@ namespace TransportX.Worlds
             RenderTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
 
             OnRender(RenderTimeManager.DeltaTime);
-            DXClient.SwapChain!.Present(1, PresentFlags.None);
+            GraphicsClient.SwapChain!.Present(1, PresentFlags.None);
         }
 
         private void OnResize(Vector2D<int> size)
         {
             if (0 < size.X && 0 < size.Y)
             {
-                DXClient.Resize(DXHost.Device, size.X, size.Y);
+                GraphicsClient.Resize(GraphicsHost.Device, size.X, size.Y);
             }
         }
 

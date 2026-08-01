@@ -20,7 +20,7 @@ namespace TransportX.Scripting.Avatars.Commands
         internal Models(ScriptAvatar avatar)
         {
             Avatar = avatar;
-            Internal = new ModelsInternal(Avatar.DXHost, Avatar.PhysicsHost, Avatar.Models, Avatar.ErrorCollector);
+            Internal = new ModelsInternal(Avatar.GraphicsHost, Avatar.PhysicsHost, Avatar.Models, Avatar.ErrorCollector);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

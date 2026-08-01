@@ -16,8 +16,8 @@ namespace TransportX.Worlds
     {
         public required IAppHost Host { get; init; }
 
-        public required DXHost DXHost { get; init; }
-        public required DXClient DXClient { get; init; }
+        public required GraphicsHost GraphicsHost { get; init; }
+        public required GraphicsClient GraphicsClient { get; init; }
         public required AudioClient AudioClient { get; init; }
         public required PhysicsHost PhysicsHost { get; init; }
 

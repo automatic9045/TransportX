@@ -22,7 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
         internal Sounds(ScriptWorld world)
         {
             World = world;
-            Internal = new SoundsInternal(World.DXHost, World.Sounds, World.ErrorCollector);
+            Internal = new SoundsInternal(World.AudioHost, World.Sounds, World.ErrorCollector);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

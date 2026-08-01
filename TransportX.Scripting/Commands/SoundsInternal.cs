@@ -17,13 +17,13 @@ namespace TransportX.Scripting.Commands
 {
     internal class SoundsInternal
     {
-        private readonly IDXHost DXHost;
+        private readonly IAudioHost AudioHost;
         private readonly ISoundCollection Sounds;
         private readonly IErrorCollector ErrorCollector;
 
-        public SoundsInternal(IDXHost dxHost, ISoundCollection sounds, IErrorCollector errorCollector)
+        public SoundsInternal(IAudioHost audioHost, ISoundCollection sounds, IErrorCollector errorCollector)
         {
-            DXHost = dxHost;
+            AudioHost = audioHost;
             Sounds = sounds;
             ErrorCollector = errorCollector;
         }
@@ -45,7 +45,7 @@ namespace TransportX.Scripting.Commands
                         string soundKey = line[0];
                         string soundPath = Path.Combine(list.ListDirectory, line[1]);
 
-                        SoundAsset sound = SoundAsset.FromFile(DXHost.XAudio2, DXHost.MasteringVoice, DXHost.X3DAudio, soundPath);
+                        SoundAsset sound = SoundAsset.FromFile(AudioHost.XAudio2, AudioHost.MasteringVoice, AudioHost.X3DAudio, soundPath);
                         sounds.Add(soundKey, sound);
                     }
                     catch (Exception ex)

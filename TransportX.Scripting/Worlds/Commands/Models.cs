@@ -21,7 +21,7 @@ namespace TransportX.Scripting.Worlds.Commands
         internal Models(ScriptWorld world)
         {
             World = world;
-            Internal = new ModelsInternal(World.DXHost, World.PhysicsHost, World.Models, World.ErrorCollector);
+            Internal = new ModelsInternal(World.GraphicsHost, World.PhysicsHost, World.Models, World.ErrorCollector);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

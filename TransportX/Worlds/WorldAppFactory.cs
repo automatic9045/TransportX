@@ -44,7 +44,7 @@ namespace TransportX.Worlds
             ErrorCollector errorCollector = new(host.Platform.Window);
             Config config = Config.Import(errorCollector);
 
-            DXHost dxHost = new();
+            GraphicsHost graphicsHost = new();
 
             SwapChainDescription1 swapChainDesc = new()
             {
@@ -61,14 +61,15 @@ namespace TransportX.Worlds
             {
                 Windowed = true,
             };
-            IDXGISwapChain1 swapChain = dxHost.DXGIFactory.CreateSwapChainForHwnd(dxHost.Device, hwnd, swapChainDesc, fullscreenDesc);
+            IDXGISwapChain1 swapChain = graphicsHost.DXGIFactory.CreateSwapChainForHwnd(graphicsHost.Device, hwnd, swapChainDesc, fullscreenDesc);
 
-            DXClient dxClient = new(hwnd, swapChain);
-            dxClient.Resize(dxHost.Device, window.Size.X, window.Size.Y);
+            GraphicsClient graphicsClient = new(hwnd, swapChain);
+            graphicsClient.Resize(graphicsHost.Device, window.Size.X, window.Size.Y);
 
-            dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
-            dxClient.SwapChain!.Present(1, PresentFlags.None);
+            graphicsHost.Context.ClearRenderTargetView(graphicsClient.RenderTarget, new Color4(0, 0, 0));
+            graphicsClient.SwapChain!.Present(1, PresentFlags.None);
 
+            AudioHost audioHost = new();
             AudioClient audioClient = new();
 
             PhysicsHost physicsHost = PhysicsHost.Create();
@@ -88,8 +89,9 @@ namespace TransportX.Worlds
             WorldBuilder worldBuilder = new(parameters.WorldInfo)
             {
                 Platform = host.Platform,
-                DXHost = dxHost,
-                DXClient = dxClient,
+                GraphicsHost = graphicsHost,
+                GraphicsClient = graphicsClient,
+                AudioHost = audioHost,
                 AudioClient = audioClient,
                 PhysicsHost = physicsHost,
                 Options = worldOptions,
@@ -121,13 +123,13 @@ namespace TransportX.Worlds
                     Resolution = config.ShadowResolution,
                 },
             };
-            Renderer renderer = new(host.Platform, dxHost, dxClient, rendererOptions);
+            Renderer renderer = new(host.Platform, graphicsHost, graphicsClient, rendererOptions);
 
             WorldAppDependencies info = new()
             {
                 Host = host,
-                DXHost = dxHost,
-                DXClient = dxClient,
+                GraphicsHost = graphicsHost,
+                GraphicsClient = graphicsClient,
                 AudioClient = audioClient,
                 PhysicsHost = physicsHost,
                 Viewpoints = new ViewpointSet(),

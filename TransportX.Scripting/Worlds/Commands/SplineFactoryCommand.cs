@@ -77,7 +77,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public SplineCommand Build()
         {
-            List<SplineBase> splines = SplineFactory.Build(World.DXHost.Device, World.PhysicsHost);
+            List<SplineBase> splines = SplineFactory.Build(World.GraphicsHost.Device, World.PhysicsHost);
             foreach (SplineBase spline in splines)
             {
                 Chunk chunk = World.Chunks.GetOrAddFor(spline);

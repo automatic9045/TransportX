@@ -18,8 +18,8 @@ namespace TransportX.Rendering.Pipelines
     public class Renderer : IRenderer
     {
         protected readonly Platform Platform;
-        protected readonly IDXHost DXHost;
-        protected readonly IDXClient DXClient;
+        protected readonly IGraphicsHost GraphicsHost;
+        protected readonly IGraphicsClient GraphicsClient;
         protected readonly RendererOptions Options;
 
         protected readonly RenderContext RenderContext;
@@ -35,14 +35,14 @@ namespace TransportX.Rendering.Pipelines
         protected readonly PostProcessingPass PostProcess;
         protected readonly DebugPass Debug;
 
-        public Renderer(Platform platform, IDXHost dxHost, IDXClient dxClient, RendererOptions options)
+        public Renderer(Platform platform, IGraphicsHost graphicsHost, IGraphicsClient graphicsClient, RendererOptions options)
         {
             Platform = platform;
-            DXHost = dxHost;
-            DXClient = dxClient;
+            GraphicsHost = graphicsHost;
+            GraphicsClient = graphicsClient;
             Options = options;
 
-            RenderContext = new RenderContext(DXHost.Context);
+            RenderContext = new RenderContext(GraphicsHost.Context);
 
 
             InputElementDescription[] inputElements = [
@@ -145,8 +145,8 @@ namespace TransportX.Rendering.Pipelines
 
         public void Render(ICamera camera, WorldBase world, TimeSpan elapsed)
         {
-            if (DXClient.DepthStencil is null) throw new InvalidOperationException();
-            if (DXClient.RenderTarget is null) throw new InvalidOperationException();
+            if (GraphicsClient.DepthStencil is null) throw new InvalidOperationException();
+            if (GraphicsClient.RenderTarget is null) throw new InvalidOperationException();
 
             SizeI size = new(Platform.Window.Size.X, Platform.Window.Size.Y);
             if (size.Width == 0 || size.Height == 0)
@@ -160,10 +160,10 @@ namespace TransportX.Rendering.Pipelines
             Shadow.UpdateCamera(world.DirectionalLight.Direction, viewContext);
             Shadow.Render(world.Chunks, world.Bodies);
 
-            PostProcess.Setup(DXClient.DepthStencil, size);
+            PostProcess.Setup(GraphicsClient.DepthStencil, size);
 
-            DXHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
-            DXHost.Context.ClearDepthStencilView(DXClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
+            GraphicsHost.Context.RSSetViewport(0, 0, size.Width, size.Height);
+            GraphicsHost.Context.ClearDepthStencilView(GraphicsClient.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             if (!IBL.IsGenerated)
             {
@@ -173,11 +173,11 @@ namespace TransportX.Rendering.Pipelines
             Shadow.Bind();
             IBL.Bind();
 
-            Opaque.Render(DXClient.DepthStencil, world, viewContext, Options.DrawChunkCount, size);
-            PostProcess.RenderTo(DXClient.RenderTarget, world.DefaultEnvironment, elapsed);
-            Debug.RenderTo(DXClient.RenderTarget, DXClient.DepthStencil, world, camera.VisibleLayers, viewContext, Options.DrawChunkCount, size);
+            Opaque.Render(GraphicsClient.DepthStencil, world, viewContext, Options.DrawChunkCount, size);
+            PostProcess.RenderTo(GraphicsClient.RenderTarget, world.DefaultEnvironment, elapsed);
+            Debug.RenderTo(GraphicsClient.RenderTarget, GraphicsClient.DepthStencil, world, camera.VisibleLayers, viewContext, Options.DrawChunkCount, size);
 
-            DXHost.Context.PSSetShaderResource(12, null!);
+            GraphicsHost.Context.PSSetShaderResource(12, null!);
         }
     }
 }

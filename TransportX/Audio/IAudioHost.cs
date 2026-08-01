@@ -4,21 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
-using Vortice.DXGI;
 using Vortice.XAudio2;
 
-namespace TransportX.Rendering.Backend
+namespace TransportX.Audio
 {
-    public interface IDXHost
+    public interface IAudioHost : IDisposable
     {
-        ID3D11Device Device { get; }
-        ID3D11DeviceContext Context { get; }
-        IDXGIFactory2 DXGIFactory { get; }
         IXAudio2 XAudio2 { get; }
         IXAudio2MasteringVoice MasteringVoice { get; }
         X3DAudio X3DAudio { get; }
-
-        event EventHandler? Disposing;
     }
 }

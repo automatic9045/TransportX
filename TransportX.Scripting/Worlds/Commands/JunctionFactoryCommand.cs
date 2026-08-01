@@ -106,7 +106,7 @@ namespace TransportX.Scripting.Worlds.Commands
                 Props.AddRange(props);
             }
 
-            Junction.PutProps(World.DXHost.Device, World.PhysicsHost, Props);
+            Junction.PutProps(World.GraphicsHost.Device, World.PhysicsHost, Props);
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();
             componentErrorCollector.Reported += (sender, e) =>

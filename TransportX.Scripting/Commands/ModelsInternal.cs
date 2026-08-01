@@ -19,14 +19,14 @@ namespace TransportX.Scripting.Commands
 {
     internal class ModelsInternal
     {
-        private readonly IDXHost DXHost;
+        private readonly IGraphicsHost GraphicsHost;
         private readonly IPhysicsHost PhysicsHost;
         private readonly IModelCollection Models;
         private readonly IErrorCollector ErrorCollector;
 
-        public ModelsInternal(IDXHost dxHost, IPhysicsHost physicsHost, IModelCollection models, IErrorCollector errorCollector)
+        public ModelsInternal(IGraphicsHost graphicsHost, IPhysicsHost physicsHost, IModelCollection models, IErrorCollector errorCollector)
         {
-            DXHost = dxHost;
+            GraphicsHost = graphicsHost;
             PhysicsHost = physicsHost;
             Models = models;
             ErrorCollector = errorCollector;
@@ -49,7 +49,7 @@ namespace TransportX.Scripting.Commands
                         ? modelError.ChangeSource(list.ListPath, list.LineNumber) : e.Error;
                     ErrorCollector.Report(error);
                 };
-                using ModelFactory factory = new(DXHost.Context, PhysicsHost.Simulation, factoryErrorCollector);
+                using ModelFactory factory = new(GraphicsHost.Context, PhysicsHost.Simulation, factoryErrorCollector);
 
                 ModelListInterpreter interpreter = new(parser, PhysicsHost.Simulation, factory, list.ListDirectory, factoryErrorCollector);
 
@@ -90,7 +90,7 @@ namespace TransportX.Scripting.Commands
 
                         if (model is CollidableModel collidableModel)
                         {
-                            collidableModel.CreateColliderDebugModel(DXHost.Device);
+                            collidableModel.CreateColliderDebugModel(GraphicsHost.Device);
                             collidableModel.ColliderDebugModel!.Color = new Vector4(1, 0, 0, 1);
                         }
 

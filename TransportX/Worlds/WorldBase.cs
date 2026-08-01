@@ -29,8 +29,9 @@ namespace TransportX.Worlds
 
         public IWorldInfo Info { get; }
         public Platform Platform { get; }
-        public IDXHost DXHost { get; }
-        public IDXClient DXClient { get; }
+        public IGraphicsHost GraphicsHost { get; }
+        public IGraphicsClient GraphicsClient { get; }
+        public IAudioHost AudioHost { get; }
         public IAudioClient AudioClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public WorldOptions Options { get; }
@@ -71,8 +72,9 @@ namespace TransportX.Worlds
         {
             Info = builder.Info;
             Platform = builder.Platform;
-            DXHost = builder.DXHost;
-            DXClient = builder.DXClient;
+            GraphicsHost = builder.GraphicsHost;
+            GraphicsClient = builder.GraphicsClient;
+            AudioHost = builder.AudioHost;
             AudioClient = builder.AudioClient;
             PhysicsHost = builder.PhysicsHost;
             Options = builder.Options;

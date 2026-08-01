@@ -25,7 +25,7 @@ namespace TransportX.Scripting.Avatars.Commands
         internal Sounds(ScriptAvatar avatar)
         {
             Avatar = avatar;
-            Internal = new SoundsInternal(Avatar.DXHost, Avatar.Sounds, Avatar.ErrorCollector);
+            Internal = new SoundsInternal(Avatar.AudioHost, Avatar.Sounds, Avatar.ErrorCollector);
 
             Sound3DsKey = new ScriptKeyedList<string, Sound3DCommand>(
                 sound => sound.Key, Avatar.ErrorCollector, "3D サウンド", key => Sound3DCommand.Empty(avatar, key));

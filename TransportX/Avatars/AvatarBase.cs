@@ -28,8 +28,9 @@ namespace TransportX.Avatars
 
         public IAvatarInfo Info { get; }
         public Platform Platform { get; }
-        public IDXHost DXHost { get; }
-        public IDXClient DXClient { get; }
+        public IGraphicsHost GraphicsHost { get; }
+        public IGraphicsClient GraphicsClient { get; }
+        public IAudioHost AudioHost { get; }
         public IAudioClient AudioClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public IErrorCollector ErrorCollector { get; }
@@ -70,8 +71,9 @@ namespace TransportX.Avatars
         {
             Info = builder.Info;
             Platform = builder.World.Platform;
-            DXHost = builder.World.DXHost;
-            DXClient = builder.World.DXClient;
+            GraphicsHost = builder.World.GraphicsHost;
+            GraphicsClient = builder.World.GraphicsClient;
+            AudioHost = builder.World.AudioHost;
             AudioClient = builder.World.AudioClient;
             PhysicsHost = builder.World.PhysicsHost;
             ErrorCollector = builder.World.ErrorCollector;
@@ -89,7 +91,7 @@ namespace TransportX.Avatars
             DriverViewpoint = new DriverViewpoint(this, new Pose(0, 1.5f, 0));
             BirdViewpoint = new BirdViewpoint(this, Pose.Identity, 20, new Vector2(0.3f, 0));
 
-            DebugModel = this.CreateDebugModel(DXHost.Device);
+            DebugModel = this.CreateDebugModel(GraphicsHost.Device);
             DebugModel.DebugName = GetType().Name;
             DebugModel.Color = new Vector4(1, 0, 0, 1);
         }

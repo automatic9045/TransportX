@@ -9,7 +9,7 @@ using Vortice.DXGI;
 
 namespace TransportX.Rendering.Backend
 {
-    public class DXClient : IDXClient, IDisposable
+    public class GraphicsClient : IGraphicsClient, IDisposable
     {
         public nint Hwnd { get; }
         public IDXGISwapChain1 SwapChain { get; }
@@ -17,7 +17,7 @@ namespace TransportX.Rendering.Backend
         public ID3D11RenderTargetView? RenderTarget { get; private set; }
         public ID3D11DepthStencilView? DepthStencil { get; private set; }
 
-        public DXClient(nint hwnd, IDXGISwapChain1 swapChain)
+        public GraphicsClient(nint hwnd, IDXGISwapChain1 swapChain)
         {
             Hwnd = hwnd;
             SwapChain = swapChain;

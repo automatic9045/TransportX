@@ -21,8 +21,9 @@ namespace TransportX.Worlds
         public IWorldInfo Info { get; }
 
         public required Platform Platform { get; init; }
-        public required IDXHost DXHost { get; init; }
-        public required IDXClient DXClient { get; init; }
+        public required IGraphicsHost GraphicsHost { get; init; }
+        public required IGraphicsClient GraphicsClient { get; init; }
+        public required IAudioHost AudioHost { get; init; }
         public required IAudioClient AudioClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required WorldOptions Options { get; init; }

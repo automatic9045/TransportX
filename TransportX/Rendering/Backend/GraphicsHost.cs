@@ -12,11 +12,11 @@ using Vortice.XAudio2;
 
 namespace TransportX.Rendering.Backend
 {
-    public class DXHost : IDXHost, IDisposable
+    public class GraphicsHost : IGraphicsHost, IDisposable
     {
         private static readonly bool IsDebug = false;
 
-        static DXHost()
+        static GraphicsHost()
         {
 #if DEBUG
             IsDebug = true;
@@ -28,13 +28,10 @@ namespace TransportX.Rendering.Backend
         public ID3D11DeviceContext Context { get; }
         public ID3D11Debug? Debug { get; }
         public IDXGIFactory2 DXGIFactory { get; }
-        public IXAudio2 XAudio2 { get; }
-        public IXAudio2MasteringVoice MasteringVoice { get; }
-        public X3DAudio X3DAudio { get; }
 
         public event EventHandler? Disposing;
 
-        public DXHost()
+        public GraphicsHost()
         {
             DeviceCreationFlags creationFlags = DeviceCreationFlags.BgraSupport;
             if (IsDebug) creationFlags |= DeviceCreationFlags.Debug;
@@ -48,10 +45,6 @@ namespace TransportX.Rendering.Backend
             using IDXGIDevice dxgiDevice = Device.QueryInterface<IDXGIDevice>();
             using IDXGIAdapter dxgiAdapter = dxgiDevice.GetAdapter();
             DXGIFactory = dxgiAdapter.GetParent<IDXGIFactory2>();
-
-            XAudio2 = Vortice.XAudio2.XAudio2.XAudio2Create();
-            MasteringVoice = XAudio2.CreateMasteringVoice();
-            X3DAudio = new X3DAudio(MasteringVoice.ChannelMask);
         }
 
         public void Dispose()
@@ -59,9 +52,6 @@ namespace TransportX.Rendering.Backend
             Disposing?.Invoke(this, EventArgs.Empty);
 
             DXGIFactory.Dispose();
-
-            MasteringVoice.Dispose();
-            XAudio2.Dispose();
 
             Context.ClearState();
             Context.Flush();
