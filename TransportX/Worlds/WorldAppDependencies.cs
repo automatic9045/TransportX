@@ -22,7 +22,7 @@ namespace TransportX.Worlds
         public required PhysicsHost PhysicsHost { get; init; }
 
         public required ViewpointSet Viewpoints { get; init; }
-        public required Renderer Renderer { get; init; }
+        public required IRenderer Renderer { get; init; }
 
         public required TimeManager UpdateTimeManager { get; init; }
         public required TimeManager RenderTimeManager { get; init; }

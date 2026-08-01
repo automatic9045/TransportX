@@ -33,7 +33,7 @@ namespace TransportX.Worlds
         protected readonly PhysicsHost PhysicsHost;
 
         protected readonly ViewpointSet Viewpoints;
-        protected readonly Renderer Renderer;
+        protected readonly IRenderer Renderer;
 
         protected readonly TimeManager UpdateTimeManager;
         protected readonly TimeManager RenderTimeManager;

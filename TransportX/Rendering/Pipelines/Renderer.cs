@@ -15,7 +15,7 @@ using TransportX.Worlds;
 
 namespace TransportX.Rendering.Pipelines
 {
-    public class Renderer : IDisposable
+    public class Renderer : IRenderer
     {
         protected readonly Platform Platform;
         protected readonly IDXHost DXHost;
@@ -24,10 +24,10 @@ namespace TransportX.Rendering.Pipelines
 
         protected readonly RenderContext RenderContext;
 
-        public readonly ID3D11Buffer InstanceBuffer;
-        public readonly ID3D11Buffer MaterialBuffer;
-        public readonly ID3D11Buffer EnvironmentBuffer;
-        public readonly ID3D11Buffer SceneBuffer;
+        protected readonly ID3D11Buffer InstanceBuffer;
+        protected readonly ID3D11Buffer MaterialBuffer;
+        protected readonly ID3D11Buffer EnvironmentBuffer;
+        protected readonly ID3D11Buffer SceneBuffer;
 
         protected readonly OpaquePass Opaque;
         protected readonly ShadowPass Shadow;
