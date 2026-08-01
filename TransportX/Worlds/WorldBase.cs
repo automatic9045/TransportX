@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using BepuPhysics;
 
+using TransportX.Audio;
 using TransportX.Avatars;
 using TransportX.Bodies;
 using TransportX.Cameras;
@@ -24,10 +25,13 @@ namespace TransportX.Worlds
 {
     public abstract class WorldBase : IDisposable
     {
+        private ChunkIndex OldCameraChunk = new(int.MinValue, int.MinValue);
+
         public IWorldInfo Info { get; }
         public Platform Platform { get; }
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
+        public IAudioClient AudioClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public WorldOptions Options { get; }
         public IErrorCollector ErrorCollector { get; }
@@ -35,7 +39,7 @@ namespace TransportX.Worlds
         public PluginLoadContext WorldContext { get; }
         public TimeManager TimeManager { get; }
         public InputManager InputManager { get; }
-        public Camera Camera { get; }
+        public ICamera Camera { get; }
 
         public string Location { get; protected set; }
         public string BaseDirectory { get; protected set; }
@@ -43,12 +47,13 @@ namespace TransportX.Worlds
         public abstract IModelCollection Models { get; }
         public abstract ISoundCollection Sounds { get; }
 
-        public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
-        public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
-
         public List<TransformedModel> BackgroundModels { get; } = [];
         public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
+
+        public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
+        public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
+        public WorldPose DefaultCameraPose { get; protected set; } = WorldPose.Zero;
 
         /// <summary>
         /// ワールド全体にアタッチされているコンポーネントの一覧を取得します。
@@ -60,11 +65,7 @@ namespace TransportX.Worlds
         /// </summary>
         public ComponentEngine ComponentEngine { get; } = new();
 
-        public AvatarBase? Avatar
-        {
-            get => Camera.Viewpoints.AttachedTo;
-            set => Camera.Viewpoints.AttachedTo = value;
-        }
+        public AvatarBase? Avatar { get; set; } = null;
 
         public WorldBase(PluginLoadContext context, WorldBuilder builder)
         {
@@ -72,6 +73,7 @@ namespace TransportX.Worlds
             Platform = builder.Platform;
             DXHost = builder.DXHost;
             DXClient = builder.DXClient;
+            AudioClient = builder.AudioClient;
             PhysicsHost = builder.PhysicsHost;
             Options = builder.Options;
             ErrorCollector = builder.ErrorCollector;
@@ -163,18 +165,25 @@ namespace TransportX.Worlds
         public virtual void SubTick(TimeSpan elapsed)
         {
             ComponentEngine.SubTick(elapsed);
-            Bodies.SubTick(elapsed, Camera.WorldPose, Options.SimulationChunkCount);
-            Camera.UpdateView();
-            Chunks.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
-            Bodies.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
+            Bodies.SubTick(elapsed, Camera.WorldPose.Chunk, Options.SimulationChunkCount);
         }
 
         public virtual void Tick(TimeSpan elapsed)
         {
             ComponentEngine.Tick(elapsed, TimeManager.Now);
             Bodies.Tick(elapsed);
-            Chunks.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
-            Bodies.SetCameraPosition(Camera.WorldPose, Options.SimulationChunkCount);
+        }
+
+        public virtual void UpdateCameraChunk()
+        {
+            ChunkIndex cameraChunk = Camera.WorldPose.Chunk;
+            if (cameraChunk != OldCameraChunk)
+            {
+                OldCameraChunk = cameraChunk;
+
+                Chunks.SetCameraChunk(cameraChunk, Options.SimulationChunkCount);
+                Bodies.SetCameraChunk(cameraChunk);
+            }
         }
 
         public virtual AvatarBase CreateAvatar(IAvatarInfo avatarInfo)

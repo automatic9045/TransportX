@@ -19,21 +19,21 @@ namespace TransportX.Bodies
             foreach (RigidBody body in this) body.Dispose();
         }
 
-        public void SetCameraPosition(WorldPose cameraWorldPose, int computeChunkCount)
+        public void SetCameraChunk(ChunkIndex cameraChunk)
         {
             foreach (RigidBody body in this)
             {
-                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraWorldPose.Chunk;
+                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraChunk;
                 body.SetFromCamera(fromCamera);
             }
         }
 
-        public void SubTick(TimeSpan elapsed, WorldPose cameraWorldPose, int computeChunkCount)
+        public void SubTick(TimeSpan elapsed, ChunkIndex cameraChunk, int computeChunkCount)
         {
             foreach (RigidBody body in this)
             {
                 body.SubTick(elapsed);
-                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraWorldPose.Chunk;
+                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraChunk;
                 body.SetFromCamera(fromCamera);
             }
         }

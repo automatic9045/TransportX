@@ -9,6 +9,7 @@ using TransportX.Collections;
 using TransportX.Communication;
 using TransportX.Dependency;
 using TransportX.Environment;
+using TransportX.Spatial;
 using TransportX.Worlds;
 
 using TransportX.Scripting.Collections;
@@ -36,6 +37,12 @@ namespace TransportX.Scripting.Worlds
         {
             get => base.DirectionalLight;
             set => base.DirectionalLight = value;
+        }
+
+        public new WorldPose DefaultCameraPose
+        {
+            get => base.DefaultCameraPose;
+            set => base.DefaultCameraPose = value;
         }
 
         public string ScriptPath { get; }

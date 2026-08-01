@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Audio;
 using TransportX.Bodies;
 using TransportX.Cameras;
 using TransportX.Components;
@@ -29,6 +30,7 @@ namespace TransportX.Avatars
         public Platform Platform { get; }
         public IDXHost DXHost { get; }
         public IDXClient DXClient { get; }
+        public IAudioClient AudioClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext AppContext { get; }
@@ -36,7 +38,7 @@ namespace TransportX.Avatars
         public PluginLoadContext AvatarContext { get; }
         public ITimeManager TimeManager { get; }
         public InputManager InputManager { get; }
-        public Camera Camera { get; }
+        public ICamera Camera { get; }
         public WorldBase World { get; }
 
         public string Location { get; protected set; }
@@ -70,6 +72,7 @@ namespace TransportX.Avatars
             Platform = builder.World.Platform;
             DXHost = builder.World.DXHost;
             DXClient = builder.World.DXClient;
+            AudioClient = builder.World.AudioClient;
             PhysicsHost = builder.World.PhysicsHost;
             ErrorCollector = builder.World.ErrorCollector;
             AppContext = builder.World.AppContext;

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Audio;
 using TransportX.Cameras;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
@@ -23,13 +23,14 @@ namespace TransportX.Worlds
         public required Platform Platform { get; init; }
         public required IDXHost DXHost { get; init; }
         public required IDXClient DXClient { get; init; }
+        public required IAudioClient AudioClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required WorldOptions Options { get; init; }
         public required IErrorCollector ErrorCollector { get; init; }
         public required PluginLoadContext AppContext { get; init; }
         public required TimeManager TimeManager { get; init; }
         public required InputManager InputManager { get; init; }
-        public required Camera Camera { get; init; }
+        public required ICamera Camera { get; init; }
 
         public WorldBuilder(IWorldInfo info)
         {

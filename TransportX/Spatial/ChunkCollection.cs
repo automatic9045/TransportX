@@ -46,11 +46,11 @@ namespace TransportX.Spatial
             }
         }
 
-        public void SetCameraPosition(WorldPose cameraWorldPose, int computeChunkCount)
+        public void SetCameraChunk(ChunkIndex cameraChunk, int computeChunkCount)
         {
             foreach (Chunk chunk in this)
             {
-                ChunkIndex fromCamera = chunk.Index - cameraWorldPose.Chunk;
+                ChunkIndex fromCamera = chunk.Index - cameraChunk;
                 chunk.SetFromCamera(fromCamera, computeChunkCount);
             }
         }

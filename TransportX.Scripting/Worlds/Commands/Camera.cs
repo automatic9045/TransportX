@@ -22,8 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void Locate(WorldPose worldPose)
         {
-            CameraPose cameraPose = CameraPose.FromWorldPose(worldPose);
-            World.Camera.Viewpoints.Free.Locate(cameraPose);
+            World.DefaultCameraPose = worldPose;
         }
 
         public void Locate(int chunkX, int chunkZ, double x, double y, double z, double rotationX, double rotationY, double rotationZ)

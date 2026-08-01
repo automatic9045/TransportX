@@ -16,32 +16,23 @@ namespace TransportX.Cameras
     {
         private Matrix4x4 View = Matrix4x4.Identity;
 
-        public Listener Listener { get; } = new Listener();
-        public ViewpointSet Viewpoints { get; }
-
+        public float Perspective { get; set; } = MathHelper.ToRadians(45);
         public ICamera.VisualLayers VisibleLayers { get; set; } = ICamera.VisualLayers.Normal;
 
         public Camera() : base()
         {
-            Viewpoints = new ViewpointSet();
         }
 
-        public void UpdateView()
+        public void UpdateView(in WorldPose worldPose)
         {
-            Locate(Viewpoints.Current.WorldPose);
-
-            Listener.OrientFront = WorldPose.Pose.Direction;
-            Listener.OrientTop = WorldPose.Pose.Up;
-            Listener.Position = WorldPose.Pose.Position;
-            Listener.Velocity = Velocity;
-
+            Locate(worldPose);
             View = Pose.Inverse(WorldPose.Pose).ToMatrix4x4();
         }
 
         public ViewContext CreateViewContext(SizeI clientSize)
         {
             Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                Viewpoints.Current.Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
+                Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
 
             return new ViewContext()
             {

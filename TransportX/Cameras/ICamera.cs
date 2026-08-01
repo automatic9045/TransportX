@@ -12,9 +12,10 @@ namespace TransportX.Cameras
 {
     public interface ICamera : IWorldObject
     {
+        float Perspective { get; set; }
         VisualLayers VisibleLayers { get; set; }
 
-        void UpdateView();
+        void UpdateView(in WorldPose worldPose);
         ViewContext CreateViewContext(SizeI clientSize);
 
 

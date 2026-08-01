@@ -8,6 +8,7 @@ using Silk.NET.Windowing;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Audio;
 using TransportX.Cameras;
 using TransportX.Data;
 using TransportX.Dependency;
@@ -68,14 +69,15 @@ namespace TransportX.Worlds
             dxHost.Context.ClearRenderTargetView(dxClient.RenderTarget, new Color4(0, 0, 0));
             dxClient.SwapChain!.Present(1, PresentFlags.None);
 
+            AudioClient audioClient = new();
+
+            PhysicsHost physicsHost = PhysicsHost.Create();
 
             WorldOptions worldOptions = new()
             {
                 SimulationChunkCount = config.SimulationChunkCount,
                 IsDebugMode = config.IsDebugMode,
             };
-
-            PhysicsHost physicsHost = PhysicsHost.Create();
 
             TimeManager updateTimeManager = new();
             TimeManager renderTimeManager = new();
@@ -88,6 +90,7 @@ namespace TransportX.Worlds
                 Platform = host.Platform,
                 DXHost = dxHost,
                 DXClient = dxClient,
+                AudioClient = audioClient,
                 PhysicsHost = physicsHost,
                 Options = worldOptions,
                 ErrorCollector = errorCollector,
@@ -125,7 +128,9 @@ namespace TransportX.Worlds
                 Host = host,
                 DXHost = dxHost,
                 DXClient = dxClient,
+                AudioClient = audioClient,
                 PhysicsHost = physicsHost,
+                Viewpoints = new ViewpointSet(),
                 Renderer = renderer,
                 UpdateTimeManager = updateTimeManager,
                 RenderTimeManager = renderTimeManager,

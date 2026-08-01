@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Audio;
+using TransportX.Cameras;
 using TransportX.Physics;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
@@ -16,8 +18,10 @@ namespace TransportX.Worlds
 
         public required DXHost DXHost { get; init; }
         public required DXClient DXClient { get; init; }
+        public required AudioClient AudioClient { get; init; }
         public required PhysicsHost PhysicsHost { get; init; }
 
+        public required ViewpointSet Viewpoints { get; init; }
         public required Renderer Renderer { get; init; }
 
         public required TimeManager UpdateTimeManager { get; init; }

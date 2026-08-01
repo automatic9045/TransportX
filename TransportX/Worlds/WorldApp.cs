@@ -9,6 +9,7 @@ using Silk.NET.Maths;
 using Vortice.DXGI;
 using Vortice.Mathematics;
 
+using TransportX.Audio;
 using TransportX.Cameras;
 using TransportX.Data;
 using TransportX.Input;
@@ -28,8 +29,10 @@ namespace TransportX.Worlds
 
         protected readonly DXHost DXHost;
         protected readonly DXClient DXClient;
+        protected readonly AudioClient AudioClient;
         protected readonly PhysicsHost PhysicsHost;
 
+        protected readonly ViewpointSet Viewpoints;
         protected readonly Renderer Renderer;
 
         protected readonly TimeManager UpdateTimeManager;
@@ -54,8 +57,10 @@ namespace TransportX.Worlds
 
             DXHost = dependencies.DXHost;
             DXClient = dependencies.DXClient;
+            AudioClient = dependencies.AudioClient;
             PhysicsHost = dependencies.PhysicsHost;
 
+            Viewpoints = dependencies.Viewpoints;
             Renderer = dependencies.Renderer;
 
             UpdateTimeManager = dependencies.UpdateTimeManager;
@@ -72,7 +77,7 @@ namespace TransportX.Worlds
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
             };
 
-            ViewpointInput = new ViewpointInput(World.InputManager, World.Camera.Viewpoints);
+            ViewpointInput = new ViewpointInput(World.InputManager, Viewpoints);
             DebugInput = new DebugInput(World.InputManager, World.Camera);
 
             Host.Platform.Window.Update += OnUpdate;
@@ -82,7 +87,12 @@ namespace TransportX.Worlds
             Save save = Save.Import();
             if (save.FreeViewpointPose.HasValue)
             {
-                World.Camera.Viewpoints.Free.Locate(save.FreeViewpointPose.Value);
+                Viewpoints.Free.Locate(save.FreeViewpointPose.Value);
+            }
+            else
+            {
+                CameraPose cameraPose = CameraPose.FromWorldPose(World.DefaultCameraPose);
+                Viewpoints.Free.Locate(cameraPose);
             }
 
             World.OnStart();
@@ -110,7 +120,7 @@ namespace TransportX.Worlds
             DXHost.Dispose();
 
             Save save = new();
-            if (World.Camera.Viewpoints.Current is FreeViewpoint viewpoint)
+            if (Viewpoints.Current is FreeViewpoint viewpoint)
             {
                 WorldPose worldPose = viewpoint.WorldPose;
                 save.FreeViewpointPose = new CameraPose(worldPose.Chunk, worldPose.Pose.Position, viewpoint.Angle);
@@ -158,6 +168,7 @@ namespace TransportX.Worlds
         protected virtual void OnSubTick(TimeSpan elapsed)
         {
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
+            SyncCamera();
             World.SubTick(elapsed);
         }
 
@@ -173,11 +184,22 @@ namespace TransportX.Worlds
                 TitleUpdatingAccumulator -= TitleUpdatingTime;
             }
 
+            SyncCamera();
             World.Tick(elapsed);
+        }
+
+        private void SyncCamera()
+        {
+            Viewpoints.AttachedTo = World.Avatar;
+            World.Camera.Perspective = Viewpoints.Current.Perspective;
+            World.Camera.UpdateView(Viewpoints.Current.WorldPose);
+
+            World.UpdateCameraChunk();
         }
 
         protected virtual void OnRender(TimeSpan elapsed)
         {
+            AudioClient.Update(World.Camera.WorldPose, World.Camera.Velocity);
             Renderer.Render(World.Camera, World, elapsed);
         }
     }

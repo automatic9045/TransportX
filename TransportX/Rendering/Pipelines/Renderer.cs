@@ -143,7 +143,7 @@ namespace TransportX.Rendering.Pipelines
             SceneBuffer.Dispose();
         }
 
-        public void Render(Camera camera, WorldBase world, TimeSpan elapsed)
+        public void Render(ICamera camera, WorldBase world, TimeSpan elapsed)
         {
             if (DXClient.DepthStencil is null) throw new InvalidOperationException();
             if (DXClient.RenderTarget is null) throw new InvalidOperationException();

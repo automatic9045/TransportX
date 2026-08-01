@@ -96,7 +96,7 @@ namespace TransportX.Scripting.Avatars.Commands
         internal void Tick(TimeSpan elapsed)
         {
             OnTick();
-            Source.Update(Avatar.Camera.Listener, Avatar.Camera.WorldPose.Chunk);
+            Source.Update(Avatar.AudioClient.Listener, Avatar.Camera.WorldPose.Chunk);
         }
     }
 }
