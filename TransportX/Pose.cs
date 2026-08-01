@@ -78,7 +78,7 @@ namespace TransportX
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Pose FromMatrix4x4(Matrix4x4 matrix)
+        public static Pose FromMatrix4x4(in Matrix4x4 matrix)
         {
             if (!Matrix4x4.Decompose(matrix, out _, out Quaternion orientation, out Vector3 position))
             {
@@ -115,7 +115,7 @@ namespace TransportX
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Pose Inverse(Pose pose)
+        public static Pose Inverse(in Pose pose)
         {
             Quaternion orientationInv = Quaternion.Inverse(pose.Orientation);
             Vector3 positionInv = Vector3.Transform(-pose.Position, orientationInv);

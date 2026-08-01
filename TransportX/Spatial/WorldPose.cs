@@ -18,7 +18,7 @@ namespace TransportX.Spatial
         public ChunkIndex NormalizedOffset { get; }
         public Vector3 WorldPosition => Chunk.Position + Pose.Position;
 
-        public WorldPose(ChunkIndex chunk, Pose pose)
+        public WorldPose(in ChunkIndex chunk, in Pose pose)
         {
             int dx = GetChunkDelta(pose.Position.X);
             int dz = GetChunkDelta(pose.Position.Z);
@@ -35,16 +35,16 @@ namespace TransportX.Spatial
             }
         }
 
-        public WorldPose(ChunkIndex chunk, SixDoF position) : this(chunk, position.ToPose())
+        public WorldPose(in ChunkIndex chunk, in SixDoF position) : this(chunk, position.ToPose())
         {
         }
 
-        public static WorldPose operator *(WorldPose a, Pose b) => new(a.Chunk, a.Pose * b);
-        public static WorldPose operator *(Pose a, WorldPose b) => new(b.Chunk, a * b.Pose);
-        public static WorldPose operator +(WorldPose a, ChunkIndex b) => new(a.Chunk + b, a.Pose);
-        public static WorldPose operator -(WorldPose a, ChunkIndex b) => new(a.Chunk - b, a.Pose);
+        public static WorldPose operator *(in WorldPose a, in Pose b) => new(a.Chunk, a.Pose * b);
+        public static WorldPose operator *(in Pose a, in WorldPose b) => new(b.Chunk, a * b.Pose);
+        public static WorldPose operator +(in WorldPose a, in ChunkIndex b) => new(a.Chunk + b, a.Pose);
+        public static WorldPose operator -(in WorldPose a, in ChunkIndex b) => new(a.Chunk - b, a.Pose);
 
-        public WorldPose ChangePose(Pose newPose) => new(Chunk, newPose);
-        public Vector3 GetOffset(WorldPose to) => to.Pose.Position - Pose.Position + (to.Chunk - Chunk).Position;
+        public WorldPose ChangePose(in Pose newPose) => new(Chunk, newPose);
+        public Vector3 GetOffset(in WorldPose to) => to.Pose.Position - Pose.Position + (to.Chunk - Chunk).Position;
     }
 }
