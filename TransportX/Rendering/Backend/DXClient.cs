@@ -30,7 +30,7 @@ namespace TransportX.Rendering.Backend
             SwapChain.Dispose();
         }
 
-        internal void Resize(ID3D11Device device, int width, int height)
+        public void Resize(ID3D11Device device, int width, int height)
         {
             RenderTarget?.Dispose();
             DepthStencil?.Dispose();

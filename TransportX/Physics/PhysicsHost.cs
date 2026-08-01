@@ -33,7 +33,7 @@ namespace TransportX.Physics
             ThreadDispatcherKey = new ThreadDispatcher(System.Environment.ProcessorCount);
         }
 
-        internal static PhysicsHost Create()
+        public static PhysicsHost Create()
         {
             return new PhysicsHost();
         }

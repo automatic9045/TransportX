@@ -22,7 +22,7 @@ namespace TransportX.Avatars
             Info = info;
         }
 
-        internal protected AvatarBase Build()
+        public AvatarBase Build()
         {
             string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Path));
             if (!File.Exists(path)) throw new FileNotFoundException("アバターファイルが見つかりません。", path);

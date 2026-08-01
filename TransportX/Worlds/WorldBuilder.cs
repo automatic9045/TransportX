@@ -37,7 +37,7 @@ namespace TransportX.Worlds
             Info = info;
         }
 
-        internal protected WorldBase Build()
+        public WorldBase Build()
         {
             string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.InfoPath)!, Info.Path));
             if (!File.Exists(path)) throw new FileNotFoundException("ワールドファイルが見つかりません。", path);
