@@ -139,14 +139,14 @@ namespace TransportX.Worlds
             UpdateTimeManager.Tick(TimeSpan.FromSeconds(deltaTime));
             TimeSpan elapsed = UpdateTimeManager.DeltaTime;
 
-            OnTick(elapsed);
-
             ComputingAccumulator += elapsed;
             while (LimitComputingTime <= ComputingAccumulator)
             {
                 OnSubTick(LimitComputingTime);
                 ComputingAccumulator -= LimitComputingTime;
             }
+
+            OnTick(elapsed);
         }
 
         private void OnRender(double deltaTime)
@@ -168,8 +168,8 @@ namespace TransportX.Worlds
         protected virtual void OnSubTick(TimeSpan elapsed)
         {
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
-            SyncCamera();
             World.SubTick(elapsed);
+            SyncCamera();
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
@@ -184,8 +184,8 @@ namespace TransportX.Worlds
                 TitleUpdatingAccumulator -= TitleUpdatingTime;
             }
 
-            SyncCamera();
             World.Tick(elapsed);
+            SyncCamera();
         }
 
         private void SyncCamera()

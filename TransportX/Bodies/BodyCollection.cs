@@ -33,8 +33,6 @@ namespace TransportX.Bodies
             foreach (RigidBody body in this)
             {
                 body.SubTick(elapsed);
-                ChunkIndex fromCamera = body.WorldPose.Chunk - cameraChunk;
-                body.SetFromCamera(fromCamera);
             }
         }
 

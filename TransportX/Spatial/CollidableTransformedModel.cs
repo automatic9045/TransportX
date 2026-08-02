@@ -80,6 +80,11 @@ namespace TransportX.Spatial
             }
         }
 
+        public void Shift(ChunkIndex offset)
+        {
+            FromCamera += offset;
+        }
+
         public override void Draw(in TransformedDrawContext context)
         {
             switch (context.Layer)

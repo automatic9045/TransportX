@@ -40,10 +40,5 @@ namespace TransportX.Spatial
         {
             return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
         }
-
-        public void Shift(ChunkIndex offset)
-        {
-            Pose *= offset.PoseInverse;
-        }
     }
 }

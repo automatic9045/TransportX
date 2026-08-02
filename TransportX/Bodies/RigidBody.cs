@@ -23,14 +23,6 @@ namespace TransportX.Bodies
         public RigidBody(IPhysicsHost physicsHost, WorldPose worldPose) : base(worldPose)
         {
             Structure = new BodyStructure(physicsHost);
-
-            Moved += _ =>
-            {
-                foreach (TransformedModel model in Structure)
-                {
-                    if (model is not DynamicTransformedModel) model.Pose = model.BasePose * WorldPose.Pose;
-                }
-            };
         }
 
         public RigidBody(IPhysicsHost physicsHost) : this(physicsHost, WorldPose.Zero)
@@ -47,35 +39,61 @@ namespace TransportX.Bodies
             Structure.SetFromCamera(fromCamera);
         }
 
+        protected new ChunkIndex Locate(WorldPose worldPose) => TeleportTo(worldPose);
+        protected new ChunkIndex Locate(ChunkIndex chunkIndex, Pose pose) => TeleportTo(new WorldPose(chunkIndex, pose));
+        protected new ChunkIndex Move(Pose delta) => TeleportTo(delta * WorldPose);
+
         protected virtual ChunkIndex TeleportTo(WorldPose worldPose)
         {
-            ChunkIndex chunkOffset = Locate(worldPose);
+            ChunkIndex oldChunk = WorldPose.Chunk;
+            ChunkIndex normalizedOffset = base.Locate(worldPose);
+
+            ChunkIndex chunkOffset = WorldPose.Chunk - oldChunk;
+            if (!chunkOffset.IsZero)
+            {
+                foreach (TransformedModel model in Structure)
+                {
+                    if (model is CollidableTransformedModel collidableModel)
+                    {
+                        collidableModel.Shift(chunkOffset);
+                    }
+                }
+            }
+
             foreach (TransformedModel model in Structure)
             {
                 model.Pose = model.BasePose * WorldPose.Pose;
             }
 
-            return chunkOffset;
+            return normalizedOffset;
         }
 
         public virtual void SubTick(TimeSpan elapsed)
         {
             if (Structure.RootModel is null) return;
 
-            WorldPose worldPose = new(WorldPose.Chunk, Structure.RootModel!.BasePoseInverse * Structure.RootModel.Pose);
-            ChunkIndex chunkOffset = Locate(worldPose);
+            WorldPose worldPose = new(WorldPose.Chunk, Structure.RootModel.BasePoseInverse * Structure.RootModel.Pose);
+            ChunkIndex oldChunk = WorldPose.Chunk;
+
+            base.Locate(worldPose);
+
+            ChunkIndex chunkOffset = WorldPose.Chunk - oldChunk;
             if (!chunkOffset.IsZero)
             {
                 foreach (TransformedModel model in Structure)
                 {
-                    if (model is DynamicTransformedModel dynamicModel)
+                    if (model is CollidableTransformedModel collidableModel)
                     {
-                        dynamicModel.Shift(chunkOffset);
+                        collidableModel.Shift(chunkOffset);
                     }
-                    else
-                    {
-                        model.Pose = model.BasePose * WorldPose.Pose;
-                    }
+                }
+            }
+
+            foreach (TransformedModel model in Structure)
+            {
+                if (model is not DynamicTransformedModel)
+                {
+                    model.Pose = model.BasePose * WorldPose.Pose;
                 }
             }
         }
