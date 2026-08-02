@@ -87,5 +87,7 @@ namespace TransportX.Extensions.Rendering
 
             context.DeviceContext.Draw(2, 0);
         }
+
+        public void Draw(in DrawContext context, Material renderMaterial) => Draw(context);
     }
 }

@@ -13,7 +13,7 @@ using TransportX.Physics;
 
 namespace TransportX.Rendering
 {
-    public class Model : IModel
+    public class Model : IMeshModel
     {
         public static Model Empty() => new([])
         {

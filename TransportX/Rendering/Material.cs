@@ -9,7 +9,7 @@ using Vortice.Direct3D11;
 
 namespace TransportX.Rendering
 {
-    public class Material
+    public class Material : ICloneable
     {
         public static Material Default() => new()
         {
@@ -18,7 +18,6 @@ namespace TransportX.Rendering
             Roughness = 1,
             Emissive = Vector3.Zero,
         };
-
 
         public required Vector4 BaseColor { get; set; }
         public required float Metallic { get; set; }
@@ -29,6 +28,18 @@ namespace TransportX.Rendering
         public ID3D11ShaderResourceView? NormalTexture { get; set; } = null;
         public ID3D11ShaderResourceView? ORMTexture { get; set; } = null;
         public ID3D11ShaderResourceView? EmissiveTexture { get; set; } = null;
+
+        public ID3D11ShaderResourceView?[] TextureViews
+        {
+            get
+            {
+                field[0] = BaseColorTexture;
+                field[1] = NormalTexture;
+                field[2] = ORMTexture;
+                field[3] = EmissiveTexture;
+                return field;
+            }
+        } = new ID3D11ShaderResourceView?[4];
 
         public string? DebugName
         {
@@ -54,5 +65,22 @@ namespace TransportX.Rendering
         public Material()
         {
         }
+
+        public Material Clone() => new()
+        {
+            BaseColor = BaseColor,
+            Metallic = Metallic,
+            Roughness = Roughness,
+            Emissive = Emissive,
+
+            BaseColorTexture = BaseColorTexture,
+            NormalTexture = NormalTexture,
+            ORMTexture = ORMTexture,
+            EmissiveTexture = EmissiveTexture,
+
+            DebugName = DebugName,
+        };
+
+        object ICloneable.Clone() => Clone();
     }
 }
