@@ -9,12 +9,10 @@ using Vortice.DXGI;
 
 namespace TransportX.Rendering.Backend
 {
-    public interface IGraphicsClient
+    public interface IGraphicsClient : IDisposable
     {
         nint Hwnd { get; }
         IDXGISwapChain1 SwapChain { get; }
-
-        ID3D11RenderTargetView? RenderTarget { get; }
-        ID3D11DepthStencilView? DepthStencil { get; }
+        RenderSurface? Surface { get; }
     }
 }

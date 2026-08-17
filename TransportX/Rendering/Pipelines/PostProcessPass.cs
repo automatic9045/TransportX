@@ -11,16 +11,17 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
-using TransportX.Environment;
 using TransportX.Rendering.Backend;
+using TransportX.Worlds;
+using TransportX.Environment;
 
 namespace TransportX.Rendering.Pipelines
 {
-    public class PostProcessingPass : IDisposable
+    public class PostProcessPass : IRenderPass
     {
         private readonly List<IDisposable> DXResources = [];
 
-        private readonly RenderContext RenderContext;
+        private readonly RenderResourceSet Resources;
 
         private readonly ID3D11SamplerState SamplerState;
         private readonly ID3D11Buffer PostProcessBuffer;
@@ -38,9 +39,10 @@ namespace TransportX.Rendering.Pipelines
 
         private float Exposure = 0;
 
-        public PostProcessingPass(RenderContext renderContext)
+        public PostProcessPass(RenderResourceSet resources)
         {
-            RenderContext = renderContext;
+            Resources = resources;
+            ID3D11Device device = Resources.Context.DeviceContext.Device;
 
 
             SamplerDescription samplerDesc = new()
@@ -50,7 +52,7 @@ namespace TransportX.Rendering.Pipelines
                 AddressV = TextureAddressMode.Clamp,
                 AddressW = TextureAddressMode.Clamp,
             };
-            SamplerState = RenderContext.DeviceContext.Device.CreateSamplerState(samplerDesc);
+            SamplerState = device.CreateSamplerState(samplerDesc);
             DXResources.Add(SamplerState);
 
             BufferDescription postProcessBufferDesc = new()
@@ -60,7 +62,7 @@ namespace TransportX.Rendering.Pipelines
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
-            PostProcessBuffer = RenderContext.DeviceContext.Device.CreateBuffer(postProcessBufferDesc);
+            PostProcessBuffer = device.CreateBuffer(postProcessBufferDesc);
             DXResources.Add(PostProcessBuffer);
 
             BufferDescription blurBufferDesc = new()
@@ -70,12 +72,12 @@ namespace TransportX.Rendering.Pipelines
                 BindFlags = BindFlags.ConstantBuffer,
                 CPUAccessFlags = 0,
             };
-            BlurBuffer = RenderContext.DeviceContext.Device.CreateBuffer(blurBufferDesc);
+            BlurBuffer = device.CreateBuffer(blurBufferDesc);
             DXResources.Add(BlurBuffer);
 
 
             Blob vsBlob = ShaderFactory.CompileFromResource("PostProcess.VS.hlsl", "main", "VS", "vs_5_0");
-            ID3D11VertexShader vertexShader = RenderContext.DeviceContext.Device.CreateVertexShader(vsBlob);
+            ID3D11VertexShader vertexShader = device.CreateVertexShader(vsBlob);
             DXResources.Add(vertexShader);
 
             BlendDescription additiveBlendDesc = new()
@@ -94,7 +96,7 @@ namespace TransportX.Rendering.Pipelines
                 BlendOperationAlpha = BlendOperation.Add,
                 RenderTargetWriteMask = ColorWriteEnable.All,
             };
-            ID3D11BlendState additiveBlendState = RenderContext.DeviceContext.Device.CreateBlendState(additiveBlendDesc);
+            ID3D11BlendState additiveBlendState = device.CreateBlendState(additiveBlendDesc);
             DXResources.Add(additiveBlendState);
 
             BlendDescription opaqueBlendDesc = new();
@@ -103,7 +105,7 @@ namespace TransportX.Rendering.Pipelines
                 BlendEnable = false,
                 RenderTargetWriteMask = ColorWriteEnable.All,
             };
-            ID3D11BlendState opaqueBlendState = RenderContext.DeviceContext.Device.CreateBlendState(opaqueBlendDesc);
+            ID3D11BlendState opaqueBlendState = device.CreateBlendState(opaqueBlendDesc);
             DXResources.Add(opaqueBlendState);
 
             GraphicsPipelineState baseState = new()
@@ -119,7 +121,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob deferredLightingPSBlob = ShaderFactory.CompileFromResource("PostProcess.DeferredLightingPS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader deferredLightingPixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(deferredLightingPSBlob);
+            ID3D11PixelShader deferredLightingPixelShader = device.CreatePixelShader(deferredLightingPSBlob);
             DXResources.Add(deferredLightingPixelShader);
 
             DeferredLightingState = baseState with
@@ -130,7 +132,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob luminanceExtractPSBlob = ShaderFactory.CompileFromResource("PostProcess.LuminanceExtractPS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader luminanceExtractPixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(luminanceExtractPSBlob);
+            ID3D11PixelShader luminanceExtractPixelShader = device.CreatePixelShader(luminanceExtractPSBlob);
             DXResources.Add(luminanceExtractPixelShader);
 
             LuminanceExtractState = baseState with
@@ -141,7 +143,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob extractPSBlob = ShaderFactory.CompileFromResource("PostProcess.ExtractPS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader extractPixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(extractPSBlob);
+            ID3D11PixelShader extractPixelShader = device.CreatePixelShader(extractPSBlob);
             DXResources.Add(extractPixelShader);
 
             ExtractState = baseState with
@@ -152,7 +154,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob downsamplePSBlob = ShaderFactory.CompileFromResource("PostProcess.DownsamplePS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader downsamplePixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(downsamplePSBlob);
+            ID3D11PixelShader downsamplePixelShader = device.CreatePixelShader(downsamplePSBlob);
             DXResources.Add(downsamplePixelShader);
 
             DownsampleState = baseState with
@@ -163,7 +165,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob compositePSBlob = ShaderFactory.CompileFromResource("PostProcess.CompositePS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader compositePixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(compositePSBlob);
+            ID3D11PixelShader compositePixelShader = device.CreatePixelShader(compositePSBlob);
             DXResources.Add(compositePixelShader);
 
             CompositeState = baseState with
@@ -174,7 +176,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob fxaaPSBlob = ShaderFactory.CompileFromResource("PostProcess.FxaaPS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader fxaaPixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(fxaaPSBlob);
+            ID3D11PixelShader fxaaPixelShader = device.CreatePixelShader(fxaaPSBlob);
             DXResources.Add(fxaaPixelShader);
 
             FxaaState = baseState with
@@ -185,7 +187,7 @@ namespace TransportX.Rendering.Pipelines
 
 
             using Blob upsamplePSBlob = ShaderFactory.CompileFromResource("PostProcess.UpsamplePS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader upsamplePixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(upsamplePSBlob);
+            ID3D11PixelShader upsamplePixelShader = device.CreatePixelShader(upsamplePSBlob);
             DXResources.Add(upsamplePixelShader);
 
             UpsampleState = baseState with
@@ -216,60 +218,63 @@ namespace TransportX.Rendering.Pipelines
             if (Buffer is null || size != Buffer.Size)
             {
                 Buffer?.Dispose();
-                Buffer = new PostProcessingBuffer(RenderContext.DeviceContext, depthStencil, size);
+                Buffer = new PostProcessingBuffer(Resources.Context.DeviceContext, depthStencil, size);
             }
 
             Buffer.Initialize();
         }
 
-        public void RenderTo(ID3D11RenderTargetView renderTarget, EnvironmentProfile environment, TimeSpan elapsed)
+        public void Execute(in RenderPassContext context, WorldBase world)
         {
             if (Buffer is null) throw new InvalidOperationException();
 
-            RenderContext.DeviceContext.PSSetSampler(0, SamplerState);
+            ID3D11DeviceContext deviceContext = Resources.Context.DeviceContext;
+            deviceContext.PSSetSampler(0, SamplerState);
 
 
             // 1. Deferred Lighting
 
-            RenderContext.ApplyState(DeferredLightingState);
+            Resources.Context.ApplyState(DeferredLightingState);
 
-            RenderContext.DeviceContext.OMSetRenderTargets(Buffer.ResolvedHdrBuffer.RenderTargetView, null);
-            RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+            deviceContext.OMSetRenderTargets(Buffer.ResolvedHdrBuffer.RenderTargetView, null);
+            deviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
-            RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.AmbientBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.PSSetShaderResource(1, Buffer.DirectionalBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.PSSetShaderResource(2, Buffer.RawShadowDepthBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.Draw(3, 0);
-            RenderContext.DeviceContext.PSSetShaderResource(0, null!);
-            RenderContext.DeviceContext.PSSetShaderResource(1, null!);
-            RenderContext.DeviceContext.PSSetShaderResource(2, null!);
+            deviceContext.PSSetShaderResource(0, Buffer.AmbientBuffer.ShaderResourceView);
+            deviceContext.PSSetShaderResource(1, Buffer.DirectionalBuffer.ShaderResourceView);
+            deviceContext.PSSetShaderResource(2, Buffer.RawShadowDepthBuffer.ShaderResourceView);
+            deviceContext.Draw(3, 0);
+            deviceContext.PSSetShaderResource(0, null!);
+            deviceContext.PSSetShaderResource(1, null!);
+            deviceContext.PSSetShaderResource(2, null!);
 
 
             // 2. Luminance Extraction
 
-            RenderContext.ApplyState(LuminanceExtractState);
+            Resources.Context.ApplyState(LuminanceExtractState);
 
-            RenderContext.DeviceContext.OMSetRenderTargets(Buffer.LuminanceBuffer.RenderTargetView, null);
-            RenderContext.DeviceContext.RSSetViewport(0, 0, 1, 1);
-            RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.PSSetShaderResource(1, Buffer.RawShadowDepthBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.Draw(3, 0);
-            RenderContext.DeviceContext.PSSetShaderResource(0, null!);
-            RenderContext.DeviceContext.PSSetShaderResource(1, null!);
+            deviceContext.OMSetRenderTargets(Buffer.LuminanceBuffer.RenderTargetView, null);
+            deviceContext.RSSetViewport(0, 0, 1, 1);
+            deviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
+            deviceContext.PSSetShaderResource(1, Buffer.RawShadowDepthBuffer.ShaderResourceView);
+            deviceContext.Draw(3, 0);
+            deviceContext.PSSetShaderResource(0, null!);
+            deviceContext.PSSetShaderResource(1, null!);
 
-            RenderContext.DeviceContext.CopyResource(Buffer.StagingTexture, Buffer.LuminanceBuffer.Texture);
-            MappedSubresource map = RenderContext.DeviceContext.Map(Buffer.StagingTexture, 0, MapMode.Read, MapFlags.None);
+            deviceContext.CopyResource(Buffer.StagingTexture, Buffer.LuminanceBuffer.Texture);
+            MappedSubresource map = deviceContext.Map(Buffer.StagingTexture, 0, MapMode.Read, MapFlags.None);
             float sceneLuminanceLog;
             unsafe
             {
                 sceneLuminanceLog = (float)Unsafe.Read<Half>(map.DataPointer.ToPointer());
             }
-            RenderContext.DeviceContext.Unmap(Buffer.StagingTexture, 0);
+            deviceContext.Unmap(Buffer.StagingTexture, 0);
+
+            EnvironmentProfile environment = world.DefaultEnvironment;
 
             float targetExposure = environment.Exposure.Key / (float.Exp(sceneLuminanceLog) + 0.0001f);
             targetExposure = float.Clamp(targetExposure, environment.Exposure.Min, environment.Exposure.Max);
             float adaptationSpeed = Exposure < targetExposure ? environment.Exposure.DarkAdaptationSpeed : environment.Exposure.LightAdaptationSpeed;
-            Exposure = float.Lerp(Exposure, targetExposure, float.Min(1, (float)elapsed.TotalSeconds * adaptationSpeed));
+            Exposure = float.Lerp(Exposure, targetExposure, float.Min(1, (float)context.Elapsed.TotalSeconds * adaptationSpeed));
 
 
             float grayIn = environment.Exposure.Key;
@@ -302,94 +307,94 @@ namespace TransportX.Rendering.Pipelines
                 ToneMapB = b,
                 ToneMapC = c,
             };
-            RenderContext.DeviceContext.UpdateSubresource(postProcessConstants, PostProcessBuffer);
+            deviceContext.UpdateSubresource(postProcessConstants, PostProcessBuffer);
 
-            RenderContext.DeviceContext.PSSetConstantBuffer(0, PostProcessBuffer);
-            RenderContext.DeviceContext.PSSetConstantBuffer(1, BlurBuffer);
+            deviceContext.PSSetConstantBuffer(0, PostProcessBuffer);
+            deviceContext.PSSetConstantBuffer(1, BlurBuffer);
 
 
             // 3. Extract
 
-            RenderContext.ApplyState(ExtractState);
+            Resources.Context.ApplyState(ExtractState);
 
-            RenderContext.DeviceContext.OMSetRenderTargets(Buffer.BloomMips[0].RenderTargetView, null);
-            RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.BloomMips[0].Size.Width, Buffer.BloomMips[0].Size.Height);
+            deviceContext.OMSetRenderTargets(Buffer.BloomMips[0].RenderTargetView, null);
+            deviceContext.RSSetViewport(0, 0, Buffer.BloomMips[0].Size.Width, Buffer.BloomMips[0].Size.Height);
 
-            RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.Draw(3, 0);
-            RenderContext.DeviceContext.PSSetShaderResource(0, null!);
+            deviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
+            deviceContext.Draw(3, 0);
+            deviceContext.PSSetShaderResource(0, null!);
 
 
             // 4. Downsample
 
-            RenderContext.ApplyState(DownsampleState);
+            Resources.Context.ApplyState(DownsampleState);
 
             for (int i = 0; i < PostProcessingBuffer.BloomMipCount - 1; i++)
             {
                 int next = i + 1;
-                RenderContext.DeviceContext.OMSetRenderTargets(Buffer.BloomMips[next].RenderTargetView, null);
-                RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.BloomMips[next].Size.Width, Buffer.BloomMips[next].Size.Height);
+                deviceContext.OMSetRenderTargets(Buffer.BloomMips[next].RenderTargetView, null);
+                deviceContext.RSSetViewport(0, 0, Buffer.BloomMips[next].Size.Width, Buffer.BloomMips[next].Size.Height);
 
                 BlurConstants blur = new()
                 {
                     TexelSize = new Vector2(1f / Buffer.BloomMips[i].Size.Width, 1f / Buffer.BloomMips[i].Size.Height),
                     BloomScatter = 1,
                 };
-                RenderContext.DeviceContext.UpdateSubresource(blur, BlurBuffer);
+                deviceContext.UpdateSubresource(blur, BlurBuffer);
 
-                RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.BloomMips[i].ShaderResourceView);
-                RenderContext.DeviceContext.Draw(3, 0);
-                RenderContext.DeviceContext.PSSetShaderResource(0, null!);
+                deviceContext.PSSetShaderResource(0, Buffer.BloomMips[i].ShaderResourceView);
+                deviceContext.Draw(3, 0);
+                deviceContext.PSSetShaderResource(0, null!);
             }
 
 
             // 5. Upsample
 
-            RenderContext.ApplyState(UpsampleState);
+            Resources.Context.ApplyState(UpsampleState);
 
             for (int i = PostProcessingBuffer.BloomMipCount - 1; 0 < i; i--)
             {
                 int prev = i - 1;
-                RenderContext.DeviceContext.OMSetRenderTargets(Buffer.BloomMips[prev].RenderTargetView, null);
-                RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.BloomMips[prev].Size.Width, Buffer.BloomMips[prev].Size.Height);
+                deviceContext.OMSetRenderTargets(Buffer.BloomMips[prev].RenderTargetView, null);
+                deviceContext.RSSetViewport(0, 0, Buffer.BloomMips[prev].Size.Width, Buffer.BloomMips[prev].Size.Height);
 
                 BlurConstants blur = new()
                 {
                     TexelSize = new Vector2(1f / Buffer.BloomMips[i].Size.Width, 1f / Buffer.BloomMips[i].Size.Height),
                     BloomScatter = postProcessConstants.BloomScatter,
                 };
-                RenderContext.DeviceContext.UpdateSubresource(blur, BlurBuffer);
+                deviceContext.UpdateSubresource(blur, BlurBuffer);
 
-                RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.BloomMips[i].ShaderResourceView);
-                RenderContext.DeviceContext.Draw(3, 0);
-                RenderContext.DeviceContext.PSSetShaderResource(0, null!);
+                deviceContext.PSSetShaderResource(0, Buffer.BloomMips[i].ShaderResourceView);
+                deviceContext.Draw(3, 0);
+                deviceContext.PSSetShaderResource(0, null!);
             }
 
 
             // 6. Composite
 
-            RenderContext.ApplyState(CompositeState);
+            Resources.Context.ApplyState(CompositeState);
 
-            RenderContext.DeviceContext.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
-            RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+            deviceContext.OMSetRenderTargets(Buffer.LdrBuffer.RenderTargetView, null);
+            deviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
-            RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.PSSetShaderResource(1, Buffer.BloomMips[0].ShaderResourceView);
-            RenderContext.DeviceContext.Draw(3, 0);
-            RenderContext.DeviceContext.PSSetShaderResource(0, null!);
-            RenderContext.DeviceContext.PSSetShaderResource(1, null!);
+            deviceContext.PSSetShaderResource(0, Buffer.ResolvedHdrBuffer.ShaderResourceView);
+            deviceContext.PSSetShaderResource(1, Buffer.BloomMips[0].ShaderResourceView);
+            deviceContext.Draw(3, 0);
+            deviceContext.PSSetShaderResource(0, null!);
+            deviceContext.PSSetShaderResource(1, null!);
 
 
             // 7. FXAA (Antialiasing)
 
-            RenderContext.ApplyState(FxaaState);
+            Resources.Context.ApplyState(FxaaState);
 
-            RenderContext.DeviceContext.OMSetRenderTargets(renderTarget, null);
-            RenderContext.DeviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
+            deviceContext.OMSetRenderTargets(context.Surface.RenderTarget!, null);
+            deviceContext.RSSetViewport(0, 0, Buffer.Size.Width, Buffer.Size.Height);
 
-            RenderContext.DeviceContext.PSSetShaderResource(0, Buffer.LdrBuffer.ShaderResourceView);
-            RenderContext.DeviceContext.Draw(3, 0);
-            RenderContext.DeviceContext.PSSetShaderResource(0, null!);
+            deviceContext.PSSetShaderResource(0, Buffer.LdrBuffer.ShaderResourceView);
+            deviceContext.Draw(3, 0);
+            deviceContext.PSSetShaderResource(0, null!);
         }
 
 

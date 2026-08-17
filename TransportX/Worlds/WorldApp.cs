@@ -71,7 +71,7 @@ namespace TransportX.Worlds
             ReloadKeyObserver = World.InputManager.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
             {
-                GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.RenderTarget, new Color4(0, 0, 0));
+                GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.Surface?.RenderTarget, new Color4(0, 0, 0));
                 GraphicsClient.SwapChain!.Present(1, PresentFlags.None);
 
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));

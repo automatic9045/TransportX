@@ -9,19 +9,20 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
-using TransportX.Bodies;
 using TransportX.Rendering.Backend;
 using TransportX.Spatial;
+using TransportX.Worlds;
+using TransportX.Bodies;
 
 namespace TransportX.Rendering.Pipelines
 {
-    public class ShadowPass : IDisposable
+    public class ShadowPass : IRenderPass
     {
         private const int CascadeCount = 3;
         private static readonly IReadOnlyList<float> CascadeRadii = [20, 70, 250];
 
 
-        protected readonly RenderContext RenderContext;
+        protected readonly RenderResourceSet Resources;
         protected readonly ShadowOptions Options;
 
         protected readonly GraphicsPipelineState PipelineState;
@@ -36,18 +37,17 @@ namespace TransportX.Rendering.Pipelines
         protected readonly ShadowCascade[] Cascades = new ShadowCascade[CascadeCount];
         protected readonly BoundingSphere[] CascadeSpheres = new BoundingSphere[CascadeCount];
 
-        public required ID3D11Buffer InstanceBuffer { protected get; init; }
-        public required ID3D11Buffer MaterialBuffer { protected get; init; }
-
-        public ShadowPass(RenderContext renderContext, InputElementDescription[] inputElements, ShadowOptions options)
+        public ShadowPass(RenderResourceSet resources, ShadowOptions options)
         {
-            RenderContext = renderContext;
+            Resources = resources;
             Options = options;
+
+            ID3D11Device device = Resources.Context.DeviceContext.Device;
 
 
             using Blob shadowVsBlob = ShaderFactory.CompileFromResource("ShadowVS.hlsl", "main", "vs_5_0", "vs_5_0");
-            ID3D11VertexShader vertexShader = RenderContext.DeviceContext.Device.CreateVertexShader(shadowVsBlob);
-            ID3D11InputLayout inputLayout = RenderContext.DeviceContext.Device.CreateInputLayout(inputElements, shadowVsBlob);
+            ID3D11VertexShader vertexShader = device.CreateVertexShader(shadowVsBlob);
+            ID3D11InputLayout inputLayout = device.CreateInputLayout(IRenderer.DefaultInputElements.ToArray(), shadowVsBlob);
 
             RasterizerDescription shadowRasterizerDesc = new()
             {
@@ -62,7 +62,7 @@ namespace TransportX.Rendering.Pipelines
                 ScissorEnable = false,
                 SlopeScaledDepthBias = 0,
             };
-            ID3D11RasterizerState rasterizerState = RenderContext.DeviceContext.Device.CreateRasterizerState(shadowRasterizerDesc);
+            ID3D11RasterizerState rasterizerState = device.CreateRasterizerState(shadowRasterizerDesc);
 
             PipelineState = new GraphicsPipelineState()
             {
@@ -86,16 +86,16 @@ namespace TransportX.Rendering.Pipelines
                 MinLOD = 0,
                 MaxLOD = float.MaxValue,
             };
-            ComparisonSamplerState = RenderContext.DeviceContext.Device.CreateSamplerState(samplerDesc);
+            ComparisonSamplerState = device.CreateSamplerState(samplerDesc);
 
             BufferDescription shadowBufferDesc = new((uint)ShadowConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default);
-            ShadowBuffer = RenderContext.DeviceContext.Device.CreateBuffer(shadowBufferDesc);
+            ShadowBuffer = device.CreateBuffer(shadowBufferDesc);
 
             BufferDescription samplingBufferDesc = new((uint)CSMSamplingConstants.Size, BindFlags.ConstantBuffer, ResourceUsage.Default);
-            SamplingBuffer = RenderContext.DeviceContext.Device.CreateBuffer(samplingBufferDesc);
+            SamplingBuffer = device.CreateBuffer(samplingBufferDesc);
 
 
-            ShadowMap = new ShadowMap(RenderContext.DeviceContext.Device, Options.Resolution, CascadeCount);
+            ShadowMap = new ShadowMap(device, Options.Resolution, CascadeCount);
             ShadowCamera = new ShadowCamera();
         }
 
@@ -109,7 +109,16 @@ namespace TransportX.Rendering.Pipelines
             ShadowMap.Dispose();
         }
 
-        public void UpdateCamera(Vector3 lightDirection, in ViewContext viewContext)
+        public void Execute(in RenderPassContext context, WorldBase world)
+        {
+            if (Options.Resolution <= 0) return;
+
+            UpdateCamera(world.DirectionalLight.Direction, context.ViewContext);
+            Render(world.Chunks, world.Bodies);
+            Bind();
+        }
+
+        private void UpdateCamera(Vector3 lightDirection, in ViewContext viewContext)
         {
             if (Options.Resolution <= 0) return;
 
@@ -171,20 +180,20 @@ namespace TransportX.Rendering.Pipelines
             }
         }
 
-        public void Render(ChunkCollection chunks, IReadOnlyList<RigidBody> bodies)
+        private void Render(ChunkCollection chunks, IReadOnlyList<RigidBody> bodies)
         {
-            if (Options.Resolution <= 0) return;
+            ID3D11DeviceContext deviceContext = Resources.Context.DeviceContext;
 
-            RenderContext.DeviceContext.VSSetConstantBuffer(1, ShadowBuffer);
-            RenderContext.ApplyState(PipelineState);
+            deviceContext.VSSetConstantBuffer(1, ShadowBuffer);
+            Resources.Context.ApplyState(PipelineState);
 
             for (int i = 0; i < CascadeCount; i++)
             {
                 ShadowCascade cascade = Cascades[i];
 
-                RenderContext.DeviceContext.RSSetViewport(0, 0, Options.Resolution, Options.Resolution);
-                RenderContext.DeviceContext.OMSetRenderTargets((ID3D11RenderTargetView)null!, ShadowMap.DepthStencilViews[i]);
-                RenderContext.DeviceContext.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
+                deviceContext.RSSetViewport(0, 0, Options.Resolution, Options.Resolution);
+                deviceContext.OMSetRenderTargets((ID3D11RenderTargetView)null!, ShadowMap.DepthStencilViews[i]);
+                deviceContext.ClearDepthStencilView(ShadowMap.DepthStencilViews[i], DepthStencilClearFlags.Depth, 1, 0);
 
                 ViewContext shadowViewContext = ShadowCamera.CreateViewContext(cascade.LightView, cascade.LightProjection);
 
@@ -192,25 +201,27 @@ namespace TransportX.Rendering.Pipelines
                 {
                     LightViewProjection = Matrix4x4.Transpose(cascade.LightViewProjection),
                 };
-                RenderContext.DeviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
+                deviceContext.UpdateSubresource(shadowConstants, ShadowBuffer);
 
                 SphereCullingVolume culler = new(CascadeSpheres[i]);
 
-                RenderQueue.SubmitChunks(RenderContext.DeviceContext, shadowViewContext, culler, chunks, RenderLayer.Normal, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(RenderContext.DeviceContext, shadowViewContext, culler, bodies, RenderLayer.Normal);
+                RenderQueue.SubmitChunks(deviceContext, shadowViewContext, culler, chunks, RenderLayer.Normal, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(deviceContext, shadowViewContext, culler, bodies, RenderLayer.Normal);
 
                 RenderQueue.Render(new DrawContext()
                 {
-                    DeviceContext = RenderContext.DeviceContext,
-                    InstanceBuffer = InstanceBuffer,
+                    DeviceContext = deviceContext,
+                    InstanceBuffer = Resources.InstanceBuffer,
                     InstanceCount = 0,
-                    MaterialBuffer = MaterialBuffer,
+                    MaterialBuffer = Resources.MaterialBuffer,
                 });
                 RenderQueue.Clear();
             }
+
+            deviceContext.OMSetRenderTargets((ID3D11RenderTargetView)null!, null);
         }
 
-        public void Bind()
+        private void Bind()
         {
             CSMSamplingConstants csmConstants;
             if (Options.Resolution <= 0)
@@ -240,11 +251,13 @@ namespace TransportX.Rendering.Pipelines
                 };
             }
 
-            RenderContext.DeviceContext.UpdateSubresource(csmConstants, SamplingBuffer);
-            RenderContext.DeviceContext.PSSetConstantBuffer(3, SamplingBuffer);
+            ID3D11DeviceContext deviceContext = Resources.Context.DeviceContext;
 
-            RenderContext.DeviceContext.PSSetShaderResource(12, ShadowMap.ShaderResourceView);
-            RenderContext.DeviceContext.PSSetSampler(2, ComparisonSamplerState);
+            deviceContext.UpdateSubresource(csmConstants, SamplingBuffer);
+            deviceContext.PSSetConstantBuffer(3, SamplingBuffer);
+
+            deviceContext.PSSetShaderResource(12, ShadowMap.ShaderResourceView);
+            deviceContext.PSSetSampler(2, ComparisonSamplerState);
         }
     }
 }

@@ -66,7 +66,7 @@ namespace TransportX.Worlds
             GraphicsClient graphicsClient = new(hwnd, swapChain);
             graphicsClient.Resize(graphicsHost.Device, window.Size.X, window.Size.Y);
 
-            graphicsHost.Context.ClearRenderTargetView(graphicsClient.RenderTarget, new Color4(0, 0, 0));
+            graphicsHost.Context.ClearRenderTargetView(graphicsClient.Surface?.RenderTarget, new Color4(0, 0, 0));
             graphicsClient.SwapChain!.Present(1, PresentFlags.None);
 
             AudioHost audioHost = new();

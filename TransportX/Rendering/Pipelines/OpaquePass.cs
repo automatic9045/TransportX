@@ -15,32 +15,30 @@ using TransportX.Worlds;
 
 namespace TransportX.Rendering.Pipelines
 {
-    public class OpaquePass : IDisposable
+    public class OpaquePass : IRenderPass
     {
-        protected readonly RenderContext RenderContext;
+        protected readonly RenderResourceSet Resources;
 
         protected readonly GraphicsPipelineState PipelineState;
+        protected readonly GraphicsPipelineState ReflectPipelineState;
         protected readonly ID3D11SamplerState TextureSamplerState;
 
         protected readonly RenderQueue RenderQueue = new();
 
-        public required ID3D11Buffer InstanceBuffer { protected get; init; }
-        public required ID3D11Buffer MaterialBuffer { protected get; init; }
-        public required ID3D11Buffer EnvironmentBuffer { protected get; init; }
-        public required ID3D11Buffer SceneBuffer { protected get; init; }
+        public bool IsReflect { get; set; } = false;
 
-        public OpaquePass(RenderContext renderContext, InputElementDescription[] elements)
+        public OpaquePass(RenderResourceSet resources)
         {
-            RenderContext = renderContext;
+            Resources = resources;
 
 
             Blob vsBlob = ShaderFactory.CompileFromResource("VS.hlsl", "main", "VS", "vs_5_0");
-            ID3D11VertexShader vertexShader = RenderContext.DeviceContext.Device.CreateVertexShader(vsBlob);
+            ID3D11VertexShader vertexShader = Resources.Context.DeviceContext.Device.CreateVertexShader(vsBlob);
 
             Blob psBlob = ShaderFactory.CompileFromResource("PS.hlsl", "main", "PS", "ps_5_0");
-            ID3D11PixelShader pixelShader = RenderContext.DeviceContext.Device.CreatePixelShader(psBlob);
+            ID3D11PixelShader pixelShader = Resources.Context.DeviceContext.Device.CreatePixelShader(psBlob);
 
-            ID3D11InputLayout inputLayout = RenderContext.DeviceContext.Device.CreateInputLayout(elements, vsBlob.AsSpan());
+            ID3D11InputLayout inputLayout = Resources.Context.DeviceContext.Device.CreateInputLayout(IRenderer.DefaultInputElements.ToArray(), vsBlob);
 
             RasterizerDescription rasterizerDesc = new()
             {
@@ -55,7 +53,10 @@ namespace TransportX.Rendering.Pipelines
                 ScissorEnable = false,
                 SlopeScaledDepthBias = 0,
             };
-            ID3D11RasterizerState rasterizerState = RenderContext.DeviceContext.Device.CreateRasterizerState(rasterizerDesc);
+            ID3D11RasterizerState rasterizerState = Resources.Context.DeviceContext.Device.CreateRasterizerState(rasterizerDesc);
+
+            rasterizerDesc.FrontCounterClockwise = true;
+            ID3D11RasterizerState reflectRasterizerState = Resources.Context.DeviceContext.Device.CreateRasterizerState(rasterizerDesc);
 
             BlendDescription blendDesc = new()
             {
@@ -88,7 +89,7 @@ namespace TransportX.Rendering.Pipelines
                 BlendEnable = false,
                 RenderTargetWriteMask = ColorWriteEnable.All,
             };
-            ID3D11BlendState blendState = RenderContext.DeviceContext.Device.CreateBlendState(blendDesc);
+            ID3D11BlendState blendState = Resources.Context.DeviceContext.Device.CreateBlendState(blendDesc);
 
             PipelineState = new GraphicsPipelineState()
             {
@@ -99,6 +100,10 @@ namespace TransportX.Rendering.Pipelines
                 BlendState = blendState,
                 DepthStencilState = null,
                 PrimitiveTopology = PrimitiveTopology.TriangleList,
+            };
+            ReflectPipelineState = PipelineState with
+            {
+                RasterizerState = reflectRasterizerState,
             };
 
 
@@ -113,7 +118,7 @@ namespace TransportX.Rendering.Pipelines
                 MinLOD = 0,
                 MaxLOD = float.MaxValue,
             };
-            TextureSamplerState = RenderContext.DeviceContext.Device.CreateSamplerState(samplerDesc);
+            TextureSamplerState = Resources.Context.DeviceContext.Device.CreateSamplerState(samplerDesc);
         }
 
         public void Dispose()
@@ -122,44 +127,48 @@ namespace TransportX.Rendering.Pipelines
             TextureSamplerState.Dispose();
         }
 
-        public void Render(ID3D11DepthStencilView depthStencil, WorldBase world, in ViewContext viewContext, int drawChunkCount, SizeI size)
+        public void Execute(in RenderPassContext context, WorldBase world)
         {
-            RenderContext.DeviceContext.RSSetViewport(0, 0, size.Width, size.Height);
-            RenderContext.DeviceContext.PSSetSampler(0, TextureSamplerState);
+            Resources.Context.DeviceContext.RSSetViewport(0, 0, context.ViewportSize.Width, context.ViewportSize.Height);
+            Resources.Context.DeviceContext.PSSetSampler(0, TextureSamplerState);
 
-            RenderContext.DeviceContext.VSSetConstantBuffer(0, SceneBuffer);
+            Resources.Context.DeviceContext.VSSetConstantBuffer(0, Resources.SceneBuffer);
 
-            RenderContext.DeviceContext.PSSetConstantBuffer(0, MaterialBuffer);
-            RenderContext.DeviceContext.PSSetConstantBuffer(1, EnvironmentBuffer);
-            RenderContext.DeviceContext.PSSetConstantBuffer(2, SceneBuffer);
+            Resources.Context.DeviceContext.PSSetConstantBuffer(0, Resources.MaterialBuffer);
+            Resources.Context.DeviceContext.PSSetConstantBuffer(1, Resources.EnvironmentBuffer);
+            Resources.Context.DeviceContext.PSSetConstantBuffer(2, Resources.SceneBuffer);
+
+            Matrix4x4 viewProjection = context.ViewContext.View * context.ViewContext.Projection;
 
             SceneConstants sceneConstants = new()
             {
-                ViewProjection = Matrix4x4.Transpose(viewContext.View * viewContext.Projection),
-                CameraPosition = viewContext.WorldPose.Pose.Position,
+                ViewProjection = Matrix4x4.Transpose(viewProjection),
+                CameraPosition = context.ViewContext.WorldPose.Pose.Position,
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity * 0.001f,
             };
-            RenderContext.DeviceContext.UpdateSubresource(sceneConstants, SceneBuffer);
+            Resources.Context.DeviceContext.UpdateSubresource(sceneConstants, Resources.SceneBuffer);
 
             EnvironmentConstants environmentConstants = new()
             {
                 IBLIntensity = world.DefaultEnvironment.IBL.Intensity,
                 IBLSaturation = world.DefaultEnvironment.IBL.Saturation,
             };
-            RenderContext.DeviceContext.UpdateSubresource(environmentConstants, EnvironmentBuffer);
+            Resources.Context.DeviceContext.UpdateSubresource(environmentConstants, Resources.EnvironmentBuffer);
 
-            RenderContext.ApplyState(PipelineState);
+            Resources.Context.ApplyState(IsReflect ? ReflectPipelineState : PipelineState);
 
-            RenderQueue.SubmitBackground(RenderContext.DeviceContext, viewContext, world.BackgroundModels);
+            RenderQueue.SubmitBackground(Resources.Context.DeviceContext, context.ViewContext, world.BackgroundModels);
             Flush();
-            RenderContext.DeviceContext.ClearDepthStencilView(depthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
+            Resources.Context.DeviceContext.ClearDepthStencilView(context.Surface.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
-            FrustumCullingVolume culler = new(new BoundingFrustum(viewContext.View * viewContext.Projection));
+            Matrix4x4 cullingViewProjection = viewProjection;
+            if (IsReflect) cullingViewProjection *= Matrix4x4.CreateScale(-1, 1, 1);
+            FrustumCullingVolume culler = new(new BoundingFrustum(cullingViewProjection));
 
-            RenderQueue.SubmitChunks(RenderContext.DeviceContext, viewContext, culler, world.Chunks, RenderLayer.Normal, drawChunkCount);
-            RenderQueue.SubmitBodies(RenderContext.DeviceContext, viewContext, culler, world.Bodies, RenderLayer.Normal);
+            RenderQueue.SubmitChunks(Resources.Context.DeviceContext, context.ViewContext, culler, world.Chunks, RenderLayer.Normal, context.Options.DrawChunkCount);
+            RenderQueue.SubmitBodies(Resources.Context.DeviceContext, context.ViewContext, culler, world.Bodies, RenderLayer.Normal);
             Flush();
 
 
@@ -167,10 +176,10 @@ namespace TransportX.Rendering.Pipelines
             {
                 RenderQueue.Render(new DrawContext()
                 {
-                    DeviceContext = RenderContext.DeviceContext,
-                    InstanceBuffer = InstanceBuffer,
+                    DeviceContext = Resources.Context.DeviceContext,
+                    InstanceBuffer = Resources.InstanceBuffer,
                     InstanceCount = 0,
-                    MaterialBuffer = MaterialBuffer,
+                    MaterialBuffer = Resources.MaterialBuffer,
                 });
                 RenderQueue.Clear();
             }
