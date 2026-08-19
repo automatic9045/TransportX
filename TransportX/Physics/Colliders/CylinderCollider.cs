@@ -68,7 +68,7 @@ namespace TransportX.Physics.Colliders
             }
 
             Material material = Rendering.Material.Default();
-            Rendering.Mesh mesh = Rendering.Mesh.Create(device, vertices, indices, material, PrimitiveTopology.LineList);
+            Rendering.Mesh mesh = Rendering.Mesh.Create(device, string.Empty, vertices, indices, material, PrimitiveTopology.LineList);
             return new WireframeDebugModel([mesh]);
         }
     }

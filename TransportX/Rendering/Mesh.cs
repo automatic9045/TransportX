@@ -18,18 +18,20 @@ namespace TransportX.Rendering
     {
         private readonly ID3D11Buffer[] SetVertexBuffersArray;
 
+        public string Name { get; }
         public ID3D11Buffer VertexBuffer { get; }
         public ID3D11Buffer IndexBuffer { get; }
         public PrimitiveTopology Topology { get; }
         public BoundingBox BoundingBox { get; }
         public Material Material { get; }
 
+        private string? DebugNameKey;
         public string? DebugName
         {
-            get => field;
+            get => DebugNameKey;
             set
             {
-                field = value;
+                DebugNameKey = value;
 
                 if (value is null)
                 {
@@ -41,10 +43,12 @@ namespace TransportX.Rendering
                     IndexBuffer.DebugName = $"{value}_IndexBuffer";
                 }
             }
-        } = null;
+        }
 
-        public Mesh(ID3D11Buffer vertexBuffer, ID3D11Buffer indexBuffer, BoundingBox boundingBox, Material material, PrimitiveTopology topology = PrimitiveTopology.TriangleList)
+        public Mesh(string name, ID3D11Buffer vertexBuffer, ID3D11Buffer indexBuffer, BoundingBox boundingBox, Material material,
+            PrimitiveTopology topology = PrimitiveTopology.TriangleList)
         {
+            Name = DebugNameKey = name;
             VertexBuffer = vertexBuffer;
             IndexBuffer = indexBuffer;
             Topology = topology;
@@ -55,7 +59,7 @@ namespace TransportX.Rendering
             SetVertexBuffersArray[0] = VertexBuffer;
         }
 
-        public static unsafe Mesh Create(ID3D11Device device, Vertex[] vertices, int[] indices, Material material,
+        public static unsafe Mesh Create(ID3D11Device device, string name, Vertex[] vertices, int[] indices, Material material,
             PrimitiveTopology topology = PrimitiveTopology.TriangleList)
         {
             Vector3 min = new(float.MaxValue);
@@ -96,7 +100,7 @@ namespace TransportX.Rendering
                 SubresourceData indexBufferData = new SubresourceData(pIndices);
                 ID3D11Buffer indexBuffer = device.CreateBuffer(indexBufferDesc, indexBufferData);
 
-                Mesh mesh = new(vertexBuffer, indexBuffer, boundingBox, material, topology);
+                Mesh mesh = new(name, vertexBuffer, indexBuffer, boundingBox, material, topology);
                 return mesh;
             }
         }

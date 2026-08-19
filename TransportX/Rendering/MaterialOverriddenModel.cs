@@ -11,14 +11,14 @@ namespace TransportX.Rendering
 {
     public class MaterialOverriddenModel : IMeshModel
     {
-        private IMesh[] Meshes;
+        private IMesh[] MeshesCache;
         private Material[] RenderMaterials;
 
         public IMeshModel BaseModel { get; }
         public IReadOnlyDictionary<Material, Material> MaterialOverrides { get; }
 
         public BoundingBox BoundingBox => BaseModel.BoundingBox;
-        public IReadOnlyList<IMesh> VisualMeshes => BaseModel.VisualMeshes;
+        public IReadOnlyList<IMesh> Meshes => BaseModel.Meshes;
 
         public string? DebugName { get; set; }
 
@@ -36,30 +36,30 @@ namespace TransportX.Rendering
 
         public void Draw(in DrawContext context)
         {
-            if (!Meshes.SequenceEqual(BaseModel.VisualMeshes)) UpdateRenderMaterials();
+            if (!MeshesCache.SequenceEqual(BaseModel.Meshes)) UpdateRenderMaterials();
 
-            for (int i = 0; i < Meshes.Length; i++)
+            for (int i = 0; i < MeshesCache.Length; i++)
             {
-                Meshes[i].Draw(context, RenderMaterials[i]);
+                MeshesCache[i].Draw(context, RenderMaterials[i]);
             }
         }
 
-        [MemberNotNull(nameof(Meshes), nameof(RenderMaterials))]
+        [MemberNotNull(nameof(MeshesCache), nameof(RenderMaterials))]
         private void UpdateRenderMaterials()
         {
-            int count = BaseModel.VisualMeshes.Count;
+            int count = BaseModel.Meshes.Count;
             IMesh[] meshes = new IMesh[count];
             Material[] renderMaterials = new Material[count];
 
             for (int i = 0; i < count; i++)
             {
-                meshes[i] = BaseModel.VisualMeshes[i];
+                meshes[i] = BaseModel.Meshes[i];
 
                 MaterialOverrides.TryGetValue(meshes[i].Material, out Material? material);
                 renderMaterials[i] = material ?? meshes[i].Material;
             }
 
-            Meshes = meshes;
+            MeshesCache = meshes;
             RenderMaterials = renderMaterials;
         }
     }

@@ -46,7 +46,7 @@ namespace TransportX.Extensions.Traffic
 
             if (Model is null)
             {
-                Mesh = new DynamicLineMesh(context.DeviceContext.Device, Material.Default());
+                Mesh = new DynamicLineMesh(context.DeviceContext.Device, string.Empty, Material.Default());
                 Model = new WireframeDebugModel([Mesh]);
                 DebugName = DebugName;
             }

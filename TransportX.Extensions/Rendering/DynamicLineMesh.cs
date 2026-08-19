@@ -19,6 +19,7 @@ namespace TransportX.Extensions.Rendering
     {
         private readonly ID3D11Buffer VertexBuffer;
 
+        public string Name { get; }
         public BoundingBox BoundingBox { get; private set; } = new(Vector3.Zero, Vector3.Zero);
         public Material Material { get; }
 
@@ -32,7 +33,7 @@ namespace TransportX.Extensions.Rendering
             }
         } = null;
 
-        public DynamicLineMesh(ID3D11Device device, Material material)
+        public DynamicLineMesh(ID3D11Device device, string name, Material material)
         {
             BufferDescription desc = new()
             {
@@ -44,6 +45,7 @@ namespace TransportX.Extensions.Rendering
             };
             VertexBuffer = device.CreateBuffer(new Vertex[2], desc);
 
+            Name = name;
             Material = material;
         }
 

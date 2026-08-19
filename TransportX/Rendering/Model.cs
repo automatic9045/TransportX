@@ -24,7 +24,7 @@ namespace TransportX.Rendering
         private bool IsDisposed = false;
 
         public BoundingBox BoundingBox { get; }
-        public IReadOnlyList<IMesh> VisualMeshes { get; }
+        public IReadOnlyList<IMesh> Meshes { get; }
 
         public virtual string? DebugName
         {
@@ -35,19 +35,19 @@ namespace TransportX.Rendering
 
                 if (value is null)
                 {
-                    for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = null;
+                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = null;
                 }
                 else
                 {
 
-                    for (int i = 0; i < VisualMeshes.Count; i++) VisualMeshes[i].DebugName = $"{value}_Material";
+                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = $"{value}_Material";
                 }
             }
         } = null;
 
         public Model(IReadOnlyList<IMesh> visualMeshes, BoundingBox boundingBox)
         {
-            VisualMeshes = visualMeshes;
+            Meshes = visualMeshes;
             BoundingBox = boundingBox;
         }
 
@@ -77,17 +77,17 @@ namespace TransportX.Rendering
             if (IsDisposed) throw new InvalidOperationException();
             IsDisposed = true;
 
-            for (int i = 0; i < VisualMeshes.Count; i++)
+            for (int i = 0; i < Meshes.Count; i++)
             {
-                VisualMeshes[i].Dispose();
+                Meshes[i].Dispose();
             }
         }
 
         public void Draw(in DrawContext context)
         {
-            for (int i = 0; i < VisualMeshes.Count; i++)
+            for (int i = 0; i < Meshes.Count; i++)
             {
-                VisualMeshes[i].Draw(context);
+                Meshes[i].Draw(context);
             }
         }
     }
@@ -114,7 +114,7 @@ namespace TransportX.Rendering
             Collider = collider;
         }
 
-        public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.VisualMeshes, collider)
+        public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.Meshes, collider)
         {
             DebugName = baseModel.DebugName;
         }

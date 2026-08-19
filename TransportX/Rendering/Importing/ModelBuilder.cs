@@ -39,7 +39,7 @@ namespace TransportX.Rendering.Importing
             DDSFactory = new DDSTextureFactory(Context.Device);
         }
 
-        public unsafe Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
+        public Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
         {
             Dictionary<string, ID3D11ShaderResourceView> loadedTextures = [];
 
@@ -217,7 +217,7 @@ namespace TransportX.Rendering.Importing
                     };
                 }
 
-                meshes[i] = Rendering.Mesh.Create(Context.Device, vertices, meshData.Indices, material);
+                meshes[i] = Rendering.Mesh.Create(Context.Device, meshData.Name, vertices, meshData.Indices, material);
 
 
                 ID3D11ShaderResourceView? LoadTexture(

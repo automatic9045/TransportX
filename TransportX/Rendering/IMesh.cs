@@ -10,6 +10,7 @@ namespace TransportX.Rendering
 {
     public interface IMesh : IDisposable
     {
+        string Name { get; }
         BoundingBox BoundingBox { get; }
         Material Material { get; }
         string? DebugName { get; set; }

@@ -81,7 +81,7 @@ namespace TransportX.Rendering
                 0, 4, 1, 5, 2, 6, 3, 7,
             ];
 
-            Mesh mesh = Mesh.Create(device, vertices, indices, material, PrimitiveTopology.LineList);
+            Mesh mesh = Mesh.Create(device, string.Empty, vertices, indices, material, PrimitiveTopology.LineList);
             return new WireframeDebugModel([mesh]);
         }
 

@@ -166,8 +166,8 @@ namespace TransportX.Network
                 DebugSpineMaterial = Material.Default();
                 DebugWingMaterial = Material.Default();
 
-                Mesh spineMesh = Mesh.Create(context.DeviceContext.Device, spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
-                Mesh wingMesh = Mesh.Create(context.DeviceContext.Device, wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);
+                Mesh spineMesh = Mesh.Create(context.DeviceContext.Device, "Spine", spineVertices.ToArray(), spineIndices.ToArray(), DebugSpineMaterial, PrimitiveTopology.LineList);
+                Mesh wingMesh = Mesh.Create(context.DeviceContext.Device, "Wing", wingVertices.ToArray(), wingIndices.ToArray(), DebugWingMaterial, PrimitiveTopology.LineList);
 
                 DebugModel = new LanePathDebugModel(spineMesh, wingMesh);
             }
