@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Components;
+using TransportX.Rendering;
 using TransportX.Spatial;
 
 namespace TransportX.Scripting.Avatars.Commands
@@ -28,7 +29,7 @@ namespace TransportX.Scripting.Avatars.Commands
 
         public static Part Empty(ScriptAvatar avatar, string key)
         {
-            TransformedModel model = new(Rendering.Model.Empty(), Pose.Identity);
+            TransformedModel model = new(ModelResourceSet.Empty(), Pose.Identity);
             return new Part(avatar, key, model);
         }
 

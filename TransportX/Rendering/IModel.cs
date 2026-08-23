@@ -18,13 +18,4 @@ namespace TransportX.Rendering
 
         void Draw(in DrawContext context);
     }
-
-
-    public interface ICollidableModel : IModel
-    {
-        ICollider Collider { get; }
-        IDebugModel? ColliderDebugModel { get; }
-
-        void CreateColliderDebugModel(ID3D11Device device);
-    }
 }

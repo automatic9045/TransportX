@@ -26,7 +26,7 @@ namespace TransportX.Physics.Colliders
             return Shape.ComputeInertia(mass);
         }
 
-        public override IDebugModel CreateDebugModel(ID3D11Device device)
+        protected override IDebugModel CreateDebugModelCore(ID3D11Device device)
         {
             Vertex[] vertices = [
                 new(new Vector3(-Shape.HalfWidth, -Shape.HalfHeight, -Shape.HalfLength), Vector4.One),

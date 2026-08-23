@@ -32,10 +32,10 @@ namespace TransportX.Domains.RoadTraffic.Scripting
         public IEntityFactory Build(XElement data)
         {
             XElement modelsElement = data.Element("Models") ?? new XElement(string.Empty);
-            IModel model = GetModel(modelsElement, "Body") ?? Model.Empty();
-            IModel blinkerLightLModel = GetModel(modelsElement, "BlinkerLightL") ?? Model.Empty();
-            IModel blinkerLightRModel = GetModel(modelsElement, "BlinkerLightR") ?? Model.Empty();
-            IModel brakeLightModel = GetModel(modelsElement, "BrakeLight") ?? Model.Empty();
+            ModelResourceSet model = GetModel(modelsElement, "Body") ?? ModelResourceSet.Empty();
+            ModelResourceSet blinkerLightLModel = GetModel(modelsElement, "BlinkerLightL") ?? ModelResourceSet.Empty();
+            ModelResourceSet blinkerLightRModel = GetModel(modelsElement, "BlinkerLightR") ?? ModelResourceSet.Empty();
+            ModelResourceSet brakeLightModel = GetModel(modelsElement, "BrakeLight") ?? ModelResourceSet.Empty();
 
             XElement? specElement = data.Element("Spec");
             float minThrottle = (float?)specElement?.Attribute("MinThrottle") ?? 7;
@@ -74,7 +74,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting
             return factory;
 
 
-            IModel? GetModel(XElement element, string attributeName)
+            ModelResourceSet? GetModel(XElement element, string attributeName)
             {
                 XAttribute? attribute = element.Attribute(attributeName);
                 if (attribute is null)
@@ -84,7 +84,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting
                 }
 
                 string key = (string)attribute;
-                if (!World.Models.TryGetModel(key, out IModel? model))
+                if (!World.Models.TryGetModel(key, out ModelResourceSet model))
                 {
                     ReportError($"モデル '{key}' が見つかりません。", attribute);
                     return null;

@@ -27,7 +27,7 @@ namespace TransportX.Physics.Colliders
             return Shape.ComputeInertia(mass);
         }
 
-        public override IDebugModel CreateDebugModel(ID3D11Device device)
+        protected override IDebugModel CreateDebugModelCore(ID3D11Device device)
         {
             List<Vector3> extractedPoints = [];
             for (int i = 0; i < Shape.Points.Length; i++)

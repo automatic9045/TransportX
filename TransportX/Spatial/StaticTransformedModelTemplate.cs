@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,22 +15,21 @@ namespace TransportX.Spatial
 
         private bool IsMergeProhibited = false;
 
-        public new ICollidableModel Model { get; }
-        public Pose ColliderToBase => Model.Collider.Offset * Pose;
-        public bool CanMerge => !IsMergeProhibited && MergedStaticTransformedModel.CanMerge(Model.Collider);
+        public ICollider Collider => Resource.GetCollider();
+        public Pose ColliderToBase => Collider.Offset * Pose;
+        public bool CanMerge => !IsMergeProhibited && MergedStaticTransformedModel.CanMerge(Collider);
 
         public override event EventHandler<TemplateBuiltEventArgs<TransformedModelTemplate, TransformedModel>>? Built;
 
-        public StaticTransformedModelTemplate(IPhysicsHost physicsHost, ICollidableModel model, Pose pose) : base(model, pose)
+        public StaticTransformedModelTemplate(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose) : base(resource, pose)
         {
             PhysicsHost = physicsHost;
-            Model = model;
         }
 
-        public static TransformedModelTemplate CreateStaticOrNonCollision(IPhysicsHost physicsHost, IModel model, Pose pose)
+        public static TransformedModelTemplate CreateStaticOrNonCollision(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose)
         {
-            return model is ICollidableModel collidableModel
-                ? new StaticTransformedModelTemplate(physicsHost, collidableModel, pose) : new TransformedModelTemplate(model, pose);
+            return resource.Collider is null
+                ? new TransformedModelTemplate(resource, pose) : new StaticTransformedModelTemplate(physicsHost, resource, pose);
         }
 
         public void ProhibitMerge()
@@ -42,7 +40,7 @@ namespace TransportX.Spatial
         public StaticTransformedModel BuildStatic(Converter<Pose, Pose> poseConverter)
         {
             Pose pose = poseConverter(Pose);
-            StaticTransformedModel transformedModel = StaticTransformedModel.Create(PhysicsHost, Model, pose);
+            StaticTransformedModel transformedModel = StaticTransformedModel.Create(PhysicsHost, Resource, pose);
             Built?.Invoke(this, new TemplateBuiltEventArgs<TransformedModelTemplate, TransformedModel>(this, transformedModel));
             return transformedModel;
         }

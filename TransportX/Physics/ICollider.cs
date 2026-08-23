@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,10 @@ namespace TransportX.Physics
         Pose Offset { get; }
         Pose OffsetInverse { get; }
 
+        IDebugModel? DebugModel { get; }
+
         BodyInertia ComputeInertia(float mass);
-        IDebugModel CreateDebugModel(ID3D11Device device);
+        [MemberNotNull(nameof(DebugModel))]
+        void CreateDebugModel(ID3D11Device device);
     }
 }

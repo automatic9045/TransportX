@@ -13,10 +13,10 @@ namespace TransportX.Spatial
 {
     public class TransformedModel : IDrawable
     {
-        public static TransformedModel Empty() => new(Rendering.Model.Empty(), Pose.Identity);
+        public static TransformedModel Empty() => new(ModelResourceSet.Empty(), Pose.Identity);
 
 
-        public IModel Model { get; }
+        public ModelResourceSet Resource { get; set; }
 
         public Pose BasePose
         {
@@ -33,14 +33,14 @@ namespace TransportX.Spatial
         public virtual Pose Pose { get; set; } = Pose.Identity;
         public bool IsVisible { get; set; } = true;
 
-        protected TransformedModel(IModel model, Pose basePose, bool setPose)
+        protected TransformedModel(in ModelResourceSet resource, Pose basePose, bool setPose)
         {
-            Model = model;
+            Resource = resource;
             BasePose = basePose;
             if (setPose) Pose = basePose;
         }
 
-        public TransformedModel(IModel model, Pose basePose) : this(model, basePose, true)
+        public TransformedModel(in ModelResourceSet resource, Pose basePose) : this(resource, basePose, true)
         {
         }
 
@@ -50,7 +50,7 @@ namespace TransportX.Spatial
             if (context.Layer != RenderLayer.Normal) return;
 
             Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
-            context.DrawModel(Model, world);
+            context.DrawModel(Resource.Model, world);
         }
     }
 }

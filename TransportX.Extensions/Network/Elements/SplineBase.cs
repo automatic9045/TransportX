@@ -47,7 +47,7 @@ namespace TransportX.Extensions.Network.Elements
 
                     if (template is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                     {
-                        StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Model, template.Pose * curvePose * WorldPose.Pose);
+                        StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, template.Pose * curvePose * WorldPose.Pose);
                         modelsToMerge.Add(compiled);
                     }
                     else
@@ -61,8 +61,8 @@ namespace TransportX.Extensions.Network.Elements
             if (0 < modelsToMerge.Count)
             {
                 MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, modelsToMerge);
-                mergedModel.Model.CreateColliderDebugModel(device);
-                mergedModel.Model.ColliderDebugModel!.Color = DebugColors[DebugColorIndex];
+                mergedModel.Collider.CreateDebugModel(device);
+                mergedModel.Collider.DebugModel!.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
 
                 DebugColorIndex++;

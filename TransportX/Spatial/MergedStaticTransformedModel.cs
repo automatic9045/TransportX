@@ -20,8 +20,8 @@ namespace TransportX.Spatial
     {
         protected readonly IReadOnlyList<TransformedModel> Children;
 
-        protected MergedStaticTransformedModel(IPhysicsHost physicsHost, ICollidableModel physicsWrapper, StaticDescription description, List<TransformedModel> children)
-            : base(physicsHost, physicsWrapper, description, Pose.Identity)
+        protected MergedStaticTransformedModel(IPhysicsHost physicsHost, in ModelResourceSet wrapperModel, StaticDescription description, List<TransformedModel> children)
+            : base(physicsHost, wrapperModel, description, Pose.Identity)
         {
             Children = children;
         }
@@ -35,7 +35,7 @@ namespace TransportX.Spatial
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
-            int triangleCount = sources.Sum(m => m.Model.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
+            int triangleCount = sources.Sum(m => m.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
             physicsHost.Simulation.BufferPool.Take(triangleCount, out Buffer<Triangle> combinedTriangles);
 
             List<TransformedModel> children = [];
@@ -44,7 +44,7 @@ namespace TransportX.Spatial
             {
                 StaticTransformedModelTemplate source = sources[i];
 
-                if (source.Model.Collider is ColliderBase<ColliderMesh> meshCollider)
+                if (source.Collider is ColliderBase<ColliderMesh> meshCollider)
                 {
                     for (int j = 0; j < meshCollider.Shape.Triangles.Length; j++)
                     {
@@ -76,27 +76,31 @@ namespace TransportX.Spatial
             for (int i = 0; i < sources.Count; i++)
             {
                 Matrix4x4 sourceMatrix = sources[i].ColliderToBase.ToMatrix4x4();
-                BoundingBox sourceBox = BoundingBox.Transform(sources[i].Model.BoundingBox, sourceMatrix);
+                BoundingBox sourceBox = BoundingBox.Transform(sources[i].Resource.Model.BoundingBox, sourceMatrix);
 
                 boundingBox = i == 0 ? sourceBox : BoundingBox.CreateMerged(boundingBox, sourceBox);
             }
 
-            ColliderMaterial material = sources[0].Model.Collider.Material;
+            ColliderMaterial material = sources[0].Collider.Material;
             ColliderBase<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
 
-            CollidableModel physicsWrapper = new(boundingBox, newCollider)
+            ModelResourceSet wrapperModel = new()
             {
-                DebugName = $"Merged{{{sources[0].Model.DebugName}, others: {sources.Count - 1}}}",
+                Model = new Model([], boundingBox)
+                {
+                    DebugName = $"Merged{{{sources[0].Resource.Model.DebugName}, others: {sources.Count - 1}}}",
+                },
+                Collider = newCollider,
             };
 
             StaticDescription desc = new(newCollider.Offset.ToRigidPose(), newCollider.ShapeIndex);
-            return new MergedStaticTransformedModel(physicsHost, physicsWrapper, desc, children);
+            return new MergedStaticTransformedModel(physicsHost, wrapperModel, desc, children);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            Model.Dispose();
+            Resource.Dispose();
         }
 
         public override void Draw(in TransformedDrawContext context)

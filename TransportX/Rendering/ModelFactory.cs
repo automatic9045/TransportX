@@ -11,6 +11,7 @@ using BepuPhysics.Collidables;
 using CollisionMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities.Memory;
 using Vortice.Direct3D11;
+using BoundingBox = Vortice.Mathematics.BoundingBox;
 using Vortice.WIC;
 
 using TransportX.Diagnostics;
@@ -64,7 +65,7 @@ namespace TransportX.Rendering
             };
         }
 
-        public Model Load(string visualModelPath, bool makeLH)
+        public ModelResourceSet Load(string visualModelPath, bool makeLH)
         {
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
@@ -77,30 +78,34 @@ namespace TransportX.Rendering
             if (!IsCollisionSupported) throw new NotSupportedException($"{nameof(Simulation)} が指定されていないため、衝突判定を読み込むことはできません。");
         }
 
-        public CollidableModel LoadWithBoundingBox(string visualModelPath, bool makeLH, ColliderMaterial material)
+        public ModelResourceSet LoadWithBoundingBox(string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
-            Model baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
+            ModelResourceSet baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
+            BoundingBox boundingBox = baseModel.Model.BoundingBox;
 
-            Box box = new(baseModel.BoundingBox.Width, baseModel.BoundingBox.Height, baseModel.BoundingBox.Depth);
-            Pose colliderOffset = new(baseModel.BoundingBox.Center);
+            Box box = new(boundingBox.Width, boundingBox.Height, boundingBox.Depth);
+            Pose colliderOffset = new(boundingBox.Center);
             ColliderBase<Box> collider = ColliderFactory.Box(Simulation!, box, material, colliderOffset);
 
-            return new CollidableModel(baseModel, collider);
+            return baseModel with
+            {
+                Collider = collider,
+            };
         }
 
-        public CollidableModel LoadWithConvexHull(string visualModelPath, bool makeLH, ColliderMaterial material)
+        public ModelResourceSet LoadWithConvexHull(string visualModelPath, bool makeLH, ColliderMaterial material)
         {
             CheckCollisionSupported();
 
             string baseDirectory = Path.GetDirectoryName(visualModelPath)!;
             Importing.Model modelData = SelectImporter(visualModelPath).Import(visualModelPath, true, makeLH);
 
-            Model baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
+            ModelResourceSet baseModel = Builder.Create(modelData, baseDirectory, visualModelPath);
 
             Simulation!.BufferPool.Take(modelData.Meshes.Sum(mesh => mesh.Vertices.Length), out Buffer<Vector3> pointBuffer);
             try
@@ -124,7 +129,10 @@ namespace TransportX.Rendering
                 Pose colliderOffset = new(center);
                 ColliderBase<ConvexHull> collider = ColliderFactory.ConvexHull(Simulation, convexHull, material, colliderOffset);
 
-                return new CollidableModel(baseModel, collider);
+                return baseModel with
+                {
+                    Collider = collider,
+                };
             }
             finally
             {
@@ -132,12 +140,12 @@ namespace TransportX.Rendering
             }
         }
 
-        public CollidableModel LoadWithCollisionModel(
+        public ModelResourceSet LoadWithCollisionModel(
             string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
         {
             CheckCollisionSupported();
 
-            Model baseModel = Load(visualModelPath, makeVisualLH);
+            ModelResourceSet baseModel = Load(visualModelPath, makeVisualLH);
 
             Importing.Model collisionModelData = SelectImporter(collisionModelPath).Import(collisionModelPath, false, makeCollisionLH);
             Simulation!.BufferPool.Take(collisionModelData.Meshes.Sum(mesh => mesh.Indices.Length / 3), out Buffer<Triangle> triangles);
@@ -166,7 +174,10 @@ namespace TransportX.Rendering
             Pose colliderOffset = new(center);
             ColliderBase<CollisionMesh> collider = ColliderFactory.Mesh(Simulation!, collisionMesh, material, colliderOffset, isOpen);
 
-            return new CollidableModel(baseModel, collider);
+            return baseModel with
+            {
+                Collider = collider,
+            };
         }
     }
 }

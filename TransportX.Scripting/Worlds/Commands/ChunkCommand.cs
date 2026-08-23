@@ -29,7 +29,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public TransformedModel PutProp(string modelKey, Pose pose)
         {
-            IModel model = World.Models.GetModel(modelKey);
+            ModelResourceSet model = World.Models.GetModel(modelKey);
             TransformedModel transformedModel = StaticTransformedModel.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
             Target.Models.Add(transformedModel);
             return transformedModel;

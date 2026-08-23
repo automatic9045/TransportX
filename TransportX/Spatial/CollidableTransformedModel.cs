@@ -5,8 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Mathematics;
-
 using TransportX.Physics;
 using TransportX.Rendering;
 
@@ -14,7 +12,7 @@ namespace TransportX.Spatial
 {
     public abstract class CollidableTransformedModel : TransformedModel, IDisposable
     {
-        public new ICollidableModel Model { get; }
+        public ICollider Collider => Resource.GetCollider();
 
         /// <summary>
         /// 視点が位置するプレートから、このモデルが位置するプレートまでの距離を取得します。
@@ -35,10 +33,10 @@ namespace TransportX.Spatial
         /// </remarks>
         protected virtual Pose ColliderPose
         {
-            get => Model.Collider.OffsetInverse * ColliderRawPose * FromCamera.PoseInverse;
+            get => Collider.OffsetInverse * ColliderRawPose * FromCamera.PoseInverse;
             set
             {
-                Pose pose = Model.Collider.Offset * value * FromCamera.Pose;
+                Pose pose = Collider.Offset * value * FromCamera.Pose;
 #if DEBUG
                 pose = pose.Validated();
 #endif
@@ -46,13 +44,12 @@ namespace TransportX.Spatial
             }
         }
 
-        public Pose BaseToCollider => BasePoseInverse * Model.Collider.OffsetInverse;
-        public Pose ColliderToBase => Model.Collider.Offset * BasePose;
+        public Pose BaseToCollider => BasePoseInverse * Collider.OffsetInverse;
+        public Pose ColliderToBase => Collider.Offset * BasePose;
 
-        protected CollidableTransformedModel(ICollidableModel model, Pose basePose)
-            : base(model, basePose, false)
+        protected CollidableTransformedModel(in ModelResourceSet resource, Pose basePose)
+            : base(resource, basePose, false)
         {
-            Model = model;
         }
 
         public abstract void Dispose();
@@ -95,10 +92,10 @@ namespace TransportX.Spatial
 
                 case RenderLayer.Colliders:
                 {
-                    if (Model.ColliderDebugModel is null) return;
+                    if (Collider.DebugModel is null) return;
 
                     Matrix4x4 world = ColliderRawPose.ToMatrix4x4();
-                    context.DrawModel(Model.ColliderDebugModel, world);
+                    context.DrawModel(Collider.DebugModel, world);
                     break;
                 }
             }

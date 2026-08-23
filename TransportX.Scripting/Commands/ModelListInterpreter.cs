@@ -40,7 +40,7 @@ namespace TransportX.Scripting.Commands
             BaseDirectory = baseDirectory;
             ErrorCollector = errorCollector;
 
-            ModelLoadFunc = modelPath => modelPath is null ? Model.Empty() : Factory.Load(modelPath, MakeLH);
+            ModelLoadFunc = modelPath => modelPath is null ? ModelResourceSet.Empty() : Factory.Load(modelPath, MakeLH);
         }
 
         public void ReadCommand(string commandText)
@@ -52,7 +52,7 @@ namespace TransportX.Scripting.Commands
             }
             else if (function.Signature == ModelListSignatures.NonCollision)
             {
-                ModelLoadFunc = modelPath => modelPath is null ? Model.Empty() : Factory.Load(modelPath, MakeLH);
+                ModelLoadFunc = modelPath => modelPath is null ? ModelResourceSet.Empty() : Factory.Load(modelPath, MakeLH);
             }
             else if (function.Signature == ModelListSignatures.BoundingBox1)
             {
@@ -285,13 +285,13 @@ namespace TransportX.Scripting.Commands
                 return sixDoF.ToPose();
             }
 
-            Model InvokeWithNonNullPathOrReport(string? modelPath, Func< string, Model> func)
+            ModelResourceSet InvokeWithNonNullPathOrReport(string? modelPath, Func<string, ModelResourceSet> func)
             {
                 if (modelPath is null)
                 {
                     Error error = new(ErrorLevel.Error, $"コマンド '${function.Signature}' を描画用モデルの指定がないモデルに使用することはできません。", null);
                     ErrorCollector.Report(error);
-                    return Model.Empty();
+                    return ModelResourceSet.Empty();
                 }
                 else
                 {
@@ -300,13 +300,13 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public Model Build(string? modelPath)
+        public ModelResourceSet Build(string? modelPath)
         {
-            Model model = ModelLoadFunc(modelPath);
+            ModelResourceSet model = ModelLoadFunc(modelPath);
             return model;
         }
 
 
-        private delegate Model ModelLoader(string? modelPath);
+        private delegate ModelResourceSet ModelLoader(string? modelPath);
     }
 }

@@ -27,7 +27,7 @@ namespace TransportX.Scripting.Avatars.Commands
 
         public PartFactory Add(string key, string modelKey, Pose pose)
         {
-            IModel model = Avatar.Models.GetModel(modelKey);
+            ModelResourceSet model = Avatar.Models.GetModel(modelKey);
             PartFactory factory = new(Avatar, key, model, pose);
             return factory;
         }

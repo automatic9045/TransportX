@@ -53,7 +53,7 @@ namespace TransportX.Scripting.Commands
 
                 ModelListInterpreter interpreter = new(parser, PhysicsHost.Simulation, factory, list.ListDirectory, factoryErrorCollector);
 
-                ScriptDictionary<string, IModel> models = new(ErrorCollector, "モデル", key => Model.Empty());
+                ScriptDictionary<string, ModelResourceSet> models = new(ErrorCollector, "モデル", key => ModelResourceSet.Empty());
 
                 while (list.ReadLine(out string[] line))
                 {
@@ -85,13 +85,13 @@ namespace TransportX.Scripting.Commands
                             }
                         }
 
-                        Model model = interpreter.Build(modelPath);
-                        model.DebugName = key;
+                        ModelResourceSet model = interpreter.Build(modelPath);
+                        model.Model.DebugName = key;
 
-                        if (model is CollidableModel collidableModel)
+                        if (model.Collider is not null)
                         {
-                            collidableModel.CreateColliderDebugModel(GraphicsHost.Device);
-                            collidableModel.ColliderDebugModel!.Color = new Vector4(1, 0, 0, 1);
+                            model.Collider.CreateDebugModel(GraphicsHost.Device);
+                            model.Collider.DebugModel.Color = new Vector4(1, 0, 0, 1);
                         }
 
                         models.Add(modelKey, model);

@@ -25,6 +25,8 @@ namespace TransportX.Physics
         public Pose Offset { get; }
         public Pose OffsetInverse { get; }
 
+        public IDebugModel? DebugModel { get; private set; } = null;
+
         public ColliderBase(Simulation simulation, TShape shape, ColliderMaterial material, Pose offset)
         {
             Simulation = simulation;
@@ -43,7 +45,12 @@ namespace TransportX.Physics
             Simulation.Shapes.RemoveAndDispose(ShapeIndex, Simulation.BufferPool);
         }
 
+        public void CreateDebugModel(ID3D11Device device)
+        {
+            DebugModel ??= CreateDebugModelCore(device);
+        }
+
         public abstract BodyInertia ComputeInertia(float mass);
-        public abstract IDebugModel CreateDebugModel(ID3D11Device device);
+        protected abstract IDebugModel CreateDebugModelCore(ID3D11Device device);
     }
 }

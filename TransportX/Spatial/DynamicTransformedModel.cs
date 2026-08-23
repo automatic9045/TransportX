@@ -14,31 +14,32 @@ namespace TransportX.Spatial
 {
     public class DynamicTransformedModel : BodyTransformedModel
     {
-        internal protected DynamicTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
-            : base(physicsHost, model, description, basePose)
+        protected DynamicTransformedModel(IPhysicsHost physicsHost, in ModelResourceSet resource, BodyDescription description, Pose basePose)
+            : base(physicsHost, resource, description, basePose)
         {
         }
 
         public static DynamicTransformedModel Create(IPhysicsHost physicsHost,
-            ICollidableModel model, Func<ICollidableModel, RigidPose, BodyDescription> descFactory, Pose basePose)
+            in ModelResourceSet resource, Func<ModelResourceSet, RigidPose, BodyDescription> descFactory, Pose basePose)
         {
-            BodyDescription desc = descFactory(model, (model.Collider.Offset * basePose).ToRigidPose());
-            return new DynamicTransformedModel(physicsHost, model, desc, basePose);
+            BodyDescription desc = descFactory(resource, (resource.GetCollider().Offset * basePose).ToRigidPose());
+            return new DynamicTransformedModel(physicsHost, resource, desc, basePose);
         }
 
         public static DynamicTransformedModel Create(IPhysicsHost physicsHost,
-            ICollidableModel model, float mass, CollidableDescription collidableDescription, Pose basePose)
+            in ModelResourceSet resource, float mass, CollidableDescription collidableDescription, Pose basePose)
         {
-            BodyInertia inertia = model.Collider.ComputeInertia(mass);
-            BodyDescription CreateDesc(ICollidableModel model, RigidPose pose)
+            BodyInertia inertia = resource.GetCollider().ComputeInertia(mass);
+            return Create(physicsHost, resource, CreateDesc, basePose);
+
+
+            BodyDescription CreateDesc(ModelResourceSet model, RigidPose pose)
                 => BodyDescription.CreateDynamic(pose, inertia, collidableDescription, 0.01f);
-
-            return Create(physicsHost, model, CreateDesc, basePose);
         }
 
-        public static DynamicTransformedModel Create(IPhysicsHost physicsHost, ICollidableModel model, float mass, Pose basePose)
+        public static DynamicTransformedModel Create(IPhysicsHost physicsHost, in ModelResourceSet resource, float mass, Pose basePose)
         {
-            return Create(physicsHost, model, mass, model.Collider.ShapeIndex, basePose);
+            return Create(physicsHost, resource, mass, resource.GetCollider().ShapeIndex, basePose);
         }
     }
 }

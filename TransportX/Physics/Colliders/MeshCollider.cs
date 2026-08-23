@@ -30,7 +30,7 @@ namespace TransportX.Physics.Colliders
             return IsOpen ? Shape.ComputeOpenInertia(mass) : Shape.ComputeClosedInertia(mass);
         }
 
-        public override IDebugModel CreateDebugModel(ID3D11Device device)
+        protected override IDebugModel CreateDebugModelCore(ID3D11Device device)
         {
             int triangleCount = Shape.Triangles.Length;
             Vertex[] vertices = new Vertex[triangleCount * 3];

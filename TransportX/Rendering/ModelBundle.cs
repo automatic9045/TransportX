@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,15 +10,15 @@ namespace TransportX.Rendering
 {
     public class ModelBundle : IModelBundle
     {
-        public static ModelBundle Empty(string key) => new(key, new Dictionary<string, IModel>(), Enumerable.Empty<ID3D11ShaderResourceView>());
+        public static ModelBundle Empty(string key) => new(key, new Dictionary<string, ModelResourceSet>(), Enumerable.Empty<ID3D11ShaderResourceView>());
 
 
         protected readonly IEnumerable<ID3D11ShaderResourceView> Textures;
 
         public string Key { get; }
-        public IReadOnlyDictionary<string, IModel> Models { get; }
+        public IReadOnlyDictionary<string, ModelResourceSet> Models { get; }
 
-        public ModelBundle(string key, IReadOnlyDictionary<string, IModel> models, IEnumerable<ID3D11ShaderResourceView> textures)
+        public ModelBundle(string key, IReadOnlyDictionary<string, ModelResourceSet> models, IEnumerable<ID3D11ShaderResourceView> textures)
         {
             Key = key;
             Models = models;
@@ -28,7 +27,7 @@ namespace TransportX.Rendering
 
         public void Dispose()
         {
-            foreach (IModel model in Models.Values)
+            foreach (ModelResourceSet model in Models.Values)
             {
                 model.Dispose();
             }

@@ -37,29 +37,28 @@ namespace TransportX.Spatial
             }
         }
 
-        internal protected StaticTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, StaticDescription description, Pose pose)
-            : base(model, pose)
+        protected StaticTransformedModel(IPhysicsHost physicsHost, in ModelResourceSet resource, StaticDescription description, Pose pose)
+            : base(resource, pose)
         {
             PhysicsHost = physicsHost;
             Description = description;
             Handle = PhysicsHost.Simulation.Statics.Add(description);
-            PhysicsHost.SetMaterial(Handle, Model.Collider.Material);
+            PhysicsHost.SetMaterial(Handle, Collider.Material);
 
             Pose = BasePose;
         }
 
-
-        public static StaticTransformedModel Create(IPhysicsHost physicsHost, ICollidableModel model, Pose pose)
+        public static StaticTransformedModel Create(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose)
         {
-            RigidPose rigidPose = (model.Collider.Offset * pose).ToRigidPose();
-            StaticDescription desc = new(rigidPose, model.Collider.ShapeIndex);
-            return new StaticTransformedModel(physicsHost, model, desc, pose);
+            RigidPose rigidPose = (resource.GetCollider().Offset * pose).ToRigidPose();
+            StaticDescription desc = new(rigidPose, resource.Collider.ShapeIndex);
+            return new StaticTransformedModel(physicsHost, resource, desc, pose);
         }
 
-        public static TransformedModel CreateStaticOrNonCollision(IPhysicsHost physicsHost, IModel model, Pose pose)
+        public static TransformedModel CreateStaticOrNonCollision(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose)
         {
-            return model is ICollidableModel collidableModel
-                ? Create(physicsHost, collidableModel, pose) : new TransformedModel(model, pose);
+            return resource.Collider is null
+                ? new TransformedModel(resource, pose) : Create(physicsHost, resource, pose);
         }
 
         public override void Dispose()

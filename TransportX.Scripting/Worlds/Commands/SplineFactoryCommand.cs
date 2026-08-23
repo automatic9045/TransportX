@@ -53,7 +53,7 @@ namespace TransportX.Scripting.Worlds.Commands
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
-                IModel model = World.Models.GetModel(key);
+                ModelResourceSet model = World.Models.GetModel(key);
                 return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);

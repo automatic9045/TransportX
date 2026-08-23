@@ -9,6 +9,6 @@ namespace TransportX.Rendering
     public interface IModelBundle : IDisposable
     {
         string Key { get; }
-        IReadOnlyDictionary<string, IModel> Models { get; }
+        IReadOnlyDictionary<string, ModelResourceSet> Models { get; }
     }
 }

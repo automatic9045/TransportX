@@ -13,24 +13,24 @@ namespace TransportX.Spatial
 {
     public class KinematicTransformedModel : BodyTransformedModel
     {
-        internal protected KinematicTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose pose)
-            : base(physicsHost, model, description, pose)
+        protected KinematicTransformedModel(IPhysicsHost physicsHost, in ModelResourceSet resource, BodyDescription description, Pose pose)
+            : base(physicsHost, resource, description, pose)
         {
             Pose = BasePose;
         }
 
 
-        public static KinematicTransformedModel Create(IPhysicsHost physicsHost, ICollidableModel model, Pose pose)
+        public static KinematicTransformedModel Create(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose)
         {
-            RigidPose rigidPose = (model.Collider.Offset * pose).ToRigidPose();
-            BodyDescription desc = BodyDescription.CreateKinematic(rigidPose, model.Collider.ShapeIndex, 0.01f);
-            return new KinematicTransformedModel(physicsHost, model, desc, pose);
+            RigidPose rigidPose = (resource.GetCollider().Offset * pose).ToRigidPose();
+            BodyDescription desc = BodyDescription.CreateKinematic(rigidPose, resource.GetCollider().ShapeIndex, 0.01f);
+            return new KinematicTransformedModel(physicsHost, resource, desc, pose);
         }
 
-        public static TransformedModel CreateKinematicOrNonCollision(IPhysicsHost physicsHost, IModel model, Pose pose)
+        public static TransformedModel CreateKinematicOrNonCollision(IPhysicsHost physicsHost, in ModelResourceSet resource, Pose pose)
         {
-            return model is ICollidableModel collidableModel
-                ? Create(physicsHost, collidableModel, pose) : new TransformedModel(model, pose);
+            return resource.Collider is null
+                ? new TransformedModel(resource, pose) : Create(physicsHost, resource, pose);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace TransportX.Scripting.Avatars.Commands
         private readonly ScriptAvatar Avatar;
 
         private readonly string Key;
-        private readonly IModel Model;
+        private readonly ModelResourceSet Model;
         private readonly Pose Pose;
 
         private ColliderGroupHandle ColliderGroup;
@@ -26,7 +26,7 @@ namespace TransportX.Scripting.Avatars.Commands
         public IComponentCollection<ITemplateComponent<Part>> Components { get; } = new ComponentCollection<ITemplateComponent<Part>>();
         public IErrorCollector ErrorCollector => Avatar.ErrorCollector;
 
-        internal PartFactory(ScriptAvatar avatar, string key, IModel model, Pose pose)
+        internal PartFactory(ScriptAvatar avatar, string key, in ModelResourceSet model, Pose pose)
         {
             Avatar = avatar;
 
@@ -69,27 +69,25 @@ namespace TransportX.Scripting.Avatars.Commands
 
         public KinematicPart BuildKinematic()
         {
-            if (!IsCollidableOrReport(out ICollidableModel? collidable)) return KinematicPart.InvalidEmpty(Avatar, Key);
+            if (!IsCollidableOrReport()) return KinematicPart.InvalidEmpty(Avatar, Key);
 
-            KinematicTransformedModel model = Avatar.Structure.AttachKinematic(collidable, ColliderGroup, Pose);
+            KinematicTransformedModel model = Avatar.Structure.AttachKinematic(Model, ColliderGroup, Pose);
             KinematicPart part = (KinematicPart)Build(model);
             return part;
         }
 
         public DynamicPart BuildDynamic(double mass)
         {
-            if (!IsCollidableOrReport(out ICollidableModel? collidable)) return DynamicPart.InvalidEmpty(Avatar, Key);
+            if (!IsCollidableOrReport()) return DynamicPart.InvalidEmpty(Avatar, Key);
 
-            DynamicTransformedModel model = Avatar.Structure.AttachDynamic(collidable, (float)mass, ColliderGroup, Pose);
+            DynamicTransformedModel model = Avatar.Structure.AttachDynamic(Model, (float)mass, ColliderGroup, Pose);
             DynamicPart part = (DynamicPart)Build(model);
             return part;
         }
 
-        private bool IsCollidableOrReport([MaybeNullWhen(false)] out ICollidableModel collidable)
+        private bool IsCollidableOrReport()
         {
-            collidable = Model as ICollidableModel;
-
-            if (collidable is null)
+            if (Model.Collider is null)
             {
                 ScriptError error = new(ErrorLevel.Error, $"モデルに衝突判定が定義されていません。");
                 Avatar.ErrorCollector.Report(error);

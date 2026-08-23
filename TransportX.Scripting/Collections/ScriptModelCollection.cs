@@ -15,7 +15,7 @@ namespace TransportX.Scripting.Collections
     {
         private readonly IErrorCollector ErrorCollector;
 
-        private readonly ScriptDictionary<string, IModel> Models;
+        private readonly ScriptDictionary<string, ModelResourceSet> Models;
         private readonly ScriptKeyedList<string, IModelBundle> BundlesKey;
 
         public IReadOnlyKeyedList<string, IModelBundle> Bundles => BundlesKey;
@@ -24,7 +24,7 @@ namespace TransportX.Scripting.Collections
         {
             ErrorCollector = errorCollector;
 
-            Models = new ScriptDictionary<string, IModel>(errorCollector, "モデル", key => Model.Empty());
+            Models = new ScriptDictionary<string, ModelResourceSet>(errorCollector, "モデル", key => ModelResourceSet.Empty());
             BundlesKey = new ScriptKeyedList<string, IModelBundle>(bundle => bundle.Key, errorCollector, "モデルバンドル", ModelBundle.Empty);
         }
 
@@ -36,16 +36,16 @@ namespace TransportX.Scripting.Collections
             }
         }
 
-        public IModel GetModel(string modelKey)
+        public ModelResourceSet GetModel(string modelKey)
         {
-            return modelKey == string.Empty ? Model.Empty() : Models[modelKey];
+            return modelKey == string.Empty ? ModelResourceSet.Empty() : Models[modelKey];
         }
 
-        public bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out IModel model)
+        public bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out ModelResourceSet model)
         {
             if (modelKey == string.Empty)
             {
-                model = Model.Empty();
+                model = ModelResourceSet.Empty();
                 return true;
             }
             else
@@ -79,7 +79,7 @@ namespace TransportX.Scripting.Collections
 
             BundlesKey.Add(bundle);
 
-            foreach ((string modelKey, IModel model) in bundle.Models)
+            foreach ((string modelKey, ModelResourceSet model) in bundle.Models)
             {
                 Models.Add(modelKey, model);
             }

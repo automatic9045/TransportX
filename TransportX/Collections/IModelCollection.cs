@@ -13,8 +13,8 @@ namespace TransportX.Collections
     {
         IReadOnlyKeyedList<string, IModelBundle> Bundles { get; }
 
-        IModel GetModel(string modelKey);
-        bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out IModel model);
+        ModelResourceSet GetModel(string modelKey);
+        bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out ModelResourceSet model);
 
         bool AdoptBundle(IModelBundle bundle, bool allowOverride = false);
         bool ReleaseBundle(string bundleKey);

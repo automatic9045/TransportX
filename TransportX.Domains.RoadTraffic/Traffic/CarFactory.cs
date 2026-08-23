@@ -21,15 +21,16 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         };
 
 
-        private readonly IModel Model;
-        private readonly IModel BlinkerLightLModel;
-        private readonly IModel BlinkerLightRModel;
-        private readonly IModel BrakeLightModel;
+        private readonly ModelResourceSet Model;
+        private readonly ModelResourceSet BlinkerLightLModel;
+        private readonly ModelResourceSet BlinkerLightRModel;
+        private readonly ModelResourceSet BrakeLightModel;
         private readonly CarSpec CarSpec;
 
         EntitySpec IEntityFactory.Spec => Spec;
 
-        public CarFactory(IModel model, IModel blinkerLightLModel, IModel blinkerLightRModel, IModel brakeLightModel, CarSpec carSpec)
+        public CarFactory(in ModelResourceSet model,
+            in ModelResourceSet blinkerLightLModel, in ModelResourceSet blinkerLightRModel, in ModelResourceSet brakeLightModel, CarSpec carSpec)
         {
             Model = model;
             BlinkerLightLModel = blinkerLightLModel;

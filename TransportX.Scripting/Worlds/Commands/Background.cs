@@ -22,7 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public void Add(string modelKey)
         {
-            IModel model = World.Models.GetModel(modelKey);
+            ModelResourceSet model = World.Models.GetModel(modelKey);
             TransformedModel transformedModel = new(model, Pose.Identity);
             World.BackgroundModels.Add(transformedModel);
         }

@@ -11,7 +11,7 @@ namespace TransportX.Collections
 {
     public class ModelCollection : IModelCollection
     {
-        private readonly Dictionary<string, IModel> Models = [];
+        private readonly Dictionary<string, ModelResourceSet> Models = [];
         private readonly KeyedList<string, IModelBundle> BundlesKey = new(bundle => bundle.Key);
 
         public IReadOnlyKeyedList<string, IModelBundle> Bundles => BundlesKey;
@@ -28,16 +28,16 @@ namespace TransportX.Collections
             }
         }
 
-        public IModel GetModel(string modelKey)
+        public ModelResourceSet GetModel(string modelKey)
         {
-            return modelKey == string.Empty ? Model.Empty() : Models[modelKey];
+            return modelKey == string.Empty ? ModelResourceSet.Empty() : Models[modelKey];
         }
 
-        public bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out IModel model)
+        public bool TryGetModel(string modelKey, [MaybeNullWhen(false)] out ModelResourceSet model)
         {
             if (modelKey == string.Empty)
             {
-                model = Model.Empty();
+                model = ModelResourceSet.Empty();
                 return true;
             }
             else
@@ -67,7 +67,7 @@ namespace TransportX.Collections
 
             BundlesKey.Add(bundle);
 
-            foreach ((string modelKey, IModel model) in bundle.Models)
+            foreach ((string modelKey, ModelResourceSet model) in bundle.Models)
             {
                 Models.Add(modelKey, model);
             }

@@ -43,7 +43,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override IDriver Driver { get; }
 
         public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficEntity> obstacles,
-            IModel model, IModel blinkerLightLModel, IModel blinkerLightRModel, IModel brakeLightModel,
+            in ModelResourceSet model, in ModelResourceSet blinkerLightLModel, in ModelResourceSet blinkerLightRModel, in ModelResourceSet brakeLightModel,
             CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
         {
             Spec = spec;

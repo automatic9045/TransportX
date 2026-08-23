@@ -39,14 +39,14 @@ namespace TransportX.Rendering.Importing
             DDSFactory = new DDSTextureFactory(Context.Device);
         }
 
-        public Rendering.Model Create(Model model, string baseDirectory, string sourceLocation)
+        public ModelResourceSet Create(Model modelData, string baseDirectory, string sourceLocation)
         {
             Dictionary<string, ID3D11ShaderResourceView> loadedTextures = [];
 
-            Rendering.Mesh[] meshes = new Rendering.Mesh[model.Meshes.Length];
+            Rendering.Mesh[] meshes = new Rendering.Mesh[modelData.Meshes.Length];
             for (int i = 0; i < meshes.Length; i++)
             {
-                Mesh meshData = model.Meshes[i];
+                Mesh meshData = modelData.Meshes[i];
 
                 Vertex[] vertices = new Vertex[meshData.Vertices.Length];
                 for (int j = 0; j < vertices.Length; j++)
@@ -55,8 +55,8 @@ namespace TransportX.Rendering.Importing
                     {
                         Position = meshData.Vertices[j],
                         Color = (meshData.Colors is null ? Vector4.One : meshData.Colors[j]).ToLinear(),
-                        Normal = meshData.Normals is null ? throw new ArgumentException("法線情報が定義されていません。", nameof(model)) : meshData.Normals[j],
-                        Tangent = meshData.Tangents is null ? throw new ArgumentException("接線情報が定義されていません。", nameof(model)) : meshData.Tangents[j],
+                        Normal = meshData.Normals is null ? throw new ArgumentException("法線情報が定義されていません。", nameof(modelData)) : meshData.Normals[j],
+                        Tangent = meshData.Tangents is null ? throw new ArgumentException("接線情報が定義されていません。", nameof(modelData)) : meshData.Tangents[j],
                         TextureCoord = meshData.TextureCoords is null ? default : meshData.TextureCoords[j],
                     };
                 }
@@ -64,7 +64,7 @@ namespace TransportX.Rendering.Importing
                 Rendering.Material material = Rendering.Material.Default();
                 if (0 <= meshData.MaterialIndex)
                 {
-                    Material materialData = model.Materials[meshData.MaterialIndex];
+                    Material materialData = modelData.Materials[meshData.MaterialIndex];
 
                     IErrorCollector textureErrorCollector = IErrorCollector.Default();
                     textureErrorCollector.Reported += (sender, e) =>
@@ -74,10 +74,10 @@ namespace TransportX.Rendering.Importing
                     };
 
                     ID3D11ShaderResourceView? baseColorTexture = materialData.BaseColorTexture.HasValue
-                        ? LoadTexture(materialData.BaseColorTexture.Value, false, model.EmbeddedTextures, textureErrorCollector) : null;
+                        ? LoadTexture(materialData.BaseColorTexture.Value, false, modelData.EmbeddedTextures, textureErrorCollector) : null;
 
                     ID3D11ShaderResourceView? normalTexture = materialData.NormalTexture.HasValue
-                        ? LoadTexture(materialData.NormalTexture.Value, true, model.EmbeddedTextures, textureErrorCollector) : null;
+                        ? LoadTexture(materialData.NormalTexture.Value, true, modelData.EmbeddedTextures, textureErrorCollector) : null;
 
                     string? keyO = materialData.OcclusionTexture?.Key;
                     string? keyR = materialData.RoughnessTexture?.Key;
@@ -91,7 +91,7 @@ namespace TransportX.Rendering.Importing
                     }
                     else if (materialData.MetallicTexture.HasValue && keyO == keyR && keyR == keyM)
                     {
-                        ormTexture = LoadTexture(materialData.MetallicTexture.Value, true, model.EmbeddedTextures, textureErrorCollector);
+                        ormTexture = LoadTexture(materialData.MetallicTexture.Value, true, modelData.EmbeddedTextures, textureErrorCollector);
                         if (ormTexture is not null) loadedTextures.Add(combinedKey, ormTexture);
                     }
                     else
@@ -104,17 +104,17 @@ namespace TransportX.Rendering.Importing
                         {
                             if (materialData.OcclusionTexture.HasValue)
                             {
-                                occlusionStream = CreateStream(materialData.OcclusionTexture.Value, model.EmbeddedTextures);
+                                occlusionStream = CreateStream(materialData.OcclusionTexture.Value, modelData.EmbeddedTextures);
                             }
 
                             if (materialData.RoughnessTexture.HasValue)
                             {
-                                roughnessStream = CreateStream(materialData.RoughnessTexture.Value, model.EmbeddedTextures);
+                                roughnessStream = CreateStream(materialData.RoughnessTexture.Value, modelData.EmbeddedTextures);
                             }
 
                             if (materialData.MetallicTexture.HasValue)
                             {
-                                metallicStream = CreateStream(materialData.MetallicTexture.Value, model.EmbeddedTextures);
+                                metallicStream = CreateStream(materialData.MetallicTexture.Value, modelData.EmbeddedTextures);
                             }
 
                             if (occlusionStream is not null || roughnessStream is not null || metallicStream is not null)
@@ -200,7 +200,7 @@ namespace TransportX.Rendering.Importing
                     }
 
                     ID3D11ShaderResourceView? emissiveTexture = materialData.EmissiveTexture.HasValue
-                        ? LoadTexture(materialData.EmissiveTexture.Value, false, model.EmbeddedTextures, textureErrorCollector) : null;
+                        ? LoadTexture(materialData.EmissiveTexture.Value, false, modelData.EmbeddedTextures, textureErrorCollector) : null;
 
 
                     material = new Rendering.Material()
@@ -355,7 +355,8 @@ namespace TransportX.Rendering.Importing
 
             TexturesKey.UnionWith(loadedTextures.Values);
 
-            return new Rendering.Model(meshes);
+            Rendering.Model model = new(meshes);
+            return new ModelResourceSet(model);
         }
     }
 }

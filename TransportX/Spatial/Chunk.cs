@@ -75,7 +75,7 @@ namespace TransportX.Spatial
             foreach (TransformedModel model in Models)
             {
                 Matrix4x4 world = (model.Pose * context.ChunkOffset.Pose).ToMatrix4x4();
-                BoundingBox worldBox = BoundingBox.Transform(model.Model.BoundingBox, world);
+                BoundingBox worldBox = BoundingBox.Transform(model.Resource.Model.BoundingBox, world);
 
                 if (culler.Intersects(worldBox))
                 {

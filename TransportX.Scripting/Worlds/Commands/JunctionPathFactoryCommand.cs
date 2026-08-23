@@ -46,7 +46,7 @@ namespace TransportX.Scripting.Worlds.Commands
         {
             TransformedModelTemplate[] models = modelKeys.Select(key =>
             {
-                IModel model = World.Models.GetModel(key);
+                ModelResourceSet model = World.Models.GetModel(key);
                 return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
@@ -80,7 +80,7 @@ namespace TransportX.Scripting.Worlds.Commands
                     Pose curvePose = GetSpanPose(s, prop.Span);
                     Pose pose = template.Pose * curvePose;
 
-                    TransformedModelTemplate compiled = StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, template.Model, pose);
+                    TransformedModelTemplate compiled = StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, template.Resource, pose);
                     props.Add(compiled);
                 }
             }

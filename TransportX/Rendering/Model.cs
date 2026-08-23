@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using BepuPhysics;
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
 
 using TransportX.Diagnostics;
-using TransportX.Physics;
 
 namespace TransportX.Rendering
 {
@@ -65,10 +63,10 @@ namespace TransportX.Rendering
             return boundingBox;
         }
 
-        public static Model Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
+        public static ModelResourceSet Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
         {
             using ModelFactory factory = new(context, null, errorCollector);
-            Model model = factory.Load(visualModelPath, makeLH);
+            ModelResourceSet model = factory.Load(visualModelPath, makeLH);
             return model;
         }
 
@@ -89,77 +87,6 @@ namespace TransportX.Rendering
             {
                 Meshes[i].Draw(context);
             }
-        }
-    }
-
-
-    public class CollidableModel : Model, ICollidableModel
-    {
-        public ICollider Collider { get; }
-        public IDebugModel? ColliderDebugModel { get; private set; } = null;
-
-        public override string? DebugName
-        {
-            get => base.DebugName;
-            set => ColliderDebugModel?.DebugName = base.DebugName = value;
-        }
-
-        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, BoundingBox boundingBox, ICollider collider) : base(visualMeshes, boundingBox)
-        {
-            Collider = collider;
-        }
-
-        public CollidableModel(IReadOnlyList<IMesh> visualMeshes, ICollider collider) : base(visualMeshes)
-        {
-            Collider = collider;
-        }
-
-        public CollidableModel(Model baseModel, ICollider collider) : this(baseModel.Meshes, collider)
-        {
-            DebugName = baseModel.DebugName;
-        }
-
-        public CollidableModel(BoundingBox boundingBox, ICollider collider) : this([], boundingBox, collider)
-        {
-        }
-
-        public CollidableModel(ICollider collider) : this([], collider)
-        {
-        }
-
-        public static CollidableModel Load(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
-            string visualModelPath, bool makeVisualLH, string collisionModelPath, bool makeCollisionLH, ColliderMaterial material, bool isOpen)
-        {
-            using ModelFactory factory = new(context, simulation, errorCollector);
-            CollidableModel model = factory.LoadWithCollisionModel(visualModelPath, makeVisualLH, collisionModelPath, makeCollisionLH, material, isOpen);
-            return model;
-        }
-
-        public static CollidableModel LoadWithBoundingBox(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
-            string visualModelPath, bool makeLH, ColliderMaterial material)
-        {
-            using ModelFactory factory = new(context, simulation, errorCollector);
-            CollidableModel model = factory.LoadWithBoundingBox(visualModelPath, makeLH, material);
-            return model;
-        }
-
-        public static CollidableModel LoadWithConvexHull(ID3D11DeviceContext context, Simulation simulation, IErrorCollector errorCollector,
-            string visualModelPath, bool makeLH, ColliderMaterial material)
-        {
-            using ModelFactory factory = new(context, simulation, errorCollector);
-            CollidableModel model = factory.LoadWithConvexHull(visualModelPath, makeLH, material);
-            return model;
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            ColliderDebugModel?.Dispose();
-        }
-
-        public void CreateColliderDebugModel(ID3D11Device device)
-        {
-            ColliderDebugModel ??= Collider.CreateDebugModel(device);
         }
     }
 }

@@ -26,8 +26,8 @@ namespace TransportX.Spatial
         public BodyHandle Handle { get; }
         public BodyReference Body => PhysicsHost.Simulation.Bodies[Handle];
 
-        public Vector3 Velocity => Pose.TransformNormal(Body.Velocity.Linear, Model.Collider.OffsetInverse);
-        public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Model.Collider.OffsetInverse);
+        public Vector3 Velocity => Pose.TransformNormal(Body.Velocity.Linear, Collider.OffsetInverse);
+        public Vector3 AngularVelocity => Pose.TransformNormal(Body.Velocity.Angular, Collider.OffsetInverse);
 
         public override Pose Pose
         {
@@ -50,14 +50,14 @@ namespace TransportX.Spatial
             }
         }
 
-        protected BodyTransformedModel(IPhysicsHost physicsHost, ICollidableModel model, BodyDescription description, Pose basePose)
-            : base(model, basePose)
+        protected BodyTransformedModel(IPhysicsHost physicsHost, in ModelResourceSet resource, BodyDescription description, Pose basePose)
+            : base(resource, basePose)
         {
             PhysicsHost = physicsHost;
             Description = description;
 
             Handle = PhysicsHost.Simulation.Bodies.Add(description);
-            PhysicsHost.SetMaterial(Handle, Model.Collider.Material);
+            PhysicsHost.SetMaterial(Handle, Collider.Material);
         }
 
         public override void Dispose()
