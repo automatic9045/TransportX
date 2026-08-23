@@ -18,10 +18,10 @@ cbuffer MaterialBuffer : register(b0)
     float3 Emissive;
     float Roughness;
     float Metallic;
-    int HasBaseTexture;
-    int HasNormalTexture;
-    int HasORMTexture;
-    int HasEmissiveTexture;
+    uint BaseTextureMode;
+    uint NormalTextureMode;
+    uint ORMTextureMode;
+    uint EmissiveTextureMode;
     float3 _Padding1;
 }
 
@@ -41,6 +41,9 @@ cbuffer SceneBuffer : register(b2)
     float _Padding4;
     float3 LightDirection;
     float LightIntensity;
+    uint OutputMode;
+    float2 ViewportSizeInverse;
+    float _Padding5;
 }
 
 cbuffer CSMSamplingBuffer : register(b3)
@@ -52,7 +55,7 @@ cbuffer CSMSamplingBuffer : register(b3)
     float4 SplitDepths;
     float Resolution;
     float ZPullback;
-    float2 _Padding5;
+    float2 _Padding6;
 
 }
 
@@ -75,6 +78,13 @@ struct PS_OUT
 };
 
 static const float PI = 3.14159265359;
+
+static const uint OUTPUTMODE_DEFERRED = 0;
+static const uint OUTPUTMODE_FORWARD = 1;
+
+static const uint TEXSAMPLEMODE_NONE = 0;
+static const uint TEXSAMPLEMODE_TEXTURE = 1;
+static const uint TEXSAMPLEMODE_SCREEN = 2;
 
 float3 FresnelSchlick(float vDotH, float3 baseReflectivity)
 {
@@ -212,19 +222,34 @@ float CalculateShadow(float3 worldPos, float3 normal, float3 lightDir, float vie
     return shadowFactor * shadowFade;
 }
 
+float2 GetTextureUV(PS_IN input, uint sampleMode)
+{
+    switch (sampleMode)
+    {
+        case TEXSAMPLEMODE_TEXTURE:
+            return input.TexCoord;
+        case TEXSAMPLEMODE_SCREEN:
+            return input.Position.xy * ViewportSizeInverse;
+        default:
+            return float2(0, 0);
+    }
+}
+
 PS_OUT main(PS_IN input)
 {
     float4 baseColor = BaseColor * input.Color;
-    if (HasBaseTexture)
+    if (BaseTextureMode != TEXSAMPLEMODE_NONE)
     {
-        baseColor *= BaseColorTexture.Sample(TextureSampler, input.TexCoord);
+        float2 uv = GetTextureUV(input, BaseTextureMode);
+        baseColor *= BaseColorTexture.Sample(TextureSampler, uv);
     }
 
     float3 geometricNormal = normalize(input.Normal);
     float3 normal = geometricNormal;
-    if (HasNormalTexture)
+    if (NormalTextureMode != TEXSAMPLEMODE_NONE)
     {
-        float3 tangentNormal = NormalTexture.Sample(TextureSampler, input.TexCoord).xyz * 2.0 - 1.0;
+        float2 uv = GetTextureUV(input, NormalTextureMode);
+        float3 tangentNormal = NormalTexture.Sample(TextureSampler, uv).xyz * 2.0 - 1.0;
 
         float3 tangent = normalize(input.Tangent);
         tangent = normalize(tangent - dot(tangent, normal) * normal);
@@ -239,18 +264,20 @@ PS_OUT main(PS_IN input)
     float roughness = Roughness;
     float metallic = Metallic;
 
-    if (HasORMTexture)
+    if (ORMTextureMode != TEXSAMPLEMODE_NONE)
     {
-        float4 orm = ORMTexture.Sample(TextureSampler, input.TexCoord);
+        float2 uv = GetTextureUV(input, ORMTextureMode);
+        float4 orm = ORMTexture.Sample(TextureSampler, uv);
         occlusion = orm.r;
         roughness *= orm.g;
         metallic *= orm.b;
     }
 
     float3 emissive = Emissive;
-    if (HasEmissiveTexture)
+    if (EmissiveTextureMode != TEXSAMPLEMODE_NONE)
     {
-        emissive *= EmissiveTexture.Sample(TextureSampler, input.TexCoord).rgb;
+        float2 uv = GetTextureUV(input, EmissiveTextureMode);
+        emissive *= EmissiveTexture.Sample(TextureSampler, uv).rgb;
     }
 
     float3 v = normalize(CameraPosition - input.WorldPosition); // View
@@ -301,8 +328,18 @@ PS_OUT main(PS_IN input)
     float3 ambientPlusEmissive = ambient + emissive;
 
     PS_OUT output;
-    output.Ambient = float4(ambientPlusEmissive, baseColor.a);
-    output.Directional = float4(radianceOutUnshadowed, 1.0);
+    switch (OutputMode)
+    {
+        case OUTPUTMODE_DEFERRED:
+            output.Ambient = float4(ambientPlusEmissive, baseColor.a);
+            output.Directional = float4(radianceOutUnshadowed, 1.0);
+            break;
+        case OUTPUTMODE_FORWARD:
+            output.Ambient = float4(ambientPlusEmissive + radianceOutUnshadowed * shadow, baseColor.a);
+            output.Directional = float4(0, 0, 0, 0);
+            break;
+    }
+
     output.RawShadowDepth = float4(shadow, input.Position.z, 0.0, 0.0);
     return output;
 }

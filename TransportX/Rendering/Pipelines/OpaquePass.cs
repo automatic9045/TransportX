@@ -147,6 +147,8 @@ namespace TransportX.Rendering.Pipelines
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity * 0.001f,
+                OutputMode = (uint)context.OutputMode,
+                ViewportSizeInverse = new Vector2(1f / context.ViewportSize.Width, 1f / context.ViewportSize.Height),
             };
             Resources.Context.DeviceContext.UpdateSubresource(sceneConstants, Resources.SceneBuffer);
 

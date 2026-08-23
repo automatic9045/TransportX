@@ -18,10 +18,10 @@ namespace TransportX.Rendering.Backend
         public Vector3 Emissive = Vector3.Zero;
         public float Roughness = 1;
         public float Metallic = 0;
-        public int HasBaseTexture = 0;
-        public int HasNormalTexture = 0;
-        public int HasORMTexture = 0;
-        public int HasEmissiveTexture = 0;
+        public uint BaseTextureMode = 0;
+        public uint NormalTextureMode = 0;
+        public uint ORMTextureMode = 0;
+        public uint EmissiveTextureMode = 0;
         public Vector3 Padding;
 
         public MaterialConstants()
@@ -59,6 +59,9 @@ namespace TransportX.Rendering.Backend
         public float Padding2;
         public Vector3 LightDirection = Vector3.Zero;
         public float LightIntensity = 0;
+        public uint OutputMode;
+        public Vector2 ViewportSizeInverse;
+        public uint Padding3;
 
         public SceneConstants()
         {

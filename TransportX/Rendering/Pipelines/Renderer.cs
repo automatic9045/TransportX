@@ -114,6 +114,7 @@ namespace TransportX.Rendering.Pipelines
                 Options = Options,
                 Camera = camera,
                 ViewContext = viewContext,
+                OutputMode = RenderPassOutputMode.Deferred,
                 ViewportSize = size,
                 Elapsed = elapsed,
             };

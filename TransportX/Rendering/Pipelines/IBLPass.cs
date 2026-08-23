@@ -131,12 +131,12 @@ namespace TransportX.Rendering.Pipelines
         {
             if (!IsGenerated)
             {
-                Generate(world, context.Camera.WorldPose);
+                Generate(world, context.Camera.WorldPose, context.ViewportSize);
             }
             Bind();
         }
 
-        private void Generate(WorldBase world, WorldPose cameraWorldPose)
+        private void Generate(WorldBase world, WorldPose cameraWorldPose, SizeI viewportSize)
         {
             ID3D11DeviceContext deviceContext = Resources.Context.DeviceContext;
 
@@ -194,6 +194,8 @@ namespace TransportX.Rendering.Pipelines
                     LightColor = world.DirectionalLight.Color.ToLinear(),
                     LightDirection = world.DirectionalLight.Direction,
                     LightIntensity = world.DirectionalLight.Intensity * 0.001f,
+                    OutputMode = (uint)RenderPassOutputMode.Forward,
+                    ViewportSizeInverse = new Vector2(1f / viewportSize.Width, 1f / viewportSize.Height),
                 };
                 deviceContext.UpdateSubresource(sceneConstants, Resources.SceneBuffer);
 

@@ -24,19 +24,19 @@ namespace TransportX.Rendering
         public required float Roughness { get; set; }
         public required Vector3 Emissive { get; set; }
 
-        public ID3D11ShaderResourceView? BaseColorTexture { get; set; } = null;
-        public ID3D11ShaderResourceView? NormalTexture { get; set; } = null;
-        public ID3D11ShaderResourceView? ORMTexture { get; set; } = null;
-        public ID3D11ShaderResourceView? EmissiveTexture { get; set; } = null;
+        public TextureSlot BaseColorTexture { get; set; } = TextureSlot.Empty;
+        public TextureSlot NormalTexture { get; set; } = TextureSlot.Empty;
+        public TextureSlot ORMTexture { get; set; } = TextureSlot.Empty;
+        public TextureSlot EmissiveTexture { get; set; } = TextureSlot.Empty;
 
         public ID3D11ShaderResourceView?[] TextureViews
         {
             get
             {
-                field[0] = BaseColorTexture;
-                field[1] = NormalTexture;
-                field[2] = ORMTexture;
-                field[3] = EmissiveTexture;
+                field[0] = BaseColorTexture.View;
+                field[1] = NormalTexture.View;
+                field[2] = ORMTexture.View;
+                field[3] = EmissiveTexture.View;
                 return field;
             }
         } = new ID3D11ShaderResourceView?[4];
@@ -50,14 +50,14 @@ namespace TransportX.Rendering
 
                 if (value is null)
                 {
-                    BaseColorTexture?.DebugName = NormalTexture?.DebugName = ORMTexture?.DebugName = EmissiveTexture?.DebugName = null;
+                    BaseColorTexture.View?.DebugName = NormalTexture.View?.DebugName = ORMTexture.View?.DebugName = EmissiveTexture.View?.DebugName = null;
                 }
                 else
                 {
-                    BaseColorTexture?.DebugName = $"{value}_BaseColorTexture";
-                    NormalTexture?.DebugName = $"{value}_NormalTexture";
-                    ORMTexture?.DebugName = $"{value}_ORMTexture";
-                    EmissiveTexture?.DebugName = $"{value}_EmissiveTexture";
+                    BaseColorTexture.View?.DebugName = $"{value}_BaseColorTexture";
+                    NormalTexture.View?.DebugName = $"{value}_NormalTexture";
+                    ORMTexture.View?.DebugName = $"{value}_ORMTexture";
+                    EmissiveTexture.View?.DebugName = $"{value}_EmissiveTexture";
                 }
             }
         } = null;

@@ -126,10 +126,10 @@ namespace TransportX.Rendering
                 Roughness = renderMaterial.Roughness,
                 Metallic = renderMaterial.Metallic,
 
-                HasBaseTexture = BoolToInt32(renderMaterial.BaseColorTexture is not null),
-                HasNormalTexture = BoolToInt32(renderMaterial.NormalTexture is not null),
-                HasORMTexture = BoolToInt32(renderMaterial.ORMTexture is not null),
-                HasEmissiveTexture = BoolToInt32(renderMaterial.EmissiveTexture is not null),
+                BaseTextureMode = (uint)renderMaterial.BaseColorTexture.Mode,
+                NormalTextureMode = (uint)renderMaterial.NormalTexture.Mode,
+                ORMTextureMode = (uint)renderMaterial.ORMTexture.Mode,
+                EmissiveTextureMode = (uint)renderMaterial.EmissiveTexture.Mode,
             };
             context.DeviceContext.UpdateSubresource(materialConstants, context.MaterialBuffer);
 
@@ -137,9 +137,6 @@ namespace TransportX.Rendering
 
             uint indexCount = IndexBuffer.Description.ByteWidth / sizeof(uint);
             context.DeviceContext.DrawIndexedInstanced(indexCount, (uint)context.InstanceCount, 0, 0, 0);
-
-
-            static int BoolToInt32(bool value) => value ? 1 : 0;
         }
 
         public void Draw(in DrawContext context)

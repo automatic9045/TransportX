@@ -223,7 +223,7 @@ namespace TransportX.Rendering.Importing
                     }
                 }
 
-                TextureReference? CreateTextureRef(TextureSlot slot)
+                TextureReference? CreateTextureRef(Assimp.TextureSlot slot)
                 {
                     if (string.IsNullOrEmpty(slot.FilePath)) return null;
 
