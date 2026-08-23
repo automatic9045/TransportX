@@ -32,10 +32,12 @@ namespace TransportX
         {
             if (WorldPose == worldPose) return ChunkIndex.Zero;
 
+            WorldPose oldWorldPose = WorldPose;
             WorldPose = worldPose;
-            Moved?.Invoke(worldPose.NormalizedOffset);
 
-            return worldPose.NormalizedOffset;
+            ChunkIndex offset = WorldPose.Chunk - oldWorldPose.Chunk;
+            Moved?.Invoke(offset);
+            return offset;
         }
 
         protected ChunkIndex Locate(ChunkIndex chunkIndex, Pose pose)
