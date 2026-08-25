@@ -201,6 +201,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
 
             public readonly WorldPose WorldPose { get; }
             public readonly Vector3 Velocity => Vector3.Zero;
+            public readonly Vector3 AngularVelocity => Vector3.Zero;
 
             public readonly float Width => 0;
             public readonly float Height => 0;

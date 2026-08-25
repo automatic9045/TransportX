@@ -15,7 +15,6 @@ namespace TransportX
 
 
         public WorldPose WorldPose { get; private set; }
-        public virtual Vector3 Velocity => Vector3.Zero;
 
         public event MovedEventHandler? Moved;
 
@@ -51,7 +50,5 @@ namespace TransportX
             WorldPose worldPose = delta * WorldPose;
             return Locate(worldPose);
         }
-
-        public Vector3 GetOffset(IWorldObject to) => ((IWorldObject)this).GetOffset(to);
     }
 }

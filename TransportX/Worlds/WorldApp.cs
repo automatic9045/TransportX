@@ -185,7 +185,9 @@ namespace TransportX.Worlds
             }
 
             World.Tick(elapsed);
+
             SyncCamera();
+            World.Camera.Tick(elapsed);
         }
 
         private void SyncCamera()

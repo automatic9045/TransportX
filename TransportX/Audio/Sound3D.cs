@@ -19,15 +19,22 @@ namespace TransportX.Audio
         public Emitter Emitter { get; }
         public DspSettings DspSettings { get; }
 
-        public WorldPose WorldPose { get; set; }
-        public Vector3 Velocity { get; set; }
-        public IWorldObject? AttachedTo { get; set; } = null;
+        public IMovable? AttachedTo { get; set; } = null;
 
-        public event MovedEventHandler? Moved
+        public WorldPose WorldPose
         {
-            add => throw new NotSupportedException();
-            remove => throw new NotSupportedException();
-        }
+            get;
+            set
+            {
+                ChunkIndex oldChunk = WorldPose.Chunk;
+                field = value;
+                Moved?.Invoke(field.Chunk - oldChunk);
+            }
+        } = WorldPose.Zero;
+        public Vector3 Velocity { get; set; } = Vector3.Zero;
+        public Vector3 AngularVelocity { get; set; } = Vector3.Zero;
+
+        public event MovedEventHandler? Moved;
 
         public Sound3D(IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio,
             byte[] audioBytes, uint[]? decodedPacketsInfo, IXAudio2SourceVoice sourceVoice, float maxFrequencyRatio)
@@ -62,6 +69,7 @@ namespace TransportX.Audio
             {
                 WorldPose = AttachedTo.WorldPose;
                 Velocity = AttachedTo.Velocity;
+                AngularVelocity = AttachedTo.AngularVelocity;
             }
 
             Emitter.OrientFront = WorldPose.Pose.Direction;

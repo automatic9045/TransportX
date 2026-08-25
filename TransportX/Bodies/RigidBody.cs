@@ -11,11 +11,11 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class RigidBody : WorldObject, IDisposable
+    public class RigidBody : WorldObject, IMovable, IDisposable
     {
         public BodyStructure Structure { get; }
 
-        public override Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
+        public Vector3 Velocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is BodyTransformedModel bodyModel ? bodyModel.Velocity : Vector3.Zero;
         public Vector3 AngularVelocity => Structure.RootModel is null ? Vector3.NaN
             : Structure.RootModel is BodyTransformedModel bodyModel ? bodyModel.AngularVelocity : Vector3.Zero;

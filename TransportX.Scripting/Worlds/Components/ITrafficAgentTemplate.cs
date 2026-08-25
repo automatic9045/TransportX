@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using TransportX.Network;
+using TransportX.Spatial;
 using TransportX.Traffic;
 
 using TransportX.Extensions.Traffic;
-using TransportX.Network;
-using System.Numerics;
 
 namespace TransportX.Scripting.Worlds.Components
 {
@@ -47,6 +48,9 @@ namespace TransportX.Scripting.Worlds.Components
 
             private class Entity : WorldObject, ITrafficEntity
             {
+                public Vector3 Velocity => Vector3.Zero;
+                public Vector3 AngularVelocity => Vector3.Zero;
+
                 public float Width => 1;
                 public float Height => 1;
                 public float Length => 1;

@@ -140,6 +140,7 @@ namespace TransportX.Extensions.Traffic
 
             public readonly WorldPose WorldPose => Source.WorldPose;
             public readonly Vector3 Velocity => Source.Velocity;
+            public readonly Vector3 AngularVelocity => Source.AngularVelocity;
 
             public readonly float Width { get; }
             public readonly float Height { get; }

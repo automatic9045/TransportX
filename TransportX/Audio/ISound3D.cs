@@ -11,21 +11,23 @@ using TransportX.Spatial;
 
 namespace TransportX.Audio
 {
-    public interface ISound3D : ISound, IWorldObject
+    public interface ISound3D : ISound, IMovable
     {
         public static new readonly ISound3D Empty = new Null();
 
 
-        IWorldObject? AttachedTo { get; set; }
+        IMovable? AttachedTo { get; set; }
 
         void Update(Listener listener, ChunkIndex cameraChunk);
 
 
         private new class Null : ISound.Null, ISound3D
         {
-            public WorldPose WorldPose { get; } = WorldPose.Zero;
-            public Vector3 Velocity { get; } = Vector3.Zero;
-            public IWorldObject? AttachedTo { get; set; } = null;
+            public IMovable? AttachedTo { get; set; } = null;
+
+            public WorldPose WorldPose => WorldPose.Zero;
+            public Vector3 Velocity => Vector3.Zero;
+            public Vector3 AngularVelocity => Vector3.Zero;
 
             public event MovedEventHandler? Moved
             {

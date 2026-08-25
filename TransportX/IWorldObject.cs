@@ -12,11 +12,10 @@ namespace TransportX
     public interface IWorldObject
     {
         WorldPose WorldPose { get; }
-        Vector3 Velocity { get; }
 
         event MovedEventHandler? Moved;
 
-        sealed Vector3 GetOffset(IWorldObject to) => WorldPose.GetOffset(to.WorldPose);
+        Vector3 GetOffset(IWorldObject to) => WorldPose.GetOffset(to.WorldPose);
     }
 
     public delegate void MovedEventHandler(ChunkIndex chunkOffset);

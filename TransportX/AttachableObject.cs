@@ -9,7 +9,7 @@ using TransportX.Spatial;
 
 namespace TransportX
 {
-    public sealed class AttachableObject : IWorldObject
+    public sealed class AttachableObject : IMovable
     {
         private ChunkIndex LastChunkIndex;
 
@@ -17,31 +17,27 @@ namespace TransportX
         public Pose Offset { get; }
 
         public WorldPose WorldPose => Offset * Parent.WorldPose;
-        public Vector3 Velocity => Parent.Velocity;
+        public Vector3 Velocity => Parent is IMovable movable ? movable.Velocity : Vector3.Zero;
+        public Vector3 AngularVelocity => Parent is IMovable movable ? movable.AngularVelocity : Vector3.Zero;
 
         public event MovedEventHandler? Moved;
 
-        public AttachableObject(IWorldObject parent, Pose offset, bool notifyWhenMoved = true)
+        public AttachableObject(IWorldObject parent, Pose offset)
         {
             Parent = parent;
             Offset = offset;
 
-            if (notifyWhenMoved)
+            LastChunkIndex = WorldPose.Chunk;
+            Parent.Moved += _ =>
             {
+                ChunkIndex offset = WorldPose.Chunk - LastChunkIndex;
                 LastChunkIndex = WorldPose.Chunk;
-                Parent.Moved += _ =>
-                {
-                    ChunkIndex offset = WorldPose.Chunk - LastChunkIndex;
-                    LastChunkIndex = WorldPose.Chunk;
-                    Moved?.Invoke(offset);
-                };
-            }
+                Moved?.Invoke(offset);
+            };
         }
 
-        public AttachableObject(IWorldObject parent, SixDoF position, bool notifyWhenMoved = true) : this(parent, position.ToPose(), notifyWhenMoved)
+        public AttachableObject(IWorldObject parent, SixDoF position) : this(parent, position.ToPose())
         {
         }
-
-        public Vector3 GetOffset(IWorldObject to) => ((IWorldObject)this).GetOffset(to);
     }
 }

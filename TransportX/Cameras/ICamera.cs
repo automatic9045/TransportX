@@ -10,12 +10,13 @@ using TransportX.Spatial;
 
 namespace TransportX.Cameras
 {
-    public interface ICamera : IWorldObject
+    public interface ICamera : IMovable
     {
         float Perspective { get; set; }
         VisualLayers VisibleLayers { get; set; }
 
         void UpdateView(in WorldPose worldPose);
+        void Tick(TimeSpan elapsed);
         ViewContext CreateViewContext(SizeI clientSize);
 
 
