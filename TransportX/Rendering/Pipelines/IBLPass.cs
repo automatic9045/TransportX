@@ -194,6 +194,7 @@ namespace TransportX.Rendering.Pipelines
                     LightColor = world.DirectionalLight.Color.ToLinear(),
                     LightDirection = world.DirectionalLight.Direction,
                     LightIntensity = world.DirectionalLight.Intensity * 0.001f,
+                    PassFlags = (uint)RenderPassFlags.None,
                     OutputMode = (uint)RenderPassOutputMode.Forward,
                     ViewportSizeInverse = new Vector2(1f / viewportSize.Width, 1f / viewportSize.Height),
                 };

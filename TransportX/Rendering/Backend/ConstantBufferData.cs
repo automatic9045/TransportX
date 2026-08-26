@@ -59,9 +59,9 @@ namespace TransportX.Rendering.Backend
         public float Padding2;
         public Vector3 LightDirection = Vector3.Zero;
         public float LightIntensity = 0;
+        public uint PassFlags;
         public uint OutputMode;
         public Vector2 ViewportSizeInverse;
-        public uint Padding3;
 
         public SceneConstants()
         {

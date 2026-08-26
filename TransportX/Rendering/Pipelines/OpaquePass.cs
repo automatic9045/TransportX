@@ -25,8 +25,6 @@ namespace TransportX.Rendering.Pipelines
 
         protected readonly RenderQueue RenderQueue = new();
 
-        public bool IsReflect { get; set; } = false;
-
         public OpaquePass(RenderResourceSet resources)
         {
             Resources = resources;
@@ -147,6 +145,7 @@ namespace TransportX.Rendering.Pipelines
                 LightColor = world.DirectionalLight.Color.ToLinear(),
                 LightDirection = world.DirectionalLight.Direction,
                 LightIntensity = world.DirectionalLight.Intensity * 0.001f,
+                PassFlags = (uint)context.Flags,
                 OutputMode = (uint)context.OutputMode,
                 ViewportSizeInverse = new Vector2(1f / context.ViewportSize.Width, 1f / context.ViewportSize.Height),
             };
@@ -159,14 +158,14 @@ namespace TransportX.Rendering.Pipelines
             };
             Resources.Context.DeviceContext.UpdateSubresource(environmentConstants, Resources.EnvironmentBuffer);
 
-            Resources.Context.ApplyState(IsReflect ? ReflectPipelineState : PipelineState);
+            Resources.Context.ApplyState(context.Flags.HasFlag(RenderPassFlags.Reflect) ? ReflectPipelineState : PipelineState);
 
             RenderQueue.SubmitBackground(Resources.Context.DeviceContext, context.ViewContext, world.BackgroundModels);
             Flush();
             Resources.Context.DeviceContext.ClearDepthStencilView(context.Surface.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
             Matrix4x4 cullingViewProjection = viewProjection;
-            if (IsReflect) cullingViewProjection *= Matrix4x4.CreateScale(-1, 1, 1);
+            if (context.Flags.HasFlag(RenderPassFlags.Reflect)) cullingViewProjection *= Matrix4x4.CreateScale(-1, 1, 1);
             FrustumCullingVolume culler = new(new BoundingFrustum(cullingViewProjection));
 
             RenderQueue.SubmitChunks(Resources.Context.DeviceContext, context.ViewContext, culler, world.Chunks, RenderLayer.Normal, context.Options.DrawChunkCount);

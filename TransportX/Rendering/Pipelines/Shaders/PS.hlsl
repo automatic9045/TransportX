@@ -41,9 +41,9 @@ cbuffer SceneBuffer : register(b2)
     float _Padding4;
     float3 LightDirection;
     float LightIntensity;
+    uint PassFlags;
     uint OutputMode;
     float2 ViewportSizeInverse;
-    float _Padding5;
 }
 
 cbuffer CSMSamplingBuffer : register(b3)
@@ -55,7 +55,7 @@ cbuffer CSMSamplingBuffer : register(b3)
     float4 SplitDepths;
     float Resolution;
     float ZPullback;
-    float2 _Padding6;
+    float2 _Padding5;
 
 }
 
@@ -81,6 +81,10 @@ static const float PI = 3.14159265359;
 
 static const uint OUTPUTMODE_DEFERRED = 0;
 static const uint OUTPUTMODE_FORWARD = 1;
+
+static const uint PASSFLAGS_NONE = 0;
+static const uint PASSFLAGS_REFLECT = 1 << 0;
+static const uint PASSFLAGS_DISABLESHADOWS = 1 << 1;
 
 static const uint TEXSAMPLEMODE_NONE = 0;
 static const uint TEXSAMPLEMODE_TEXTURE = 1;
@@ -301,8 +305,12 @@ PS_OUT main(PS_IN input)
     float3 specularRatio = f;
     float3 diffuseRatio = (float3(1.0, 1.0, 1.0) - specularRatio) * (1.0 - metallic);
 
-    float viewDistance = distance(input.WorldPosition, CameraPosition);
-    float shadow = CalculateShadow(input.WorldPosition, geometricNormal, LightDirection, viewDistance, input.Position.xy);
+    float shadow = 1.0f;
+    if ((PassFlags & PASSFLAGS_DISABLESHADOWS) == 0)
+    {
+        float viewDistance = distance(input.WorldPosition, CameraPosition);
+        shadow = CalculateShadow(input.WorldPosition, geometricNormal, LightDirection, viewDistance, input.Position.xy);
+    }
 
     float3 radianceOutUnshadowed = (diffuseRatio * baseColor.rgb / PI + specular) * LightColor * LightIntensity * nDotL;
 

@@ -18,6 +18,7 @@ namespace TransportX.Rendering.Pipelines
         public required RendererOptions Options { get; init; }
         public required ICamera Camera { get; init; }
         public required ViewContext ViewContext { get; init; }
+        public required RenderPassFlags Flags { get; init; }
         public required RenderPassOutputMode OutputMode { get; init; }
         public required SizeI ViewportSize { get; init; }
         public required TimeSpan Elapsed { get; init; }
