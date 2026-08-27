@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -96,6 +97,13 @@ namespace TransportX.Worlds
             }
 
             World.OnStart();
+
+            Viewpoints.Updated += () =>
+            {
+                World.Camera.Teleport(Viewpoints.Current.WorldPose);
+                AudioClient.Reset(Viewpoints.AttachedTo is null ? Vector3.Zero : Viewpoints.AttachedTo.Velocity);
+            };
+            AudioClient.Reset(Vector3.Zero);
         }
 
         public virtual void Dispose()
@@ -201,7 +209,7 @@ namespace TransportX.Worlds
 
         protected virtual void OnRender(TimeSpan elapsed)
         {
-            AudioClient.Update(World.Camera.WorldPose, World.Camera.Velocity);
+            AudioClient.Tick(World.Camera.WorldPose, World.Camera.Velocity, elapsed);
             Renderer.Render(World.Camera, World, elapsed);
         }
     }

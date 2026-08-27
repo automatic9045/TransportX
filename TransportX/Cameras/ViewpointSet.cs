@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,34 +13,58 @@ namespace TransportX.Cameras
     {
         public FreeViewpoint Free { get; }
 
-        public AvatarBase? AttachedTo { get; set; } = null;
-        public ViewpointType Type { get; set; } = ViewpointType.Free;
-        public Viewpoint Current
+        public AvatarBase? AttachedTo
         {
-            get
+            get;
+            set
             {
-                Viewpoint? current = Type switch
-                {
-                    ViewpointType.Driver => AttachedTo?.DriverViewpoint,
-                    ViewpointType.Passenger => null,
-                    ViewpointType.Bird => AttachedTo?.BirdViewpoint,
-                    ViewpointType.Free => Free,
-                    _ => throw new InvalidOperationException(),
-                };
-
-                if (current is null)
-                {
-                    Type = ViewpointType.Free;
-                    current = Free;
-                }
-
-                return current;
+                if (value == field) return;
+                field = value;
+                Update();
             }
-        }
+        } = null;
+
+        public ViewpointType Type
+        {
+            get;
+            set
+            {
+                if (value == field) return;
+                field = value;
+                Update();
+            }
+        } = ViewpointType.Free;
+
+        public Viewpoint Current { get; private set; }
+
+        public event Action? Updated;
 
         public ViewpointSet()
         {
             Free = new FreeViewpoint();
+            Update();
+        }
+
+        [MemberNotNull(nameof(Current))]
+        private void Update()
+        {
+            Viewpoint? current = Type switch
+            {
+                ViewpointType.Driver => AttachedTo?.DriverViewpoint,
+                ViewpointType.Passenger => null,
+                ViewpointType.Bird => AttachedTo?.BirdViewpoint,
+                ViewpointType.Free => Free,
+                _ => throw new InvalidOperationException(),
+            };
+
+            if (current is null)
+            {
+                Type = ViewpointType.Free;
+                current = Free;
+            }
+
+            Current = current;
+            Updated?.Invoke();
         }
     }
 }

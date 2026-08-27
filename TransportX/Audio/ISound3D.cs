@@ -18,7 +18,7 @@ namespace TransportX.Audio
 
         IMovable? AttachedTo { get; set; }
 
-        void Update(Listener listener, ChunkIndex cameraChunk);
+        void Tick(Listener listener, ChunkIndex cameraChunk, TimeSpan elapsed);
 
 
         private new class Null : ISound.Null, ISound3D
@@ -35,7 +35,7 @@ namespace TransportX.Audio
                 remove { }
             }
 
-            public void Update(Listener listener, ChunkIndex cameraChunk)
+            public void Tick(Listener listener, ChunkIndex cameraChunk, TimeSpan elapsed)
             {
             }
         }

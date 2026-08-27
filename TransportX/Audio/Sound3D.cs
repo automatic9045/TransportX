@@ -13,6 +13,7 @@ namespace TransportX.Audio
 {
     public class Sound3D : Sound, ISound3D
     {
+        private readonly Mathematics.Vector3LowPassFilter VelocityFilter = new(0.05f);
         private readonly IXAudio2MasteringVoice MasteringVoice;
         private readonly X3DAudio X3DAudio;
 
@@ -63,7 +64,7 @@ namespace TransportX.Audio
             DspSettings = new DspSettings(1, MasteringVoice.VoiceDetails.InputChannels);
         }
 
-        public void Update(Listener listener, ChunkIndex cameraChunk)
+        public void Tick(Listener listener, ChunkIndex cameraChunk, TimeSpan elapsed)
         {
             if (AttachedTo is not null)
             {
@@ -76,7 +77,7 @@ namespace TransportX.Audio
             Emitter.OrientTop = WorldPose.Pose.Up;
 
             Emitter.Position = WorldPose.Pose.Position + (WorldPose.Chunk - cameraChunk).Position;
-            Emitter.Velocity = Velocity;
+            Emitter.Velocity = VelocityFilter.Next(Velocity, elapsed);
 
             X3DAudio.Calculate(listener, Emitter, CalculateFlags.Matrix | CalculateFlags.Doppler | CalculateFlags.LpfDirect | CalculateFlags.Reverb, DspSettings);
 

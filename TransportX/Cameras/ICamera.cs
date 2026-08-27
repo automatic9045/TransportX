@@ -15,6 +15,7 @@ namespace TransportX.Cameras
         float Perspective { get; set; }
         VisualLayers VisibleLayers { get; set; }
 
+        void Teleport(in WorldPose worldPose);
         void UpdateView(in WorldPose worldPose);
         void Tick(TimeSpan elapsed);
         ViewContext CreateViewContext(SizeI clientSize);

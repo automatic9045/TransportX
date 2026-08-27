@@ -26,6 +26,15 @@ namespace TransportX.Cameras
         {
         }
 
+        public void Teleport(in WorldPose worldPose)
+        {
+            UpdateView(worldPose);
+
+            OldWorldPose = WorldPose;
+            Velocity = Vector3.Zero;
+            AngularVelocity = Vector3.Zero;
+        }
+
         public void UpdateView(in WorldPose worldPose)
         {
             Locate(worldPose);

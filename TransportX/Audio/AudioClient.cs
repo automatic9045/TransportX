@@ -7,12 +7,15 @@ using System.Threading.Tasks;
 
 using Vortice.XAudio2;
 
+using TransportX.Mathematics;
 using TransportX.Spatial;
 
 namespace TransportX.Audio
 {
     public class AudioClient : IAudioClient
     {
+        private readonly Vector3LowPassFilter VelocityFilter = new(0.05f);
+
         public Listener Listener { get; }
 
         public AudioClient()
@@ -20,12 +23,18 @@ namespace TransportX.Audio
             Listener = new Listener();
         }
 
-        public void Update(WorldPose worldPose, Vector3 velocity)
+        public void Reset(Vector3 velocity)
+        {
+            VelocityFilter.Reset(velocity);
+            Listener.Velocity = velocity;
+        }
+
+        public void Tick(WorldPose worldPose, Vector3 velocity, TimeSpan elapsed)
         {
             Listener.OrientFront = worldPose.Pose.Direction;
             Listener.OrientTop = worldPose.Pose.Up;
             Listener.Position = worldPose.Pose.Position;
-            Listener.Velocity = velocity;
+            Listener.Velocity = VelocityFilter.Next(velocity, elapsed);
         }
     }
 }
