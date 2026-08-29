@@ -15,7 +15,7 @@ using TransportX.Domains.Equipment.Doors;
 
 namespace TransportX.Domains.Equipment.Scripting.Commands
 {
-    public abstract class BifoldDoorFactoryBase
+    public abstract class BifoldDoorFactoryBase<T> where T : BifoldDoorFactoryBase<T>
     {
         private readonly DoorsBase Parent;
 
@@ -41,90 +41,90 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, Pose originOffset, double width)
+        public T HingedPanel(TransformedModel model, Pose originOffset, double width)
         {
             HingedPanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+        public T HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return HingedPanel(model, position.ToPose(), width);
         }
 
-        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double x, double y, double z, double width)
+        public T HingedPanel(TransformedModel model, double x, double y, double z, double width)
             => HingedPanel(model, x, y, z, 0, 0, 0, width);
-        protected BifoldDoorFactoryBase HingedPanel(TransformedModel model, double width)
+        public T HingedPanel(TransformedModel model, double width)
             => HingedPanel(model, 0, 0, 0, width);
 
-        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, Pose originOffset, double width)
+        public T GuidePanel(TransformedModel model, Pose originOffset, double width)
         {
             GuidePanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+        public T GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return GuidePanel(model, position.ToPose(), width);
         }
 
-        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double x, double y, double z, double width)
+        public T GuidePanel(TransformedModel model, double x, double y, double z, double width)
             => GuidePanel(model, x, y, z, 0, 0, 0, width);
-        protected BifoldDoorFactoryBase GuidePanel(TransformedModel model, double width)
+        public T GuidePanel(TransformedModel model, double width)
             => GuidePanel(model, 0, 0, 0, width);
 
-        protected BifoldDoorFactoryBase PanelThickness(double thickness)
+        public T PanelThickness(double thickness)
         {
             PanelThicknessValue = (float)thickness;
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase OpenLeft()
+        public T OpenLeft()
         {
             DirectionValue = OpenDirection.Left;
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase OpenRight()
+        public T OpenRight()
         {
             DirectionValue = OpenDirection.Right;
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public T OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             OpenAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public T OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => OpenAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        protected BifoldDoorFactoryBase CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public T CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             CloseAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public T CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => CloseAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        protected BifoldDoorFactoryBase Restitution(double restitution0, double restitution1)
+        public T Restitution(double restitution0, double restitution1)
         {
             Restitution0Value = (float)restitution0;
             Restitution1Value = (float)restitution1;
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase DoorSwitch(Signal<bool> signal)
+        public T DoorSwitch(Signal<bool> signal)
         {
             DoorSwitchValue = signal;
-            return this;
+            return (T)this;
         }
 
-        protected BifoldDoorFactoryBase DoorSwitch(string signalKey)
+        public T DoorSwitch(string signalKey)
         {
             Signal<bool> signal = Parent.Signals.Bool(signalKey);
             return DoorSwitch(signal);

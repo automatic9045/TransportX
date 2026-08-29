@@ -8,11 +8,8 @@ using TransportX.Components;
 using TransportX.Diagnostics;
 
 using TransportX.Scripting;
-using TransportX.Scripting.Avatars;
-using TransportX.Scripting.Avatars.Commands;
 using TransportX.Scripting.Collections;
 using TransportX.Scripting.Commands;
-using TransportX.Scripting.Worlds;
 
 using TransportX.Domains.Equipment.Doors;
 

@@ -4,17 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Components;
-using TransportX.Diagnostics;
-
-using TransportX.Scripting;
 using TransportX.Scripting.Avatars;
-using TransportX.Scripting.Avatars.Commands;
-using TransportX.Scripting.Collections;
-using TransportX.Scripting.Commands;
-using TransportX.Scripting.Worlds;
-
-using TransportX.Domains.Equipment.Doors;
 
 namespace TransportX.Domains.Equipment.Scripting.Commands
 {
