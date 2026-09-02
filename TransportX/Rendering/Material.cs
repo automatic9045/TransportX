@@ -13,11 +13,15 @@ namespace TransportX.Rendering
     {
         public static Material Default() => new()
         {
+            Name = string.Empty,
+
             BaseColor = Vector4.One,
             Metallic = 0,
             Roughness = 1,
             Emissive = Vector3.Zero,
         };
+
+        public required string Name { get; set; }
 
         public required Vector4 BaseColor { get; set; }
         public required float Metallic { get; set; }
@@ -68,6 +72,8 @@ namespace TransportX.Rendering
 
         public Material Clone() => new()
         {
+            Name = Name,
+
             BaseColor = BaseColor,
             Metallic = Metallic,
             Roughness = Roughness,

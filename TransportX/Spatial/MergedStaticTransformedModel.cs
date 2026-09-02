@@ -86,7 +86,7 @@ namespace TransportX.Spatial
 
             ModelResourceSet wrapperModel = new()
             {
-                Model = new Model([], boundingBox)
+                Model = new Model([], [], boundingBox)
                 {
                     DebugName = $"Merged{{{sources[0].Resource.Model.DebugName}, others: {sources.Count - 1}}}",
                 },

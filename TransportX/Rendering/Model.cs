@@ -13,7 +13,7 @@ namespace TransportX.Rendering
 {
     public class Model : IMeshModel
     {
-        public static Model Empty() => new([])
+        public static Model Empty() => new([], [])
         {
             DebugName = "Empty",
         };
@@ -21,8 +21,9 @@ namespace TransportX.Rendering
 
         private bool IsDisposed = false;
 
-        public BoundingBox BoundingBox { get; }
         public IReadOnlyList<IMesh> Meshes { get; }
+        public IReadOnlyList<Material> Materials { get; }
+        public BoundingBox BoundingBox { get; }
 
         public virtual string? DebugName
         {
@@ -33,40 +34,51 @@ namespace TransportX.Rendering
 
                 if (value is null)
                 {
-                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = null;
+                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = Meshes[i].Name;
+                    for (int i = 0; i < Materials.Count; i++) Materials[i].DebugName = Materials[i].Name;
                 }
                 else
                 {
 
-                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = $"{value}_Material";
+                    for (int i = 0; i < Meshes.Count; i++) Meshes[i].DebugName = $"{value}_{Meshes[i].Name}";
+                    for (int i = 0; i < Materials.Count; i++) Materials[i].DebugName = $"{value}_{Materials[i].Name}";
                 }
             }
         } = null;
 
-        public Model(IReadOnlyList<IMesh> visualMeshes, BoundingBox boundingBox)
+        public Model(IReadOnlyList<IMesh> meshes, IReadOnlyList<Material> materials, BoundingBox boundingBox)
         {
-            Meshes = visualMeshes;
+            Meshes = meshes;
+            Materials = materials;
             BoundingBox = boundingBox;
-        }
 
-        public Model(IReadOnlyList<IMesh> visualMeshes) : this(visualMeshes, ComputeBoundingBox(visualMeshes))
-        {
-        }
-
-        private static BoundingBox ComputeBoundingBox(IReadOnlyList<IMesh> visualMeshes)
-        {
-            BoundingBox boundingBox = visualMeshes.Count == 0 ? default : visualMeshes[0].BoundingBox;
-            for (int i = 1; i < visualMeshes.Count; i++)
+            for (int i = 0; i < Meshes.Count; i++)
             {
-                boundingBox = BoundingBox.CreateMerged(boundingBox, visualMeshes[i].BoundingBox);
+                if (!Materials.Contains(Meshes[i].Material))
+                {
+                    throw new ArgumentException($"メッシュ {i} ('{Meshes[i].Name}') の材質が {nameof(materials)} に含まれません。", nameof(materials));
+                }
+            }
+        }
+
+        public Model(IReadOnlyList<IMesh> meshes, IReadOnlyList<Material> materials) : this(meshes, materials, ComputeBoundingBox(meshes))
+        {
+        }
+
+        private static BoundingBox ComputeBoundingBox(IReadOnlyList<IMesh> meshes)
+        {
+            BoundingBox boundingBox = meshes.Count == 0 ? default : meshes[0].BoundingBox;
+            for (int i = 1; i < meshes.Count; i++)
+            {
+                boundingBox = BoundingBox.CreateMerged(boundingBox, meshes[i].BoundingBox);
             }
             return boundingBox;
         }
 
-        public static ModelResourceSet Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string visualModelPath, bool makeLH)
+        public static ModelResourceSet Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string path, bool makeLH)
         {
             using ModelFactory factory = new(context, null, errorCollector);
-            ModelResourceSet model = factory.Load(visualModelPath, makeLH);
+            ModelResourceSet model = factory.Load(path, makeLH);
             return model;
         }
 

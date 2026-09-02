@@ -35,7 +35,7 @@ namespace TransportX.Rendering
 
                 if (value is null)
                 {
-                    VertexBuffer.DebugName = IndexBuffer.DebugName = Material.DebugName = null;
+                    VertexBuffer.DebugName = IndexBuffer.DebugName = null;
                 }
                 else
                 {
