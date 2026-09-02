@@ -20,6 +20,7 @@ namespace TransportX.Rendering.Pipelines
         public static ReadOnlySpan<InputElementDescription> DefaultInputElements => DefaultInputElementsKey;
 
 
+        void InitializeComponents(IEnumerable<ISceneCaptureComponent> components);
         void Render(ICamera camera, WorldBase world, TimeSpan elapsed);
     }
 }

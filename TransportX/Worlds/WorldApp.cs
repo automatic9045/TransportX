@@ -15,6 +15,7 @@ using TransportX.Cameras;
 using TransportX.Data;
 using TransportX.Input;
 using TransportX.Physics;
+using TransportX.Rendering;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
 using TransportX.Spatial;
@@ -72,7 +73,7 @@ namespace TransportX.Worlds
             ReloadKeyObserver = World.InputManager.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
             {
-                GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.Surface?.RenderTarget, new Color4(0, 0, 0));
+                GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.Surface?.RenderTarget, Colors.Black);
                 GraphicsClient.SwapChain!.Present(1, PresentFlags.None);
 
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
@@ -96,6 +97,7 @@ namespace TransportX.Worlds
                 Viewpoints.Free.Locate(cameraPose);
             }
 
+            Renderer.InitializeComponents(World.Components.Values.Concat(World.Avatar?.Components.Values ?? []).OfType<ISceneCaptureComponent>());
             World.OnStart();
 
             Viewpoints.Updated += () =>

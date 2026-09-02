@@ -24,6 +24,8 @@ namespace TransportX.Rendering.Pipelines
         protected readonly RenderResourceSet Resources;
         protected readonly IReadOnlyList<IRenderPass> Passes;
 
+        protected readonly SceneCapturePass SceneCapturePass;
+
         public Renderer(Platform platform, IGraphicsHost graphicsHost, IGraphicsClient graphicsClient, RendererOptions options)
         {
             Platform = platform;
@@ -88,7 +90,9 @@ namespace TransportX.Rendering.Pipelines
             DebugPass debugPass = new(Resources);
             PostProcessSetupPass postProessSetupPass = new(Resources, postProcessPass);
 
-            Passes = [shadowPass, postProessSetupPass, iblPass, opaquePass, postProcessPass, debugPass];
+            SceneCapturePass = new SceneCapturePass(Resources);
+
+            Passes = [shadowPass, SceneCapturePass, postProessSetupPass, iblPass, opaquePass, postProcessPass, debugPass];
         }
 
         public void Dispose()
@@ -99,6 +103,11 @@ namespace TransportX.Rendering.Pipelines
             }
 
             Resources.Dispose();
+        }
+
+        public void InitializeComponents(IEnumerable<ISceneCaptureComponent> sceneCaptureComponents)
+        {
+            SceneCapturePass.InitializeComponents(sceneCaptureComponents);
         }
 
         public void Render(ICamera camera, WorldBase world, TimeSpan elapsed)
