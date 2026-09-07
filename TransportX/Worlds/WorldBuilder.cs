@@ -25,12 +25,13 @@ namespace TransportX.Worlds
         public required IGraphicsClient GraphicsClient { get; init; }
         public required IAudioHost AudioHost { get; init; }
         public required IAudioClient AudioClient { get; init; }
+        public required IInputHost InputHost { get; init; }
+        public required IInputClient InputClient { get; init; }
         public required IPhysicsHost PhysicsHost { get; init; }
         public required WorldOptions Options { get; init; }
         public required IErrorCollector ErrorCollector { get; init; }
         public required PluginLoadContext AppContext { get; init; }
         public required TimeManager TimeManager { get; init; }
-        public required InputManager InputManager { get; init; }
         public required ICamera Camera { get; init; }
 
         public WorldBuilder(IWorldInfo info)

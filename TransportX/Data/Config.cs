@@ -12,12 +12,14 @@ namespace TransportX.Data
 {
     public class Config
     {
-        private static readonly string FilePath;
+        internal static readonly string BaseDirectory;
+        internal static readonly string FilePath;
 
         static Config()
         {
             Process process = Process.GetCurrentProcess();
-            FilePath = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "TransportX.Config.xml");
+            BaseDirectory = Path.Combine(Path.GetDirectoryName(process.MainModule!.FileName)!, "Config");
+            FilePath = Path.Combine(BaseDirectory, "Config.xml");
         }
 
 
@@ -63,6 +65,8 @@ namespace TransportX.Data
 
         public bool IsDebugMode { get; set; }
 
+        public InputConfig Input { get; set; } = new();
+
         public static Config Import(IErrorCollector errorCollector)
         {
             if (!File.Exists(FilePath))
@@ -70,9 +74,8 @@ namespace TransportX.Data
                 XmlSerializer<Config>.ToXml(new Config(), FilePath);
             }
 
-            Config settings = XmlSerializer<Config>.FromXml(FilePath, errorCollector) ?? new Config();
-
-            return settings;
+            Config data = XmlSerializer<Config>.FromXml(FilePath, errorCollector) ?? new Config();
+            return data;
         }
     }
 }

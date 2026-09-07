@@ -24,9 +24,9 @@ namespace TransportX.Physics
         private readonly KeyObserver DrawColliderModel;
         private int ModeIndex = 0;
 
-        public DebugInput(InputManager inputManager, ICamera camera)
+        public DebugInput(IInputClient inputClient, ICamera camera)
         {
-            DrawColliderModel = inputManager.ObserveKey(Key.F6);
+            DrawColliderModel = inputClient.ObserveKey(Key.F6);
             DrawColliderModel.Pressed += keyboard =>
             {
                 ModeIndex++;

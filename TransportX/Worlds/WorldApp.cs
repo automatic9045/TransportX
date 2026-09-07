@@ -70,7 +70,7 @@ namespace TransportX.Worlds
 
             World = dependencies.World;
 
-            ReloadKeyObserver = World.InputManager.ObserveKey(Key.F5);
+            ReloadKeyObserver = World.InputClient.ObserveKey(Key.F5);
             ReloadKeyObserver.Pressed += keyboard =>
             {
                 GraphicsHost.Context.ClearRenderTargetView(GraphicsClient.Surface?.RenderTarget, Colors.Black);
@@ -79,8 +79,8 @@ namespace TransportX.Worlds
                 Host.RequestLoadApp(Host.CurrentReference, new WorldAppParameters(World.Info));
             };
 
-            ViewpointInput = new ViewpointInput(World.InputManager, Viewpoints);
-            DebugInput = new DebugInput(World.InputManager, World.Camera);
+            ViewpointInput = new ViewpointInput(World.InputClient, Viewpoints);
+            DebugInput = new DebugInput(World.InputClient, World.Camera);
 
             Host.Platform.Window.Update += OnUpdate;
             Host.Platform.Window.Render += OnRender;
@@ -193,6 +193,9 @@ namespace TransportX.Worlds
 
                 TitleUpdatingAccumulator -= TitleUpdatingTime;
             }
+
+            World.InputHost.Tick(elapsed);
+            World.InputClient.Tick(elapsed);
 
             World.Tick(elapsed);
 

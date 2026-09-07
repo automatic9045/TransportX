@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Input.Configuration;
+
 using CommonCommands = TransportX.Scripting.Commands;
 
 namespace TransportX.Scripting.Worlds.Commands
@@ -20,7 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public Debug Debug { get; }
         public DirectionalLight DirectionalLight { get; }
         public WorldEnvironment Environment { get; }
-        public CommonCommands.Input Input { get; }
+        public Input Input { get; }
         public Models Models { get; }
         public Network Network { get; }
         public CommonCommands.Signals Signals { get; }
@@ -41,7 +43,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Debug = new Debug(world);
             DirectionalLight = new DirectionalLight(world);
             Environment = new WorldEnvironment(world);
-            Input = new CommonCommands.Input(Signals, world.InputManager, world.ErrorCollector, world);
+            Input = new Input(world, Signals);
             Models = new Models(world);
             Network = new Network(world);
             Sounds = new Sounds(world);

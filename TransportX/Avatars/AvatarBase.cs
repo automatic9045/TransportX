@@ -12,6 +12,7 @@ using TransportX.Components;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
+using TransportX.Input.Configuration;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Rendering;
@@ -32,18 +33,21 @@ namespace TransportX.Avatars
         public IGraphicsClient GraphicsClient { get; }
         public IAudioHost AudioHost { get; }
         public IAudioClient AudioClient { get; }
+        public IInputHost InputHost { get; }
+        public IInputClient InputClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext AppContext { get; }
         public PluginLoadContext WorldContext { get; }
         public PluginLoadContext AvatarContext { get; }
         public ITimeManager TimeManager { get; }
-        public InputManager InputManager { get; }
         public ICamera Camera { get; }
         public WorldBase World { get; }
 
         public string Location { get; protected set; }
         public string BaseDirectory { get; protected set; }
+
+        public InputProfile InputProfile { get; protected set; } = InputProfile.Empty(string.Empty);
 
         public Viewpoint DriverViewpoint { get; protected set; }
         public Viewpoint BirdViewpoint { get; protected set; }
@@ -75,13 +79,14 @@ namespace TransportX.Avatars
             GraphicsClient = builder.World.GraphicsClient;
             AudioHost = builder.World.AudioHost;
             AudioClient = builder.World.AudioClient;
+            InputHost = builder.World.InputHost;
+            InputClient = builder.World.InputClient;
             PhysicsHost = builder.World.PhysicsHost;
             ErrorCollector = builder.World.ErrorCollector;
             AppContext = builder.World.AppContext;
             WorldContext = builder.World.WorldContext;
             AvatarContext = context;
             TimeManager = builder.World.TimeManager;
-            InputManager = builder.World.InputManager;
             Camera = builder.World.Camera;
             World = builder.World;
 

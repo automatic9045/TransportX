@@ -22,11 +22,11 @@ namespace TransportX.Cameras
 
         public SizeI ClientSize { get; set; } = SizeI.Empty;
 
-        public ViewpointInput(InputManager inputManager, ViewpointSet viewpoints)
+        public ViewpointInput(IInputClient inputClient, ViewpointSet viewpoints)
         {
-            inputManager.MouseScroll += (mouse, delta) => viewpoints.Current.Zoom(delta.Y);
+            inputClient.MouseScroll += (mouse, delta) => viewpoints.Current.Zoom(delta.Y);
 
-            inputManager.MouseMove += (mouse, delta) =>
+            inputClient.MouseMove += (mouse, delta) =>
             {
                 if (mouse.IsButtonPressed(MouseButton.Middle))
                 {
@@ -44,13 +44,13 @@ namespace TransportX.Cameras
             Bird = ObserveKey(Key.F3, ViewpointType.Bird);
             Free = ObserveKey(Key.F4, ViewpointType.Free);
 
-            Reset = inputManager.ObserveKey(Key.Space);
+            Reset = inputClient.ObserveKey(Key.Space);
             Reset.Pressed += keyboard => viewpoints.Current.Reset();
 
 
             KeyObserver ObserveKey(Key key, ViewpointType viewpointType)
             {
-                KeyObserver keyObserver = inputManager.ObserveKey(key);
+                KeyObserver keyObserver = inputClient.ObserveKey(key);
                 keyObserver.Pressed += keyboard => viewpoints.Type = viewpointType;
                 return keyObserver;
             }

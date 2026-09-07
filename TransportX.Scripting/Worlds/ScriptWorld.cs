@@ -9,6 +9,7 @@ using TransportX.Collections;
 using TransportX.Communication;
 using TransportX.Dependency;
 using TransportX.Environment;
+using TransportX.Input.Configuration;
 using TransportX.Spatial;
 using TransportX.Worlds;
 
@@ -26,6 +27,12 @@ namespace TransportX.Scripting.Worlds
         public override ISoundCollection Sounds => SoundsKey;
 
         public SignalBus SignalBus { get; }
+
+        public new InputProfile InputProfile
+        {
+            get => base.InputProfile;
+            set => base.InputProfile = value;
+        }
 
         public new EnvironmentProfile DefaultEnvironment
         {

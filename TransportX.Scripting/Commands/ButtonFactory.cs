@@ -9,42 +9,64 @@ using Silk.NET.Input;
 
 using TransportX.Diagnostics;
 using TransportX.Input;
+using TransportX.Input.Configuration;
 
 using TransportX.Scripting.Input;
 
 namespace TransportX.Scripting.Commands
 {
-    public class ButtonFactory
+    public class ButtonFactory<TParent> where TParent : InputBase<TParent>
     {
-        public Input Parent { get; }
-        public object Context { get; }
+        public TParent Parent { get; }
 
         public string Key { get; }
-        public KeyObserver? Observer { get; private set; } = null;
+
+        private readonly List<KeyObserver> KeyboardObserversKey = [];
+        public IReadOnlyList<KeyObserver> KeyboardObservers => KeyboardObserversKey;
+
+        private readonly List<JoystickButtonObserver> JoystickObserversKey = [];
+        public IReadOnlyList<JoystickButtonObserver> JoystickObservers => JoystickObserversKey;
 
         public ScriptButton.KeyAction OnPressedAction { get; private set; } = _ => { };
         public ScriptButton.KeyAction OnReleasedAction { get; private set; } = _ => { };
 
         public ScriptButton? BuiltButton { get; private set; } = null;
 
-        internal ButtonFactory(Input parent, object context, string key)
+        internal ButtonFactory(TParent parent, string key)
         {
             Parent = parent;
-            Context = context;
-
             Key = key;
         }
 
-        public ButtonFactory Bind(Key key)
+        public ButtonFactory<TParent> Bind(Key defaultBinding)
         {
-            Observer?.Dispose();
-            Observer = Parent.InputManager.ObserveKey(key);
+            bool hasBoundFromProfile = false;
+
+            if (Parent.Profile.ButtonBindings.TryGetValue(Key, out ButtonBinding? binding))
+            {
+                foreach (Key silkKey in binding.Keys)
+                {
+                    KeyboardObserversKey.Add(Parent.InputClient.ObserveKey(silkKey));
+                    hasBoundFromProfile = true;
+                }
+
+                foreach (JoystickButtonBinding joystick in binding.Joysticks)
+                {
+                    JoystickObserversKey.Add(Parent.InputClient.ObserveJoystickButton(joystick.DeviceGuid, joystick.ButtonIndex));
+                }
+            }
+
+            if (!hasBoundFromProfile)
+            {
+                KeyboardObserversKey.Add(Parent.InputClient.ObserveKey(defaultBinding));
+            }
+
             return this;
         }
 
-        public ButtonFactory Bind(string keyCode)
+        public ButtonFactory<TParent> Bind(string defaultBindingCode)
         {
-            return ParseKeyOrReport(keyCode, out Key key) ? Bind(key) : this;
+            return ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? Bind(defaultBinding) : this;
         }
 
         private bool ParseKeyOrReport(string keyCode, [MaybeNullWhen(false)] out Key key)
@@ -61,19 +83,19 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public ButtonFactory OnPressed(ScriptButton.KeyAction action)
+        public ButtonFactory<TParent> OnPressed(ScriptButton.KeyAction action)
         {
             OnPressedAction = action;
             return this;
         }
 
-        public ButtonFactory OnReleased(ScriptButton.KeyAction action)
+        public ButtonFactory<TParent> OnReleased(ScriptButton.KeyAction action)
         {
             OnReleasedAction = action;
             return this;
         }
 
-        public ButtonFactory ForwardToSignal(string boolSignalKey)
+        public ButtonFactory<TParent> ForwardToSignal(string boolSignalKey)
         {
             Parent.Signals.ForwardBool(boolSignalKey, () => BuiltButton is null ? false : BuiltButton.IsPressed);
             return this;
@@ -83,7 +105,8 @@ namespace TransportX.Scripting.Commands
         {
             BuiltButton = new ScriptButton(Key)
             {
-                Observer = Observer,
+                KeyboardObservers = KeyboardObservers,
+                JoystickObservers = JoystickObservers,
                 OnPressed = OnPressedAction,
                 OnReleased = OnReleasedAction,
             };

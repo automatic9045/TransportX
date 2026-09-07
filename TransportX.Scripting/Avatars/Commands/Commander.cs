@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Communication;
+using TransportX.Input.Configuration;
 
 using CommonCommands = TransportX.Scripting.Commands;
 
@@ -16,7 +16,7 @@ namespace TransportX.Scripting.Avatars.Commands
 
         public Components Components { get; }
         public Debug Debug { get; }
-        public CommonCommands.Input Input { get; }
+        public Input Input { get; }
         public Models Models { get; }
         public CommonCommands.Signals Signals { get; }
         public Sounds Sounds { get; }
@@ -33,7 +33,7 @@ namespace TransportX.Scripting.Avatars.Commands
 
             Components = new Components(avatar);
             Debug = new Debug(avatar);
-            Input = new CommonCommands.Input(Signals, avatar.InputManager, avatar.ErrorCollector, avatar);
+            Input = new Input(avatar, Signals);
             Models = new Models(avatar);
             Sounds = new Sounds(avatar);
             Spec = new Spec(avatar);

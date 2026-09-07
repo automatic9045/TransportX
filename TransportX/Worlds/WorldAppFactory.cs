@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using TransportX.Data;
 using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Input;
+using TransportX.Input.Configuration;
 using TransportX.Physics;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
@@ -72,6 +74,34 @@ namespace TransportX.Worlds
             AudioHost audioHost = new();
             AudioClient audioClient = new();
 
+            Dictionary<string, InputProfile.GameControllerData> controllersData = [];
+            foreach (GameControllerReference controllerRef in config.Input.GameControllers)
+            {
+                string path = Path.Combine(Config.BaseDirectory, controllerRef.Path);
+                Data.Input.GameControllers.GameController data = Data.Input.GameControllers.GameController.Import(path, errorCollector);
+                controllersData.Add(controllerRef.Key, new InputProfile.GameControllerData(controllerRef.DeviceGuid, data));
+            }
+
+            Dictionary<string, InputProfile> inputProfiles = [];
+            foreach (InputProfileReference profileRef in config.Input.Profiles)
+            {
+                string path = Path.Combine(Config.BaseDirectory, profileRef.Path);
+                Data.Input.InputProfile data = Data.Input.InputProfile.Import(path, errorCollector);
+
+                IErrorCollector profileErrorCollector = IErrorCollector.Default();
+                profileErrorCollector.Reported += (sender, e) =>
+                {
+                    Error error = e.Error.ChangeSource(path);
+                    errorCollector.Report(error);
+                };
+
+                InputProfile profile = InputProfile.FromData(profileRef.Key, data, controllersData, profileErrorCollector);
+                inputProfiles.Add(profile.Key, profile);
+            }
+
+            InputHost inputHost = new(host.Platform.Input, hwnd);
+            InputClient inputClient = new(inputHost, inputProfiles);
+
             PhysicsHost physicsHost = PhysicsHost.Create();
 
             WorldOptions worldOptions = new()
@@ -82,7 +112,6 @@ namespace TransportX.Worlds
 
             TimeManager updateTimeManager = new();
             TimeManager renderTimeManager = new();
-            InputManager inputManager = new(host.Platform.Input);
 
             Camera camera = new();
 
@@ -93,12 +122,13 @@ namespace TransportX.Worlds
                 GraphicsClient = graphicsClient,
                 AudioHost = audioHost,
                 AudioClient = audioClient,
+                InputHost = inputHost,
+                InputClient = inputClient,
                 PhysicsHost = physicsHost,
                 Options = worldOptions,
                 ErrorCollector = errorCollector,
                 AppContext = host.Context,
                 TimeManager = updateTimeManager,
-                InputManager = inputManager,
                 Camera = camera,
             };
             WorldBase world = worldBuilder.Build();

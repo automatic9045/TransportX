@@ -10,9 +10,23 @@ namespace TransportX.Scripting.Input
 {
     public class ScriptButton : IButton
     {
+        internal static ScriptButton Empty(string key)
+        {
+            return new ScriptButton(key)
+            {
+                KeyboardObservers = [],
+                JoystickObservers = [],
+                OnPressed = _ => { },
+                OnReleased = _ => { },
+            };
+        }
+
+
         public string Key { get; }
 
-        public required KeyObserver? Observer { get; init; }
+        public required IReadOnlyList<KeyObserver> KeyboardObservers { get; init; }
+        public required IReadOnlyList<JoystickButtonObserver> JoystickObservers { get; init; }
+
         public required KeyAction OnPressed { get; init; }
         public required KeyAction OnReleased { get; init; }
 
@@ -26,30 +40,40 @@ namespace TransportX.Scripting.Input
             Key = key;
         }
 
-        internal static ScriptButton Empty(string key)
-        {
-            return new ScriptButton(key)
-            {
-                Observer = null,
-                OnPressed = _ => { },
-                OnReleased = _ => { },
-            };
-        }
-
         public void Dispose()
         {
-            Observer?.Dispose();
+            foreach (KeyObserver observer in KeyboardObservers) observer.Dispose();
+            foreach (JoystickButtonObserver observer in JoystickObservers) observer.Dispose();
         }
 
         public void Tick(TimeSpan elapsed)
         {
-            if (Observer is null) return;
+            bool latestIsPressed = false;
 
-            bool latestIsPressed = Observer.IsPressed;
+            for (int i = 0; i < KeyboardObservers.Count; i++)
+            {
+                if (KeyboardObservers[i].IsPressed)
+                {
+                    latestIsPressed = true;
+                    break;
+                }
+            }
+
+            if (!latestIsPressed)
+            {
+                for (int i = 0; i < JoystickObservers.Count; i++)
+                {
+                    if (JoystickObservers[i].IsPressed)
+                    {
+                        latestIsPressed = true;
+                        break;
+                    }
+                }
+            }
+
             if (IsPressed != latestIsPressed)
             {
                 IsPressed = latestIsPressed;
-
                 if (IsPressed)
                 {
                     OnPressed(this);

@@ -10,6 +10,7 @@ using TransportX.Cameras;
 using TransportX.Collections;
 using TransportX.Communication;
 using TransportX.Dependency;
+using TransportX.Input.Configuration;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Spatial;
@@ -22,6 +23,12 @@ namespace TransportX.Scripting.Avatars
 {
     public class ScriptAvatar : AvatarBase
     {
+        public new InputProfile InputProfile
+        {
+            get => base.InputProfile;
+            set => base.InputProfile = value;
+        }
+
         public new Viewpoint DriverViewpoint
         {
             get => base.DriverViewpoint;

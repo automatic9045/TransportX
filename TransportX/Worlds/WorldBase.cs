@@ -17,6 +17,7 @@ using TransportX.Dependency;
 using TransportX.Diagnostics;
 using TransportX.Environment;
 using TransportX.Input;
+using TransportX.Input.Configuration;
 using TransportX.Rendering.Backend;
 using TransportX.Physics;
 using TransportX.Spatial;
@@ -33,13 +34,14 @@ namespace TransportX.Worlds
         public IGraphicsClient GraphicsClient { get; }
         public IAudioHost AudioHost { get; }
         public IAudioClient AudioClient { get; }
+        public IInputHost InputHost { get; }
+        public IInputClient InputClient { get; }
         public IPhysicsHost PhysicsHost { get; }
         public WorldOptions Options { get; }
         public IErrorCollector ErrorCollector { get; }
         public PluginLoadContext AppContext { get; }
         public PluginLoadContext WorldContext { get; }
         public TimeManager TimeManager { get; }
-        public InputManager InputManager { get; }
         public ICamera Camera { get; }
 
         public string Location { get; protected set; }
@@ -51,6 +53,8 @@ namespace TransportX.Worlds
         public List<TransformedModel> BackgroundModels { get; } = [];
         public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
+
+        public InputProfile InputProfile { get; protected set; } = InputProfile.Empty(string.Empty);
 
         public EnvironmentProfile DefaultEnvironment { get; protected set; } = EnvironmentProfile.Default;
         public DirectionalLight DirectionalLight { get; protected set; } = DirectionalLight.Default;
@@ -76,13 +80,14 @@ namespace TransportX.Worlds
             GraphicsClient = builder.GraphicsClient;
             AudioHost = builder.AudioHost;
             AudioClient = builder.AudioClient;
+            InputHost = builder.InputHost;
             PhysicsHost = builder.PhysicsHost;
             Options = builder.Options;
             ErrorCollector = builder.ErrorCollector;
             AppContext = builder.AppContext;
             WorldContext = context;
             TimeManager = builder.TimeManager;
-            InputManager = builder.InputManager;
+            InputClient = builder.InputClient;
             Camera = builder.Camera;
 
             Location = builder.Info.Path;

@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 using Silk.NET.Input;
 
 using TransportX.Diagnostics;
+using TransportX.Input;
+using TransportX.Input.Configuration;
 
 using TransportX.Scripting.Input;
 
 namespace TransportX.Scripting.Commands
 {
-    public class AxisFactory
+    public class AxisFactory<TParent> where TParent : InputBase<TParent>
     {
-        public Input Parent { get; }
-        public object Context { get; }
+        public TParent Parent { get; }
 
         public string Key { get; }
         public float Min { get; }
@@ -24,21 +25,26 @@ namespace TransportX.Scripting.Commands
         public float Max { get; }
         public float InitialValue { get; private set; }
 
-        public ScriptAxis.KeyBinding Plus { get; private set; } = default;
-        public ScriptAxis.KeyBinding SecondaryPlus { get; private set; } = default;
-        public ScriptAxis.KeyBinding Minus { get; private set; } = default;
-        public ScriptAxis.KeyBinding SecondaryMinus { get; private set; } = default;
-        public ScriptAxis.KeyBinding Reset { get; private set; } = default;
-        public float AutoReleaseSpeed { get; private set; } = 0;
+        private readonly List<ScriptAxis.KeyBinding> PlusBindingsKey = [];
+        public IReadOnlyList<ScriptAxis.KeyBinding> PlusBindings => PlusBindingsKey;
 
+        private readonly List<ScriptAxis.KeyBinding> MinusBindingsKey = [];
+        public IReadOnlyList<ScriptAxis.KeyBinding> MinusBindings => MinusBindingsKey;
+
+        private readonly List<ScriptAxis.KeyBinding> ResetBindingsKey = [];
+        public IReadOnlyList<ScriptAxis.KeyBinding> ResetBindings => ResetBindingsKey;
+
+        private readonly List<ScriptAxis.JoystickAxisBinding> JoystickBindingsKey = [];
+        public IReadOnlyList<ScriptAxis.JoystickAxisBinding> JoystickBindings => JoystickBindingsKey;
+
+        public float AutoReleaseSpeed { get; private set; } = 0;
         public ScriptAxis.TickFunc OnTickFunc { get; private set; }
 
         public ScriptAxis? BuiltAxis { get; private set; } = null;
 
-        internal AxisFactory(Input parent, object context, string key, float min, float neutral, float max)
+        internal AxisFactory(TParent parent, object context, string key, float min, float neutral, float max)
         {
             Parent = parent;
-            Context = context;
 
             Key = key;
             Min = min;
@@ -46,189 +52,144 @@ namespace TransportX.Scripting.Commands
             Max = max;
             InitialValue = neutral;
 
-            bool isResetting = false;
-            OnTickFunc = OnTickDefault;
-
-
-            float OnTickDefault(ScriptAxis instance, float dt)
-            {
-                int sign = float.Sign(instance.Value - instance.Neutral);
-                float speed = 0;
-
-                bool isAnyKeyPressed = false;
-
-                if (instance.Plus.Observer is not null && instance.Plus.Observer.IsPressed)
-                {
-                    isResetting = false;
-                    isAnyKeyPressed = true;
-                    speed += instance.Plus.SpeedFunc(instance, instance.Plus.Observer);
-                }
-                else if (instance.SecondaryPlus.Observer is not null && instance.SecondaryPlus.Observer.IsPressed)
-                {
-                    isResetting = false;
-                    isAnyKeyPressed = true;
-                    speed += instance.SecondaryPlus.SpeedFunc(instance, instance.SecondaryPlus.Observer);
-                }
-
-                if (instance.Minus.Observer is not null && instance.Minus.Observer.IsPressed)
-                {
-                    isResetting = false;
-                    isAnyKeyPressed = true;
-                    speed -= instance.Minus.SpeedFunc(instance, instance.Minus.Observer);
-                }
-                else if (instance.SecondaryMinus.Observer is not null && instance.SecondaryMinus.Observer.IsPressed)
-                {
-                    isResetting = false;
-                    isAnyKeyPressed = true;
-                    speed -= instance.SecondaryMinus.SpeedFunc(instance, instance.SecondaryMinus.Observer);
-                }
-
-                if (instance.Reset.Observer is not null && (isResetting || instance.Reset.Observer.IsPressed))
-                {
-                    isResetting = true;
-                    speed -= sign * instance.Reset.SpeedFunc(instance, instance.Reset.Observer);
-                }
-                else if (!isAnyKeyPressed)
-                {
-                    speed -= sign * AutoReleaseSpeed;
-                }
-
-                float newValue = float.Clamp(instance.Value + speed * dt, instance.Min, instance.Max);
-                return sign == -float.Sign(newValue - instance.Neutral) ? instance.Neutral : newValue;
-            }
+            OnTickFunc = ScriptAxis.TickDefault;
         }
 
-        public AxisFactory SetInitialValue(double value)
+        public AxisFactory<TParent> SetInitialValue(double value)
         {
             InitialValue = (float)value;
             return this;
         }
 
-        public AxisFactory BindPlus(Key key, ScriptAxis.SpeedFunc speedFunc)
+        public AxisFactory<TParent> BindPlus(string key, Key defaultBinding, ScriptAxis.SpeedFunc speedFunc)
         {
-            Plus.Observer?.Dispose();
-            Plus = new ScriptAxis.KeyBinding(Parent.InputManager.ObserveKey(key), speedFunc);
-            return this;
+            return Bind(key, defaultBinding, speedFunc, binding => binding.KeyboardPlus, PlusBindingsKey);
         }
 
-        public AxisFactory BindPlus(Key key, double engageSpeed, double releaseSpeed)
+        public AxisFactory<TParent> BindPlus(string key, Key defaultBinding, double engageSpeed, double releaseSpeed, double maxValue)
         {
             float floatEngageSpeed = (float)engageSpeed;
             float floatReleaseSpeed = (float)releaseSpeed;
-            return BindPlus(key, (instance, observer) => instance.Neutral < instance.Value ? floatEngageSpeed : floatReleaseSpeed);
-        }
-
-        public AxisFactory BindPlus(Key key, double speed) => BindPlus(key, speed, speed);
-        public AxisFactory BindPlus(string keyCode, ScriptAxis.SpeedFunc speedFunc)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindPlus(key, speedFunc) : this;
-        public AxisFactory BindPlus(string keyCode, double forwardSpeed, double backwardSpeed)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindPlus(key, forwardSpeed, backwardSpeed) : this;
-        public AxisFactory BindPlus(string keyCode, double speed) => BindPlus(keyCode, speed, speed);
-
-        public AxisFactory BindSecondaryPlus(Key key, ScriptAxis.SpeedFunc speedFunc)
-        {
-            SecondaryPlus.Observer?.Dispose();
-            SecondaryPlus = new ScriptAxis.KeyBinding(Parent.InputManager.ObserveKey(key), speedFunc);
-            return this;
-        }
-
-        public AxisFactory BindSecondaryPlus(Key key, double engageSpeed, double releaseSpeed, double maxValue)
-        {
-            float floatEngageSpeed = (float)engageSpeed;
-            float floatReleaseSpeed = (float)releaseSpeed;
-            return BindSecondaryPlus(key, (instance, observer) =>
+            return BindPlus(key, defaultBinding, (instance, observer) =>
             {
-                if (instance.Neutral < instance.Value)
-                {
-                    return instance.Value < maxValue ? floatEngageSpeed : 0;
-                }
-                else
-                {
-                    return floatReleaseSpeed;
-                }
+                return maxValue < instance.Value ? 0
+                    : instance.Neutral < instance.Value ? floatEngageSpeed
+                    : floatReleaseSpeed;
             });
         }
 
-        public AxisFactory BindSecondaryPlus(Key key, double speed, double maxValue) => BindSecondaryPlus(key, speed, speed, maxValue);
-        public AxisFactory BindSecondaryPlus(string keyCode, ScriptAxis.SpeedFunc speedFunc)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindSecondaryPlus(key, speedFunc) : this;
-        public AxisFactory BindSecondaryPlus(string keyCode, double forwardSpeed, double backwardSpeed, double maxValue)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindSecondaryPlus(key, forwardSpeed, backwardSpeed, maxValue) : this;
-        public AxisFactory BindSecondaryPlus(string keyCode, double speed, double maxValue) => BindSecondaryPlus(keyCode, speed, speed, maxValue);
+        public AxisFactory<TParent> BindPlus(string key, Key defaultBinding, double engageSpeed, double releaseSpeed)
+            => BindPlus(key, defaultBinding, engageSpeed, releaseSpeed, Max);
+        public AxisFactory<TParent> BindPlus(string key, Key defaultBinding, double speed)
+            => BindPlus(key, defaultBinding, speed, speed);
+        public AxisFactory<TParent> BindPlus(string key, string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindPlus(key, defaultBinding, speedFunc) : this;
+        public AxisFactory<TParent> BindPlus(string key, string defaultBindingCode, double engageSpeed, double releaseSpeed, double maxValue)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindPlus(key, defaultBinding, engageSpeed, releaseSpeed, maxValue) : this;
+        public AxisFactory<TParent> BindPlus(string key, string defaultBindingCode, double engageSpeed, double releaseSpeed)
+            => BindPlus(key, defaultBindingCode, engageSpeed, releaseSpeed, Max);
+        public AxisFactory<TParent> BindPlus(string key, string defaultBindingCode, double speed)
+            => BindPlus(key, defaultBindingCode, speed, speed);
 
-        public AxisFactory BindMinus(Key key, ScriptAxis.SpeedFunc speedFunc)
+        public AxisFactory<TParent> BindPlus(Key defaultBinding, double engageSpeed, double releaseSpeed)
+            => BindPlus(string.Empty, defaultBinding, engageSpeed, releaseSpeed);
+        public AxisFactory<TParent> BindPlus(Key defaultBinding, double speed)
+            => BindPlus(string.Empty, defaultBinding, speed);
+        public AxisFactory<TParent> BindPlus(string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => BindPlus(string.Empty, defaultBindingCode, speedFunc);
+        public AxisFactory<TParent> BindPlus(string defaultBindingCode, double engageSpeed, double releaseSpeed, double maxValue)
+            => BindPlus(string.Empty, defaultBindingCode, engageSpeed, releaseSpeed, maxValue);
+        public AxisFactory<TParent> BindPlus(string defaultBindingCode, double engageSpeed, double releaseSpeed)
+            => BindPlus(string.Empty, defaultBindingCode, engageSpeed, releaseSpeed);
+        public AxisFactory<TParent> BindPlus(string defaultBindingCode, double speed)
+            => BindPlus(string.Empty, defaultBindingCode, speed);
+
+        public AxisFactory<TParent> BindMinus(string key, Key defaultBinding, ScriptAxis.SpeedFunc speedFunc)
         {
-            Minus.Observer?.Dispose();
-            Minus = new ScriptAxis.KeyBinding(Parent.InputManager.ObserveKey(key), speedFunc);
-            return this;
+            return Bind(key, defaultBinding, speedFunc, binding => binding.KeyboardMinus, MinusBindingsKey);
         }
 
-        public AxisFactory BindMinus(Key key, double engageSpeed, double releaseSpeed)
+        public AxisFactory<TParent> BindMinus(string key, Key defaultBinding, double engageSpeed, double releaseSpeed, double minValue)
         {
             float floatEngageSpeed = (float)engageSpeed;
             float floatReleaseSpeed = (float)releaseSpeed;
-            return BindMinus(key, (instance, observer) => instance.Value < instance.Neutral ? floatEngageSpeed : floatReleaseSpeed);
-        }
-
-        public AxisFactory BindMinus(Key key, double speed) => BindMinus(key, speed, speed);
-        public AxisFactory BindMinus(string keyCode, ScriptAxis.SpeedFunc speedFunc)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindMinus(key, speedFunc) : this;
-        public AxisFactory BindMinus(string keyCode, double forwardSpeed, double backwardSpeed)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindMinus(key, forwardSpeed, backwardSpeed) : this;
-        public AxisFactory BindMinus(string keyCode, double speed) => BindMinus(keyCode, speed, speed);
-
-        public AxisFactory BindSecondaryMinus(Key key, ScriptAxis.SpeedFunc speedFunc)
-        {
-            SecondaryMinus.Observer?.Dispose();
-            SecondaryMinus = new ScriptAxis.KeyBinding(Parent.InputManager.ObserveKey(key), speedFunc);
-            return this;
-        }
-
-        public AxisFactory BindSecondaryMinus(Key key, double engageSpeed, double releaseSpeed, double minValue)
-        {
-            float floatEngageSpeed = (float)engageSpeed;
-            float floatReleaseSpeed = (float)releaseSpeed;
-            return BindSecondaryMinus(key, (instance, observer) =>
+            return BindMinus(key, defaultBinding, (instance, observer) =>
             {
-                if (instance.Value < instance.Neutral)
-                {
-                    return minValue < instance.Value ? floatEngageSpeed : 0;
-                }
-                else
-                {
-                    return floatReleaseSpeed;
-                }
+                return instance.Value < minValue ? 0
+                    : instance.Neutral < instance.Value ? floatEngageSpeed
+                    : floatReleaseSpeed;
             });
         }
 
-        public AxisFactory BindSecondaryMinus(Key key, double speed, double minValue) => BindSecondaryMinus(key, speed, speed, minValue);
-        public AxisFactory BindSecondaryMinus(string keyCode, ScriptAxis.SpeedFunc speedFunc)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindSecondaryMinus(key, speedFunc) : this;
-        public AxisFactory BindSecondaryMinus(string keyCode, double forwardSpeed, double backwardSpeed, double minValue)
-            => ParseKeyOrReport(keyCode, out Key key) ? BindSecondaryMinus(key, forwardSpeed, backwardSpeed, minValue) : this;
-        public AxisFactory BindSecondaryMinus(string keyCode, double speed, double minValue) => BindSecondaryMinus(keyCode, speed, speed, minValue);
+        public AxisFactory<TParent> BindMinus(string key, Key defaultBinding, double engageSpeed, double releaseSpeed)
+            => BindMinus(key, defaultBinding, engageSpeed, releaseSpeed, Max);
+        public AxisFactory<TParent> BindMinus(string key, Key defaultBinding, double speed)
+            => BindMinus(key, defaultBinding, speed);
+        public AxisFactory<TParent> BindMinus(string key, string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindMinus(key, defaultBinding, speedFunc) : this;
+        public AxisFactory<TParent> BindMinus(string key, string defaultBindingCode, double engageSpeed, double releaseSpeed, double minValue)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindMinus(key, defaultBinding, engageSpeed, releaseSpeed, minValue) : this;
+        public AxisFactory<TParent> BindMinus(string key, string defaultBindingCode, double engageSpeed, double releaseSpeed)
+            => BindMinus(key, defaultBindingCode, engageSpeed, releaseSpeed, Max);
+        public AxisFactory<TParent> BindMinus(string key, string defaultBindingCode, double speed)
+            => BindMinus(key, defaultBindingCode, speed, speed);
 
-        public AxisFactory BindReset(Key key, ScriptAxis.SpeedFunc speedFunc)
+        public AxisFactory<TParent> BindMinus(Key defaultBinding, double engageSpeed, double releaseSpeed)
+            => BindMinus(string.Empty, defaultBinding, engageSpeed, releaseSpeed);
+        public AxisFactory<TParent> BindMinus(Key defaultBinding, double speed)
+            => BindMinus(string.Empty, defaultBinding, speed);
+        public AxisFactory<TParent> BindMinus(string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => BindMinus(string.Empty, defaultBindingCode, speedFunc);
+        public AxisFactory<TParent> BindMinus(string defaultBindingCode, double engageSpeed, double releaseSpeed, double maxValue)
+            => BindMinus(string.Empty, defaultBindingCode, engageSpeed, releaseSpeed, maxValue);
+        public AxisFactory<TParent> BindMinus(string defaultBindingCode, double engageSpeed, double releaseSpeed)
+            => BindMinus(string.Empty, defaultBindingCode, engageSpeed, releaseSpeed);
+        public AxisFactory<TParent> BindMinus(string defaultBindingCode, double speed)
+            => BindMinus(string.Empty, defaultBindingCode, speed);
+
+        public AxisFactory<TParent> BindReset(string key, Key defaultBinding, ScriptAxis.SpeedFunc speedFunc)
         {
-            Reset.Observer?.Dispose();
-            Reset = new ScriptAxis.KeyBinding(Parent.InputManager.ObserveKey(key), speedFunc);
-            return this;
+            return Bind(key, defaultBinding, speedFunc, binding => binding.KeyboardReset, ResetBindingsKey);
         }
 
-        public AxisFactory BindReset(Key key, double speed)
+        public AxisFactory<TParent> BindReset(string key, Key defaultBinding, double speed)
         {
             float floatSpeed = (float)speed;
-            return BindReset(key, (_, _) => floatSpeed);
+            return BindReset(key, defaultBinding, (_, _) => floatSpeed);
         }
 
-        public AxisFactory BindReset(string keyCode, ScriptAxis.SpeedFunc speedFunc)
-        {
-            return ParseKeyOrReport(keyCode, out Key key) ? BindReset(key, speedFunc) : this;
-        }
+        public AxisFactory<TParent> BindReset(string key, string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindReset(key, defaultBinding, speedFunc) : this;
+        public AxisFactory<TParent> BindReset(string key, string defaultBindingCode, double speed)
+            => ParseKeyOrReport(defaultBindingCode, out Key defaultBinding) ? BindReset(key, defaultBinding, speed) : this;
 
-        public AxisFactory BindReset(string keyCode, double speed)
+        public AxisFactory<TParent> BindReset(string defaultBindingCode, ScriptAxis.SpeedFunc speedFunc)
+            => BindReset(string.Empty, defaultBindingCode, speedFunc);
+        public AxisFactory<TParent> BindReset(string defaultBindingCode, double speed)
+            => BindReset(string.Empty, defaultBindingCode, speed);
+
+        private AxisFactory<TParent> Bind(string key, Key defaultBinding, ScriptAxis.SpeedFunc speedFunc,
+            Func<AxisBinding, IReadOnlyDictionary<string, KeyboardAxisBinding>> dictionarySelector, List<ScriptAxis.KeyBinding> bindings)
         {
-            return ParseKeyOrReport(keyCode, out Key key) ? BindReset(key, speed) : this;
+            bool hasBoundFromProfile = false;
+            if (Parent.Profile.AxisBindings.TryGetValue(Key, out AxisBinding? axisBinding))
+            {
+                if (dictionarySelector(axisBinding).TryGetValue(key, out KeyboardAxisBinding? keyboardBinding))
+                {
+                    foreach (Key silkKey in keyboardBinding.Keys)
+                    {
+                        bindings.Add(new ScriptAxis.KeyBinding(Parent.InputClient.ObserveKey(silkKey), speedFunc));
+                        hasBoundFromProfile = true;
+                    }
+                }
+            }
+
+            if (!hasBoundFromProfile)
+            {
+                bindings.Add(new ScriptAxis.KeyBinding(Parent.InputClient.ObserveKey(defaultBinding), speedFunc));
+            }
+
+            return this;
         }
 
         public bool ParseKeyOrReport(string keyCode, [MaybeNullWhen(false)] out Key key)
@@ -245,19 +206,19 @@ namespace TransportX.Scripting.Commands
             }
         }
 
-        public AxisFactory AutoRelease(double speed)
+        public AxisFactory<TParent> AutoRelease(double speed)
         {
             AutoReleaseSpeed = (float)speed;
             return this;
         }
 
-        public AxisFactory OnTick(ScriptAxis.TickFunc func)
+        public AxisFactory<TParent> OnTick(ScriptAxis.TickFunc func)
         {
             OnTickFunc = func;
             return this;
         }
 
-        public AxisFactory ForwardToSignal(string floatSignalKey)
+        public AxisFactory<TParent> ForwardToSignal(string floatSignalKey)
         {
             Parent.Signals.ForwardFloat(floatSignalKey, () => BuiltAxis is null ? 0 : BuiltAxis.Value);
             return this;
@@ -265,13 +226,25 @@ namespace TransportX.Scripting.Commands
 
         public ScriptAxis Build()
         {
+            if (Parent.Profile.AxisBindings.TryGetValue(Key, out AxisBinding? binding))
+            {
+                foreach (JoystickAxisBinding joystick in binding.Joysticks)
+                {
+                    if (!JoystickBindingsKey.Any(x => x.Observer.DeviceGuid == joystick.DeviceGuid && x.Observer.AxisType == joystick.AxisType))
+                    {
+                        JoystickAxisObserver observer = Parent.InputClient.ObserveJoystickAxis(joystick.DeviceGuid, joystick.AxisType);
+                        JoystickBindingsKey.Add(new ScriptAxis.JoystickAxisBinding(observer, joystick.RawMin, joystick.RawNeutral, joystick.RawMax, joystick.IsInverted));
+                    }
+                }
+            }
+
             BuiltAxis = new ScriptAxis(Key, Min, Neutral, Max, InitialValue)
             {
-                Plus = Plus,
-                SecondaryPlus = SecondaryPlus,
-                Minus = Minus,
-                SecondaryMinus = SecondaryMinus,
-                Reset = Reset,
+                PlusBindings = PlusBindings,
+                MinusBindings = MinusBindings,
+                ResetBindings = ResetBindings,
+                JoystickBindings = JoystickBindings,
+                AutoReleaseSpeed = AutoReleaseSpeed,
                 OnTick = OnTickFunc,
             };
             Parent.AddAxis(BuiltAxis);
