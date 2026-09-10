@@ -54,9 +54,7 @@ namespace TransportX.Scripting.Commands
         {
             if (!InputClient.Profiles.TryGetValue(key, out InputProfile? profile))
             {
-                ScriptError error = new(ErrorLevel.Error, $"入力プロファイル '{key}' は存在しません。");
-                ErrorCollector.Report(error);
-                return InputProfile.Empty(key);
+                profile = InputProfile.Empty(key);
             }
 
             Profile = profile;
