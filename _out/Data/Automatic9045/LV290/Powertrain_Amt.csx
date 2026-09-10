@@ -69,8 +69,8 @@ enum AmtPhase
 
 
     var shifter = Component<Powertrain>().Controllers.AddShifter("Shifter")
-        .UpDownButton("ShifterUp", "ShifterDown")
-        .LeftRightButton("ShifterLeft", "ShifterRight");
+        .UpDownButton("Shifter_Up", "Shifter_Down")
+        .LeftRightButton("Shifter_Left", "Shifter_Right");
 
     var slotN = shifter.RootSlot("N");
     var slotR = slotN.SlotUpParallel("R");

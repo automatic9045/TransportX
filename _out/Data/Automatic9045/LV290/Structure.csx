@@ -1,5 +1,10 @@
 #load "__Editor.csx"
 
+using TransportX.Rendering;
+using TransportX.Rendering.Pipelines;
+using TransportX.Spatial;
+using TransportX.Domains.Equipment.Cameras;
+
 Models.LoadList("Models.txt");
 
 Structure.Parts.Add("Body", "Body_LV290N", 0, 0, 0).BuildDynamic(7500);
@@ -8,10 +13,21 @@ Structure.Parts.Add("FrontDoor1", "BifoldDoor_HingedPanel", -1.16, 0, -0.4).Buil
 Structure.Parts.Add("FrontDoor2", "BifoldDoor_GuidePanel", -1.16, 0, -1.42).BuildKinematic();
 Structure.Parts.Add("RearDoor", "PocketDoor", -1.16, 0, -6.39).BuildKinematic();
 
+Component<AvatarCameras>().AddSceneCapture("MirrorR")
+    .Position("Body", 1.375, 1.95, -0.31, 5, 188, 0)
+    .TextureSize(128, 256)
+    .FieldOfView(90)
+    .AspectRatio(0.5)
+    .Reflect()
+    .DisableShadows()
+    .ProjectOntoPart("Body", "Mirror")
+    .Build();
+
 Component<AvatarDoors>().AddBiford("Front")
     .HingedPanel("FrontDoor1", 0.511)
     .GuidePanel("FrontDoor2", 0.51)
     .PanelThickness(0.02)
+    .OpenLeft()
     .OpenAnimation(10, 0, 2, 2.8, [
         (0, 0),
         (0.2, 0.1),
@@ -30,6 +46,7 @@ Component<AvatarDoors>().AddBiford("Front")
 
 Component<AvatarDoors>().AddSliding("Rear")
     .Panel("RearDoor", 1.005)
+    .OpenLeft()
     .OpenAnimation(20, 0, 5, 2.2, [
         (0, 0),
         (0.7, 0.9),

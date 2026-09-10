@@ -1,17 +1,17 @@
 #load "__Editor.csx"
 
-Input.AddButton("ShifterUp")
+Input.AddButton("Shifter_Up")
     .Bind("S")
     .Build();
 
-Input.AddButton("ShifterDown")
+Input.AddButton("Shifter_Down")
     .Bind("X")
     .Build();
 
-Input.AddButton("ShifterLeft")
+Input.AddButton("Shifter_Left")
     .Bind("Z")
     .Build();
 
-Input.AddButton("ShifterRight")
+Input.AddButton("Shifter_Right")
     .Bind("C")
     .Build();
