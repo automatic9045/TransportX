@@ -91,7 +91,7 @@ namespace TransportX.Extensions.Traffic
             LaneTracker.Tick(Driver.Acceleration, elapsed);
             if (!LaneTracker.IsEnabled)
             {
-                Spatial.WorldPose worldPose = new(ChunkIndex.Zero, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
+                WorldPose worldPose = new(ChunkIndex.Zero, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
                 Locate(worldPose);
                 return;
             }

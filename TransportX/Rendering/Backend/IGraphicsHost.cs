@@ -9,7 +9,7 @@ using Vortice.DXGI;
 
 namespace TransportX.Rendering.Backend
 {
-    public interface IGraphicsHost
+    public interface IGraphicsHost : IDisposable
     {
         ID3D11Device Device { get; }
         ID3D11DeviceContext Context { get; }

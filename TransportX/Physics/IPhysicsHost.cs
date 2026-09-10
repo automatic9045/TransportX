@@ -8,7 +8,7 @@ using BepuPhysics;
 
 namespace TransportX.Physics
 {
-    public interface IPhysicsHost
+    public interface IPhysicsHost : IDisposable
     {
         Simulation Simulation { get; }
 

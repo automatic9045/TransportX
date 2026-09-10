@@ -8,7 +8,7 @@ using Vortice.XAudio2;
 
 namespace TransportX.Audio
 {
-    public class AudioHost : IAudioHost, IDisposable
+    public class AudioHost : IAudioHost
     {
         public IXAudio2 XAudio2 { get; }
         public IXAudio2MasteringVoice MasteringVoice { get; }

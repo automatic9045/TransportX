@@ -12,7 +12,7 @@ using Vortice.XAudio2;
 
 namespace TransportX.Rendering.Backend
 {
-    public class GraphicsHost : IGraphicsHost, IDisposable
+    public class GraphicsHost : IGraphicsHost
     {
         private static readonly bool IsDebug = false;
 

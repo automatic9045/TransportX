@@ -9,7 +9,7 @@ using Vortice.DXGI;
 
 namespace TransportX.Rendering.Backend
 {
-    public class GraphicsClient : IGraphicsClient, IDisposable
+    public class GraphicsClient : IGraphicsClient
     {
         public nint Hwnd { get; }
         public IDXGISwapChain1 SwapChain { get; }

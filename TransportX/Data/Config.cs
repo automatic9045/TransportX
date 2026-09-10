@@ -12,8 +12,8 @@ namespace TransportX.Data
 {
     public class Config
     {
-        internal static readonly string BaseDirectory;
-        internal static readonly string FilePath;
+        public static readonly string BaseDirectory;
+        public static readonly string FilePath;
 
         static Config()
         {

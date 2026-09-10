@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 using BepuPhysics;
-using BepuPhysics.Collidables;
 using BepuUtilities;
 using BepuUtilities.Memory;
 
 namespace TransportX.Physics
 {
-    public class PhysicsHost : IPhysicsHost, IDisposable
+    public class PhysicsHost : IPhysicsHost
     {
         private readonly CollidableProperty<ColliderGroupHandle> Groups = new();
         private readonly CollidableProperty<ColliderMaterial> Materials = new();
