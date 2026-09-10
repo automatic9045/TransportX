@@ -15,7 +15,8 @@ namespace TransportX.Data.Input
         [XmlArrayItem("Key")]
         public List<Key> Keyboard { get; set; } = [];
 
-        [XmlArrayItem("Controller")]
-        public List<ControllerButton> Controllers { get; set; } = [];
+        [XmlArrayItem("Controller", typeof(ControllerButton))]
+        [XmlArrayItem("ControllerPov", typeof(ControllerPovButton))]
+        public List<ControllerButtonBase> Controllers { get; set; } = [];
     }
 }

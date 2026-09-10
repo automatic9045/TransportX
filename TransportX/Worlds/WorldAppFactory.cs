@@ -74,33 +74,8 @@ namespace TransportX.Worlds
             AudioHost audioHost = new();
             AudioClient audioClient = new();
 
-            Dictionary<string, InputProfile.GameControllerData> controllersData = [];
-            foreach (GameControllerReference controllerRef in config.Input.GameControllers)
-            {
-                string path = Path.Combine(Config.BaseDirectory, controllerRef.Path);
-                Data.Input.GameControllers.GameController data = Data.Input.GameControllers.GameController.Import(path, errorCollector);
-                controllersData.Add(controllerRef.Key, new InputProfile.GameControllerData(controllerRef.DeviceGuid, data));
-            }
-
-            Dictionary<string, InputProfile> inputProfiles = [];
-            foreach (InputProfileReference profileRef in config.Input.Profiles)
-            {
-                string path = Path.Combine(Config.BaseDirectory, profileRef.Path);
-                Data.Input.InputProfile data = Data.Input.InputProfile.Import(path, errorCollector);
-
-                IErrorCollector profileErrorCollector = IErrorCollector.Default();
-                profileErrorCollector.Reported += (sender, e) =>
-                {
-                    Error error = e.Error.ChangeSource(path);
-                    errorCollector.Report(error);
-                };
-
-                InputProfile profile = InputProfile.FromData(profileRef.Key, data, controllersData, profileErrorCollector);
-                inputProfiles.Add(profile.Key, profile);
-            }
-
             InputHost inputHost = new(host.Platform.Input, hwnd);
-            InputClient inputClient = new(inputHost, inputProfiles);
+            InputClient inputClient = InputClientFactory.Create(inputHost, config.Input, errorCollector);
 
             PhysicsHost physicsHost = PhysicsHost.Create();
 

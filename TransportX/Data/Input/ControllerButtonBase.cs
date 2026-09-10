@@ -7,9 +7,9 @@ using System.Xml.Serialization;
 
 namespace TransportX.Data.Input
 {
-    public class ControllerButton : ControllerButtonBase
+    public class ControllerButtonBase
     {
         [XmlAttribute]
-        public int ButtonIndex { get; set; }
+        public string Key { get; set; } = string.Empty;
     }
 }

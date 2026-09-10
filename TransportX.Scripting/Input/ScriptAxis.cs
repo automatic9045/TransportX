@@ -184,7 +184,7 @@ namespace TransportX.Scripting.Input
 
 
         public readonly record struct KeyBinding(KeyObserver? Observer, SpeedFunc SpeedFunc);
-        public readonly record struct JoystickAxisBinding(JoystickAxisObserver Observer, int RawMin, int RawNeutral, int RawMax, bool IsInverted);
+        public readonly record struct JoystickAxisBinding(IJoystickAxisObserver Observer, int RawMin, int RawNeutral, int RawMax, bool IsInverted);
 
         public delegate float SpeedFunc(ScriptAxis instance, KeyObserver observer);
         public delegate float TickFunc(ScriptAxis instance, float dt);

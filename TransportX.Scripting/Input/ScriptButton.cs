@@ -25,7 +25,7 @@ namespace TransportX.Scripting.Input
         public string Key { get; }
 
         public required IReadOnlyList<KeyObserver> KeyboardObservers { get; init; }
-        public required IReadOnlyList<JoystickButtonObserver> JoystickObservers { get; init; }
+        public required IReadOnlyList<IJoystickButtonObserver> JoystickObservers { get; init; }
 
         public required KeyAction OnPressed { get; init; }
         public required KeyAction OnReleased { get; init; }
@@ -43,7 +43,7 @@ namespace TransportX.Scripting.Input
         public void Dispose()
         {
             foreach (KeyObserver observer in KeyboardObservers) observer.Dispose();
-            foreach (JoystickButtonObserver observer in JoystickObservers) observer.Dispose();
+            foreach (IJoystickButtonObserver observer in JoystickObservers) observer.Dispose();
         }
 
         public void Tick(TimeSpan elapsed)

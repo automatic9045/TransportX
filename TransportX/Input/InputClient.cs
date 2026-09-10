@@ -21,6 +21,7 @@ namespace TransportX.Input
         private readonly ConcurrentDictionary<SilkKey, List<KeyObserver>> Keys = new();
         private readonly List<JoystickButtonObserver> JoystickButtons = [];
         private readonly List<JoystickAxisObserver> JoystickAxes = [];
+        private readonly List<JoystickPovObserver> JoystickPovs = [];
 
         private Vector2 OldMousePosition = Vector2.NaN;
 
@@ -139,6 +140,15 @@ namespace TransportX.Input
             return observer;
         }
 
+        public JoystickPovObserver ObserveJoystickPov(Guid deviceGuid, int povIndex)
+        {
+            JoystickPovObserver observer = new(deviceGuid, povIndex);
+            observer.Disposing += (sender, e) => JoystickPovs.Remove(observer);
+
+            JoystickPovs.Add(observer);
+            return observer;
+        }
+
         public void Tick(TimeSpan elapsed)
         {
             foreach (JoystickButtonObserver observer in JoystickButtons)
@@ -169,6 +179,19 @@ namespace TransportX.Input
                     JoystickAxisType.Slider1 => 1 < state.Sliders.Length ? state.Sliders[1] : 0,
                     _ => 0,
                 };
+                observer.IsConnected = true;
+            }
+
+            foreach (JoystickPovObserver observer in JoystickPovs)
+            {
+                if (!InputHost.JoystickStates.TryGetValue(observer.DeviceGuid, out JoystickState? state))
+                {
+                    observer.IsConnected = false;
+                    continue;
+                }
+
+                int value = observer.PovIndex < state.PointOfViewControllers.Length ? state.PointOfViewControllers[observer.PovIndex] : 0;
+                observer.Update(value);
                 observer.IsConnected = true;
             }
         }

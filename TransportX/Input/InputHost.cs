@@ -14,12 +14,13 @@ namespace TransportX.Input
     {
         private readonly nint Hwnd;
 
-        private readonly Dictionary<Guid, IDirectInputDevice8> JoystickDevices = [];
-        private readonly Dictionary<Guid, JoystickState> JoystickStatesKey = [];
-
         public IInputContext SilkContext { get; }
         public IDirectInput8 DirectInput { get; }
 
+        private readonly Dictionary<Guid, IDirectInputDevice8> JoystickDevicesKey = [];
+        public IReadOnlyDictionary<Guid, IDirectInputDevice8> JoystickDevices => JoystickDevicesKey;
+
+        private readonly Dictionary<Guid, JoystickState> JoystickStatesKey = [];
         public IReadOnlyDictionary<Guid, JoystickState> JoystickStates => JoystickStatesKey;
 
         public InputHost(IInputContext silkContext, nint hwnd)
@@ -33,13 +34,13 @@ namespace TransportX.Input
 
         public void Dispose()
         {
-            foreach (IDirectInputDevice8 device in JoystickDevices.Values)
+            foreach (IDirectInputDevice8 device in JoystickDevicesKey.Values)
             {
                 device.Unacquire();
                 device.Dispose();
             }
 
-            JoystickDevices.Clear();
+            JoystickDevicesKey.Clear();
             DirectInput.Dispose();
         }
 
@@ -48,7 +49,7 @@ namespace TransportX.Input
             IList<DeviceInstance> instances = DirectInput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly);
 
             List<Guid> toRemove = [];
-            foreach (Guid guid in JoystickDevices.Keys)
+            foreach (Guid guid in JoystickDevicesKey.Keys)
             {
                 bool found = false;
                 foreach (DeviceInstance instance in instances)
@@ -67,16 +68,16 @@ namespace TransportX.Input
 
             foreach (Guid guid in toRemove)
             {
-                IDirectInputDevice8 device = JoystickDevices[guid];
+                IDirectInputDevice8 device = JoystickDevicesKey[guid];
                 device.Unacquire();
                 device.Dispose();
-                JoystickDevices.Remove(guid);
+                JoystickDevicesKey.Remove(guid);
                 JoystickStatesKey.Remove(guid);
             }
 
             foreach (DeviceInstance instance in instances)
             {
-                if (!JoystickDevices.ContainsKey(instance.InstanceGuid))
+                if (!JoystickDevicesKey.ContainsKey(instance.InstanceGuid))
                 {
                     IDirectInputDevice8 device = DirectInput.CreateDevice(instance.InstanceGuid);
                     device.SetDataFormat<RawJoystickState>();
@@ -84,7 +85,7 @@ namespace TransportX.Input
 
                     device.Acquire();
 
-                    JoystickDevices.Add(instance.InstanceGuid, device);
+                    JoystickDevicesKey.Add(instance.InstanceGuid, device);
                     JoystickStatesKey.Add(instance.InstanceGuid, new JoystickState());
                 }
             }
@@ -92,7 +93,7 @@ namespace TransportX.Input
 
         public void Tick(TimeSpan elapsed)
         {
-            foreach ((Guid guid, IDirectInputDevice8 device) in JoystickDevices)
+            foreach ((Guid guid, IDirectInputDevice8 device) in JoystickDevicesKey)
             {
                 Result result = device.Poll();
                 if (result.Failure)

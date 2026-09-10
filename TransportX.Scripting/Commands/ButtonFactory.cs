@@ -24,8 +24,8 @@ namespace TransportX.Scripting.Commands
         private readonly List<KeyObserver> KeyboardObserversKey = [];
         public IReadOnlyList<KeyObserver> KeyboardObservers => KeyboardObserversKey;
 
-        private readonly List<JoystickButtonObserver> JoystickObserversKey = [];
-        public IReadOnlyList<JoystickButtonObserver> JoystickObservers => JoystickObserversKey;
+        private readonly List<IJoystickButtonObserver> JoystickObserversKey = [];
+        public IReadOnlyList<IJoystickButtonObserver> JoystickObservers => JoystickObserversKey;
 
         public ScriptButton.KeyAction OnPressedAction { get; private set; } = _ => { };
         public ScriptButton.KeyAction OnReleasedAction { get; private set; } = _ => { };
@@ -46,13 +46,21 @@ namespace TransportX.Scripting.Commands
             {
                 foreach (Key silkKey in binding.Keys)
                 {
-                    KeyboardObserversKey.Add(Parent.InputClient.ObserveKey(silkKey));
+                    KeyObserver observer = Parent.InputClient.ObserveKey(silkKey);
+                    KeyboardObserversKey.Add(observer);
                     hasBoundFromProfile = true;
                 }
 
                 foreach (JoystickButtonBinding joystick in binding.Joysticks)
                 {
-                    JoystickObserversKey.Add(Parent.InputClient.ObserveJoystickButton(joystick.DeviceGuid, joystick.ButtonIndex));
+                    JoystickButtonObserver observer = Parent.InputClient.ObserveJoystickButton(joystick.DeviceGuid, joystick.ButtonIndex);
+                    JoystickObserversKey.Add(observer);
+                }
+
+                foreach (JoystickPovButtonBinding pov in binding.JoystickPovs)
+                {
+                    JoystickPovObserver observer = Parent.InputClient.ObserveJoystickPov(pov.DeviceGuid, pov.PovIndex);
+                    JoystickObserversKey.Add(observer.AsButton(pov.Direction));
                 }
             }
 

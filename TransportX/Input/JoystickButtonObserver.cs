@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace TransportX.Input
 {
-    public class JoystickButtonObserver : IDisposable
+    public class JoystickButtonObserver : IJoystickButtonObserver
     {
         public Guid DeviceGuid { get; }
         public int ButtonIndex { get; }
 
-        public bool IsPressed { get; private set; }
+        public bool IsPressed { get; private set; } = false;
 
         internal event EventHandler? Disposing;
 

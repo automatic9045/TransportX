@@ -33,12 +33,25 @@ namespace TransportX.Input.Configuration
             Dictionary<string, ButtonBinding> buttonBindings = data.Buttons.ToDictionary(buttonData => buttonData.Key, buttonData =>
             {
                 List<JoystickButtonBinding> joysticks = [];
-                foreach (Data.Input.ControllerButton controllerButtonData in buttonData.Controllers)
+                List<JoystickPovButtonBinding> joystickPovs = [];
+                foreach (Data.Input.ControllerButtonBase controllerButtonBaseData in buttonData.Controllers)
                 {
-                    if (GetControllerData(controllerButtonData.Key, out GameControllerData controllerData))
+                    if (!GetControllerData(controllerButtonBaseData.Key, out GameControllerData controllerData)) continue;
+
+                    switch (controllerButtonBaseData)
                     {
-                        JoystickButtonBinding joystick = new(controllerData.Guid, controllerButtonData.ButtonIndex);
-                        joysticks.Add(joystick);
+                        case Data.Input.ControllerButton controllerButtonData:
+                        {
+                            JoystickButtonBinding joystick = new(controllerData.Guid, controllerButtonData.ButtonIndex);
+                            joysticks.Add(joystick);
+                            break;
+                        }
+                        case Data.Input.ControllerPovButton controllerPovButtonData:
+                        {
+                            JoystickPovButtonBinding joystick = new(controllerData.Guid, controllerPovButtonData.PovIndex, controllerPovButtonData.Direction);
+                            joystickPovs.Add(joystick);
+                            break;
+                        }
                     }
                 }
 
@@ -46,26 +59,46 @@ namespace TransportX.Input.Configuration
                 {
                     Keys = buttonData.Keyboard.ConvertAll(keyData => keyData.Code),
                     Joysticks = joysticks,
+                    JoystickPovs = joystickPovs,
                 };
             });
 
             Dictionary<string, AxisBinding> axisBindings = data.Axes.ToDictionary(axisData => axisData.Key, axisData =>
             {
                 List<JoystickAxisBinding> joysticks = [];
-                foreach (Data.Input.ControllerAxis controllerAxisData in axisData.Controllers)
+                List<JoystickPovAxisBinding> joystickPovs = [];
+                foreach (Data.Input.ControllerAxisBase controllerAxisBaseData in axisData.Controllers)
                 {
-                    if (GetControllerData(controllerAxisData.Key, out GameControllerData controllerData))
-                    {
-                        Data.Input.GameControllers.Axis axisConfiguration = controllerData.Data.Axes.FirstOrDefault(x => x.Type == controllerAxisData.AxisType) ?? new();
+                    if (!GetControllerData(controllerAxisBaseData.Key, out GameControllerData controllerData)) continue;
 
-                        JoystickAxisBinding joystick = new(controllerData.Guid, controllerAxisData.AxisType)
+                    switch (controllerAxisBaseData)
+                    {
+                        case Data.Input.ControllerAxis controllerAxisData:
                         {
-                            RawMin = axisConfiguration.RawMin,
-                            RawNeutral = axisConfiguration.RawNeutral,
-                            RawMax = axisConfiguration.RawMax,
-                            IsInverted = axisConfiguration.IsInverted,
-                        };
-                        joysticks.Add(joystick);
+                            Data.Input.GameControllers.Axis axisConfiguration = controllerData.Data.Axes.FirstOrDefault(x => x.Type == controllerAxisData.AxisType) ?? new();
+
+                            JoystickAxisBinding joystick = new(controllerData.Guid, controllerAxisData.AxisType)
+                            {
+                                RawMin = axisConfiguration.RawMin,
+                                RawNeutral = axisConfiguration.RawNeutral,
+                                RawMax = axisConfiguration.RawMax,
+                                IsInverted = axisConfiguration.IsInverted,
+                            };
+                            joysticks.Add(joystick);
+                            break;
+                        }
+                        case Data.Input.ControllerPovAxis controllerPovAxisData:
+                        {
+                            JoystickPovAxisBinding joystick = new(controllerData.Guid, controllerPovAxisData.PovIndex, controllerPovAxisData.AxisType)
+                            {
+                                RawMin = JoystickPovObserver.AxisMin,
+                                RawNeutral = JoystickPovObserver.AxisNeutral,
+                                RawMax = JoystickPovObserver.AxisMax,
+                                IsInverted = false,
+                            };
+                            joystickPovs.Add(joystick);
+                            break;
+                        }
                     }
                 }
 

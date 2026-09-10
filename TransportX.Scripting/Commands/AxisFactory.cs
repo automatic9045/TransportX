@@ -230,11 +230,16 @@ namespace TransportX.Scripting.Commands
             {
                 foreach (JoystickAxisBinding joystick in binding.Joysticks)
                 {
-                    if (!JoystickBindingsKey.Any(x => x.Observer.DeviceGuid == joystick.DeviceGuid && x.Observer.AxisType == joystick.AxisType))
-                    {
-                        JoystickAxisObserver observer = Parent.InputClient.ObserveJoystickAxis(joystick.DeviceGuid, joystick.AxisType);
-                        JoystickBindingsKey.Add(new ScriptAxis.JoystickAxisBinding(observer, joystick.RawMin, joystick.RawNeutral, joystick.RawMax, joystick.IsInverted));
-                    }
+                    JoystickAxisObserver observer = Parent.InputClient.ObserveJoystickAxis(joystick.DeviceGuid, joystick.AxisType);
+                    ScriptAxis.JoystickAxisBinding joystickBinding = new(observer, joystick.RawMin, joystick.RawNeutral, joystick.RawMax, joystick.IsInverted);
+                    JoystickBindingsKey.Add(joystickBinding);
+                }
+
+                foreach (JoystickPovAxisBinding pov in binding.JoystickPovs)
+                {
+                    JoystickPovObserver observer = Parent.InputClient.ObserveJoystickPov(pov.DeviceGuid, pov.PovIndex);
+                    ScriptAxis.JoystickAxisBinding joystickBinding = new(observer.AsAxis(pov.AxisType), pov.RawMin, pov.RawNeutral, pov.RawMax, pov.IsInverted);
+                    JoystickBindingsKey.Add(joystickBinding);
                 }
             }
 

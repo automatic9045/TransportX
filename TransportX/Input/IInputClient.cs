@@ -20,6 +20,7 @@ namespace TransportX.Input
         KeyObserver ObserveKey(Key key);
         JoystickButtonObserver ObserveJoystickButton(Guid deviceGuid, int buttonIndex);
         JoystickAxisObserver ObserveJoystickAxis(Guid deviceGuid, JoystickAxisType axisType);
+        JoystickPovObserver ObserveJoystickPov(Guid deviceGuid, int povIndex);
 
         void Tick(TimeSpan elapsed);
     }

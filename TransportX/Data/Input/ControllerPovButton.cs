@@ -9,9 +9,12 @@ using TransportX.Input;
 
 namespace TransportX.Data.Input
 {
-    public class ControllerAxis : ControllerAxisBase
+    public class ControllerPovButton : ControllerButtonBase
     {
         [XmlAttribute]
-        public JoystickAxisType AxisType { get; set; }
+        public int PovIndex { get; set; } = 0;
+
+        [XmlAttribute]
+        public JoystickPovDirection Direction { get; set; } = JoystickPovDirection.Up;
     }
 }

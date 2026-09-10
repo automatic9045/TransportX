@@ -12,6 +12,7 @@ namespace TransportX.Input.Configuration
     {
         public IReadOnlyList<Key> Keys { get; init; } = [];
         public IReadOnlyList<JoystickButtonBinding> Joysticks { get; init; } = [];
+        public IReadOnlyList<JoystickPovButtonBinding> JoystickPovs { get; init; } = [];
 
         public ButtonBinding()
         {

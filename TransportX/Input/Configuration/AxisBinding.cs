@@ -15,6 +15,7 @@ namespace TransportX.Input.Configuration
         public IReadOnlyDictionary<string, KeyboardAxisBinding> KeyboardReset { get; init; } = new Dictionary<string, KeyboardAxisBinding>();
 
         public IReadOnlyList<JoystickAxisBinding> Joysticks { get; init; } = [];
+        public IReadOnlyList<JoystickPovAxisBinding> JoystickPovs { get; init; } = [];
 
         public AxisBinding()
         {

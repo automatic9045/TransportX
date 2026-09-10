@@ -21,7 +21,8 @@ namespace TransportX.Data.Input
         [XmlArrayItem("Action")]
         public List<KeyboardAction> KeyboardReset { get; set; } = [];
 
-        [XmlArrayItem("Controller")]
-        public List<ControllerAxis> Controllers { get; set; } = [];
+        [XmlArrayItem("Controller", typeof(ControllerAxis))]
+        [XmlArrayItem("ControllerPov", typeof(ControllerPovAxis))]
+        public List<ControllerAxisBase> Controllers { get; set; } = [];
     }
 }

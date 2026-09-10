@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace TransportX.Input
 {
-    public class JoystickAxisObserver : IDisposable
+    public class JoystickAxisObserver : IJoystickAxisObserver
     {
         public Guid DeviceGuid { get; }
         public JoystickAxisType AxisType { get; }
 
-        public bool IsConnected { get; internal set; }
-        public int Value { get; internal set; }
+        public bool IsConnected { get; internal set; } = false;
+        public int Value { get; internal set; } = 0;
 
         internal event EventHandler? Disposing;
 
