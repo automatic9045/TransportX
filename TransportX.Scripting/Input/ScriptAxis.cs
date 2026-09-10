@@ -108,14 +108,14 @@ namespace TransportX.Scripting.Input
 
                     if (rawValue < rawNeutral)
                     {
-                        float range = joystick.RawNeutral - joystick.RawMin;
+                        float range = rawNeutral - joystick.RawMin;
                         float rate = 0 < range ? (rawValue - joystick.RawMin) / range : 0;
                         return float.Lerp(instance.Min, instance.Neutral, rate);
                     }
                     else
                     {
-                        float range = joystick.RawMax - joystick.RawNeutral;
-                        float rate = 0 < range ? (rawValue - joystick.RawNeutral) / range : 0;
+                        float range = joystick.RawMax - rawNeutral;
+                        float rate = 0 < range ? (rawValue - rawNeutral) / range : 0;
                         return float.Lerp(instance.Neutral, instance.Max, rate);
                     }
                 }
