@@ -11,7 +11,7 @@ namespace TransportX.Cameras
 {
     public abstract class Viewpoint : WorldObject
     {
-        public float Perspective { get; protected set; } = 1;
+        public float FieldOfView { get; protected set; } = 1;
 
         protected Viewpoint()
         {
@@ -133,7 +133,7 @@ namespace TransportX.Cameras
 
         public override void Rotate(Vector2 offset, SizeI clientSize)
         {
-            Rotator.Rotate(1.5f * Perspective * offset, clientSize);
+            Rotator.Rotate(1.5f * FieldOfView * offset, clientSize);
             Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(WorldPose.Pose.Position, Rotator.Rotation));
             Locate(worldPose);
         }
@@ -159,15 +159,21 @@ namespace TransportX.Cameras
 
     public class DriverViewpoint : Viewpoint
     {
+        private const float MinFieldOfView = float.Pi * 0.0025f;
+        private const float MaxFieldOfView = float.Pi * 0.375f;
+
+
         private readonly IWorldObject Source;
         private readonly Pose Offset;
+        private readonly float DefaultFieldOfView;
 
         private new readonly Rotator Rotator = new();
 
-        public DriverViewpoint(IWorldObject source, Pose offset) : base()
+        public DriverViewpoint(IWorldObject source, Pose offset, float defaultFieldOfView = float.Pi / 4) : base()
         {
             Source = source;
             Offset = offset;
+            FieldOfView = DefaultFieldOfView = float.Clamp(defaultFieldOfView, MinFieldOfView, MaxFieldOfView);
 
             Source.Moved += _ => UpdateLocation();
             UpdateLocation();
@@ -179,23 +185,23 @@ namespace TransportX.Cameras
             }
         }
 
-        public DriverViewpoint(IWorldObject source, SixDoF offset) : this(source, offset.ToPose())
+        public DriverViewpoint(IWorldObject source, SixDoF offset, float defaultFieldOfView) : this(source, offset.ToPose(), defaultFieldOfView)
         {
         }
 
         public override void Rotate(Vector2 offset, SizeI clientSize)
         {
-            Rotator.Rotate(1.5f * Perspective * offset, clientSize);
+            Rotator.Rotate(1.5f * FieldOfView * offset, clientSize);
         }
 
         public override void Zoom(float delta)
         {
-            Perspective = float.Clamp(Perspective - 0.05f * delta, 0.01f, 1.25f);
+            FieldOfView = float.Clamp(FieldOfView - float.Pi * 0.0125f * delta, MinFieldOfView, MaxFieldOfView);
         }
 
         public override void Reset()
         {
-            Perspective = 1;
+            FieldOfView = DefaultFieldOfView;
             Rotator.Reset();
         }
     }
@@ -209,15 +215,19 @@ namespace TransportX.Cameras
         private new readonly Translator Translator;
         private new readonly Rotator Rotator;
 
-        public BirdViewpoint(IWorldObject source, Pose offset, float initialDistance, Vector2 initialAngle) : base()
+        public BirdViewpoint(IWorldObject source, Pose offset, float initialDistance, Vector2 initialAngle, float fieldOfView = float.Pi / 4)
+            : base()
         {
             Source = source;
             Offset = offset;
+            FieldOfView = fieldOfView;
 
             Translator = new Translator(initialDistance);
-            Rotator = new Rotator();
 
-            Rotator.InitialAngle = initialAngle;
+            Rotator = new Rotator()
+            {
+                InitialAngle = initialAngle
+            };
             Rotator.Reset();
 
             Source.Moved += _ => UpdateLocation();
@@ -230,8 +240,8 @@ namespace TransportX.Cameras
             }
         }
 
-        public BirdViewpoint(IWorldObject source, SixDoF offset, float initialDistance, Vector2 initialAngle)
-            : this(source, offset.ToPose(), initialDistance, initialAngle)
+        public BirdViewpoint(IWorldObject source, SixDoF offset, float initialDistance, Vector2 initialAngle, float fieldOfView = float.Pi / 4)
+            : this(source, offset.ToPose(), initialDistance, initialAngle, fieldOfView)
         {
         }
 

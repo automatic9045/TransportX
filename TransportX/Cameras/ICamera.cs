@@ -12,7 +12,7 @@ namespace TransportX.Cameras
 {
     public interface ICamera : IMovable
     {
-        float Perspective { get; set; }
+        float FieldOfView { get; set; }
         VisualLayers VisibleLayers { get; set; }
 
         void Teleport(in WorldPose worldPose);

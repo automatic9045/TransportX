@@ -19,7 +19,7 @@ namespace TransportX.Cameras
         public Vector3 Velocity { get; private set; } = Vector3.Zero;
         public Vector3 AngularVelocity { get; private set; } = Vector3.Zero;
 
-        public float Perspective { get; set; } = MathHelper.ToRadians(45);
+        public float FieldOfView { get; set; } = float.Pi / 4;
         public ICamera.VisualLayers VisibleLayers { get; set; } = ICamera.VisualLayers.Normal;
 
         public Camera() : base()
@@ -76,8 +76,7 @@ namespace TransportX.Cameras
 
         public ViewContext CreateViewContext(SizeI clientSize)
         {
-            Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(
-                Perspective * MathHelper.ToRadians(45), (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
+            Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfViewLeftHanded(FieldOfView, (float)clientSize.Width / clientSize.Height, 0.1f, 1000);
 
             return new ViewContext()
             {

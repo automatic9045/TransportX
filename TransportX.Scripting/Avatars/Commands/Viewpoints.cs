@@ -18,16 +18,20 @@ namespace TransportX.Scripting.Avatars.Commands
             Avatar = avatar;
         }
 
-        public void SetDriver(double x, double y, double z)
+        public void SetDriver(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double fieldOfView = 45)
         {
-            Avatar.DriverViewpoint = new DriverViewpoint(Avatar, new Pose((float)x, (float)y, (float)z));
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            Avatar.DriverViewpoint = new DriverViewpoint(Avatar, offset, (float)fieldOfView * float.Pi / 180);
         }
 
-        public void SetBird(double x, double y, double z, double initialDistance, double angleX, double angleY)
+        public void SetDriver(double x, double y, double z, double fieldOfView = 45)
+            => SetDriver(x, y, z, 0, 0, 0, fieldOfView);
+
+        public void SetBird(double x, double y, double z, double initialDistance, double angleX, double angleY, double fieldOfView = 45)
         {
             Pose offset = new((float)x, (float)y, (float)z);
             Vector2 initialAngle = new Vector2((float)angleX, (float)angleY) * float.Pi / 180;
-            Avatar.BirdViewpoint = new BirdViewpoint(Avatar, offset, (float)initialDistance, initialAngle);
+            Avatar.BirdViewpoint = new BirdViewpoint(Avatar, offset, (float)initialDistance, initialAngle, (float)fieldOfView * float.Pi / 180);
         }
     }
 }

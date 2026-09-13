@@ -206,7 +206,7 @@ namespace TransportX.Worlds
         private void SyncCamera()
         {
             Viewpoints.AttachedTo = World.Avatar;
-            World.Camera.Perspective = Viewpoints.Current.Perspective;
+            World.Camera.FieldOfView = Viewpoints.Current.FieldOfView;
             World.Camera.UpdateView(Viewpoints.Current.WorldPose);
 
             World.UpdateCameraChunk();
