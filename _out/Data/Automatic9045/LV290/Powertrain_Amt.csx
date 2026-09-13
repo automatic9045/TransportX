@@ -151,7 +151,13 @@ enum AmtPhase
             {
                 if (Duration_ClutchDisengage <= stateTime && gearbox.BuiltModule.Gear == 0)
                 {
-                    gearbox.BuiltModule.Gear = destGear; // 抜くラグが明けたら次のギアを噛ませる
+                    if (0 < destGear && shifter.BuiltController.Lever.Position.Key == "D")
+                    {
+                        int bestGear = GetBestForwardGear();
+                        destGear = srcGear == 0 || bestGear < srcGear ? bestGear : int.Max(destGear, bestGear);
+                    }
+
+                    gearbox.BuiltModule.Gear = destGear; // ギアを入れる
                 }
             })
             .EvaluateTransition((elapsed, stateTime) =>
@@ -213,13 +219,12 @@ enum AmtPhase
 
             case "D":
             {
-                if (stateMachine.State == AmtPhase.Idle)
+                if (lastShifterPosition == shifterPosition.Key) // D レンジ維持の場合
                 {
-                    int gear = gearbox.BuiltModule.Gear;
-                    float outputRpm = gearbox.Output.BuiltShaft.Rpm;
-
-                    if (lastShifterPosition == shifterPosition.Key)
+                    if (stateMachine.State == AmtPhase.Idle)
                     {
+                        int gear = gearbox.BuiltModule.Gear;
+                        float outputRpm = gearbox.Output.BuiltShaft.Rpm;
                         float theoreticalRpm = outputRpm * gearbox.BuiltModule.GetGearRatio(gear);
 
                         float upshiftRpm = upshiftMap.GetValue(gear, pedalThrottle);
@@ -234,25 +239,11 @@ enum AmtPhase
                             TcuRequestShift(gear - 1);
                         }
                     }
-                    else
-                    {
-                        int bestGear = 2;
-                        float bestDiff = float.MaxValue;
-
-                        for (int g = 2; g <= gearbox.BuiltModule.MaxGear; g++)
-                        {
-                            float estimatedRpm = outputRpm * gearbox.BuiltModule.GetGearRatio(g);
-
-                            float diff = float.Abs(estimatedRpm - BestRpm);
-                            if (diff < bestDiff && MinRpm < estimatedRpm && estimatedRpm < MaxRpm)
-                            {
-                                bestGear = g;
-                                bestDiff = diff;
-                            }
-                        }
-
-                        TcuRequestShift(bestGear);
-                    }
+                }
+                else // D レンジ以外からの移行の場合
+                {
+                    int bestGear = GetBestForwardGear();
+                    TcuRequestShift(bestGear);
                 }
                 break;
             }
@@ -334,6 +325,26 @@ enum AmtPhase
             : TransportX.Domains.RoadVehicles.Powertrain.Modules.FluidClutch.LockupResponseMode.Normal;
         
         clutch.BuiltModule.Engagement = clutchEngagement;
+    }
+
+    int GetBestForwardGear()
+    {
+        float outputRpm = gearbox.Output.BuiltShaft.Rpm;
+
+        int bestGear = 2;
+        float bestDiff = float.MaxValue;
+        for (int g = 2; g <= gearbox.BuiltModule.MaxGear; g++)
+        {
+            float estimatedRpm = outputRpm * gearbox.BuiltModule.GetGearRatio(g);
+            float diff = float.Abs(estimatedRpm - BestRpm);
+            if (diff < bestDiff && MinRpm < estimatedRpm && estimatedRpm < MaxRpm)
+            {
+                bestGear = g;
+                bestDiff = diff;
+            }
+        }
+
+        return bestGear;
     }
     
     void TcuRequestShift(int targetGear) 
