@@ -43,8 +43,8 @@ namespace TransportX.Rendering.Importing
         {
             Dictionary<string, ID3D11ShaderResourceView> loadedTextures = [];
 
-            Rendering.Material[] materials = new Rendering.Material[modelData.Materials.Length];
-            for (int i = 0; i < materials.Length; i++)
+            List<Rendering.Material> materials = new(modelData.Materials.Length);
+            for (int i = 0; i < modelData.Materials.Length; i++)
             {
                 Material materialData = modelData.Materials[i];
 
@@ -185,7 +185,7 @@ namespace TransportX.Rendering.Importing
                     ? LoadTexture(materialData.EmissiveTexture.Value, false, modelData.EmbeddedTextures, textureErrorCollector)
                     : null;
 
-                materials[i] = new Rendering.Material()
+                Rendering.Material material = new()
                 {
                     Name = materialData.Name,
 
@@ -201,9 +201,11 @@ namespace TransportX.Rendering.Importing
 
                     DebugName = materialData.Name,
                 };
+                materials.Add(material);
             }
 
 
+            Rendering.Material? defaultMaterial = null;
             Rendering.Mesh[] meshes = new Rendering.Mesh[modelData.Meshes.Length];
             for (int i = 0; i < meshes.Length; i++)
             {
@@ -222,7 +224,22 @@ namespace TransportX.Rendering.Importing
                     };
                 }
 
-                Rendering.Material material = 0 <= meshData.MaterialIndex ? materials[meshData.MaterialIndex] : Rendering.Material.Default();
+                Rendering.Material material;
+                if (0 <= meshData.MaterialIndex)
+                {
+                    material = materials[meshData.MaterialIndex];
+                }
+                else
+                {
+                    if (defaultMaterial is null)
+                    {
+                        defaultMaterial = Rendering.Material.Default();
+                        materials.Add(defaultMaterial);
+                    }
+
+                    material = defaultMaterial;
+                }
+
                 meshes[i] = Rendering.Mesh.Create(Context.Device, meshData.Name, vertices, meshData.Indices, material);
             }
 
