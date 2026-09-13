@@ -13,14 +13,14 @@ Structure.Parts.Add("FrontDoor1", "BifoldDoor_HingedPanel", -1.16, 0, -0.4).Buil
 Structure.Parts.Add("FrontDoor2", "BifoldDoor_GuidePanel", -1.16, 0, -1.42).BuildKinematic();
 Structure.Parts.Add("RearDoor", "PocketDoor", -1.16, 0, -6.39).BuildKinematic();
 
-Component<AvatarCameras>().AddSceneCapture("MirrorR")
-    .Position("Body", 1.375, 1.95, -0.31, 5, 188, 0)
+Component<AvatarCameras>().AddSceneCapture("SideMirrorR")
+    .Position("Body", 1.3206, 1.9698, -0.5120, 10, 190, 0)
     .TextureSize(128, 256)
     .FieldOfView(90)
-    .AspectRatio(0.5)
+    .AspectRatio(16.0 / 31.0)
     .Reflect()
     .DisableShadows()
-    .ProjectOntoPart("Body", "Mirror")
+    .ProjectOntoPart("Body", "SideMirrorR")
     .Build();
 
 Component<AvatarDoors>().AddBiford("Front")
