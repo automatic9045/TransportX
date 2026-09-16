@@ -103,7 +103,7 @@ namespace TransportX.Rendering.Importing
                         {
                             try
                             {
-                                ormTexture = WICFactory.CreateFromMerged(occlusionStream, roughnessStream, metallicStream, true);
+                                ormTexture = WICFactory.CreateFromMerged(occlusionStream, roughnessStream, metallicStream, true, textureErrorCollector);
                                 loadedTextures.Add(combinedKey, ormTexture);
                             }
                             catch (Exception ex)
@@ -313,6 +313,8 @@ namespace TransportX.Rendering.Importing
                                 case TextureFormat.Uncompressed:
                                     unsafe
                                     {
+                                        TextureDiagnostics.ReportIfNpot(embeddedTexture.Width, embeddedTexture.Height, errorCollector);
+
                                         using MemoryHandle handle = embeddedTexture.Data.Pin();
 
                                         Texture2DDescription desc = new()
@@ -340,14 +342,7 @@ namespace TransportX.Rendering.Importing
                                     break;
 
                                 case TextureFormat.WIC:
-                                    IErrorCollector textureErrorCollector = IErrorCollector.Default();
-                                    textureErrorCollector.Reported += (sender, e) =>
-                                    {
-                                        Error error = e.Error.ChangeSource(sourceLocation);
-                                        errorCollector.Report(error);
-                                    };
-
-                                    texture = WICFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear, textureErrorCollector);
+                                    texture = WICFactory.CreateFromMemory(embeddedTexture.Data.Span, isLinear, errorCollector);
                                     break;
 
                                 case TextureFormat.DDS:

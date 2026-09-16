@@ -65,6 +65,8 @@ namespace TransportX.Rendering.Importing
                 int width = converter.Size.Width;
                 int height = converter.Size.Height;
 
+                TextureDiagnostics.ReportIfNpot(width, height, errorCollector);
+
                 uint stride = (uint)width * 4;
                 uint bufferSize = stride * (uint)height;
                 unsafe
@@ -132,7 +134,7 @@ namespace TransportX.Rendering.Importing
             return Create(decoder, isLinear, errorCollector);
         }
 
-        public unsafe ID3D11ShaderResourceView CreateFromMerged(IWICStream? rStream, IWICStream? gStream, IWICStream? bStream, bool isLinear)
+        public unsafe ID3D11ShaderResourceView CreateFromMerged(IWICStream? rStream, IWICStream? gStream, IWICStream? bStream, bool isLinear, IErrorCollector errorCollector)
         {
             using IWICBitmapSource? bSource = bStream is null ? null : LoadBitmap(bStream);
             using IWICBitmapSource? gSource = gStream is null ? null : LoadBitmap(gStream);
@@ -147,11 +149,12 @@ namespace TransportX.Rendering.Importing
             }
 
 
-            uint width = 1;
-            uint height = 1;
-            if (bSource is not null) { width = uint.Max(width, (uint)bSource.Size.Width); height = uint.Max(height, (uint)bSource.Size.Height); }
-            if (gSource is not null) { width = uint.Max(width, (uint)gSource.Size.Width); height = uint.Max(height, (uint)gSource.Size.Height); }
-            if (rSource is not null) { width = uint.Max(width, (uint)rSource.Size.Width); height = uint.Max(height, (uint)rSource.Size.Height); }
+            uint width = 1, height = 1;
+            if (bSource is not null) (width, height) = (uint.Max(width, (uint)bSource.Size.Width), uint.Max(height, (uint)bSource.Size.Height));
+            if (gSource is not null) (width, height) = (uint.Max(width, (uint)gSource.Size.Width), uint.Max(height, (uint)gSource.Size.Height));
+            if (rSource is not null) (width, height) = (uint.Max(width, (uint)rSource.Size.Width), uint.Max(height, (uint)rSource.Size.Height));
+
+            TextureDiagnostics.ReportIfNpot((int)width, (int)height, errorCollector);
 
 
             using IWICBitmapSource? bResized = bSource is null ? null : ConvertAndResize(bSource, width, height);
