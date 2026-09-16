@@ -121,6 +121,7 @@ namespace TransportX.Worlds
 
             RendererOptions rendererOptions = new()
             {
+                MaxAnisotropy = config.MaxAnisotropy,
                 DrawChunkCount = config.DrawChunkCount,
                 ShadowOptions = new ShadowOptions()
                 {

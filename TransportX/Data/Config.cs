@@ -23,6 +23,16 @@ namespace TransportX.Data
         }
 
 
+        public int MaxAnisotropy
+        {
+            get;
+            set
+            {
+                if (value < 1 || 16 < value) throw new InvalidOperationException($"{nameof(MaxAnisotropy)} は 1 以上 16 以下である必要があります。");
+                field = value;
+            }
+        } = 3;
+
         public int SimulationChunkCount
         {
             get;

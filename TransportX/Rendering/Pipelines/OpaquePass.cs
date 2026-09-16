@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -21,9 +22,11 @@ namespace TransportX.Rendering.Pipelines
 
         protected readonly GraphicsPipelineState PipelineState;
         protected readonly GraphicsPipelineState ReflectPipelineState;
-        protected readonly ID3D11SamplerState TextureSamplerState;
 
         protected readonly RenderQueue RenderQueue = new();
+
+        private SamplerDescription SamplerDesc;
+        protected ID3D11SamplerState SamplerState { get; private set; }
 
         public OpaquePass(RenderResourceSet resources)
         {
@@ -104,31 +107,24 @@ namespace TransportX.Rendering.Pipelines
                 RasterizerState = reflectRasterizerState,
             };
 
-
-            SamplerDescription samplerDesc = new()
-            {
-                Filter = Filter.Anisotropic,
-                MaxAnisotropy = 16,
-                AddressU = TextureAddressMode.Wrap,
-                AddressV = TextureAddressMode.Wrap,
-                AddressW = TextureAddressMode.Wrap,
-                ComparisonFunc = ComparisonFunction.Never,
-                MinLOD = 0,
-                MaxLOD = float.MaxValue,
-            };
-            TextureSamplerState = Resources.Context.DeviceContext.Device.CreateSamplerState(samplerDesc);
+            UpdateSamplerState(16);
         }
 
         public void Dispose()
         {
             PipelineState.Dispose();
-            TextureSamplerState.Dispose();
+            SamplerState.Dispose();
         }
 
         public void Execute(in RenderPassContext context, WorldBase world)
         {
+            if (SamplerDesc.MaxAnisotropy != context.Options.MaxAnisotropy)
+            {
+                UpdateSamplerState((uint)context.Options.MaxAnisotropy);
+            }
+
             Resources.Context.DeviceContext.RSSetViewport(0, 0, context.ViewportSize.Width, context.ViewportSize.Height);
-            Resources.Context.DeviceContext.PSSetSampler(0, TextureSamplerState);
+            Resources.Context.DeviceContext.PSSetSampler(0, SamplerState);
 
             Resources.Context.DeviceContext.VSSetConstantBuffer(0, Resources.SceneBuffer);
 
@@ -184,6 +180,25 @@ namespace TransportX.Rendering.Pipelines
                 });
                 RenderQueue.Clear();
             }
+        }
+
+        [MemberNotNull(nameof(SamplerDesc), nameof(SamplerState))]
+        private void UpdateSamplerState(uint maxAnisotropy)
+        {
+            SamplerState?.Dispose();
+
+            SamplerDesc = new()
+            {
+                Filter = Filter.Anisotropic,
+                MaxAnisotropy = maxAnisotropy,
+                AddressU = TextureAddressMode.Wrap,
+                AddressV = TextureAddressMode.Wrap,
+                AddressW = TextureAddressMode.Wrap,
+                ComparisonFunc = ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue,
+            };
+            SamplerState = Resources.Context.DeviceContext.Device.CreateSamplerState(SamplerDesc);
         }
     }
 }
