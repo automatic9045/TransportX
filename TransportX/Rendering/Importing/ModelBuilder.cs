@@ -313,31 +313,20 @@ namespace TransportX.Rendering.Importing
                                 case TextureFormat.Uncompressed:
                                     unsafe
                                     {
-                                        TextureDiagnostics.ReportIfNpot(embeddedTexture.Width, embeddedTexture.Height, errorCollector);
+                                        TextureFactory.ReportIfNpot(embeddedTexture.Width, embeddedTexture.Height, errorCollector);
 
                                         using MemoryHandle handle = embeddedTexture.Data.Pin();
-
-                                        Texture2DDescription desc = new()
+                                        TextureFactory.Description desc = new()
                                         {
                                             Width = (uint)embeddedTexture.Width,
                                             Height = (uint)embeddedTexture.Height,
-                                            MipLevels = 0,
-                                            ArraySize = 1,
-                                            SampleDescription = new SampleDescription(1, 0),
-                                            Usage = ResourceUsage.Default,
-                                            Format = isLinear ? Format.B8G8R8A8_UNorm : Format.B8G8R8A8_UNorm_SRgb,
-                                            BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-                                            CPUAccessFlags = 0,
-                                            MiscFlags = ResourceOptionFlags.GenerateMips,
+                                            IsLinear = isLinear,
+                                            SrcData = (nint)handle.Pointer,
+                                            SrcRowPitch = (uint)embeddedTexture.Width * 4,
+                                            SrcDepthPitch = 0,
                                         };
 
-                                        using ID3D11Texture2D baseTexture = Context.Device.CreateTexture2D(desc);
-                                        Context.UpdateSubresource(baseTexture, 0, null, (nint)handle.Pointer, (uint)embeddedTexture.Width * 4, 0);
-
-                                        ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(baseTexture);
-                                        Context.GenerateMips(view);
-
-                                        texture = view;
+                                        texture = TextureFactory.Create(Context, desc);
                                     }
                                     break;
 

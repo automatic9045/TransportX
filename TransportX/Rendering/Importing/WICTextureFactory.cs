@@ -65,7 +65,7 @@ namespace TransportX.Rendering.Importing
                 int width = converter.Size.Width;
                 int height = converter.Size.Height;
 
-                TextureDiagnostics.ReportIfNpot(width, height, errorCollector);
+                TextureFactory.ReportIfNpot(width, height, errorCollector);
 
                 uint stride = (uint)width * 4;
                 uint bufferSize = stride * (uint)height;
@@ -77,26 +77,17 @@ namespace TransportX.Rendering.Importing
                     {
                         converter.CopyPixels(stride, bufferSize, (nint)pBuffer);
 
-                        Texture2DDescription desc = new()
+                        TextureFactory.Description desc = new()
                         {
                             Width = (uint)width,
                             Height = (uint)height,
-                            MipLevels = 0,
-                            ArraySize = 1,
-                            Format = isLinear ? Format.B8G8R8A8_UNorm : Format.B8G8R8A8_UNorm_SRgb,
-                            SampleDescription = new SampleDescription(1, 0),
-                            Usage = ResourceUsage.Default,
-                            BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-                            CPUAccessFlags = CpuAccessFlags.None,
-                            MiscFlags = ResourceOptionFlags.GenerateMips,
+                            IsLinear = isLinear,
+                            SrcData = (nint)pBuffer,
+                            SrcRowPitch = stride,
+                            SrcDepthPitch = bufferSize,
                         };
 
-                        using ID3D11Texture2D texture = Context.Device.CreateTexture2D(desc);
-                        Context.UpdateSubresource(texture, 0, null, (nint)pBuffer, stride, bufferSize);
-
-                        ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(texture);
-                        Context.GenerateMips(view);
-
+                        ID3D11ShaderResourceView view = TextureFactory.Create(Context, desc);
                         return view;
                     }
                     finally
@@ -154,7 +145,7 @@ namespace TransportX.Rendering.Importing
             if (gSource is not null) (width, height) = (uint.Max(width, (uint)gSource.Size.Width), uint.Max(height, (uint)gSource.Size.Height));
             if (rSource is not null) (width, height) = (uint.Max(width, (uint)rSource.Size.Width), uint.Max(height, (uint)rSource.Size.Height));
 
-            TextureDiagnostics.ReportIfNpot((int)width, (int)height, errorCollector);
+            TextureFactory.ReportIfNpot((int)width, (int)height, errorCollector);
 
 
             using IWICBitmapSource? bResized = bSource is null ? null : ConvertAndResize(bSource, width, height);
@@ -208,7 +199,17 @@ namespace TransportX.Rendering.Importing
                     pd += 4;
                 }
 
-                ID3D11ShaderResourceView view = CreateShaderResourceView((nint)pResult, width, height, stride, bufferSize, isLinear);
+                TextureFactory.Description desc = new()
+                {
+                    Width = width,
+                    Height = height,
+                    IsLinear = isLinear,
+                    SrcData = (nint)pResult,
+                    SrcRowPitch = stride,
+                    SrcDepthPitch = bufferSize,
+                };
+
+                ID3D11ShaderResourceView view = TextureFactory.Create(Context, desc);
                 return view;
             }
             finally
@@ -218,31 +219,6 @@ namespace TransportX.Rendering.Importing
                 if (pR is not null) NativeMemory.Free(pR);
                 if (pResult is not null) NativeMemory.Free(pResult);
             }
-        }
-
-        private ID3D11ShaderResourceView CreateShaderResourceView(nint data, uint width, uint height, uint stride, uint bufferSize, bool isLinear)
-        {
-            Texture2DDescription desc = new()
-            {
-                Width = width,
-                Height = height,
-                MipLevels = 0,
-                ArraySize = 1,
-                Format = isLinear ? Format.B8G8R8A8_UNorm : Format.B8G8R8A8_UNorm_SRgb,
-                SampleDescription = new SampleDescription(1, 0),
-                Usage = ResourceUsage.Default,
-                BindFlags = BindFlags.ShaderResource | BindFlags.RenderTarget,
-                CPUAccessFlags = CpuAccessFlags.None,
-                MiscFlags = ResourceOptionFlags.GenerateMips,
-            };
-
-            using ID3D11Texture2D texture = Context.Device.CreateTexture2D(desc);
-            Context.UpdateSubresource(texture, 0, null, data, stride, bufferSize);
-
-            ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(texture);
-            Context.GenerateMips(view);
-
-            return view;
         }
     }
 }
