@@ -21,6 +21,7 @@ namespace TransportX.Player
     internal class Game : IDisposable
     {
         private readonly IWindow Window;
+        private readonly DiscordPresenceHost Discord;
         private IInputContext? Input = null;
 
         private AppRequest? Request = null;
@@ -28,6 +29,8 @@ namespace TransportX.Player
 
         public Game()
         {
+            Discord = new DiscordPresenceHost();
+
             SdlWindowing.Use();
 
             WindowOptions options = WindowOptions.Default with
@@ -51,6 +54,7 @@ namespace TransportX.Player
 
         public void Dispose()
         {
+            Discord.Dispose();
             Input?.Dispose();
             try
             {

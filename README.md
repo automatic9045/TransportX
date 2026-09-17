@@ -30,6 +30,9 @@ Copyright (c) 2024 Dennis Gocke
 Copyright (c) 2016 Simon Taylor  
 Copyright (c) 2011-2024 Microsoft Corp
 
+### [Discord RPC C#](https://github.com/Lachee/discord-rpc-csharp) (MIT)
+Copyright (c) 2021 Lachee
+
 ### [dotnet](https://github.com/dotnet/dotnet) (MIT)
 Copyright (c) .NET Foundation and Contributors
 
