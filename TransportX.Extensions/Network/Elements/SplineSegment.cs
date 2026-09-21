@@ -16,6 +16,7 @@ namespace TransportX.Extensions.Network.Elements
         public required readonly Pose Pose { get; init; }
 
         public required readonly float Curvature { get; init; }
+        public required readonly float Gradient { get; init; }
         public required readonly float GradientDelta { get; init; }
         public required readonly float Cant { get; init; }
         public required readonly float CantDelta { get; init; }
@@ -36,7 +37,7 @@ namespace TransportX.Extensions.Network.Elements
             else
             {
                 vSinIntegral = (1 - float.Cos(gradient)) / gradientRate;
-                vCosIntegral = (float.Sin(gradient)) / gradientRate;
+                vCosIntegral = float.Sin(gradient) / gradientRate;
             }
 
             float hAngle = Curvature * ds;
@@ -58,13 +59,14 @@ namespace TransportX.Extensions.Network.Elements
             Quaternion unbank = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, Cant);
             position = Vector3.Transform(position, unbank);
 
-            Quaternion turn = Quaternion.CreateFromYawPitchRoll(hAngle, -gradient, 0);
-
+            float endGradient = Gradient + gradient;
             float cantRate = 1e-6f < Length ? CantDelta / Length : 0;
-            float cant = Cant + cantRate * ds;
-            Quaternion rebank = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, -cant);
+            float endCant = Cant + cantRate * ds;
 
-            Quaternion rotation = unbank * turn * rebank;
+            Quaternion qStart = Quaternion.CreateFromYawPitchRoll(0, -Gradient, -Cant);
+            Quaternion qEnd = Quaternion.CreateFromYawPitchRoll(hAngle, -endGradient, -endCant);
+
+            Quaternion rotation = Quaternion.Inverse(qStart) * qEnd;
 
             return new Pose(position, rotation);
         }

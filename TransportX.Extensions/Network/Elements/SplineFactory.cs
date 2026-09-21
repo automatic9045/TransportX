@@ -101,6 +101,7 @@ namespace TransportX.Extensions.Network.Elements
                     Pose = segmentPose,
 
                     Curvature = slicedCurve.FromValue,
+                    Gradient = slicedGradient.FromValue,
                     GradientDelta = slicedGradient.ValueDelta,
                     Cant = slicedCant.FromValue,
                     CantDelta = slicedCant.ValueDelta,
@@ -154,6 +155,7 @@ namespace TransportX.Extensions.Network.Elements
                     Pose = segment.Pose,
 
                     Curvature = segment.Curvature,
+                    Gradient = segment.Gradient,
                     GradientDelta = segment.GradientDelta,
                     Cant = segment.Cant,
                     CantDelta = segment.CantDelta,
@@ -278,8 +280,8 @@ namespace TransportX.Extensions.Network.Elements
             {
             }
 
-            public void Constant(float length) => Add(0, 0, length);
-            public void TransitionBy(float angle, float length) => Add(0, angle, length);
+            public void Constant(float length) => Add(Value, 0, length);
+            public void TransitionBy(float angle, float length) => Add(Value, angle, length);
         }
 
         public class CantList : SpanList
