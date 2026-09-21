@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
+using Vortice.Mathematics;
 
 using TransportX.Audio;
 using TransportX.Bodies;
@@ -25,7 +28,7 @@ namespace TransportX.Avatars
 {
     public abstract class AvatarBase : RigidBody, ITrafficEntity
     {
-        private readonly IDebugModel DebugModel;
+        private WireframeDebugModel DebugModel;
 
         public IAvatarInfo Info { get; }
         public Platform Platform { get; }
@@ -52,9 +55,33 @@ namespace TransportX.Avatars
         public Viewpoint DriverViewpoint { get; protected set; }
         public Viewpoint BirdViewpoint { get; protected set; }
 
-        public float Width { get; protected set; } = 2;
-        public float Height { get; protected set; } = 2;
-        public float Length { get; protected set; } = 2;
+        public float Width
+        {
+            get;
+            protected set
+            {
+                field = value;
+                UpdateDebugModel();
+            }
+        } = 2;
+        public float Height
+        {
+            get;
+            protected set
+            {
+                field = value;
+                UpdateDebugModel();
+            }
+        } = 2;
+        public float Length
+        {
+            get;
+            protected set
+            {
+                field = value;
+                UpdateDebugModel();
+            }
+        } = 2;
 
         public abstract bool IsEnabled { get; }
         public abstract ILanePath? Path { get; }
@@ -67,9 +94,9 @@ namespace TransportX.Avatars
 
         protected Vector4 DebugColor
         {
-            get => DebugModel.Color;
-            set => DebugModel.Color = value;
-        }
+            get;
+            set => field = DebugModel.Color = value;
+        } = Colors.Red;
 
         public AvatarBase(PluginLoadContext context, AvatarBuilder builder) : base(builder.World.PhysicsHost)
         {
@@ -96,9 +123,7 @@ namespace TransportX.Avatars
             DriverViewpoint = new DriverViewpoint(this, new Pose(0, 1.5f, 0));
             BirdViewpoint = new BirdViewpoint(this, Pose.Identity, 20, new Vector2(0.3f, 0));
 
-            DebugModel = this.CreateDebugModel(GraphicsHost.Device);
-            DebugModel.DebugName = GetType().Name;
-            DebugModel.Color = new Vector4(1, 0, 0, 1);
+            UpdateDebugModel();
         }
 
         public override void Dispose()
@@ -106,6 +131,16 @@ namespace TransportX.Avatars
             ComponentEngine.Dispose();
             base.Dispose();
             DebugModel.Dispose();
+        }
+
+        [MemberNotNull(nameof(DebugModel))]
+        private void UpdateDebugModel()
+        {
+            DebugModel?.Dispose();
+
+            DebugModel = this.CreateDebugModel(GraphicsHost.Device);
+            DebugModel.DebugName = GetType().Name;
+            DebugModel.Color = DebugColor;
         }
 
         public virtual void OnStart()
