@@ -60,7 +60,8 @@ namespace TransportX.Extensions.Traffic
             if (float.Sign(oldVelocity * SVelocity) == -1) SVelocity = 0;
 
             LanePathView pathView = new(Path, Heading);
-            Navigator.Update(pathView, pathView.ToViewVelocity(SVelocity) * 3.6f + 10);
+            float planLength = float.Max(50, pathView.ToViewVelocity(SVelocity) * 5);
+            Navigator.Update(pathView, planLength);
 
             float viewS = pathView.ToViewS(S + SVelocity * (float)elapsed.TotalSeconds);
             while (Path.Length < viewS)

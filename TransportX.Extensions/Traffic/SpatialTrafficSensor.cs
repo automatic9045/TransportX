@@ -77,36 +77,52 @@ namespace TransportX.Extensions.Traffic
                 float maxDistance = minSurfaceDistance + LaneTracker.Length + obstacle.Length + ObstacleDetectMargin;
                 if (maxDistance * maxDistance < delta.LengthSquared()) continue;
 
-                Vector3 localFront = Pose.Transform(obstacle.WorldPose.Pose.Position + offset.Position, poseInv);
+                Vector3 obstacleFrontPosition = obstacle.WorldPose.Pose.Position + offset.Position;
+                Vector3 obstacleRearPosition = obstacleFrontPosition - obstacle.WorldPose.Pose.Direction * obstacle.Length;
 
-                Quaternion relativeRotation = obstacle.WorldPose.Pose.Orientation * Quaternion.Inverse(Origin.WorldPose.Pose.Orientation);
+                Vector3 localFront = Pose.Transform(obstacleFrontPosition, poseInv);
+                Vector3 localRear = Pose.Transform(obstacleRearPosition, poseInv);
+
+                if (float.Max(localFront.Z, localRear.Z) < 0) continue;
+
+                float obstacleMinZ = float.Min(localFront.Z, localRear.Z);
+                float advanceDistance = float.Max(0, obstacleMinZ);
+
+                if (!GetFutureLocalPose(plannedRoute, LaneTracker.S, advanceDistance, Origin.WorldPose.Chunk, out Pose futurePose)) continue;
+                Pose futurePoseInv = Pose.Inverse(futurePose);
+
+                Vector3 futureLocalFront = Pose.Transform(obstacle.WorldPose.Pose.Position + offset.Position, futurePoseInv);
+                if (futureLocalFront.Z < -obstacle.Length) continue;
+
+                Quaternion relativeRotation = obstacle.WorldPose.Pose.Orientation * Quaternion.Inverse(futurePose.Orientation);
+
                 Vector3 localRight = Vector3.Transform(Vector3.UnitX, relativeRotation) * obstacle.Width / 2;
                 Vector3 localUp = Vector3.Transform(Vector3.UnitY, relativeRotation) * obstacle.Height;
                 Vector3 localBack = Vector3.Transform(Vector3.UnitZ, relativeRotation) * obstacle.Length;
 
-                Vector3 p1 = localFront - localRight;
-                Vector3 p2 = localFront + localRight;
-                Vector3 p3 = localFront - localBack - localRight;
-                Vector3 p4 = localFront - localBack + localRight;
+                Vector3 p1 = futureLocalFront - localRight;
+                Vector3 p2 = futureLocalFront + localRight;
+                Vector3 p3 = futureLocalFront - localBack - localRight;
+                Vector3 p4 = futureLocalFront - localBack + localRight;
                 Span<Vector3> bboxPoints = [
                     p1, p2, p3, p4,
                     p1 + localUp, p2 + localUp, p3 + localUp, p4 + localUp,
                 ];
                 BoundingBox bbox = BoundingBox.CreateFromPoints(bboxPoints);
 
-                if (bbox.Max.Z < 0) continue;
+                if (advanceDistance + bbox.Max.Z < 0) continue;
                 if (bbox.Max.Y < 0 || LaneTracker.Height < bbox.Min.Y) continue;
 
-                float surfaceDistance = float.Max(0, bbox.Min.Z);
-                float detectWidth = LaneTracker.Width / 2 + surfaceDistance * 0;
+                float surfaceDistance = float.Max(0, advanceDistance + bbox.Min.Z);
+                float detectWidth = LaneTracker.Width / 2 + 0.2f;
                 if (-detectWidth <= bbox.Max.X && bbox.Min.X <= detectWidth && surfaceDistance < minSurfaceDistance)
                 {
                     minSurfaceDistance = surfaceDistance;
 
-                    nearestObstacleDistance = 0 <= Vector3.Dot(Origin.WorldPose.Pose.Direction, obstacle.WorldPose.Pose.Direction) ? bbox.Max.Z : bbox.Min.Z;
+                    nearestObstacleDistance = advanceDistance + futureLocalFront.Z;
                     nearestObstacle = new ProjectedEntity(
-                        LaneTracker.Heading, LaneTracker.S, Origin.WorldPose.Pose.Direction,
-                        obstacle, nearestObstacleDistance, bbox.Width, bbox.Height, bbox.Depth);
+                        LaneTracker.Heading, LaneTracker.S, futurePose.Direction,
+                        obstacle, nearestObstacleDistance, obstacle.Width, obstacle.Height, obstacle.Length);
                 }
             }
 
@@ -122,6 +138,42 @@ namespace TransportX.Extensions.Traffic
                 IsTargetOncoming = LaneTracker.Heading != nearestObstacle.Heading;
                 DistanceToTarget = minSurfaceDistance;
             }
+        }
+
+        private bool GetFutureLocalPose(IReadOnlyCollection<LanePathView> plannedRoute, float startS, float advanceDistance, ChunkIndex originChunk, out Pose localPose)
+        {
+            float remainingDistance = advanceDistance;
+            LanePathView currentView = new(LaneTracker.Path!, LaneTracker.Heading);
+            float currentViewS = currentView.ToViewS(startS);
+            float currentAvailable = currentView.Source.Length - currentViewS;
+
+            if (remainingDistance <= currentAvailable)
+            {
+                WorldPose wp = currentView.GetWorldPose(currentViewS + remainingDistance);
+                ChunkIndex offset = wp.Chunk - originChunk;
+
+                localPose = new Pose(wp.Pose.Position + offset.Position, wp.Pose.Orientation);
+                return true;
+            }
+
+            remainingDistance -= currentAvailable;
+
+            foreach (LanePathView view in plannedRoute)
+            {
+                float availableDistance = view.Source.Length;
+                if (remainingDistance <= availableDistance)
+                {
+                    WorldPose wp = view.GetWorldPose(remainingDistance);
+                    ChunkIndex offset = wp.Chunk - originChunk;
+
+                    localPose = new Pose(wp.Pose.Position + offset.Position, wp.Pose.Orientation);
+                    return true;
+                }
+                remainingDistance -= availableDistance;
+            }
+
+            localPose = Pose.Identity;
+            return false;
         }
 
         public void Draw(in TransformedDrawContext context)
