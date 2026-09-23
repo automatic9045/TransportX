@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LaneLayout>
+    <Lanes>
+        <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="-3.3" Y="-0.12" LeftWidth="0.3" RightWidth="0.3" />
+        <Lane AllowedTraffic="Cars"        Directions="Out"   X="-1.5" Y="-0.12" LeftWidth="1.5" RightWidth="1.5" />
+        <Lane AllowedTraffic="Cars"        Directions="In"    X="1.5"  Y="-0.12" LeftWidth="1.5" RightWidth="1.5" />
+        <Lane AllowedTraffic="Pedestrians" Directions="InOut" X="3.3"  Y="-0.12" LeftWidth="0.3" RightWidth="0.3" />
+    </Lanes>
+</LaneLayout>

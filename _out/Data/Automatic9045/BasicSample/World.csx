@@ -1,141 +1,14 @@
 #load "__Editor.csx"
 
+#load "Init.csx"
+#load "Templates.csx"
+
+//Debug.ShowDialog("hello");
+
 Camera.Locate(-1, 0, 230, 8, 10, 0, 40, 0);
 
 Avatar.Load(@"..\LV290\Avatar_LV290N.xml");
 Avatar.Locate(0, 0, -1, 0.2, 45, 0, 2, 0);
-
-Models.LoadList("Models.txt");
-//Debug.ShowDialog("hello");
-
-Network.LaneTraffic.AddType("Pedestrians", "歩行者", "#FFFF00");
-Network.LaneTraffic.AddType("Buses", "バス", "#00FF00");
-Network.LaneTraffic.AddType("NormalCars", "その他自動車", "#0000FF");
-Network.LaneTraffic.AddGroup("Cars", "Buses|NormalCars", "#00FFFF");
-
-Network.LaneLayouts.Load("Layout1", "LaneLayout1.xml");
-
-Component<TrafficAgents>().AddSpawner<RandomTrafficSpawnerTemplate>("Random");
-Component<TrafficAgents>().AddAgent<CarTemplate>("AICar");
-Component<TrafficAgents>().Generate("NormalCars", @"Traffic\NormalCars.xml");
-
-Component<TrafficSignals>().AddController("4Forked_Normal", @"SignalControllers\4Forked_Normal.xml");
-
-// --------------------------------------------------
-// テンプレートの定義
-
-var tSpline = Network.Templates.CreateSpline("SplineTemplate1", "Layout1")
-    .SpeedLimit(1, 60)
-    .SpeedLimit(2, 60);
-tSpline.PutProp(["Road2_Straight"], 0, 0, 0, 0, 1.2, 1.2);
-tSpline.PutProp(["WhiteLine150"], -4, -0.12, 0, 0, 1, 0.9);
-tSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 0, 1, 0.9);
-
-
-var tJunction = Network.Templates.CreateJunction("3Forked1")
-    .SignalController("4Forked_Normal");
-tJunction.AddPort("S", "Layout1", 0, 0, 0, 0, 180, 0);
-tJunction.AddPort("N", "Layout1", 0, 0, 24, 0, 0, 0);
-tJunction.AddPort("E", "Layout1", 12, 0, 12, 0, 90, 0);
-
-var tJunctionPath = tJunction.Wire("SN0", "S", 0, "N", 3);
-tJunctionPath.StraightToEnd();
-
-tJunctionPath = tJunction.Wire("SN1", "S", 1, "N", 2)
-    .Deflection(0)
-    .Signal("V_Car");
-tJunctionPath.StraightToEnd(out s1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
-
-tJunctionPath = tJunction.Wire("SN2", "S", 2, "N", 1)
-    .Deflection(0)
-    .Signal("V_Car");
-tJunctionPath.StraightToEnd();
-tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, 0, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine150"], 2, -0.12, 0, -0.25, 1, 1, 1);
-
-tJunctionPath = tJunction.Wire("SN3", "S", 3, "N", 0);
-tJunctionPath.StraightToEnd();
-
-tJunctionPath = tJunction.Wire("SE0", "S", 0, "E", 3);
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("SE1", "S", 1, "E", 2)
-    .Deflection(1)
-    .Signal("H_Car")
-    /*.Yield("SN1")*/;
-tJunctionPath.BezierToEnd(out s1);
-tJunctionPath.PutProp(["WhiteLine500"], -1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], -0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 0.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
-tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
-
-tJunctionPath = tJunction.Wire("SE2", "S", 2, "E", 1)
-    .Deflection(1)
-    .Signal("V_Car")
-    .Yield("SN1", "NE2");
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("SE3", "S", 3, "E", 0);
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("NE0", "N", 0, "E", 3);
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("NE1","N", 1, "E", 2)
-    .Deflection(-1)
-    .Signal("H_Car")
-    /*.Yield("SN1", "SN2", "SE2")*/;
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("NE2","N", 2, "E", 1)
-    .Deflection(-1)
-    .Signal("V_Car");
-tJunctionPath.BezierToEnd();
-
-tJunctionPath = tJunction.Wire("NE3","N", 3, "E", 0);
-tJunctionPath.BezierToEnd();
-
-tJunction.PutProp("Road2_3Forked", 0, 0, 0);
-tJunction.PutProp("Signal_L", -5.25, 0, 20, 0, 0, 0);
-tJunction.PutSignalProp("Signal_L_CarRed", -5.25, 0, 20, 0, 0, 0, "V_Car", 0);
-tJunction.PutSignalProp("Signal_L_CarYellow", -5.25, 0, 20, 0, 0, 0, "V_Car", 1);
-tJunction.PutSignalProp("Signal_L_CarGreen", -5.25, 0, 20, 0, 0, 0, "V_Car", 2);
-tJunction.PutProp("Signal_L", 5.25, 0, 0, 0, 180, 0);
-tJunction.PutSignalProp("Signal_L_CarRed", 5.25, 0, 0, 0, 180, 0, "V_Car", 0);
-tJunction.PutSignalProp("Signal_L_CarYellow", 5.25, 0, 0, 0, 180, 0, "V_Car", 1);
-tJunction.PutSignalProp("Signal_L_CarGreen", 5.25, 0, 0, 0, 180, 0, "V_Car", 2);
-tJunction.PutProp("Signal_L", -5.25, 0, 4.75, 0, -90, 0);
-tJunction.PutSignalProp("Signal_L_CarRed", -5.25, 0, 4.75, 0, -90, 0, "H_Car", 0);
-tJunction.PutSignalProp("Signal_L_CarYellow", -5.25, 0, 4.75, 0, -90, 0, "H_Car", 1);
-tJunction.PutSignalProp("Signal_L_CarGreen", -5.25, 0, 4.75, 0, -90, 0, "H_Car", 2);
-
-
-tJunction = Network.Templates.CreateJunction("DeadEnd1");
-tJunction.AddPort("0", "Layout1", 0, 0, 0, 0, 180, 0);
-tJunctionPath = tJunction.Wire("", "0", 2, "0", 1)
-    .SpeedLimit(20);
-tJunctionPath
-    .BezierTo(-5, 0, 10, 0, 0, 0, out var s1)
-    .BezierTo(5, 0, 10, 0, 180, 0, out var s2, 6.5)
-    .BezierToEnd();
-tJunctionPath.Width
-    .Constant(5)
-    .TransitionTo(2.5, 3, s1 - 5)
-    .Constant(s2 - s1);
-tJunction.PutProp("Road2_DeadEnd", 0, 0, 0);
-
-// テンプレートの定義 ここまで
-// --------------------------------------------------
 
 Environment.SetDefault("Environment1.xml");
 
@@ -152,83 +25,256 @@ Chunks[0, 1].PutProp("Grass", 0, -0.2, 0);
 
 string[] centerLine = ["WhiteLine150", "WhiteLine150", "WhiteLine150", "WhiteLine150", "WhiteLine150", "", "", "", "", ""];
 
-var factory = Chunks[0, 0].BeginSpline("SplineTemplate1", 10, 0, 0);
-factory.Curves.Straight(100);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-var spline = factory.Build();
+var fSpline = Chunks[0, 0].BeginSpline("Spline1", 10, 0, 0);
+fSpline.Curves.Straight(100);
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+var spline = fSpline.Build();
 
 Chunks[0, 0].PutProp("RoadTerminal1", -1.7, 0, 30);
-Chunks[0, 0].PutProp("BusStop", -4.5, 0, 49.3);
+Chunks[0, 0].PutProp("BusStop_Ichigo", -4.5, 0, 49.3); // 一郷
 
-var fJunction = spline.IntoJunction("3Forked1", "S");
+var fJunction = spline.IntoJunction("4Forked1", "S");
 var junction = fJunction.Build();
 
-var factory2 = junction.IntoSpline("E", "SplineTemplate1")
+fSpline = junction.IntoSpline("W", "Spline1_Empty")
+    .SpeedLimit(1, 60)
+    .SpeedLimit(2, 60);
+fSpline.Curves
+    .Straight(10)
+    .ByRadius(150, 50)
+    .Straight(140);
+fSpline.PutProp(["Road1_Straight_DikeL"], 0, 0, 0, 0, 1.2, 1.2, 75);
+fSpline.PutProp(["Road1_StraightL"], 0, 0, 0, 0, 1.2, 1.2, 75);
+fSpline.PutProp(["Road1_BusBay_Dike"], 0, 0, 0, 90, 36, 36, 1);
+fSpline.PutProp(["Road1_BusBay"], 0, 0, 0, 90, 36, 36, 1);
+fSpline.PutProp(["Road1_Straight_DikeL"], 0, 0, 0, 126, 1.2, 1.2);
+fSpline.PutProp(["Road1_StraightL"], 0, 0, 0, 126, 1.2, 1.2);
+fSpline.PutProp(["WhiteLine150"], -4, -0.12, 0, 0, 1, 0.9, 101);
+fSpline.PutProp(["WhiteLine150"], -4, -0.12, 0, 125, 1, 0.9);
+fSpline.PutProp(["WhiteLine500", "WhiteLine500", "", ""], -4.175, -0.12, 0, 93.5, 1, 1, 32);
+fSpline.PutProp(["BusStop_KendoSanda"], -10.5, 0, 0, 0, -90, 0, 109, 0, 0, 1); // 県道三田 (四葉台方面)
+fSpline.PutProp(["Road1_Straight_DikeR"], 0, 0, 0, 0, 1.2, 1.2, 55);
+fSpline.PutProp(["Road1_StraightR"], 0, 0, 0, 0, 1.2, 1.2, 55);
+fSpline.PutProp(["Road1_BusBay_Dike"], 0, 0, 36, 0, 180, 0, 66, 36, 36, 1);
+fSpline.PutProp(["Road1_BusBay"], 0, 0, 36, 0, 180, 0, 66, 36, 36, 1);
+fSpline.PutProp(["Road1_Straight_DikeR"], 0, 0, 0, 102, 1.2, 1.2);
+fSpline.PutProp(["Road1_StraightR"], 0, 0, 0, 102, 1.2, 1.2);
+fSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 0, 1, 0.9, 74);
+fSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 101, 1, 0.9);
+fSpline.PutProp(["WhiteLine500", "WhiteLine500", "", ""], 4.175, -0.12, 0, 69.5, 1, 1, 32);
+fSpline.PutProp(["BusStop_KendoSanda"], 10.5, 0, 0, 0, 90, 0, 85, 0, 0, 1); // 県道三田 (一橋方面)
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("3Forked2", "S");
+var junction2 = fJunction.Build();
+
+fSpline = junction2.IntoSpline("N", "Spline1")
+    .SpeedLimit(1, 60)
+    .SpeedLimit(2, 60);
+fSpline.Curves
+    .Straight(50);
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
+
+fSpline = junction2.IntoSpline("E", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(20)
+    .ByRadius(-100, 20)
+    .Straight(10)
+    .ByRadius(60, 30)
+    .Straight(10);
+fSpline.Gradients
+    .Constant(40)
+    .TransitionByPercent(5, 10)
+    .Constant(30)
+    .TransitionByPercent(-5, 10);
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("4Forked2", "S");
+fJunction.PutProp("BusStop_YotsubadaiIriguchi", -3.8, -0.12, 3, 0, -90, 0); // 四葉台入口
+junction2 = fJunction.Build();
+
+fSpline = junction2.IntoSpline("E", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(10)
+    .ByRadius(-10, 10 * 3.1415 / 2)
+    .Straight(30);
+fSpline.PutProp(["Road1_Straight_DikeR"], -4, 0, 0, 10.2, 1.2, 1.2, 13);
+fSpline.PutProp(["Road2_StraightR"], 0, 0, 0, 10.2, 1.2, 1.2, 13);
+fSpline.PutProp(["WhiteLine150"], 2.8, -0.12, 0, 9.45, 1, 0.9, 18);
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("3Forked3", "N");
+fJunction.Paths["NE_L"].TrafficDensity(0);
+fJunction.Paths["SE_R"].TrafficDensity(0);
+var junction3 = fJunction.Build();
+
+fSpline = junction2.IntoSpline("W", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(10)
+    .ByRadius(10, 10 * 3.1415 / 2)
+    .Straight(30);
+fSpline.PutProp(["Road1_Straight_DikeL"], 4, 0, 0, 10.2, 1.2, 1.2, 13);
+fSpline.PutProp(["Road2_StraightL"], 0, 0, 0, 10.2, 1.2, 1.2, 13);
+fSpline.PutProp(["WhiteLine150"], -2.8, -0.12, 0, 9.45, 1, 0.9, 18);
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("3Forked3", "S");
+var junction4 = fJunction.Build();
+
+fSpline = junction2.IntoSpline("N", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(32);
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("4Forked2", "S");
+fJunction.Paths["SE_R"].TrafficDensity(0);
+fJunction.Paths["NW_R"].TrafficDensity(0);
+junction2 = fJunction.Build();
+
+fSpline = junction2.IntoSpline("E", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.ConnectBezier(junction3.Junction.Ports["E"]);
+fSpline.PutProp(["BusStop_Yotsubadai"], 3.8, -0.01, 0, 0, 90, 0, 5, 0, 0, 1); // 四葉台
+spline = fSpline.Build();
+
+fSpline = junction2.IntoSpline("W", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.ConnectBezier(junction4.Junction.Ports["E"]);
+spline = fSpline.Build();
+
+fSpline = junction2.IntoSpline("N", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(32);
+fSpline.PutProp(["BusStop_YotsubadaiKita"], -3.4, -0.12, 0, 0, -90, 0, 31, 0, 0, 1); // 四葉台北
+spline = fSpline.Build();
+
+fJunction = spline.IntoJunction("4Forked2", "S");
+junction2 = fJunction.Build();
+
+fSpline = junction3.IntoSpline("S", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(30)
+    .ByRadius(-10, 10 * 3.1415 / 2)
+    .Straight(5);
+fSpline.ConnectBezier(junction2.Junction.Ports["E"]);
+fSpline.PutProp(["Road1_Straight_DikeR"], -4, 0, 0, 29.4, 1.2, 1.2, 14);
+fSpline.PutProp(["Road2_StraightR"], 0, 0, 0, 29.4, 1.2, 1.2, 14);
+fSpline.PutProp(["WhiteLine150"], 2.8, -0.12, 0, 29.25, 1, 0.9, 18);
+spline = fSpline.Build();
+
+fSpline = junction4.IntoSpline("N", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(30)
+    .ByRadius(10, 10 * 3.1415 / 2)
+    .Straight(5);
+fSpline.ConnectBezier(junction2.Junction.Ports["W"]);
+fSpline.PutProp(["Road1_Straight_DikeL"], 4, 0, 0, 29.4, 1.2, 1.2, 14);
+fSpline.PutProp(["Road2_StraightL"], 0, 0, 0, 29.4, 1.2, 1.2, 14);
+fSpline.PutProp(["WhiteLine150"], -2.8, -0.12, 0, 29.25, 1, 0.9, 18);
+spline = fSpline.Build();
+
+fSpline = junction2.IntoSpline("N", "Spline2")
+    .SpeedLimit(1, 30)
+    .SpeedLimit(2, 30);
+fSpline.Curves
+    .Straight(10)
+    .ByRadius(-70, 70)
+    .Straight(10)
+    .ByRadius(200, 50)
+    .Straight(20);
+fSpline.Gradients
+    .Constant(5)
+    .TransitionByPercent(-2.5, 10)
+    .Constant(75)
+    .TransitionByPercent(2.5, 10);
+spline = fSpline.Build();
+
+fSpline = junction.IntoSpline("E", "Spline1")
     .SpeedLimit(1, 40)
     .SpeedLimit(2, 40);
-factory2.Curves
+fSpline.Curves
     .ByRadius(-100, 35)
     .Straight(25)
     .ByRadius(100, 35);
-factory2.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-var spline2 = factory2.Build();
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
 
-var fJunction2 = spline2.IntoJunction("3Forked1", "E");
-var junction2 = fJunction2.Build();
+fJunction = spline.IntoJunction("3Forked1", "E");
+junction2 = fJunction.Build();
 
-factory = junction.IntoSpline("N", "SplineTemplate1");
-factory.Curves
+fSpline = junction.IntoSpline("N", "Spline1");
+fSpline.Curves
     .Straight(20)
     .ByRadius(50, 50)
     .ByRadius(-50, 50)
     .Straight(200);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-factory.PutProp(["BusStop"], -5.25, 0, 0, 250, 0, 0, 1);
-spline = factory.Build();
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["BusStop_Futagawa"], -5.25, 0, 0, 250, 0, 0, 1); // 二川 (四葉台方面)
+fSpline.PutProp(["BusStop_Futagawa"], 5.25, 0, 0, 0, 180, 0, 220, 0, 0, 1); // 二川 (一郷方面)
+spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("3Forked1", "S");
 junction = fJunction.Build();
 
-factory = junction.IntoSpline("N", "SplineTemplate1");
-factory.Curves.Straight(200);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-spline = factory.Build();
+fSpline = junction.IntoSpline("N", "Spline1");
+fSpline.Curves.Straight(50);
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
 
-factory = junction.IntoSpline("E", "SplineTemplate1")
+fSpline = junction.IntoSpline("E", "Spline1")
     .SpeedLimit(1, 40)
     .SpeedLimit(2, 40);
-factory.Curves
+fSpline.Curves
     .Straight(10)
     .ByRadius(50, 70)
     .Straight(120);
-factory.Cants
+fSpline.Cants
     .Constant(10)
     .TransitionToPercent(5, 20)
     .Constant(50)
     .TransitionToPercent(0, 20);
-factory.Gradients
+fSpline.Gradients
     .TransitionByPercent(5, 5)
     .TransitionByPercent(-5, 5)
     .Constant(110)
     .TransitionByPercent(10, 30)
     .Constant(50)
     .TransitionByPercent(-10, 30);
-factory.ConnectBezier(junction2.Junction.Ports["S"]);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-spline = factory.Build();
+fSpline.ConnectBezier(junction2.Junction.Ports["S"]);
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
 
-factory = junction2.IntoSpline("N", "SplineTemplate1");
-factory.Curves.Straight(30);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-spline = factory.Build();
+fSpline = junction2.IntoSpline("N", "Spline1");
+fSpline.Curves.Straight(30);
+fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("DeadEnd1", "0");
 junction = fJunction.Build();
 
-factory = Chunks[0, 0].BeginSpline("SplineTemplate1", 30, 0, 35);
-factory.Curves.Straight(110);
-factory.Gradients
+fSpline = Chunks[-1, 0].BeginSpline("Spline2_Empty", 15, 0, 5);
+fSpline.Curves.Straight(110);
+fSpline.Gradients
     .Constant(30)
     .TransitionByDegree(180, 50);
-factory.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
-spline = factory.Build();
+fSpline.PutProp(["Road2_StraightL"], 0, 0, 0, 0, 1.2, 1.2);
+fSpline.PutProp(["Road2_StraightR"], 0, 0, 0, 0, 1.2, 1.2);
+spline = fSpline.Build();
