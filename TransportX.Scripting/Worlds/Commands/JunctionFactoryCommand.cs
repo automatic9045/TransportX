@@ -4,38 +4,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Collections;
 using TransportX.Components;
 using TransportX.Diagnostics;
-using TransportX.Network;
 using TransportX.Rendering;
 using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Elements;
+
+using TransportX.Scripting.Collections;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
     public class JunctionFactoryCommand
     {
         private readonly ScriptWorld World;
-
-        private readonly IReadOnlyKeyedList<string, JunctionPathFactoryCommand> Paths;
         private readonly List<TransformedModelTemplate> Props = [];
 
         public Junction Junction { get; }
+        public IReadOnlyScriptKeyedList<string, JunctionPathFactoryCommand> Paths { get; }
+
         public string? Key { get; set; } = null;
 
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction, IReadOnlyKeyedList<string, JunctionPathFactoryCommand> paths)
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction, IReadOnlyScriptKeyedList<string, JunctionPathFactoryCommand> paths)
         {
             World = world;
             Junction = junction;
             Paths = paths;
         }
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction)
-            : this(world, junction, new KeyedList<string, JunctionPathFactoryCommand>(path => path.Key))
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction) : this(world, junction, new ScriptKeyedList<string, JunctionPathFactoryCommand>(
+            path => path.Key, world.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(world, junction)))
         {
         }
 
@@ -66,36 +66,6 @@ namespace TransportX.Scripting.Worlds.Commands
         public TransformedModelTemplate PutProp(string modelKey, double x, double y, double z)
         {
             return PutProp(modelKey, x, y, z, 0, 0, 0);
-        }
-
-        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
-            Pose pose, double from, double span, double interval, int count = int.MaxValue)
-        {
-            SplineProp prop;
-            if (!Paths.TryGetValue(pathKey, out JunctionPathFactoryCommand? path))
-            {
-                ScriptError error = new(ErrorLevel.Error, $"進路パス '{pathKey}' が見つかりません。");
-                World.ErrorCollector.Report(error);
-
-                prop = new([], 0, 0, 0, 0);
-                return prop;
-            }
-
-            prop = path.PutProp(modelKeys, pose, from, span, interval, count);
-            return prop;
-        }
-
-        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
-            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
-        {
-            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutPathProp(modelKeys, pathKey, position.ToPose(), from, span, interval, count);
-        }
-
-        public SplineProp PutPathProp(IReadOnlyList<string> modelKeys, string pathKey,
-            double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
-        {
-            return PutPathProp(modelKeys, pathKey, x, y, z, 0, 0, 0, from, span, interval, count);
         }
 
         public JunctionCommand Build()

@@ -22,7 +22,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public LaneTraffic LaneTraffic { get; }
         public LaneLayouts LaneLayouts { get; }
-        public Templates Templates { get; }
+        public NetworkTemplates Templates { get; }
 
         internal ScriptDictionary<string, SplineCommand> SplinesKey { get; }
         public IReadOnlyScriptDictionary<string, SplineCommand> Splines => SplinesKey;
@@ -36,7 +36,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
             LaneTraffic = new LaneTraffic(World);
             LaneLayouts = new LaneLayouts(World);
-            Templates = new Templates(World);
+            Templates = new NetworkTemplates(World);
 
             SplinesKey = new ScriptDictionary<string, SplineCommand>(World.ErrorCollector, "スプライン",
                 key => new SplineCommand(World, []));

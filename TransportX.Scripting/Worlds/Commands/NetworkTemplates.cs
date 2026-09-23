@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -10,7 +9,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
-    public class Templates
+    public class NetworkTemplates
     {
         private readonly ScriptWorld World;
 
@@ -20,7 +19,7 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly Dictionary<string, JunctionTemplate> JunctionsKey = [];
         public IReadOnlyDictionary<string, JunctionTemplate> Junctions => JunctionsKey;
 
-        internal Templates(ScriptWorld world)
+        internal NetworkTemplates(ScriptWorld world)
         {
             World = world;
         }

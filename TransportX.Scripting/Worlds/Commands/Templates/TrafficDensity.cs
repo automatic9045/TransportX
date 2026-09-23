@@ -9,7 +9,7 @@ using TransportX.Network;
 
 using TransportX.Extensions.Traffic;
 
-namespace TransportX.Scripting.Worlds.Components
+namespace TransportX.Scripting.Worlds.Commands.Templates
 {
     internal class TrafficDensity : ITemplateComponent<ILanePath>
     {

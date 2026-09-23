@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Scripting.Worlds.Components;
+using TransportX.Scripting.Worlds.Commands.Templates;
 
 namespace TransportX.Scripting.Worlds.Commands.Extensions
 {

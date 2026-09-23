@@ -59,7 +59,49 @@ namespace TransportX.Extensions.Traffic
                 ).ToArray();
                 if (candidates.Count == 0) break;
 
-                LanePathView next = candidates[Random.Shared.Next(candidates.Count)];
+                LanePathView next;
+                if (candidates.Count == 1)
+                {
+                    next = candidates[0];
+                }
+                else
+                {
+                    float totalWeight = 0;
+                    float[] weights = new float[candidates.Count];
+                    for (int i = 0; i < candidates.Count; i++)
+                    {
+                        float weight = 1.0f;
+                        if (candidates[i].Source.Components.TryGet<TrafficDensityComponent>(out TrafficDensityComponent? density))
+                        {
+                            weight = float.Max(0, density.Factor);
+                        }
+                        weights[i] = weight;
+                        totalWeight += weight;
+                    }
+
+                    if (totalWeight <= 0)
+                    {
+                        next = candidates[Random.Shared.Next(candidates.Count)];
+                    }
+                    else
+                    {
+                        float randomValue = Random.Shared.NextSingle() * totalWeight;
+                        float cumulativeWeight = 0;
+                        int selectedIndex = candidates.Count - 1;
+
+                        for (int i = 0; i < candidates.Count; i++)
+                        {
+                            cumulativeWeight += weights[i];
+                            if (randomValue < cumulativeWeight)
+                            {
+                                selectedIndex = i;
+                                break;
+                            }
+                        }
+
+                        next = candidates[selectedIndex];
+                    }
+                }
 
                 PlannedRouteKey.Enqueue(next);
 
