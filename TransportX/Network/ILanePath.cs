@@ -32,6 +32,7 @@ namespace TransportX.Network
         Pose GetLocalPose(float at);
         WorldPose GetWorldPose(float at);
         LaneWidth GetWidth(float at);
+        float ProjectToS(in WorldPose pose);
 
         void Enter(ITrafficEntity entity);
         void Exit(ITrafficEntity entity);

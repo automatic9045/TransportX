@@ -16,6 +16,8 @@ using TransportX.Physics;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
+using TransportX.Extensions.Traffic;
+
 using TransportX.Scripting.Avatars.Commands;
 using TransportX.Scripting.Collections;
 
@@ -23,6 +25,8 @@ namespace TransportX.Scripting.Avatars
 {
     public class ScriptAvatar : AvatarBase
     {
+        private readonly SpatialLaneMatcher LaneMatcher;
+
         public new InputProfile InputProfile
         {
             get => base.InputProfile;
@@ -60,10 +64,10 @@ namespace TransportX.Scripting.Avatars
         }
 
         public override bool IsEnabled => true;
-        public override ILanePath? Path => null;
-        public override EntityDirection Heading => EntityDirection.Forward;
-        public override float S => 0;
-        public override float SVelocity => 0;
+        public override ILanePath? Path => LaneMatcher.PrimaryPath;
+        public override EntityDirection Heading => LaneMatcher.Heading;
+        public override float S => LaneMatcher.S;
+        public override float SVelocity => LaneMatcher.SVelocity;
 
         internal ScriptModelCollection ModelsKey { get; }
         public IModelCollection Models => ModelsKey;
@@ -94,6 +98,8 @@ namespace TransportX.Scripting.Avatars
                 { "__Skip", ColliderGroupHandle.Skip },
             };
 
+            LaneMatcher = new SpatialLaneMatcher(this);
+
 
             ScriptPath = IOPath.GetFullPath(IOPath.Combine(IOPath.GetDirectoryName(Info.InfoPath)!, Info.Args[0]));
             ScriptError.DefaultLocation = ScriptPath;
@@ -112,6 +118,7 @@ namespace TransportX.Scripting.Avatars
 
         public override void Dispose()
         {
+            LaneMatcher.Dispose();
             Commander.Dispose();
             base.Dispose();
             Models.Dispose();
@@ -133,6 +140,9 @@ namespace TransportX.Scripting.Avatars
         {
             base.Tick(elapsed);
             Commander.Tick(elapsed);
+
+            LaneMatcher.Update(World.Chunks);
+
         }
 
         public override bool Spawn(ILanePath path, EntityDirection heading, float s)

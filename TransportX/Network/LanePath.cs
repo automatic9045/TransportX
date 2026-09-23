@@ -17,6 +17,7 @@ namespace TransportX.Network
     public abstract class LanePath : ILanePath
     {
         protected const float SweepBack = 0.5f;
+        private const float SampleInterval = 2;
 
 
         protected readonly LaneWidth FromWidth;
@@ -95,6 +96,54 @@ namespace TransportX.Network
         }
 
         public abstract LaneWidth GetWidth(float at);
+
+        public virtual float ProjectToS(in WorldPose pose)
+        {
+            if (Length < 1e-3f) return 0;
+
+            int sampleCount = int.Max(1, (int)float.Ceiling(Length / SampleInterval));
+            float step = Length / sampleCount;
+
+            float minSampleDistanceSquared = float.MaxValue;
+            int bestSampleIndex = 0;
+
+            for (int i = 0; i <= sampleCount; i++)
+            {
+                float sampleS = float.Min(Length, i * step);
+                WorldPose samplePose = GetWorldPose(sampleS);
+                float distanceSquared = pose.GetOffset(samplePose).LengthSquared();
+
+                if (distanceSquared < minSampleDistanceSquared)
+                {
+                    minSampleDistanceSquared = distanceSquared;
+                    bestSampleIndex = i;
+                }
+            }
+
+            float roughS = float.Min(Length, bestSampleIndex * step);
+            float rangeMin = float.Max(0, roughS - step);
+            float rangeMax = float.Min(Length, roughS + step);
+
+            for (int i = 0; i < 4; i++)
+            {
+                float mid1 = rangeMin + (rangeMax - rangeMin) * 0.333f;
+                float mid2 = rangeMin + (rangeMax - rangeMin) * 0.667f;
+
+                float d1 = pose.GetOffset(GetWorldPose(mid1)).LengthSquared();
+                float d2 = pose.GetOffset(GetWorldPose(mid2)).LengthSquared();
+
+                if (d1 < d2)
+                {
+                    rangeMax = mid2;
+                }
+                else
+                {
+                    rangeMin = mid1;
+                }
+            }
+
+            return (rangeMin + rangeMax) * 0.5f;
+        }
 
         public virtual void Enter(ITrafficEntity entity)
         {
