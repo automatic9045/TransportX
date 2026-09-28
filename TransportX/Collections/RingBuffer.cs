@@ -1,13 +1,11 @@
-﻿using BepuUtilities.Memory;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace TransportX.Extensions.Utilities
+namespace TransportX.Collections
 {
     public class RingBuffer<T> : IReadOnlyList<T>
     {
@@ -22,13 +20,9 @@ namespace TransportX.Extensions.Utilities
         {
             get
             {
-                if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+                if (index < 0 || Count <= index) throw new ArgumentOutOfRangeException(nameof(index));
 
-                int actualIndex = Head - 1 - index;
-
-                if (actualIndex < 0) actualIndex += Buffer.Length;
-                if (actualIndex < 0) actualIndex = (actualIndex % Buffer.Length + Buffer.Length) % Buffer.Length;
-
+                int actualIndex = (Head + index) % Buffer.Length;
                 return Buffer[actualIndex]!;
             }
         }
@@ -48,21 +42,34 @@ namespace TransportX.Extensions.Utilities
                 Expand();
             }
 
-            Buffer[Head] = item;
-            Head = (Head + 1) % Buffer.Length;
+            int tailIndex = (Head + Count) % Buffer.Length;
+            Buffer[tailIndex] = item;
             Count++;
             Version++;
+        }
+
+        public bool TryPop(out T item)
+        {
+            if (Count == 0)
+            {
+                item = default!;
+                return false;
+            }
+
+            item = Buffer[Head]!;
+            Buffer[Head] = default;
+            Head = (Head + 1) % Buffer.Length;
+            Count--;
+            Version++;
+            return true;
         }
 
         public void RemoveOldest()
         {
             if (Count == 0) throw new InvalidOperationException("バッファは空です。");
 
-            int oldestIndex = Head - Count;
-            if (oldestIndex < 0) oldestIndex += Buffer.Length;
-
-            Buffer[oldestIndex] = default;
-
+            Buffer[Head] = default;
+            Head = (Head + 1) % Buffer.Length;
             Count--;
             Version++;
         }
@@ -74,12 +81,11 @@ namespace TransportX.Extensions.Utilities
 
             for (int i = 0; i < Count; i++)
             {
-                int oldIndex = (Head + i) % Buffer.Length;
-                newBuffer[i] = Buffer[oldIndex]!;
+                newBuffer[i] = Buffer[(Head + i) % Buffer.Length];
             }
 
             Buffer = newBuffer;
-            Head = Count;
+            Head = 0;
         }
 
         public void Clear()

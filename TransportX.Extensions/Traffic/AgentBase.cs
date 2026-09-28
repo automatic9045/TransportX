@@ -35,17 +35,14 @@ namespace TransportX.Extensions.Traffic
         public float S => LaneTracker.S;
         public float SVelocity => LaneTracker.SVelocity;
 
-        public IEnumerable<ITrafficEntity> Obstacles { get; }
-
         protected Vector4 DebugColor
         {
             get => field;
             set => DebugModel?.Color = field = value;
         } = new Vector4(0, 0, 1, 1);
 
-        protected AgentBase(IPhysicsHost physicsHost, IEnumerable<ITrafficEntity> obstacles) : base(physicsHost)
+        protected AgentBase(IPhysicsHost physicsHost) : base(physicsHost)
         {
-            Obstacles = obstacles;
         }
 
         public override void Dispose()
@@ -73,10 +70,10 @@ namespace TransportX.Extensions.Traffic
             return true;
         }
 
-        private void OnPathChanged(object? sender, PathChangedEventArgs e)
+        private void OnPathChanged(ILanePath? oldPath, ILanePath? newPath)
         {
-            e.OldPath?.Exit(this);
-            e.NewPath?.Enter(this);
+            oldPath?.Exit(this);
+            newPath?.Enter(this);
         }
 
         public override void Tick(TimeSpan elapsed)
@@ -85,13 +82,13 @@ namespace TransportX.Extensions.Traffic
             if (Path is null) throw new InvalidOperationException();
             if (SubscribedTracker != LaneTracker) throw new NotSupportedException($"実行中に {nameof(LaneTracker)} プロパティの値を変更することはできません。");
 
-            Sensor.Tick(Navigator.PlannedRoute, Obstacles, elapsed);
+            Sensor.Tick(Navigator.PlannedRoute, elapsed);
             Driver.Tick(elapsed);
 
             LaneTracker.Tick(Driver.Acceleration, elapsed);
             if (!LaneTracker.IsEnabled)
             {
-                WorldPose worldPose = new(ChunkIndex.Zero, new Pose(0, -1000 - Random.Shared.NextSingle() * 1000, 0));
+                WorldPose worldPose = new(new ChunkIndex(int.MaxValue, int.MaxValue), new Pose(0, Random.Shared.NextSingle() * 1000, 0));
                 Locate(worldPose);
                 return;
             }

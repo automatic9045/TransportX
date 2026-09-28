@@ -175,7 +175,7 @@ namespace TransportX.Cameras
             Offset = offset;
             FieldOfView = DefaultFieldOfView = float.Clamp(defaultFieldOfView, MinFieldOfView, MaxFieldOfView);
 
-            Source.Moved += _ => UpdateLocation();
+            Source.Moved += (_, _) => UpdateLocation();
             UpdateLocation();
 
 
@@ -230,7 +230,7 @@ namespace TransportX.Cameras
             };
             Rotator.Reset();
 
-            Source.Moved += _ => UpdateLocation();
+            Source.Moved += (_, _) => UpdateLocation();
             UpdateLocation();
 
 

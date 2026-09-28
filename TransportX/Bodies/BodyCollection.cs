@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,16 @@ using TransportX.Spatial;
 
 namespace TransportX.Bodies
 {
-    public class BodyCollection : List<RigidBody>, IDisposable
+    public class BodyCollection : IBodyCollection, IDisposable
     {
+        private readonly List<RigidBody> Bodies = [];
+
+        public RigidBody this[int index] => Bodies[index];
+        public int Count => Bodies.Count;
+
+        public event Action<RigidBody>? Added;
+        public event Action<RigidBody>? Removed;
+
         public BodyCollection() : base()
         {
         }
@@ -17,6 +26,25 @@ namespace TransportX.Bodies
         public void Dispose()
         {
             foreach (RigidBody body in this) body.Dispose();
+        }
+
+        public void Add(RigidBody body)
+        {
+            Bodies.Add(body);
+            Added?.Invoke(body);
+        }
+
+        public bool Remove(RigidBody body)
+        {
+            if (Bodies.Remove(body))
+            {
+                Removed?.Invoke(body);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void SetCameraChunk(ChunkIndex cameraChunk)
@@ -40,5 +68,8 @@ namespace TransportX.Bodies
         {
             foreach (RigidBody body in this) body.Tick(elapsed);
         }
+
+        public IEnumerator<RigidBody> GetEnumerator() => Bodies.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

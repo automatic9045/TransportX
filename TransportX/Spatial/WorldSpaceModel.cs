@@ -23,11 +23,11 @@ namespace TransportX.Spatial
             Model = model;
 
             LastChunkIndex = WorldPose.Chunk;
-            Parent.Moved += _ =>
+            Parent.Moved += (_, _) =>
             {
                 ChunkIndex offset = WorldPose.Chunk - LastChunkIndex;
                 LastChunkIndex = WorldPose.Chunk;
-                Moved?.Invoke(offset);
+                Moved?.Invoke(this, offset);
             };
         }
     }

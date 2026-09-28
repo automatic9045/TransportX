@@ -13,8 +13,8 @@ namespace TransportX.Extensions.Traffic
     public readonly struct TrafficSpawnContext
     {
         public required IPhysicsHost PhysicsHost { get; init; }
-        public required ICollection<RigidBody> Bodies { get; init; }
-        public required IEnumerable<ITrafficEntity> Obstacles { get; init; }
+        public required IBodyCollection Bodies { get; init; }
+        public required ITrafficRegistry Registry { get; init; }
 
         public TrafficSpawnContext()
         {

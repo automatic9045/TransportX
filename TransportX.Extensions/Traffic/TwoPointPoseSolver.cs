@@ -24,11 +24,11 @@ namespace TransportX.Extensions.Traffic
 
         public void Tick(IReadOnlyList<LanePathView> pathViewHistory, LanePathView pathView, float viewS, TimeSpan elapsed)
         {
-            WorldPose front = GetWorldPoseFromHistory(viewS + FrontOffset);
-            WorldPose rear = GetWorldPoseFromHistory(viewS + RearOffset);
+            WorldPose front = GetWorldPoseFromHistory(pathViewHistory, pathView, viewS + FrontOffset);
+            WorldPose rear = GetWorldPoseFromHistory(pathViewHistory, pathView, viewS + RearOffset);
 
 
-            WorldPose GetWorldPoseFromHistory(float convS)
+            static WorldPose GetWorldPoseFromHistory(IReadOnlyList<LanePathView> pathViewHistory, LanePathView pathView, float convS)
             {
                 if (0 <= convS)
                 {
@@ -36,7 +36,7 @@ namespace TransportX.Extensions.Traffic
                 }
 
                 float distanceBack = -convS;
-                for (int i = 0; i < pathViewHistory.Count; i++)
+                for (int i = pathViewHistory.Count - 1; 0 <= i; i--)
                 {
                     LanePathView history = pathViewHistory[i];
 
@@ -48,7 +48,7 @@ namespace TransportX.Extensions.Traffic
                     distanceBack -= history.Source.Length;
                 }
 
-                LanePathView oldest = 0 < pathViewHistory.Count ? pathViewHistory[pathViewHistory.Count - 1] : pathView;
+                LanePathView oldest = 0 < pathViewHistory.Count ? pathViewHistory[0] : pathView;
                 return oldest.GetWorldPose(convS);
             }
 

@@ -45,22 +45,37 @@ namespace TransportX.Extensions.Traffic
             DebugVisual?.Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyList<LanePathView> plannedRoute, TimeSpan elapsed)
         {
             if (!LaneTracker.IsEnabled || LaneTracker.Path is null) throw new InvalidOperationException();
 
             LanePathView pathView = new(LaneTracker.Path, LaneTracker.Heading);
 
-            ITrafficEntity? next = LaneTracker.Path.Entities
-                .OrderBy(entity => pathView.ToViewS(entity.S))
-                .FirstOrDefault(entity => pathView.ToViewS(LaneTracker.S) < pathView.ToViewS(entity.S));
+            ITrafficEntity? next = null;
+            float minDistance = float.MaxValue;
+            float viewS = pathView.ToViewS(LaneTracker.S);
+            for (int i = 0; i < LaneTracker.Path.Entities.Count; i++)
+            {
+                ITrafficEntity entity = LaneTracker.Path.Entities[i];
+                float entityViewS = pathView.ToViewS(entity.S);
+                if (viewS < entityViewS)
+                {
+                    float diff = entityViewS - viewS;
+                    if (diff < minDistance)
+                    {
+                        minDistance = diff;
+                        next = entity;
+                    }
+                }
+            }
+
             bool isOncoming = next is not null && LaneTracker.Heading != next.Heading;
 
             float distance;
             float surfaceDistance;
             if (next is not null)
             {
-                distance = pathView.ToViewS(next.S) - pathView.ToViewS(LaneTracker.S);
+                distance = pathView.ToViewS(next.S) - viewS;
                 surfaceDistance = isOncoming ? distance : distance - next.Length;
             }
             else
@@ -68,24 +83,37 @@ namespace TransportX.Extensions.Traffic
                 distance = pathView.ToViewS(LaneTracker.Path.Length - LaneTracker.S);
                 surfaceDistance = float.MaxValue;
 
-                foreach (LanePathView view in plannedRoute)
+                for (int r = 0; r < plannedRoute.Count; r++)
                 {
                     if (MaxDistance < distance) break;
 
-                    next = view.Source.Entities
-                        .OrderBy(entity => view.ToViewS(entity.S))
-                        .FirstOrDefault();
+                    LanePathView view = plannedRoute[r];
+                    IReadOnlyList<ITrafficEntity> viewEntities = view.Source.Entities;
 
-                    if (next is null)
+                    ITrafficEntity? closestInPath = null;
+                    float minViewS = float.MaxValue;
+
+                    for (int e = 0; e < viewEntities.Count; e++)
+                    {
+                        ITrafficEntity candidate = viewEntities[e];
+                        float s = view.ToViewS(candidate.S);
+                        if (s < minViewS)
+                        {
+                            minViewS = s;
+                            closestInPath = candidate;
+                        }
+                    }
+
+                    if (closestInPath is null)
                     {
                         distance += view.Source.Length;
                     }
                     else
                     {
+                        next = closestInPath;
                         isOncoming = (next.Heading == EntityDirection.Forward) == view.Reverse;
-                        distance += view.ToViewS(next.S);
+                        distance += minViewS;
                         surfaceDistance = isOncoming ? distance : distance - next.Length;
-
                         if (MaxDistance < surfaceDistance) next = null;
                         break;
                     }

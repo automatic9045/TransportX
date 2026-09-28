@@ -18,5 +18,5 @@ namespace TransportX
         Vector3 GetOffset(IWorldObject to) => WorldPose.GetOffset(to.WorldPose);
     }
 
-    public delegate void MovedEventHandler(ChunkIndex chunkOffset);
+    public delegate void MovedEventHandler(IWorldObject sender, ChunkIndex chunkOffset);
 }

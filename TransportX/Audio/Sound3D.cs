@@ -29,7 +29,7 @@ namespace TransportX.Audio
             {
                 ChunkIndex oldChunk = WorldPose.Chunk;
                 field = value;
-                Moved?.Invoke(field.Chunk - oldChunk);
+                Moved?.Invoke(this, field.Chunk - oldChunk);
             }
         } = WorldPose.Zero;
         public Vector3 Velocity { get; set; } = Vector3.Zero;

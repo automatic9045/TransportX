@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Collections;
 using TransportX.Network;
 using TransportX.Traffic;
 
@@ -11,10 +12,13 @@ namespace TransportX.Extensions.Traffic
 {
     public class RandomRouteNavigator : IRouteNavigator
     {
-        private readonly Queue<LanePathView> PlannedRouteKey = new();
+        private readonly RingBuffer<LanePathView> PlannedRouteKey = new(16);
 
-        public IReadOnlyCollection<LanePathView> PlannedRoute => PlannedRouteKey;
-        public float PlannedLength => PlannedRoute.Sum(p => p.Source.Length);
+        private readonly List<LanePathView> CandidateBuffer = new(8);
+        private readonly List<float> WeightBuffer = new(8);
+
+        public IReadOnlyList<LanePathView> PlannedRoute => PlannedRouteKey;
+        public float PlannedLength { get; private set; } = 0;
 
         public RandomRouteNavigator()
         {
@@ -23,90 +27,98 @@ namespace TransportX.Extensions.Traffic
         public void Reset()
         {
             PlannedRouteKey.Clear();
+            PlannedLength = 0;
         }
 
         public bool TryPop(out LanePathView pathView)
         {
-            if (PlannedRoute.Count == 0)
-            {
-                pathView = default;
-                return false;
-            }
-            else
-            {
-                pathView = PlannedRouteKey.Dequeue();
-                return true;
-            }
+            if (!PlannedRouteKey.TryPop(out pathView)) return false;
+
+            PlannedLength -= pathView.Source.Length;
+            if (PlannedLength < 0) PlannedLength = 0;
+            return true;
         }
 
         public void Update(LanePathView currentPath, float planLength)
         {
-            LanePathView tail = 0 < PlannedRoute.Count ? PlannedRoute.Last() : currentPath;
+            LanePathView tail = 0 < PlannedRouteKey.Count ? PlannedRouteKey[^1] : currentPath;
 
-            float plannedLength = PlannedLength;
-            while (plannedLength < planLength)
+            while (PlannedLength < planLength)
             {
                 LanePin? nextPin = tail.To.ConnectedPin;
                 if (nextPin is null) break;
 
-                IReadOnlyList<LanePathView> candidates = Enumerable.Concat(
-                    nextPin.SourcePaths
-                        .Where(p => p.Directions.HasFlag(FlowDirections.Out))
-                        .Select(p => new LanePathView(p, false)),
-                    nextPin.DestPaths
-                        .Where(p => p.Directions.HasFlag(FlowDirections.In))
-                        .Select(p => new LanePathView(p, true))
-                ).ToArray();
-                if (candidates.Count == 0) break;
+                CandidateBuffer.Clear();
+
+                IReadOnlyList<ILanePath> sourcePaths = nextPin.SourcePaths;
+                for (int i = 0; i < sourcePaths.Count; i++)
+                {
+                    ILanePath path = sourcePaths[i];
+                    if (path.Directions.HasFlag(FlowDirections.Out))
+                    {
+                        CandidateBuffer.Add(new LanePathView(path, false));
+                    }
+                }
+
+                IReadOnlyList<ILanePath> destPaths = nextPin.DestPaths;
+                for (int i = 0; i < destPaths.Count; i++)
+                {
+                    ILanePath path = destPaths[i];
+                    if (path.Directions.HasFlag(FlowDirections.In))
+                    {
+                        CandidateBuffer.Add(new LanePathView(path, true));
+                    }
+                }
+
+                if (CandidateBuffer.Count == 0) break;
 
                 LanePathView next;
-                if (candidates.Count == 1)
+                if (CandidateBuffer.Count == 1)
                 {
-                    next = candidates[0];
+                    next = CandidateBuffer[0];
                 }
                 else
                 {
+                    WeightBuffer.Clear();
                     float totalWeight = 0;
-                    float[] weights = new float[candidates.Count];
-                    for (int i = 0; i < candidates.Count; i++)
+
+                    for (int i = 0; i < CandidateBuffer.Count; i++)
                     {
-                        float weight = 1.0f;
-                        if (candidates[i].Source.Components.TryGet<TrafficDensityComponent>(out TrafficDensityComponent? density))
+                        float weight = 1;
+                        if (CandidateBuffer[i].Source.Components.TryGet<TrafficDensityComponent>(out TrafficDensityComponent? density))
                         {
                             weight = float.Max(0, density.Factor);
                         }
-                        weights[i] = weight;
+                        WeightBuffer.Add(weight);
                         totalWeight += weight;
                     }
 
                     if (totalWeight <= 0)
                     {
-                        next = candidates[Random.Shared.Next(candidates.Count)];
+                        next = CandidateBuffer[Random.Shared.Next(CandidateBuffer.Count)];
                     }
                     else
                     {
                         float randomValue = Random.Shared.NextSingle() * totalWeight;
                         float cumulativeWeight = 0;
-                        int selectedIndex = candidates.Count - 1;
+                        int selectedIndex = CandidateBuffer.Count - 1;
 
-                        for (int i = 0; i < candidates.Count; i++)
+                        for (int i = 0; i < CandidateBuffer.Count; i++)
                         {
-                            cumulativeWeight += weights[i];
+                            cumulativeWeight += WeightBuffer[i];
                             if (randomValue < cumulativeWeight)
                             {
                                 selectedIndex = i;
                                 break;
                             }
                         }
-
-                        next = candidates[selectedIndex];
+                        next = CandidateBuffer[selectedIndex];
                     }
                 }
 
-                PlannedRouteKey.Enqueue(next);
-
+                PlannedRouteKey.Add(next);
+                PlannedLength += next.Source.Length;
                 tail = next;
-                plannedLength += next.Source.Length;
             }
         }
     }

@@ -49,7 +49,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
                 CreepSpeed = 1.5f + Random.Shared.NextSingle() * 1.5f, // 1.5～3
             };
 
-            Car car = new(context.PhysicsHost, context.Obstacles, Model, BlinkerLightLModel, BlinkerLightRModel, BrakeLightModel, CarSpec, personality);
+            Car car = new(context.PhysicsHost, context.Registry, Model, BlinkerLightLModel, BlinkerLightRModel, BrakeLightModel, CarSpec, personality);
             context.Bodies.Add(car);
 
             car.Sensor.DebugName = $"{nameof(Car)}_Sensor";

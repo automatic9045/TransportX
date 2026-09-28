@@ -10,7 +10,7 @@ namespace TransportX.Traffic
 {
     public interface IRouteNavigator
     {
-        IReadOnlyCollection<LanePathView> PlannedRoute { get; }
+        IReadOnlyList<LanePathView> PlannedRoute { get; }
         float PlannedLength { get; }
 
         void Reset();

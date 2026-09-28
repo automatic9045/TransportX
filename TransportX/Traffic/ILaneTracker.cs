@@ -22,7 +22,7 @@ namespace TransportX.Traffic
 
         IReadOnlyList<LanePathView> History { get; }
 
-        event EventHandler<PathChangedEventArgs>? PathChanged;
+        event PathChangedEventHandler? PathChanged;
 
         void Initialize(ILanePath path, EntityDirection heading, float s);
         void Tick(float acceleration, TimeSpan elapsed);

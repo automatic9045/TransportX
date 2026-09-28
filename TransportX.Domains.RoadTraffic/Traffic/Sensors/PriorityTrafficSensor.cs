@@ -30,6 +30,8 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
         private readonly ILaneTracker LaneTracker;
         private readonly TrafficSensorDebugVisual DebugVisual;
 
+        private readonly PriorityEntity EntityCache = new();
+
         public float MaxDistance { get; set; } = float.MaxValue;
 
         public ITrafficEntity? Target { get; private set; } = null;
@@ -59,22 +61,24 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
             DebugVisual?.Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyList<LanePathView> plannedRoute, TimeSpan elapsed)
         {
             if (LaneTracker.Path is null) throw new InvalidOperationException();
 
             float totalLength = LaneTracker.Path.Length - new LanePathView(LaneTracker.Path, LaneTracker.Heading).ToViewS(LaneTracker.S);
             ITrafficEntity? next = null;
 
-            foreach (LanePathView view in plannedRoute)
+            for (int i = 0; i < plannedRoute.Count; i++)
             {
                 if (MaxDistance < totalLength) break;
+                LanePathView view = plannedRoute[i];
 
                 if (view.Source.Components.TryGet<YieldComponent>(out YieldComponent? component))
                 {
                     if (HasApproachingVehicle(component.PrioritySegments, YieldSearchDistance))
                     {
-                        next = new PriorityEntity(view);
+                        EntityCache.Update(view);
+                        next = EntityCache;
                         break;
                     }
                 }
@@ -195,23 +199,23 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
         }
 
 
-        private readonly struct PriorityEntity : ITrafficEntity
+        private sealed class PriorityEntity : ITrafficEntity
         {
-            private readonly LanePathView Target;
+            private LanePathView Target = default;
 
-            public readonly WorldPose WorldPose { get; }
-            public readonly Vector3 Velocity => Vector3.Zero;
-            public readonly Vector3 AngularVelocity => Vector3.Zero;
+            public WorldPose WorldPose { get; private set; } = WorldPose.Zero;
+            public Vector3 Velocity => Vector3.Zero;
+            public Vector3 AngularVelocity => Vector3.Zero;
 
-            public readonly float Width => 0;
-            public readonly float Height => 0;
-            public readonly float Length => 0;
+            public float Width => 0;
+            public float Height => 0;
+            public float Length => 0;
 
-            public readonly bool IsEnabled => true;
-            public readonly ILanePath? Path => Target.Source;
-            public readonly EntityDirection Heading { get; }
-            public readonly float S { get; }
-            public readonly float SVelocity => 0;
+            public bool IsEnabled => true;
+            public ILanePath? Path => Target.Source;
+            public EntityDirection Heading { get; private set; } = EntityDirection.Forward;
+            public float S { get; private set; } = 0;
+            public float SVelocity => 0;
 
             public event MovedEventHandler? Moved
             {
@@ -219,7 +223,11 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
                 remove => throw new NotSupportedException();
             }
 
-            public PriorityEntity(in LanePathView target)
+            public PriorityEntity()
+            {
+            }
+
+            public void Update(in LanePathView target)
             {
                 Target = target;
                 WorldPose = Target.GetWorldPose(0);
@@ -227,7 +235,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic.Sensors
                 S = Target.FromViewS(0);
             }
 
-            public readonly bool Spawn(ILanePath path, EntityDirection heading, float s)
+            public bool Spawn(ILanePath path, EntityDirection heading, float s)
             {
                 throw new NotSupportedException();
             }

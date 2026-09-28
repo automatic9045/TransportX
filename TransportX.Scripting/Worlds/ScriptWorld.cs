@@ -20,8 +20,8 @@ namespace TransportX.Scripting.Worlds
 {
     public class ScriptWorld : WorldBase
     {
-        public override IModelCollection Models => ModelsKey;
         internal ScriptModelCollection ModelsKey { get; }
+        public override IModelCollection Models => ModelsKey;
 
         internal ScriptSoundCollection SoundsKey { get; }
         public override ISoundCollection Sounds => SoundsKey;

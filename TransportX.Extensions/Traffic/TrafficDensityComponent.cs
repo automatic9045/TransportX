@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Components;
-using TransportX.Diagnostics;
-using TransportX.Network;
 
 namespace TransportX.Extensions.Traffic
 {

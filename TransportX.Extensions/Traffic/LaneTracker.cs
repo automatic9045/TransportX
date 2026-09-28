@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Collections;
 using TransportX.Network;
 using TransportX.Traffic;
-
-using TransportX.Extensions.Utilities;
 
 namespace TransportX.Extensions.Traffic
 {
@@ -28,7 +27,7 @@ namespace TransportX.Extensions.Traffic
 
         public IReadOnlyList<LanePathView> History => PathViewHistory;
 
-        public event EventHandler<PathChangedEventArgs>? PathChanged;
+        public event PathChangedEventHandler? PathChanged;
 
         public LaneTracker(IRouteNavigator navigator, float width, float height, float length)
         {
@@ -48,7 +47,7 @@ namespace TransportX.Extensions.Traffic
             Navigator.Reset();
 
             IsEnabled = true;
-            PathChanged?.Invoke(this, new PathChangedEventArgs(null, path));
+            PathChanged?.Invoke(null, path);
         }
 
         public void Tick(float acceleration, TimeSpan elapsed)
@@ -69,10 +68,15 @@ namespace TransportX.Extensions.Traffic
                 ILanePath oldPath = Path;
                 PathViewHistory.Add(pathView);
 
-                float totalHistoryLength = PathViewHistory.Sum(view => view.Source.Length);
+                float totalHistoryLength = 0;
+                for (int i = 0; i < PathViewHistory.Count; i++)
+                {
+                    totalHistoryLength += PathViewHistory[i].Source.Length;
+                }
+
                 while (0 < PathViewHistory.Count)
                 {
-                    float oldestLength = PathViewHistory[PathViewHistory.Count - 1].Source.Length;
+                    float oldestLength = PathViewHistory[0].Source.Length;
                     if (totalHistoryLength - oldestLength < Length) break;
 
                     totalHistoryLength -= oldestLength;
@@ -95,11 +99,11 @@ namespace TransportX.Extensions.Traffic
                     PathViewHistory.Clear();
 
                     IsEnabled = false;
-                    PathChanged?.Invoke(this, new PathChangedEventArgs(oldPath, null));
+                    PathChanged?.Invoke(oldPath, null);
                     break;
                 }
 
-                PathChanged?.Invoke(this, new PathChangedEventArgs(oldPath, Path));
+                PathChanged?.Invoke(oldPath, Path);
             }
 
             S = pathView.FromViewS(viewS);

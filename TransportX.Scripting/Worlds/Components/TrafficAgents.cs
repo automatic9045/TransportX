@@ -41,7 +41,7 @@ namespace TransportX.Scripting.Worlds.Components
             {
                 PhysicsHost = World.PhysicsHost,
                 Bodies = World.Bodies,
-                Obstacles = new ObstacleCollection(World.Bodies),
+                Registry = world.Traffic,
             };
 
             Source = new TrafficSpawnerComponent(World);

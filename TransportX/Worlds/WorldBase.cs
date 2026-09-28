@@ -21,6 +21,7 @@ using TransportX.Input.Configuration;
 using TransportX.Rendering.Backend;
 using TransportX.Physics;
 using TransportX.Spatial;
+using TransportX.Traffic;
 
 namespace TransportX.Worlds
 {
@@ -53,6 +54,9 @@ namespace TransportX.Worlds
         public List<TransformedModel> BackgroundModels { get; } = [];
         public ChunkCollection Chunks { get; } = [];
         public BodyCollection Bodies { get; } = [];
+
+        protected readonly TrafficRegistry TrafficKey = new();
+        public ITrafficRegistry Traffic => TrafficKey;
 
         public InputProfile InputProfile { get; protected set; } = InputProfile.Empty(string.Empty);
 
@@ -92,6 +96,9 @@ namespace TransportX.Worlds
 
             Location = builder.Info.Path;
             BaseDirectory = Path.GetDirectoryName(Location)!;
+
+            Bodies.Added += body => { if (body is ITrafficEntity entity) TrafficKey.Register(entity); };
+            Bodies.Removed += body => { if (body is ITrafficEntity entity) TrafficKey.Unregister(entity); };
         }
 
         public virtual void Dispose()

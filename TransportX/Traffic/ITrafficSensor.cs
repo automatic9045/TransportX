@@ -20,6 +20,6 @@ namespace TransportX.Traffic
 
         string? DebugName { get; set; }
 
-        void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed);
+        void Tick(IReadOnlyList<LanePathView> plannedRoute, TimeSpan elapsed);
     }
 }

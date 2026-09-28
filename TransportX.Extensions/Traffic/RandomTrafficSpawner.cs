@@ -129,13 +129,24 @@ namespace TransportX.Extensions.Traffic
 
             if (path.GetWidth(s).Total < factory.Spec.Width) return null;
 
-            bool isOccupied = path.Entities.Any(p => float.Abs(p.S - s) < factory.Spec.Length);
-            if (isOccupied) return null;
+            for (int i = 0; i < path.Entities.Count; i++)
+            {
+                if (float.Abs(path.Entities[i].S - s) < factory.Spec.Length) return null;
+            }
 
             ITrafficEntity entity;
-
             List<ITrafficEntity> entities = Entities.GetOrAdd(factory, _ => []);
-            ITrafficEntity? disabledEntity = entities.FirstOrDefault(p => !p.IsEnabled);
+
+            ITrafficEntity? disabledEntity = null;
+            for (int i = 0; i < entities.Count; i++)
+            {
+                if (!entities[i].IsEnabled)
+                {
+                    disabledEntity = entities[i];
+                    break;
+                }
+            }
+
             if (entities.Count == 0 || disabledEntity is null)
             {
                 entity = factory.Create(Context);

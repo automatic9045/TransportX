@@ -60,7 +60,7 @@ namespace TransportX.Extensions.Traffic
             for (int i = 0; i < Sensors.Count; i++) Sensors[i].Dispose();
         }
 
-        public void Tick(IReadOnlyCollection<LanePathView> plannedRoute, IEnumerable<ITrafficEntity> obstacles, TimeSpan elapsed)
+        public void Tick(IReadOnlyList<LanePathView> plannedRoute, TimeSpan elapsed)
         {
             ITrafficSensor? currentSensor = null;
             for (int i = 0; i < Sensors.Count; i++)
@@ -68,7 +68,7 @@ namespace TransportX.Extensions.Traffic
                 ITrafficSensor sensor = Sensors[i];
                 float searchDistance = currentSensor is null ? MaxDistance : currentSensor.DistanceToTarget + currentSensor.StopMargin;
                 sensor.MaxDistance = searchDistance;
-                sensor.Tick(plannedRoute, obstacles, elapsed);
+                sensor.Tick(plannedRoute, elapsed);
                 if (currentSensor is null || sensor.DistanceToTarget + sensor.StopMargin < searchDistance) currentSensor = sensor;
             }
 

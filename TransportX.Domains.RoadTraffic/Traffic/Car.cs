@@ -42,9 +42,9 @@ namespace TransportX.Domains.RoadTraffic.Traffic
         public override ITrafficSensor Sensor { get; }
         public override IDriver Driver { get; }
 
-        public Car(IPhysicsHost physicsHost, IEnumerable<ITrafficEntity> obstacles,
+        public Car(IPhysicsHost physicsHost, ITrafficRegistry registry,
             in ModelResourceSet model, in ModelResourceSet blinkerLightLModel, in ModelResourceSet blinkerLightRModel, in ModelResourceSet brakeLightModel,
-            CarSpec spec, DriverPersonality personality) : base(physicsHost, obstacles)
+            CarSpec spec, DriverPersonality personality) : base(physicsHost)
         {
             Spec = spec;
 
@@ -57,7 +57,7 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             {
                 DebugColor = new Vector4(0, 1, 1, 1),
             };
-            SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, obstacle => obstacle == networkSensor.Target || obstacle == this)
+            SpatialTrafficSensor spatialSensor = new(LaneTracker, PoseSolver, registry, obstacle => obstacle == networkSensor.Target || obstacle == this)
             {
                 DebugColor = new Vector4(1, 0, 1, 1),
             };
@@ -98,10 +98,11 @@ namespace TransportX.Domains.RoadTraffic.Traffic
             else
             {
                 float distance = Path.Length - new LanePathView(Path, Heading).ToViewS(S);
-                foreach (LanePathView planned in Navigator.PlannedRoute)
+                for (int i = 0; i < Navigator.PlannedRoute.Count; i++)
                 {
                     if (BlinkerDistance < distance) break;
 
+                    LanePathView planned = Navigator.PlannedRoute[i];
                     if (planned.Source.Components.TryGet<PathDeflectionComponent>(out component))
                     {
                         deflection = component.GetDeflection(planned.Reverse);

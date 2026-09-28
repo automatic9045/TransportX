@@ -35,7 +35,7 @@ namespace TransportX
             WorldPose = worldPose;
 
             ChunkIndex offset = WorldPose.Chunk - oldWorldPose.Chunk;
-            Moved?.Invoke(offset);
+            Moved?.Invoke(this, offset);
             return offset;
         }
 
