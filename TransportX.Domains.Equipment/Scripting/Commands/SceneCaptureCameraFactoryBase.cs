@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -144,6 +145,9 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
                 {
                     Model = new MaterialOverriddenModel((IMeshModel)model.Resource.Model, materialOverrides),
                 };
+
+                model.Drawing += OnDrawing;
+                camera.Disposing += sender => model.Drawing -= OnDrawing;
             }
 
             return BuiltCamera;
@@ -154,6 +158,14 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
                 ScriptError error = new(ErrorLevel.Error, message);
                 Parent.ErrorCollector.Report(error);
                 return SceneCaptureCameraCommand.Empty(Parent.ErrorCollector, Key);
+            }
+
+            void OnDrawing(TransformedModel sender, in TransformedDrawContext context, in Matrix4x4 world)
+            {
+                if (context.Purpose != RenderPassPurpose.Main) return;
+
+                float screenRatio = context.ViewContext.GetScreenRatio(sender.Resource.Model.BoundingBox, world);
+                camera.MaxScreenRatio.Report(screenRatio);
             }
         }
     }

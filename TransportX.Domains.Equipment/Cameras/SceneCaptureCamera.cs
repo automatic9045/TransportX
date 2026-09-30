@@ -12,6 +12,7 @@ using Vortice.Mathematics;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
 using TransportX.Spatial;
+using TransportX.Collections;
 
 namespace TransportX.Domains.Equipment.Cameras
 {
@@ -22,9 +23,13 @@ namespace TransportX.Domains.Equipment.Cameras
         public RenderTexture RenderTarget { get; }
         public DepthTexture DepthTarget { get; }
 
+        public DrainableMax<float> MaxScreenRatio { get; } = new();
+
         public float FieldOfView { get; set; } = float.Pi / 4;
         public float AspectRatio { get; set; } = 1;
         public RenderPassFlags RenderFlags { get; set; } = RenderPassFlags.None;
+
+        public event Action<SceneCaptureCamera>? Disposing;
 
         public SceneCaptureCamera(IWorldObject attachedTo, RenderTexture renderTarget, DepthTexture depthTarget)
         {
@@ -70,6 +75,8 @@ namespace TransportX.Domains.Equipment.Cameras
 
         public void Dispose()
         {
+            Disposing?.Invoke(this);
+
             RenderTarget.Dispose();
             DepthTarget.Dispose();
         }

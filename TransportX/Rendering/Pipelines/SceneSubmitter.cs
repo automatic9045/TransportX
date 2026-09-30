@@ -17,7 +17,7 @@ namespace TransportX.Rendering.Pipelines
     public static class SceneSubmitter
     {
         public static void SubmitBackground(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, in ViewContext viewContext, IEnumerable<TransformedModel> models)
+            ID3D11DeviceContext deviceContext, in ViewContext viewContext, IEnumerable<TransformedModel> models, RenderPassPurpose purpose)
         {
             TransformedDrawContext drawContext = new()
             {
@@ -25,6 +25,8 @@ namespace TransportX.Rendering.Pipelines
                 RenderQueue = renderQueue,
                 ChunkOffset = ChunkIndex.Zero,
                 ViewContext = viewContext,
+                Layer = RenderLayer.Normal,
+                Purpose = purpose,
             };
 
             foreach (TransformedModel model in models)
@@ -34,8 +36,8 @@ namespace TransportX.Rendering.Pipelines
             }
         }
 
-        public static void SubmitChunks<TCuller>(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler, ChunkCollection chunks, RenderLayer layer, int drawChunkCount)
+        public static void SubmitChunks<TCuller>(this IRenderQueue renderQueue, ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler,
+            ChunkCollection chunks, RenderLayer layer, RenderPassPurpose purpose, int drawChunkCount)
             where TCuller : struct, ICullingVolume
         {
             for (int i = drawChunkCount - 1; 0 <= i; i--)
@@ -55,6 +57,7 @@ namespace TransportX.Rendering.Pipelines
                                 ChunkOffset = chunkIndex - viewContext.WorldPose.Chunk,
                                 ViewContext = viewContext,
                                 Layer = layer,
+                                Purpose = purpose,
                             };
                             chunk.Draw(drawContext, culler);
                         }
@@ -63,8 +66,8 @@ namespace TransportX.Rendering.Pipelines
             }
         }
 
-        public static void SubmitBodies<TCuller>(this IRenderQueue renderQueue,
-            ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler, IReadOnlyList<RigidBody> bodies, RenderLayer layer)
+        public static void SubmitBodies<TCuller>(this IRenderQueue renderQueue, ID3D11DeviceContext deviceContext, in ViewContext viewContext, in TCuller culler,
+            IReadOnlyList<RigidBody> bodies, RenderLayer layer, RenderPassPurpose purpose)
             where TCuller : struct, ICullingVolume
         {
             for (int i = 0; i < bodies.Count; i++)
@@ -78,6 +81,7 @@ namespace TransportX.Rendering.Pipelines
                     ChunkOffset = body.WorldPose.Chunk - viewContext.WorldPose.Chunk,
                     ViewContext = viewContext,
                     Layer = layer,
+                    Purpose = purpose,
                 };
                 body.Draw(drawContext, culler);
             }

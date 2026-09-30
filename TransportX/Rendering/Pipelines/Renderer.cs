@@ -125,6 +125,7 @@ namespace TransportX.Rendering.Pipelines
                 ViewContext = viewContext,
                 Flags = RenderPassFlags.None,
                 OutputMode = RenderPassOutputMode.Deferred,
+                Purpose = RenderPassPurpose.Main,
                 ViewportSize = size,
                 Elapsed = elapsed,
             };

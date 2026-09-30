@@ -105,8 +105,8 @@ namespace TransportX.Rendering.Pipelines
                         break;
                 }
 
-                RenderQueue.SubmitChunks(deviceContext, context.ViewContext, culler, world.Chunks, layer, context.Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(deviceContext, context.ViewContext, culler, world.Bodies, layer);
+                RenderQueue.SubmitChunks(deviceContext, context.ViewContext, culler, world.Chunks, layer, RenderPassPurpose.Debug, context.Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(deviceContext, context.ViewContext, culler, world.Bodies, layer, RenderPassPurpose.Debug);
 
                 RenderQueue.Render(new DrawContext()
                 {

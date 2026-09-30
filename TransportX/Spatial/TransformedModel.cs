@@ -5,8 +5,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Mathematics;
-
 using TransportX.Rendering;
 
 namespace TransportX.Spatial
@@ -33,6 +31,8 @@ namespace TransportX.Spatial
         public virtual Pose Pose { get; set; } = Pose.Identity;
         public bool IsVisible { get; set; } = true;
 
+        public event DrawingEventHandler? Drawing;
+
         protected TransformedModel(in ModelResourceSet resource, Pose basePose, bool setPose)
         {
             Resource = resource;
@@ -50,6 +50,8 @@ namespace TransportX.Spatial
             if (context.Layer != RenderLayer.Normal) return;
 
             Matrix4x4 world = (Pose * context.ChunkOffset.Pose).ToMatrix4x4();
+
+            Drawing?.Invoke(this, context, world);
             context.DrawModel(Resource.Model, world);
         }
     }

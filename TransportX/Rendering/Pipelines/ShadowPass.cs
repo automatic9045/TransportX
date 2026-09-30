@@ -205,8 +205,8 @@ namespace TransportX.Rendering.Pipelines
 
                 SphereCullingVolume culler = new(CascadeSpheres[i]);
 
-                RenderQueue.SubmitChunks(deviceContext, shadowViewContext, culler, chunks, RenderLayer.Normal, Options.DrawChunkCount);
-                RenderQueue.SubmitBodies(deviceContext, shadowViewContext, culler, bodies, RenderLayer.Normal);
+                RenderQueue.SubmitChunks(deviceContext, shadowViewContext, culler, chunks, RenderLayer.Normal, RenderPassPurpose.ShadowDepth, Options.DrawChunkCount);
+                RenderQueue.SubmitBodies(deviceContext, shadowViewContext, culler, bodies, RenderLayer.Normal, RenderPassPurpose.ShadowDepth);
 
                 RenderQueue.Render(new DrawContext()
                 {

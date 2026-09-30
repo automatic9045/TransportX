@@ -156,7 +156,7 @@ namespace TransportX.Rendering.Pipelines
 
             Resources.Context.ApplyState(context.Flags.HasFlag(RenderPassFlags.Reflect) ? ReflectPipelineState : PipelineState);
 
-            RenderQueue.SubmitBackground(Resources.Context.DeviceContext, context.ViewContext, world.BackgroundModels);
+            RenderQueue.SubmitBackground(Resources.Context.DeviceContext, context.ViewContext, world.BackgroundModels, context.Purpose);
             Flush();
             Resources.Context.DeviceContext.ClearDepthStencilView(context.Surface.DepthStencil, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1, 0);
 
@@ -164,8 +164,8 @@ namespace TransportX.Rendering.Pipelines
             if (context.Flags.HasFlag(RenderPassFlags.Reflect)) cullingViewProjection *= Matrix4x4.CreateScale(-1, 1, 1);
             FrustumCullingVolume culler = new(new BoundingFrustum(cullingViewProjection));
 
-            RenderQueue.SubmitChunks(Resources.Context.DeviceContext, context.ViewContext, culler, world.Chunks, RenderLayer.Normal, context.Options.DrawChunkCount);
-            RenderQueue.SubmitBodies(Resources.Context.DeviceContext, context.ViewContext, culler, world.Bodies, RenderLayer.Normal);
+            RenderQueue.SubmitChunks(Resources.Context.DeviceContext, context.ViewContext, culler, world.Chunks, RenderLayer.Normal, context.Purpose, context.Options.DrawChunkCount);
+            RenderQueue.SubmitBodies(Resources.Context.DeviceContext, context.ViewContext, culler, world.Bodies, RenderLayer.Normal, context.Purpose);
             Flush();
 
 

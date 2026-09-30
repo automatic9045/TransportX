@@ -18,7 +18,8 @@ namespace TransportX.Rendering
         public required IRenderQueue RenderQueue { get; init; }
         public required ChunkIndex ChunkOffset { get; init; }
         public required ViewContext ViewContext { get; init; }
-        public RenderLayer Layer { get; init; } = RenderLayer.Normal;
+        public required RenderLayer Layer { get; init; }
+        public required RenderPassPurpose Purpose { get; init; }
 
         public TransformedDrawContext()
         {

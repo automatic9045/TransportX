@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Collections;
+using TransportX.Rendering;
 using TransportX.Rendering.Backend;
 using TransportX.Rendering.Pipelines;
 using TransportX.Spatial;
@@ -12,12 +14,16 @@ namespace TransportX.Domains.Equipment.Cameras
 {
     public interface ISceneCaptureCamera : IDisposable
     {
+        public static readonly RenderPassPurpose Purpose = new("SceneCapture");
+
+
         IWorldObject AttachedTo { get; }
 
         RenderTexture RenderTarget { get; }
         DepthTexture DepthTarget { get; }
         RenderSurface Surface => new(RenderTarget.RenderTargetView, DepthTarget.DepthStencilView);
 
+        DrainableMax<float> MaxScreenRatio { get; }
         RenderPassFlags RenderFlags { get; }
 
         ViewContext CreateViewContext(in ViewContext baseViewContext);

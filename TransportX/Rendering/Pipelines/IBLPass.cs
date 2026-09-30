@@ -213,7 +213,8 @@ namespace TransportX.Rendering.Pipelines
                     RenderQueue = RenderQueue,
                     ChunkOffset = ChunkIndex.Zero,
                     ViewContext = viewContext,
-                    Layer = RenderLayer.Normal
+                    Layer = RenderLayer.Normal,
+                    Purpose = RenderPassPurpose.IBL,
                 };
 
                 foreach (TransformedModel model in world.BackgroundModels)

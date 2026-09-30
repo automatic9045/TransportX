@@ -16,7 +16,7 @@ namespace TransportX.Domains.Equipment.Cameras
 {
     public class CameraCollectionComponent : IDisposableComponent, ISceneCaptureComponent
     {
-        private int RenderCount = 0;
+        private uint RenderCount = 0;
         private ID3D11DeviceContext? Context = null;
         private OpaquePass? OpaquePass = null;
 
@@ -49,8 +49,18 @@ namespace TransportX.Domains.Equipment.Cameras
 
             for (int i = 0; i < SceneCapture.Count; i++)
             {
-                if (RenderCount % 4 != i % 4) continue;
                 ISceneCaptureCamera camera = SceneCapture[i];
+
+                float maxScreenRatio = camera.MaxScreenRatio.Consume(0);
+                int interval = maxScreenRatio switch
+                {
+                    float x when 0.1f < x => 3,
+                    float x when 0.04f < x => 6,
+                    float x when 0.02f < x => 12,
+                    float x when 0.015f < x => 15,
+                    _ => 0,
+                };
+                if (interval == 0 || (interval != 1 && RenderCount % interval != i % interval)) continue;
 
                 Context.OMSetRenderTargets(camera.Surface.RenderTarget, camera.Surface.DepthStencil);
                 Context.ClearRenderTargetView(camera.Surface.RenderTarget, Vortice.Mathematics.Colors.Black);
@@ -62,6 +72,7 @@ namespace TransportX.Domains.Equipment.Cameras
                     ViewContext = viewContext,
                     Flags = camera.RenderFlags,
                     OutputMode = RenderPassOutputMode.Forward,
+                    Purpose = ISceneCaptureCamera.Purpose,
                     ViewportSize = camera.RenderTarget.Size,
                 };
                 OpaquePass.Execute(captureContext, world);
