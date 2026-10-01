@@ -64,6 +64,7 @@ namespace TransportX.Cameras
             }
 
             Current = current;
+            Current.Tick(TimeSpan.Zero);
             Updated?.Invoke();
         }
     }

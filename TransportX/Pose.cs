@@ -135,6 +135,14 @@ namespace TransportX
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Pose Lerp(in Pose a, in Pose b, float t)
+        {
+            Vector3 position = Vector3.Lerp(a.Position, b.Position, t);
+            Quaternion orientation = Quaternion.Slerp(a.Orientation, b.Orientation, t);
+            return new Pose(position, orientation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Matrix4x4 ToMatrix4x4()
         {
             Matrix4x4 result = Matrix4x4.CreateFromQuaternion(Orientation);

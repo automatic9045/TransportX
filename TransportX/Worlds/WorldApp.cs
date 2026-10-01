@@ -179,7 +179,6 @@ namespace TransportX.Worlds
         {
             PhysicsHost.Simulation.Timestep((float)elapsed.TotalSeconds, PhysicsHost.ThreadDispatcher);
             World.SubTick(elapsed);
-            SyncCamera();
         }
 
         protected virtual void OnTick(TimeSpan elapsed)
@@ -199,6 +198,7 @@ namespace TransportX.Worlds
 
             World.Tick(elapsed);
 
+            Viewpoints.Current.Tick(elapsed);
             SyncCamera();
             World.Camera.Tick(elapsed);
         }

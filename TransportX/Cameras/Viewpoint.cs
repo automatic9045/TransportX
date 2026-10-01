@@ -17,21 +17,13 @@ namespace TransportX.Cameras
         {
         }
 
-        public virtual void Move(Vector2 offset, SizeI clientSize)
-        {
-        }
-
-        public virtual void Rotate(Vector2 offset, SizeI clientSize)
-        {
-        }
-
-        public virtual void Zoom(float delta)
-        {
-        }
-
-        public virtual void Reset()
-        {
-        }
+        public virtual void Tick(TimeSpan elapsed) { }
+        public virtual void Move(Vector2 offset, SizeI clientSize) { }
+        public virtual void Rotate(Vector2 offset, SizeI clientSize) { }
+        public virtual void Zoom(float delta) { }
+        public virtual void NextPreset() { }
+        public virtual void PreviousPreset() { }
+        public virtual void Reset() { }
 
 
         protected sealed class Translator
@@ -93,172 +85,6 @@ namespace TransportX.Cameras
                 Angle = new Vector2(float.Clamp(angle.X, -float.Pi / 2 + 0.001f, float.Pi / 2 - 0.001f), angle.Y % float.Tau);
                 Rotation = Quaternion.CreateFromYawPitchRoll(Angle.Y, Angle.X, 0);
             }
-        }
-    }
-
-
-    public class FreeViewpoint : Viewpoint
-    {
-        private new readonly Rotator Rotator;
-
-        public Vector2 Angle => Rotator.Angle;
-
-        public FreeViewpoint() : base()
-        {
-            Rotator = new Rotator();
-        }
-
-        public void Locate(CameraPose cameraPose)
-        {
-            Rotator.Update(cameraPose.Angle);
-            Spatial.WorldPose worldPose = new(cameraPose.Chunk, new Pose(cameraPose.Position, Rotator.Rotation));
-            Locate(worldPose);
-        }
-
-        public override void Move(Vector2 offset, SizeI clientSize)
-        {
-            Vector2 amount = 0.1f * new Vector2(-offset.X, offset.Y);
-
-            Vector3 right = Vector3.Transform(Vector3.UnitX, WorldPose.Pose.Orientation);
-            Vector3 forward = Vector3.Transform(Vector3.UnitZ, WorldPose.Pose.Orientation);
-            right.Y = forward.Y = 0;
-
-            right = Vector3.Normalize(right);
-            forward = Vector3.Normalize(forward);
-
-            Vector3 r = right * amount.X + forward * amount.Y;
-            Spatial.WorldPose worldPose = WorldPose * new Pose(r);
-            Locate(worldPose);
-        }
-
-        public override void Rotate(Vector2 offset, SizeI clientSize)
-        {
-            Rotator.Rotate(1.5f * FieldOfView * offset, clientSize);
-            Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(WorldPose.Pose.Position, Rotator.Rotation));
-            Locate(worldPose);
-        }
-
-        public override void Zoom(float delta)
-        {
-            Move(new Pose(0, 0, 2f * delta));
-        }
-
-        public override void Reset()
-        {
-            Rotator.Reset();
-
-            Vector3 position = WorldPose.Pose.Position with
-            {
-                Y = 10,
-            };
-            Spatial.WorldPose worldPose = WorldPose.ChangePose(new Pose(position, Rotator.Rotation));
-            Locate(worldPose);
-        }
-    }
-
-
-    public class DriverViewpoint : Viewpoint
-    {
-        private const float MinFieldOfView = float.Pi * 0.0025f;
-        private const float MaxFieldOfView = float.Pi * 0.375f;
-
-
-        private readonly IWorldObject Source;
-        private readonly Pose Offset;
-        private readonly float DefaultFieldOfView;
-
-        private new readonly Rotator Rotator = new();
-
-        public DriverViewpoint(IWorldObject source, Pose offset, float defaultFieldOfView = float.Pi / 4) : base()
-        {
-            Source = source;
-            Offset = offset;
-            FieldOfView = DefaultFieldOfView = float.Clamp(defaultFieldOfView, MinFieldOfView, MaxFieldOfView);
-
-            Source.Moved += (_, _) => UpdateLocation();
-            UpdateLocation();
-
-
-            void UpdateLocation()
-            {
-                Locate(Rotator.RotationPose * Offset * Source.WorldPose);
-            }
-        }
-
-        public DriverViewpoint(IWorldObject source, SixDoF offset, float defaultFieldOfView) : this(source, offset.ToPose(), defaultFieldOfView)
-        {
-        }
-
-        public override void Rotate(Vector2 offset, SizeI clientSize)
-        {
-            Rotator.Rotate(1.5f * FieldOfView * offset, clientSize);
-        }
-
-        public override void Zoom(float delta)
-        {
-            FieldOfView = float.Clamp(FieldOfView - float.Pi * 0.0125f * delta, MinFieldOfView, MaxFieldOfView);
-        }
-
-        public override void Reset()
-        {
-            FieldOfView = DefaultFieldOfView;
-            Rotator.Reset();
-        }
-    }
-
-
-    public class BirdViewpoint : Viewpoint
-    {
-        private readonly IWorldObject Source;
-        private readonly Pose Offset;
-
-        private new readonly Translator Translator;
-        private new readonly Rotator Rotator;
-
-        public BirdViewpoint(IWorldObject source, Pose offset, float initialDistance, Vector2 initialAngle, float fieldOfView = float.Pi / 4)
-            : base()
-        {
-            Source = source;
-            Offset = offset;
-            FieldOfView = fieldOfView;
-
-            Translator = new Translator(initialDistance);
-
-            Rotator = new Rotator()
-            {
-                InitialAngle = initialAngle
-            };
-            Rotator.Reset();
-
-            Source.Moved += (_, _) => UpdateLocation();
-            UpdateLocation();
-
-
-            void UpdateLocation()
-            {
-                Locate(Translator.TranslationPose * Rotator.RotationPose * Offset * Source.WorldPose);
-            }
-        }
-
-        public BirdViewpoint(IWorldObject source, SixDoF offset, float initialDistance, Vector2 initialAngle, float fieldOfView = float.Pi / 4)
-            : this(source, offset.ToPose(), initialDistance, initialAngle, fieldOfView)
-        {
-        }
-
-        public override void Rotate(Vector2 offset, SizeI clientSize)
-        {
-            Rotator.Rotate(-1.5f * Translator.ZoomRatio * offset, clientSize);
-        }
-
-        public override void Zoom(float delta)
-        {
-            Translator.Zoom(delta);
-        }
-
-        public override void Reset()
-        {
-            Rotator.Reset();
-            Translator.Reset();
         }
     }
 }

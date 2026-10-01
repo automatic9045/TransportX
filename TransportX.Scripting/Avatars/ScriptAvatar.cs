@@ -87,6 +87,8 @@ namespace TransportX.Scripting.Avatars
             if (Info.Args.Count == 0) throw new InvalidOperationException("アバターファイルのパスが指定されていません。");
 
 
+            LaneMatcher = new SpatialLaneMatcher(this);
+
             ModelsKey = new ScriptModelCollection(ErrorCollector);
             SoundsKey = new ScriptSoundCollection(ErrorCollector);
 
@@ -97,8 +99,6 @@ namespace TransportX.Scripting.Avatars
                 { string.Empty, Structure.DefaultGroup },
                 { "__Skip", ColliderGroupHandle.Skip },
             };
-
-            LaneMatcher = new SpatialLaneMatcher(this);
 
 
             ScriptPath = IOPath.GetFullPath(IOPath.Combine(IOPath.GetDirectoryName(Info.InfoPath)!, Info.Args[0]));

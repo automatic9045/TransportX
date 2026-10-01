@@ -18,6 +18,8 @@ namespace TransportX.Cameras
         private readonly KeyObserver Bird;
         private readonly KeyObserver Free;
 
+        private readonly KeyObserver Forward;
+        private readonly KeyObserver Backward;
         private readonly KeyObserver Reset;
 
         public SizeI ClientSize { get; set; } = SizeI.Empty;
@@ -44,6 +46,12 @@ namespace TransportX.Cameras
             Bird = ObserveKey(Key.F3, ViewpointType.Bird);
             Free = ObserveKey(Key.F4, ViewpointType.Free);
 
+            Forward = inputClient.ObserveKey(Key.F);
+            Forward.Pressed += keyboard => viewpoints.Current.NextPreset();
+
+            Backward = inputClient.ObserveKey(Key.D);
+            Backward.Pressed += keyboard => viewpoints.Current.PreviousPreset();
+
             Reset = inputClient.ObserveKey(Key.Space);
             Reset.Pressed += keyboard => viewpoints.Current.Reset();
 
@@ -63,6 +71,8 @@ namespace TransportX.Cameras
             Bird.Dispose();
             Free.Dispose();
 
+            Forward.Dispose();
+            Backward.Dispose();
             Reset.Dispose();
         }
     }
