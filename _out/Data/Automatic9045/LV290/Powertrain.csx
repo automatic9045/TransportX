@@ -1,7 +1,6 @@
 #load "__Editor.csx"
 
 {
-
     var engine = Component<Powertrain>().Modules.AddEngine("Engine")
         .PerformanceCurve([
             (0, 0),
@@ -60,6 +59,7 @@
     wheelAdapterL.Input.ConnectTo(differential.OutputL);
     wheelAdapterR.Input.ConnectTo(differential.OutputR);
 
+
     Component<Powertrain>().Controllers.AddEcu("ECU")
         .PedalThrottle("PedalThrottle")
         .MinMaxThrottle("TcuMinThrottle", "TcuMaxThrottle")
@@ -68,4 +68,14 @@
         .IdlingGains(0.01, 0.05, 0.0002)
         .IdlingRpm(600, 575)
         .LimitRpm(3500);
+
+
+    Sounds.Create3D("Engine", "Engine", 0, 0, -10, 5)
+        .Loop()
+        .Pitch(elapsed => 0.0036f * Component<Powertrain>().Modules.All["Engine"].Module.OutputShafts[0].AngularVelocity);
+
+    Sounds.Create3D("EngineIdling", "EngineIdling", 0, 0, -10, 5)
+        .Loop()
+        .Volume(elapsed => float.Clamp(-(engine.BuiltModule.Output.Rpm - 600) / 100 + 1, 0, 1))
+        .Pitch(elapsed => 0.0166f * engine.BuiltModule.Output.AngularVelocity);
 }

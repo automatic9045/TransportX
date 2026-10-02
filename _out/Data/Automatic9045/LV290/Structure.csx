@@ -5,13 +5,24 @@ using TransportX.Rendering.Pipelines;
 using TransportX.Spatial;
 using TransportX.Domains.Equipment.Cameras;
 
-Models.LoadList("Models.txt");
-
 Structure.Parts.Add("Body", "Body_LV290N", 0, 0, 0).BuildDynamic(7500);
 
 Structure.Parts.Add("FrontDoor1", "BifoldDoor_HingedPanel", -1.16, 0, -0.4).BuildKinematic();
 Structure.Parts.Add("FrontDoor2", "BifoldDoor_GuidePanel", -1.16, 0, -1.42).BuildKinematic();
 Structure.Parts.Add("RearDoor", "PocketDoor", -1.16, 0, -6.39).BuildKinematic();
+
+Structure.Parts.Add("SideMirrorL", "SideMirrorL", 0, 0, 0).BuildKinematic();
+Structure.Parts.Add("SideMirrorR", "SideMirrorR", 0, 0, 0).BuildKinematic();
+
+Component<AvatarCameras>().AddSceneCapture("SideMirrorL")
+    .Position("Body", -1.3547, 2.0748, 0.1199, 10, 162, 0)
+    .TextureSize(128, 256)
+    .FieldOfView(90)
+    .AspectRatio(16.0 / 31.0)
+    .Reflect()
+    .DisableShadows()
+    .ProjectOntoPart("SideMirrorL", "SideMirror")
+    .Build();
 
 Component<AvatarCameras>().AddSceneCapture("SideMirrorR")
     .Position("Body", 1.3206, 1.9698, -0.5120, 10, 190, 0)
@@ -20,50 +31,5 @@ Component<AvatarCameras>().AddSceneCapture("SideMirrorR")
     .AspectRatio(16.0 / 31.0)
     .Reflect()
     .DisableShadows()
-    .ProjectOntoPart("Body", "SideMirrorR")
+    .ProjectOntoPart("SideMirrorR", "SideMirror")
     .Build();
-
-Component<AvatarDoors>().AddBiford("Front")
-    .HingedPanel("FrontDoor1", 0.511)
-    .GuidePanel("FrontDoor2", 0.51)
-    .PanelThickness(0.02)
-    .OpenLeft()
-    .OpenAnimation(10, 0, 2, 2.8, [
-        (0, 0),
-        (0.2, 0.1),
-        (0.6, 0.7),
-        (1, 1),
-    ])
-    .CloseAnimation(12, 0, 1, 3.5, [
-        (0, 0),
-        (0.1, 0.2),
-        (0.4, 0.4),
-        (1, 1),
-    ])
-    .Restitution(0.01, 0.5)
-    .DoorSwitch("FrontDoor")
-    .Build();
-
-Component<AvatarDoors>().AddSliding("Rear")
-    .Panel("RearDoor", 1.005)
-    .OpenLeft()
-    .OpenAnimation(20, 0, 5, 2.2, [
-        (0, 0),
-        (0.7, 0.9),
-        (0.9, 0.94),
-        (1, 1),
-    ])
-    .CloseAnimation(20, 0, 5, 2.2, [
-        (0, 0),
-        (0.1, 0.06),
-        (0.3, 0.1),
-        (1, 1),
-    ])
-    .Restitution(0.01, 0.01)
-    .DoorSwitch("RearDoor")
-    .Build();
-
-Signals.ToSwitchCounter("FrontDoorOpenCount", "FrontDoor", true);
-Signals.ToSwitchCounter("FrontDoorCloseCount", "FrontDoor", false);
-Signals.ToSwitchCounter("RearDoorOpenCount", "RearDoor", true);
-Signals.ToSwitchCounter("RearDoorCloseCount", "RearDoor", false);
