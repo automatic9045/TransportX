@@ -29,18 +29,26 @@ namespace TransportX
         {
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SixDoF FromDegrees(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
-        {
-            return new SixDoF(x, y, z, rotationX * RadPerDeg, rotationY * RadPerDeg, rotationZ * RadPerDeg);
-        }
-
         public SixDoF(Vector3 translation) : this(translation, Vector3.Zero)
         {
         }
 
         public SixDoF(float x, float y, float z) : this(new Vector3(x, y, z))
         {
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SixDoF FromDegrees(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
+        {
+            return new SixDoF(x, y, z, rotationX * RadPerDeg, rotationY * RadPerDeg, rotationZ * RadPerDeg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SixDoF Lerp(in SixDoF a, in SixDoF b, float t)
+        {
+            Vector3 translation = Vector3.Lerp(a.Translation, b.Translation, t);
+            Vector3 rotation = Vector3.Lerp(a.Rotation, b.Rotation, t);
+            return new SixDoF(translation, rotation);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

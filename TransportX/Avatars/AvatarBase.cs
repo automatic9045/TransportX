@@ -121,8 +121,8 @@ namespace TransportX.Avatars
             Location = builder.Info.Path;
             BaseDirectory = System.IO.Path.GetDirectoryName(Location)!;
 
-            DriverViewpoint = new DriverViewpoint(this, [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)]);
-            PassengerViewpoint = new PassengerViewpoint(this, [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)]);
+            DriverViewpoint = new DriverViewpoint(this, [new ViewpointPreset(new SixDoF(0, 1.5f, 0))]);
+            PassengerViewpoint = new PassengerViewpoint(this, [new ViewpointPreset(new SixDoF(0, 1.5f, 0))]);
             BirdViewpoint = new BirdViewpoint(this, Pose.Identity, 20, new Vector2(0.3f, 0));
 
             UpdateDebugModel();

@@ -35,7 +35,16 @@ namespace TransportX.Cameras
 
         public override void Tick(TimeSpan elapsed)
         {
-            Locate(Rotator.RotationPose * Presets[PresetIndex].Offset * Source.WorldPose);
+            ViewpointPreset preset = Presets[PresetIndex];
+
+            float pitch = float.Clamp(preset.Offset.Rotation.X + Rotator.Angle.X, -float.Pi * 0.499f, float.Pi * 0.499f);
+            float yaw = preset.Offset.Rotation.Y + Rotator.Angle.Y;
+            float roll = preset.Offset.Rotation.Z;
+
+            Quaternion orientation = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
+            Pose cameraOffset = new(preset.Offset.Translation, orientation);
+
+            Locate(cameraOffset * Source.WorldPose);
         }
 
         public override void Rotate(Vector2 offset, SizeI clientSize)
