@@ -1,5 +1,8 @@
 Engine	Sounds\Engine.wav
 EngineIdling	Sounds\EngineIdling.wav
+Horn	Sounds\Horn.wav
+HornStart	Sounds\HornStart.wav
+HornEnd	Sounds\HornEnd.wav
 BifoldDoorOpen	Sounds\BifoldDoorOpen.wav
 BifoldDoorClose	Sounds\BifoldDoorClose.wav
 SlidingDoorOpen	Sounds\SlidingDoorOpen.wav

@@ -22,6 +22,11 @@ Input.AddAxis("Brake", 0, 0, 1)
     .ForwardToSignal("Brake")
     .Build();
 
+Input.AddButton("Horn")
+    .Bind("H")
+    .ForwardToSignal("Horn")
+    .Build();
+
 Input.AddButton("FrontDoor")
     .Bind("KeypadDivide")
     .ForwardToSignal("FrontDoorBase")

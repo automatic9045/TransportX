@@ -7,6 +7,7 @@
 #load "Chassis.csx"
 #load "Powertrain.csx"
 #load "Powertrain_Amt.csx"
+#load "Horn.csx"
 #load "Doors.csx"
 
 #load "Debug.csx"
