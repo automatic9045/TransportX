@@ -51,7 +51,7 @@ namespace TransportX.Cameras
             Viewpoint? current = Type switch
             {
                 ViewpointType.Driver => AttachedTo?.DriverViewpoint,
-                ViewpointType.Passenger => null,
+                ViewpointType.Passenger => AttachedTo?.PassengerViewpoint,
                 ViewpointType.Bird => AttachedTo?.BirdViewpoint,
                 ViewpointType.Free => Free,
                 _ => throw new InvalidOperationException(),

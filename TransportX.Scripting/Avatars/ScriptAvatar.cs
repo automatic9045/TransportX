@@ -39,6 +39,12 @@ namespace TransportX.Scripting.Avatars
             set => base.DriverViewpoint = value;
         }
 
+        public new Viewpoint PassengerViewpoint
+        {
+            get => base.PassengerViewpoint;
+            set => base.PassengerViewpoint = value;
+        }
+
         public new Viewpoint BirdViewpoint
         {
             get => base.BirdViewpoint;

@@ -16,10 +16,14 @@ namespace TransportX.Scripting.Avatars.Commands
         private readonly DriverViewpoint Driver;
         private readonly List<ViewpointPreset> DriverPresets = [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)];
 
+        private readonly PassengerViewpoint Passenger;
+        private readonly List<ViewpointPreset> PassengerPresets = [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)];
+
         internal Viewpoints(ScriptAvatar avatar)
         {
             Avatar = avatar;
             Driver = new DriverViewpoint(Avatar, DriverPresets);
+            Passenger = new PassengerViewpoint(Avatar, PassengerPresets);
         }
 
         public void AddDriver(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double fieldOfView = 45)
@@ -39,6 +43,24 @@ namespace TransportX.Scripting.Avatars.Commands
 
         public void AddDriver(double x, double y, double z, double fieldOfView = 45)
             => AddDriver(x, y, z, 0, 0, 0, fieldOfView);
+
+        public void AddPasssenger(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double fieldOfView = 45)
+        {
+            if (Avatar.PassengerViewpoint != Passenger)
+            {
+                PassengerPresets.Clear();
+                Avatar.PassengerViewpoint = Passenger;
+            }
+
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            ViewpointPreset preset = new(offset.ToPose(), (float)fieldOfView * float.Pi / 180);
+            PassengerPresets.Add(preset);
+
+            if (PassengerPresets.Count == 1) Passenger.Reset();
+        }
+
+        public void AddPasssenger(double x, double y, double z, double fieldOfView = 45)
+            => AddPasssenger(x, y, z, 0, 0, 0, fieldOfView);
 
         public void SetBird(double x, double y, double z, double initialDistance, double angleX, double angleY, double fieldOfView = 45)
         {

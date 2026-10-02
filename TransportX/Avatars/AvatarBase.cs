@@ -53,6 +53,7 @@ namespace TransportX.Avatars
         public InputProfile InputProfile { get; protected set; } = InputProfile.Empty(string.Empty);
 
         public Viewpoint DriverViewpoint { get; protected set; }
+        public Viewpoint PassengerViewpoint { get; protected set; }
         public Viewpoint BirdViewpoint { get; protected set; }
 
         public float Width
@@ -121,6 +122,7 @@ namespace TransportX.Avatars
             BaseDirectory = System.IO.Path.GetDirectoryName(Location)!;
 
             DriverViewpoint = new DriverViewpoint(this, [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)]);
+            PassengerViewpoint = new PassengerViewpoint(this, [new ViewpointPreset(new Pose(0, 1.5f, 0), float.Pi / 4)]);
             BirdViewpoint = new BirdViewpoint(this, Pose.Identity, 20, new Vector2(0.3f, 0));
 
             UpdateDebugModel();
