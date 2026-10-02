@@ -14,7 +14,9 @@ namespace TransportX.Scripting.Avatars.Commands
 
         private readonly ScriptAvatar Avatar;
 
-        private Action OnTick = () => { };
+        private Func<TimeSpan, float> VolumeFactory = _ => 1;
+        private Func<TimeSpan, float> PitchFactory = _ => 1;
+        private Action PlayOrStopAction = () => { };
 
         public string Key { get; }
         public ISound3D Source { get; }
@@ -35,7 +37,7 @@ namespace TransportX.Scripting.Avatars.Commands
         public Sound3DCommand PlayWhen(Func<int> countFactory)
         {
             int lastCount = countFactory();
-            OnTick = () =>
+            PlayOrStopAction = () =>
             {
                 int count = countFactory();
                 if (count != lastCount)
@@ -54,7 +56,7 @@ namespace TransportX.Scripting.Avatars.Commands
         {
             int lastPlayCount = playCountFactory();
             int lastStopCount = stopCountFactory();
-            OnTick = () =>
+            PlayOrStopAction = () =>
             {
                 int playCount = playCountFactory();
                 if (playCount != lastPlayCount)
@@ -78,24 +80,58 @@ namespace TransportX.Scripting.Avatars.Commands
         public Sound3DCommand PlayStopWhen(string playCountIntSignalKey, string stopCountIntSignalKey)
             => PlayStopWhen(Avatar.Commander.Signals.Int(playCountIntSignalKey), Avatar.Commander.Signals.Int(stopCountIntSignalKey));
 
-        public Sound3DCommand Loop(Func<(float Volume, float Pitch)> volumePitchFactory)
+        public Sound3DCommand Loop()
         {
-            OnTick = () =>
+            PlayOrStopAction = () =>
             {
-                (Source.Volume, Source.Pitch) = volumePitchFactory();
                 if (!Source.IsPlaying) Source.Play(true);
             };
             return this;
         }
 
-        public Sound3DCommand Loop(Signal<float> volumeSignal, float volumeMultiplier, Signal<float> pitchSignal, float pitchMultiplier)
-            => Loop(() => (volumeSignal.Value * volumeMultiplier, pitchSignal.Value * pitchMultiplier));
-        public Sound3DCommand Loop(string volumeFloatSignalKey, float volumeMultiplier, string pitchFloatSignalKey, float pitchMultiplier)
-            => Loop(Avatar.Commander.Signals.Float(volumeFloatSignalKey), volumeMultiplier, Avatar.Commander.Signals.Float(pitchFloatSignalKey), pitchMultiplier);
+        public Sound3DCommand Volume(Func<TimeSpan, float> factory)
+        {
+            VolumeFactory = factory;
+            return this;
+        }
+
+        public Sound3DCommand Volume(double volume)
+        {
+            float floatVolume = (float)volume;
+            return Volume(_ => floatVolume);
+        }
+
+        public Sound3DCommand Volume(Func<TimeSpan, double> factory)
+            => Volume(elapsed => (float)factory(elapsed));
+        public Sound3DCommand Volume(Signal<float> signal, float multiplier)
+            => Volume(_ => signal.Value * multiplier);
+        public Sound3DCommand Volume(string floatSignalKey, float multiplier)
+            => Volume(Avatar.Commander.Signals.Float(floatSignalKey), multiplier);
+
+        public Sound3DCommand Pitch(Func<TimeSpan, float> factory)
+        {
+            PitchFactory = factory;
+            return this;
+        }
+
+        public Sound3DCommand Pitch(double pitch)
+        {
+            float floatPitch = (float)pitch;
+            return Pitch(_ => floatPitch);
+        }
+
+        public Sound3DCommand Pitch(Func<TimeSpan, double> factory)
+            => Pitch(elapsed => (float)factory(elapsed));
+        public Sound3DCommand Pitch(Signal<float> signal, float multiplier)
+            => Pitch(_ => signal.Value * multiplier);
+        public Sound3DCommand Pitch(string floatSignalKey, float multiplier)
+            => Pitch(Avatar.Commander.Signals.Float(floatSignalKey), multiplier);
 
         internal void Tick(TimeSpan elapsed)
         {
-            OnTick();
+            Source.Volume = VolumeFactory(elapsed);
+            Source.Pitch = PitchFactory(elapsed);
+            PlayOrStopAction();
             Source.Tick(Avatar.AudioClient.Listener, Avatar.Camera.WorldPose.Chunk, elapsed);
         }
     }
