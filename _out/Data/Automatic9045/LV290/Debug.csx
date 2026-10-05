@@ -16,7 +16,7 @@
 
     TransportX.Spatial.WorldPose initialPose = default;
     Input.AddButton("Reset")
-        .Bind("R")
+        .Bind("O")
         .Build();
 
     Triggers.OnStart(() =>
