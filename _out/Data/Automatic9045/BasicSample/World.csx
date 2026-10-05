@@ -28,6 +28,8 @@ string[] centerLine = ["WhiteLine150", "WhiteLine150", "WhiteLine150", "WhiteLin
 var fSpline = Chunks[0, 0].BeginSpline("Spline1", 10, 0, 0);
 fSpline.Curves.Straight(100);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 90, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], 5.25, 0.6, 0, 0, 180, 0, 90, 0, 0, 1);
 var spline = fSpline.Build();
 
 Chunks[0, 0].PutProp("RoadTerminal1", -1.7, 0, 30);
@@ -64,6 +66,13 @@ fSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 101, 1, 0.9);
 fSpline.PutProp(["WhiteLine500", "WhiteLine500", "", ""], 4.175, -0.12, 0, 69.5, 1, 1, 32);
 fSpline.PutProp(["BusStop_KendoSanda"], 10.5, 0, 0, 0, 90, 0, 85, 0, 0, 1); // 県道三田 (一橋方面)
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["StreetLight"], -5.5, 0, 0, 5, 35, 35, 3);
+fSpline.PutProp(["StreetLight"], -8.5, 0, 0, 110, 35, 35, 1);
+fSpline.PutProp(["StreetLight"], -5.5, 0, 0, 145, 35, 35);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 15, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 50, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 140, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 185, 0, 0, 1);
 spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("3Forked2", "S");
@@ -75,6 +84,8 @@ fSpline = junction2.IntoSpline("N", "Spline1")
 fSpline.Curves
     .Straight(50);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["StreetLight"], -5.5, 0, 0, 0, 35, 35);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 10, 0, 0, 1);
 spline = fSpline.Build();
 
 fSpline = junction2.IntoSpline("E", "Spline2")
@@ -91,6 +102,11 @@ fSpline.Gradients
     .TransitionByPercent(5, 10)
     .Constant(30)
     .TransitionByPercent(-5, 10);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 2, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], -4, 0.6, 0, 0, 0, 0, 2, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 70, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 4, 0, 0, 0, 180, 0, 88, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], 4, 0.6, 0, 0, 180, 0, 88, 0, 0, 1);
 spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("4Forked2", "S");
@@ -112,6 +128,14 @@ spline = fSpline.Build();
 fJunction = spline.IntoJunction("3Forked3", "N");
 fJunction.Paths["NE_L"].TrafficDensity(0);
 fJunction.Paths["SE_R"].TrafficDensity(0);
+fJunction.PutProp("RoadSign_C", -4, 0, 1, 0, 0, 0);
+fJunction.PutProp("RoadSign_ExceptBusses", -4, 0, 1, 0, 0, 0);
+fJunction.PutProp("RoadSign_C", 4, 0, 15, 0, 180, 0);
+fJunction.PutProp("RoadSign_NoEntry", 6.5, 0, 12, 0, 90, 0);
+fJunction.PutProp("RoadSign_ExceptBusses", 6.5, 0, 12, 0, 90, 0);
+fJunction.PutProp("RoadSign_End", 7, 0, 4.5, 0, 180, 0);
+fJunction.PutProp("RoadSign_OneWayR", 7, 0, 4.5, 0, 180, 0);
+fJunction.PutProp("RoadSign_ExceptBusses", 7, 0, 4.5, 0, 180, 0);
 var junction3 = fJunction.Build();
 
 fSpline = junction2.IntoSpline("W", "Spline2")
@@ -134,11 +158,19 @@ fSpline = junction2.IntoSpline("N", "Spline2")
     .SpeedLimit(2, 30);
 fSpline.Curves
     .Straight(32);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 8, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], -4, 0.6, 0, 0, 0, 0, 8, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 4, 0, 0, 0, 180, 0, 24, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], 4, 0.6, 0, 0, 180, 0, 24, 0, 0, 1);
 spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("4Forked2", "S");
 fJunction.Paths["SE_R"].TrafficDensity(0);
 fJunction.Paths["NW_R"].TrafficDensity(0);
+fJunction.PutProp("RoadSign_CL", -4, 0, 1, 0, 0, 0);
+fJunction.PutProp("RoadSign_CL", 4, 0, 15, 0, 180, 0);
+fJunction.PutProp("RoadSign_OneWayR", 7, 0, 11.5, 0, 0, 0);
+fJunction.PutProp("RoadSign_ExceptBusses", 7, 0, 11.5, 0, 0, 0);
 junction2 = fJunction.Build();
 
 fSpline = junction2.IntoSpline("E", "Spline2")
@@ -159,6 +191,10 @@ fSpline = junction2.IntoSpline("N", "Spline2")
     .SpeedLimit(2, 30);
 fSpline.Curves
     .Straight(32);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 8, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], -4, 0.6, 0, 0, 0, 0, 8, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 4, 0, 0, 0, 180, 0, 24, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], 4, 0.6, 0, 0, 180, 0, 24, 0, 0, 1);
 fSpline.PutProp(["BusStop_YotsubadaiKita"], -3.4, -0.12, 0, 0, -90, 0, 31, 0, 0, 1); // 四葉台北
 spline = fSpline.Build();
 
@@ -205,6 +241,10 @@ fSpline.Gradients
     .TransitionByPercent(-2.5, 10)
     .Constant(75)
     .TransitionByPercent(2.5, 10);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 5, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax30"], -4, 0.6, 0, 0, 0, 0, 5, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 4, 0, 0, 0, 180, 0, 20, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -4, 0, 0, 0, 0, 0, 80, 0, 0, 1);
 spline = fSpline.Build();
 
 fSpline = junction.IntoSpline("E", "Spline1")
@@ -215,6 +255,10 @@ fSpline.Curves
     .Straight(25)
     .ByRadius(100, 35);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["RoadSign_NoParkingStopping"], -5.25, 0, 0, 0, 0, 0, 10, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], -5.25, 0.6, 0, 0, 0, 0, 10, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParkingStopping"], 5.25, 0, 0, 0, 180, 0, 93, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], 5.25, 0.6, 0, 0, 180, 0, 93, 0, 0, 1);
 spline = fSpline.Build();
 
 fJunction = spline.IntoJunction("3Forked1", "E");
@@ -227,6 +271,14 @@ fSpline.Curves
     .ByRadius(-50, 50)
     .Straight(200);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 20, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], -5.25, 0.6, 0, 0, 0, 0, 20, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 110, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], 5.25, 0.6, 0, 0, 180, 0, 110, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 170, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], -5.25, 0.6, 0, 0, 0, 0, 170, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 300, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], 5.25, 0.6, 0, 0, 180, 0, 300, 0, 0, 1);
 fSpline.PutProp(["BusStop_Futagawa"], -5.25, 0, 0, 250, 0, 0, 1); // 二川 (四葉台方面)
 fSpline.PutProp(["BusStop_Futagawa"], 5.25, 0, 0, 0, 180, 0, 220, 0, 0, 1); // 二川 (一郷方面)
 spline = fSpline.Build();
@@ -237,6 +289,8 @@ junction = fJunction.Build();
 fSpline = junction.IntoSpline("N", "Spline1");
 fSpline.Curves.Straight(50);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 20, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax50"], -5.25, 0.6, 0, 0, 0, 0, 20, 0, 0, 1);
 spline = fSpline.Build();
 
 fSpline = junction.IntoSpline("E", "Spline1")
@@ -260,6 +314,14 @@ fSpline.Gradients
     .TransitionByPercent(-10, 30);
 fSpline.ConnectBezier(junction2.Junction.Ports["S"]);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 5, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], -5.25, 0.6, 0, 0, 0, 0, 5, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 160, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], 5.25, 0.6, 0, 0, 180, 0, 160, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 180, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], -5.25, 0.6, 0, 0, 0, 0, 180, 0, 0, 1);
+fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 325, 0, 0, 1);
+fSpline.PutProp(["RoadSign_SpeedMax40"], 5.25, 0.6, 0, 0, 180, 0, 325, 0, 0, 1);
 spline = fSpline.Build();
 
 fSpline = junction2.IntoSpline("N", "Spline1");

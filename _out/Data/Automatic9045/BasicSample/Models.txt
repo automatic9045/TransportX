@@ -1,5 +1,6 @@
 Background	Models\Background\Background.glb	$NonCollision
 Grass	Models\Grass\Grass.glb	$OpenModel(0.6, 1, 15, 1)
+
 Road1_StraightL	Models\Road1\StraightL.glb	$OpenModel(0.9, 1, 30, 1)
 Road1_StraightR	Models\Road1\StraightR.glb	$OpenModel(0.9, 1, 30, 1)
 Road1_Straight_DikeL	Models\Road1\Straight_DikeL.glb	$OpenModel(0.6, 1, 15, 1)
@@ -18,25 +19,47 @@ Road1_Junction2_DikeR	Models\Road1\Junction2_DikeR.glb	$OpenModel(0.6, 1, 15, 1)
 Road1_DeadEnd	Models\Road1\DeadEnd.glb	$OpenModel(0.9, 1, 30, 1)
 Road1_BusBay	Models\Road1\BusBay.glb	$OpenModel(0.9, 1, 30, 1)
 Road1_BusBay_Dike	Models\Road1\BusBay_Dike.glb	$OpenModel(0.6, 1, 15, 1)
+
 Road2_StraightL	Models\Road2\StraightL.glb	$OpenModel(0.9, 1, 30, 1)
 Road2_StraightR	Models\Road2\StraightR.glb	$OpenModel(0.9, 1, 30, 1)
 Road2_Junction1_Road	Models\Road2\Junction1_Road.glb	$OpenModel(0.9, 1, 30, 1)
 Road2_Junction1_Dike	Models\Road2\Junction1_Dike.glb	$OpenModel(0.6, 1, 15, 1)
+
 RoadTerminal1	Models\RoadTerminal1\Model.glb	$OpenModel(0.9, 1, 30, 1)
+
 WhiteLine150	Models\WhiteLine\150.glb	$NonCollision
 WhiteLine500	Models\WhiteLine\500.glb	$NonCollision
+
 BusStop_Ichigo	Models\BusStop\Ichigo.glb	$ConvexHull
 BusStop_Futagawa	Models\BusStop\Futagawa.glb	$ConvexHull
 BusStop_KendoSanda	Models\BusStop\KendoSanda.glb	$ConvexHull
 BusStop_YotsubadaiIriguchi	Models\BusStop\YotsubadaiIriguchi.glb	$ConvexHull
 BusStop_YotsubadaiKita	Models\BusStop\YotsubadaiKita.glb	$ConvexHull
 BusStop_Yotsubadai	Models\BusStop\Yotsubadai.glb	$ConvexHull
+
+RoadSign_End	Models\RoadSign\End.glb	$ConvexHull
+RoadSign_C	Models\RoadSign\C.glb	$ConvexHull
+RoadSign_CL	Models\RoadSign\CL.glb	$ConvexHull
+RoadSign_NoEntry	Models\RoadSign\NoEntry.glb	$ConvexHull
+RoadSign_NoParking	Models\RoadSign\NoParking.glb	$ConvexHull
+RoadSign_NoParkingStopping	Models\RoadSign\NoParkingStopping.glb	$ConvexHull
+RoadSign_SpeedMax30	Models\RoadSign\SpeedMax30.glb	$ConvexHull
+RoadSign_SpeedMax40	Models\RoadSign\SpeedMax40.glb	$ConvexHull
+RoadSign_SpeedMax50	Models\RoadSign\SpeedMax50.glb	$ConvexHull
+RoadSign_OneWayL	Models\RoadSign\OneWayL.glb	$ConvexHull
+RoadSign_OneWayR	Models\RoadSign\OneWayR.glb	$ConvexHull
+RoadSign_ExceptBusses	Models\RoadSign\ExceptBusses.glb	$ConvexHull
+
+StreetLight	Models\StreetLight\Model.glb	$ConvexHull
+
 Signal_L	Models\Signal\L.glb	$ClosedModel
 Signal_L_CarRed	Models\Signal\L_CarRed.glb	$NonCollision
 Signal_L_CarYellow	Models\Signal\L_CarYellow.glb	$NonCollision
 Signal_L_CarGreen	Models\Signal\L_CarGreen.glb	$NonCollision
+
 Car	Models\Traffic\Car.glb	$ClosedModel
 Car_BlinkerL	Models\Traffic\Car_BlinkerL.glb	$NonCollision
 Car_BlinkerR	Models\Traffic\Car_BlinkerR.glb	$NonCollision
 Car_Brake	Models\Traffic\Car_Brake.glb	$NonCollision
+
 Pedestrian	Models\Traffic\Pedestrian.glb	$ClosedModel
