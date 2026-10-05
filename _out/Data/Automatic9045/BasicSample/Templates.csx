@@ -67,6 +67,11 @@
     tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
     tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, 3, 1, 1, 4);
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, s1 - 6, 1, 1, 4);
+
+    for (double x = 4; x <= 7; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 90, 0, 8.5, 1, 1, 8);
+
     tJunctionPath = tJunction.Wire("SN_S", "S", 2, "N", 1)
         .Deflection(0)
         .Signal("V_Car");
@@ -325,6 +330,9 @@
     tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
     tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, 3, 1, 1, 4);
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, s1 - 6, 1, 1, 4);
+
     tJunctionPath = tJunction.Wire("SN_S", "S", 2, "N", 1) // S→N 直進
         .Deflection(0)
         .Signal("V_Car");
@@ -407,6 +415,9 @@
     tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
     tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, 3, 1, 1, 4);
+    for (double x = -5.5; x <= 1.5; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 0, 0, s1 - 6, 1, 1, 4);
+
     tJunctionPath = tJunction.Wire("EW_S", "E", 2, "W", 1) // E→W 直進
         .Deflection(0)
         .Signal("H_Car");
@@ -424,10 +435,12 @@
     tJunction.PutProp("Road1_Junction1_RoadL", 0, 0, 12, 0, 180, 0);
     tJunction.PutProp("Road1_Junction1_RoadR", 0, 0, 12);
     tJunction.PutProp("Road1_Junction1_RoadR", 0, 0, 12, 0, 180, 0);
+
     tJunction.PutProp("Road1_Junction1_Dike", 0, 0, 12);
     tJunction.PutProp("Road1_Junction1_Dike", 0, 0, 12, 0, 90, 0);
     tJunction.PutProp("Road1_Junction1_Dike", 0, 0, 12, 0, 180, 0);
     tJunction.PutProp("Road1_Junction1_Dike", 0, 0, 12, 0, 270, 0);
+
     tJunction.PutProp("Signal_L", -5.25, 0, 23, 0, 0, 0);
     tJunction.PutSignalProp("Signal_L_CarRed", -5.25, 0, 23, 0, 0, 0, "V_Car", 0);
     tJunction.PutSignalProp("Signal_L_CarYellow", -5.25, 0, 23, 0, 0, 0, "V_Car", 1);
