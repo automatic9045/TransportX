@@ -66,7 +66,7 @@ fSpline.PutProp(["Road1_StraightR"], 0, 0, 0, 102, 1.2, 1.2);
 fSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 0, 1, 0.9, 74);
 fSpline.PutProp(["WhiteLine150"], 4, -0.12, 0, 101, 1, 0.9);
 fSpline.PutProp(["WhiteLine500", "WhiteLine500", "", ""], 4.175, -0.12, 0, 69.5, 1, 1, 32);
-fSpline.PutProp(["BusStop_KendoSanda"], 10.5, 0, 0, 0, 90, 0, 85, 0, 0, 1); // 県道三田 (一橋方面)
+fSpline.PutProp(["BusStop_KendoSanda"], 10.5, 0, 0, 0, 90, 0, 83, 0, 0, 1); // 県道三田 (一橋方面)
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
 fSpline.PutProp(["StreetLight"], -5.5, 0, 0, 5, 35, 35, 3);
 fSpline.PutProp(["StreetLight"], -8.5, 0, 0, 110, 35, 35, 1);
