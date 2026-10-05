@@ -72,10 +72,35 @@
 
     Sounds.Create3D("Engine", "Engine", 0, 0, -10, 5)
         .Loop()
-        .Pitch(elapsed => 0.0036f * Component<Powertrain>().Modules.All["Engine"].Module.OutputShafts[0].AngularVelocity);
+        .Pitch(elapsed => 0.0036f * engine.BuiltModule.Output.AngularVelocity);
 
+    float engineThrottleVolume = 0;
+    float engineThrottlePitch = 0;
     Sounds.Create3D("EngineIdling", "EngineIdling", 0, 0, -10, 5)
         .Loop()
-        .Volume(elapsed => float.Clamp(-(engine.BuiltModule.Output.Rpm - 600) / 100 + 1, 0, 1))
-        .Pitch(elapsed => 0.0166f * engine.BuiltModule.Output.AngularVelocity);
+        .Volume(elapsed =>
+        {
+            float throttle = engine.BuiltModule.Throttle;
+            float delta = 2 * (float)elapsed.TotalSeconds;
+            float targetVolume = throttle < 0.1f ? throttle / 0.1f : float.Clamp(float.Lerp(1, 0.25f, (throttle - 0.4f) / 0.2f), 0.25f, 1);
+            float nextVolume =
+                targetVolume < engineThrottleVolume ? float.Max(targetVolume, engineThrottleVolume - delta)
+                : engineThrottleVolume < targetVolume ? float.Min(targetVolume, engineThrottleVolume + delta)
+                : targetVolume;
+
+            engineThrottleVolume = nextVolume;
+            return nextVolume;
+        })
+        .Pitch(elapsed =>
+        {
+            float delta = 3 * (float)elapsed.TotalSeconds;
+            float targetPitch = float.Clamp(float.Lerp(1, 3, (engine.BuiltModule.Throttle - 0.39f) / 0.61f), 0, 2);
+            float nextPitch =
+                targetPitch < engineThrottlePitch ? float.Max(targetPitch, engineThrottlePitch - delta)
+                : engineThrottlePitch < targetPitch ? float.Min(targetPitch, engineThrottlePitch + delta)
+                : targetPitch;
+
+            engineThrottlePitch = nextPitch;
+            return nextPitch;
+        });
 }
