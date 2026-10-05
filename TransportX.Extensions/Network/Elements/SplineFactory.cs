@@ -180,10 +180,18 @@ namespace TransportX.Extensions.Network.Elements
                     SplineProp prop = Props[propIndex];
                     if (prop.Count <= 0) continue;
 
-                    int count = int.Min((int)float.Ceiling((spline.Length - prop.From) / prop.Interval), prop.Count);
+                    if (spline.Length <= prop.From)
+                    {
+                        Props[propIndex] = new SplineProp(prop.Models, prop.From - spline.Length, prop.Span, prop.Interval, prop.Count);
+                        continue;
+                    }
 
-                    SplineProp splittedProp = new(prop.Models, prop.From, prop.Span, prop.Interval, count);
-                    props.Add(splittedProp);
+                    int count = int.Clamp((int)float.Ceiling((spline.Length - prop.From) / prop.Interval), 0, prop.Count);
+                    if (0 < count)
+                    {
+                        SplineProp splitProp = new(prop.Models, prop.From, prop.Span, prop.Interval, count);
+                        props.Add(splitProp);
+                    }
 
                     if (count == prop.Count)
                     {
