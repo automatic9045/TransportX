@@ -46,10 +46,10 @@ namespace TransportX.Cameras
             Bird = ObserveKey(Key.F3, ViewpointType.Bird);
             Free = ObserveKey(Key.F4, ViewpointType.Free);
 
-            Forward = inputClient.ObserveKey(Key.F);
+            Forward = inputClient.ObserveKey(Key.R);
             Forward.Pressed += keyboard => viewpoints.Current.NextPreset();
 
-            Backward = inputClient.ObserveKey(Key.D);
+            Backward = inputClient.ObserveKey(Key.E);
             Backward.Pressed += keyboard => viewpoints.Current.PreviousPreset();
 
             Reset = inputClient.ObserveKey(Key.Space);
