@@ -25,7 +25,9 @@ Chunks[0, 1].PutProp("Grass", 0, -0.2, 0);
 
 string[] centerLine = ["WhiteLine150", "WhiteLine150", "WhiteLine150", "WhiteLine150", "WhiteLine150", "", "", "", "", ""];
 
-var fSpline = Chunks[0, 0].BeginSpline("Spline1", 10, 0, 0);
+var fSpline = Chunks[0, 0].BeginSpline("Spline1", 10, 0, 0)
+    .SpeedLimit(1, 50)
+    .SpeedLimit(2, 50);
 fSpline.Curves.Straight(100);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
 fSpline.PutProp(["RoadSign_NoParking"], 5.25, 0, 0, 0, 180, 0, 90, 0, 0, 1);
@@ -264,7 +266,9 @@ spline = fSpline.Build();
 fJunction = spline.IntoJunction("3Forked1", "E");
 junction2 = fJunction.Build();
 
-fSpline = junction.IntoSpline("N", "Spline1");
+fSpline = junction.IntoSpline("N", "Spline1")
+    .SpeedLimit(1, 50)
+    .SpeedLimit(2, 50);
 fSpline.Curves
     .Straight(20)
     .ByRadius(50, 50)
@@ -286,7 +290,9 @@ spline = fSpline.Build();
 fJunction = spline.IntoJunction("3Forked1", "S");
 junction = fJunction.Build();
 
-fSpline = junction.IntoSpline("N", "Spline1");
+fSpline = junction.IntoSpline("N", "Spline1")
+    .SpeedLimit(1, 50)
+    .SpeedLimit(2, 50);
 fSpline.Curves.Straight(50);
 fSpline.PutProp(centerLine, 0, -0.12, 0, 0, 1, 1);
 fSpline.PutProp(["RoadSign_NoParking"], -5.25, 0, 0, 0, 0, 0, 20, 0, 0, 1);
