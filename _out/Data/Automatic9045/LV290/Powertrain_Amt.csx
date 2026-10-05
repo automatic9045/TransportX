@@ -83,7 +83,7 @@ enum AmtPhase
         .OnInit(TcuInit)
         .OnTick(TcuTick);
 
-        
+
     void TcuInit()
     {
         var minThrottle = Signals.WriteFloat("TcuMinThrottle", 0);
@@ -278,7 +278,7 @@ enum AmtPhase
         // --------------------------------------------------
 
         stateMachine.Tick(elapsed);
-        
+
         float clutchEngagement = Signals.ReadFloat("TcuClutch");
 
         var minThrottle = Signals.Float("TcuMinThrottle");
@@ -320,10 +320,10 @@ enum AmtPhase
         }
 
         clutch.BuiltModule.Lockup = lockup;
-        clutch.BuiltModule.LockupMode = immediateLockup 
-            ? TransportX.Domains.RoadVehicles.Powertrain.Modules.FluidClutch.LockupResponseMode.Immediate 
+        clutch.BuiltModule.LockupMode = immediateLockup
+            ? TransportX.Domains.RoadVehicles.Powertrain.Modules.FluidClutch.LockupResponseMode.Immediate
             : TransportX.Domains.RoadVehicles.Powertrain.Modules.FluidClutch.LockupResponseMode.Normal;
-        
+
         clutch.BuiltModule.Engagement = clutchEngagement;
     }
 
@@ -346,14 +346,14 @@ enum AmtPhase
 
         return bestGear;
     }
-    
-    void TcuRequestShift(int targetGear) 
+
+    void TcuRequestShift(int targetGear)
     {
         var gearbox = (GearboxFactory)Component<Powertrain>().Modules.Factories["Gearbox"];
 
         targetGear = int.Clamp(targetGear, -gearbox.BuiltModule.MinGear, gearbox.BuiltModule.MaxGear);
         if (targetGear == destGear) return;
-        
+
         srcGear = gearbox.BuiltModule.Gear;
         destGear = targetGear;
 
@@ -371,4 +371,14 @@ enum AmtPhase
             stateMachine.TransitionTo(AmtPhase.ThrottleCut);
         }
     }
+
+
+    int shifterCount = 0;
+    Triggers.OnTick(elapsed =>
+    {
+        if (shifter.BuiltController.Lever.Position.Key != lastShifterPosition) shifterCount++;
+    });
+
+    Sounds.Create3D("Shifter", "AmtShifter", 0.5, 1.2, -0.5, 1)
+        .PlayWhen(() => shifterCount);
 }
