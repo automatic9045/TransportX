@@ -17,11 +17,67 @@ namespace TransportX.Scripting.Commands
             return signals.Source.ToToggle(signal, sourceSignal, initialValue);
         }
 
-        public static Signal<int> ToSwitchCounter(this Signals signals, string intKey, string sourceBoolKey, bool targetValue)
+        public static Signal<int> ToFloatSwitchCounter(this Signals signals, string intKey, string sourceFloatKey, float targetValue)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<float> sourceSignal = signals.Float(sourceFloatKey);
+            return signals.Source.ToSwitchCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToIntSwitchCounter(this Signals signals, string intKey, string sourceIntKey, int targetValue)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<int> sourceSignal = signals.Int(sourceIntKey);
+            return signals.Source.ToSwitchCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToBoolSwitchCounter(this Signals signals, string intKey, string sourceBoolKey, bool targetValue)
         {
             Signal<int> signal = signals.Int(intKey);
             Signal<bool> sourceSignal = signals.Bool(sourceBoolKey);
             return signals.Source.ToSwitchCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToFloatSwitchFromCounter(this Signals signals, string intKey, string sourceFloatKey, float targetValue)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<float> sourceSignal = signals.Float(sourceFloatKey);
+            return signals.Source.ToSwitchFromCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToIntSwitchFromCounter(this Signals signals, string intKey, string sourceIntKey, int targetValue)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<int> sourceSignal = signals.Int(sourceIntKey);
+            return signals.Source.ToSwitchFromCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToBoolSwitchFromCounter(this Signals signals, string intKey, string sourceBoolKey, bool targetValue)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<bool> sourceSignal = signals.Bool(sourceBoolKey);
+            return signals.Source.ToSwitchFromCounter(signal, sourceSignal, targetValue);
+        }
+
+        public static Signal<int> ToFloatChangeCounter(this Signals signals, string intKey, string sourceFloatKey)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<float> sourceSignal = signals.Float(sourceFloatKey);
+            return signals.Source.ToChangeCounter(signal, sourceSignal);
+        }
+
+        public static Signal<int> ToIntChangeCounter(this Signals signals, string intKey, string sourceIntKey)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<int> sourceSignal = signals.Int(sourceIntKey);
+            return signals.Source.ToChangeCounter(signal, sourceSignal);
+        }
+
+        public static Signal<int> ToBoolChangeCounter(this Signals signals, string intKey, string sourceBoolKey)
+        {
+            Signal<int> signal = signals.Int(intKey);
+            Signal<bool> sourceSignal = signals.Bool(sourceBoolKey);
+            return signals.Source.ToChangeCounter(signal, sourceSignal);
         }
     }
 }

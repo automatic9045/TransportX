@@ -10,7 +10,7 @@ namespace TransportX.Communication
     {
         public static Signal<bool> ToToggle(this SignalBus signalBus, Signal<bool> signal, Signal<bool> sourceSignal, bool initialValue)
         {
-            bool lastCondition = false;
+            bool lastCondition = initialValue;
             signalBus.Forward(signal, () =>
             {
                 bool condition = sourceSignal.Value;
@@ -23,19 +23,44 @@ namespace TransportX.Communication
             return signal;
         }
 
-        public static Signal<int> ToSwitchCounter(this SignalBus signalBus, Signal<int> signal, Signal<bool> sourceSignal, bool targetValue)
+        public static Signal<int> ToSwitchCounter<TSource>(this SignalBus signalBus, Signal<int> signal, Signal<TSource> sourceSignal, TSource targetValue)
         {
-            bool lastCondition = sourceSignal.Value;
+            TSource lastValue = sourceSignal.Value;
             signalBus.Forward(signal, () =>
             {
-                bool condition = sourceSignal.Value;
-                int newValue = lastCondition != targetValue && condition == targetValue ? unchecked(signal.Value + 1) : signal.Value;
-                if (lastCondition != targetValue && condition == targetValue)
-                {
-                    int a = 0;
-                    a = a + 2;
-                }
-                lastCondition = condition;
+                TSource value = sourceSignal.Value;
+                int newValue = !EqualityComparer<TSource>.Default.Equals(lastValue, targetValue) && EqualityComparer<TSource>.Default.Equals(value, targetValue)
+                    ? unchecked(signal.Value + 1) : signal.Value;
+                lastValue = value;
+                return newValue;
+            });
+
+            return signal;
+        }
+
+        public static Signal<int> ToSwitchFromCounter<TSource>(this SignalBus signalBus, Signal<int> signal, Signal<TSource> sourceSignal, TSource targetValue)
+        {
+            TSource lastValue = sourceSignal.Value;
+            signalBus.Forward(signal, () =>
+            {
+                TSource value = sourceSignal.Value;
+                int newValue = EqualityComparer<TSource>.Default.Equals(lastValue, targetValue) && !EqualityComparer<TSource>.Default.Equals(value, targetValue)
+                    ? unchecked(signal.Value + 1) : signal.Value;
+                lastValue = value;
+                return newValue;
+            });
+
+            return signal;
+        }
+
+        public static Signal<int> ToChangeCounter<TSource>(this SignalBus signalBus, Signal<int> signal, Signal<TSource> sourceSignal)
+        {
+            TSource lastValue = sourceSignal.Value;
+            signalBus.Forward(signal, () =>
+            {
+                TSource value = sourceSignal.Value;
+                int newValue = !EqualityComparer<TSource>.Default.Equals(value, lastValue) ? unchecked(signal.Value + 1) : signal.Value;
+                lastValue = value;
                 return newValue;
             });
 

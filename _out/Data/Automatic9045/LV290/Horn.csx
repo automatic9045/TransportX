@@ -1,8 +1,8 @@
 #load "__Editor.csx"
 
 {
-    Signals.ToSwitchCounter("HornStartCount", "Horn", true);
-    Signals.ToSwitchCounter("HornEndCount", "Horn", false);
+    Signals.ToBoolSwitchCounter("HornStartCount", "Horn", true);
+    Signals.ToBoolSwitchCounter("HornEndCount", "Horn", false);
 
 
     Sounds.Create3D("HornStart", "HornStart", 0, 0.6, -0.2, 30, 0, 0, 1)
