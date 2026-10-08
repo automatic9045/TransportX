@@ -21,11 +21,11 @@ namespace TransportX.Scripting.Commands
 
         public abstract InputProfile Profile { get; set; }
 
-        private readonly ScriptKeyedList<string, IButton> ButtonsKey;
-        public IReadOnlyScriptKeyedList<string, IButton> Buttons => ButtonsKey;
+        private readonly ScriptKeyedList<string, ButtonCommand> ButtonsKey;
+        public IReadOnlyScriptKeyedList<string, ButtonCommand> Buttons => ButtonsKey;
 
-        private readonly ScriptKeyedList<string, IAxis> AxesKey;
-        public IReadOnlyScriptKeyedList<string, IAxis> Axes => AxesKey;
+        private readonly ScriptKeyedList<string, AxisCommand> AxesKey;
+        public IReadOnlyScriptKeyedList<string, AxisCommand> Axes => AxesKey;
 
         internal InputBase(IInputClient inputClient, Signals signals, IErrorCollector errorCollector)
         {
@@ -33,20 +33,20 @@ namespace TransportX.Scripting.Commands
             Signals = signals;
             ErrorCollector = errorCollector;
 
-            ButtonsKey = new ScriptKeyedList<string, IButton>(button => button.Key, ErrorCollector, "ボタン", ScriptButton.Empty);
-            AxesKey = new ScriptKeyedList<string, IAxis>(axis => axis.Key, ErrorCollector, "軸", ScriptAxis.Empty);
+            ButtonsKey = new ScriptKeyedList<string, ButtonCommand>(button => button.Key, ErrorCollector, "ボタン", ButtonCommand.Empty);
+            AxesKey = new ScriptKeyedList<string, AxisCommand>(axis => axis.Key, ErrorCollector, "軸", AxisCommand.Empty);
         }
 
         internal void Dispose()
         {
-            foreach (IButton button in Buttons)
+            foreach (ButtonCommand buttonCommand in Buttons)
             {
-                button.Dispose();
+                buttonCommand.Button.Dispose();
             }
 
-            foreach (IAxis axis in Axes)
+            foreach (AxisCommand axisCommand in Axes)
             {
-                axis.Dispose();
+                axisCommand.Axis.Dispose();
             }
         }
 
@@ -63,14 +63,16 @@ namespace TransportX.Scripting.Commands
 
         public void AddButton(IButton button)
         {
-            ButtonsKey.Add(button);
+            ButtonCommand buttonCommand = new(button);
+            ButtonsKey.Add(buttonCommand);
         }
 
         public abstract ButtonFactory<T> AddButton(string key);
 
         public void AddAxis(IAxis axis)
         {
-            AxesKey.Add(axis);
+            AxisCommand axisCommand = new(axis);
+            AxesKey.Add(axisCommand);
         }
 
         public abstract AxisFactory<T> AddAxis(string key, double min, double neutral, double max);
@@ -79,12 +81,12 @@ namespace TransportX.Scripting.Commands
         {
             for (int i = 0; i < Buttons.Count; i++)
             {
-                Buttons[i].Tick(elapsed);
+                Buttons[i].Button.Tick(elapsed);
             }
 
             for (int i = 0; i < Axes.Count; i++)
             {
-                Axes[i].Tick(elapsed);
+                Axes[i].Axis.Tick(elapsed);
             }
         }
     }

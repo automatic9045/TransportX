@@ -10,6 +10,7 @@ using TransportX.Input;
 using TransportX.Scripting;
 using TransportX.Scripting.Avatars;
 using TransportX.Scripting.Collections;
+using TransportX.Scripting.Commands;
 
 using TransportX.Domains.RoadVehicles.Physics;
 using TransportX.Domains.RoadVehicles.Powertrain.Controllers;
@@ -50,35 +51,35 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.Controll
                 Avatar.ErrorCollector, "ポジションボタン", key => IButton.Empty($"ShifterSlotButton_{key}_{Guid.NewGuid()}"));
         }
 
-        public ShifterFactory<TKey> UpDownButton(IButton? up, IButton? down)
+        public ShifterFactory<TKey> UpDownButton(ButtonCommand? up, ButtonCommand? down)
         {
-            if (up is not null) DirectionButtonsKey[ShifterDirection.Up] = up;
-            if (down is not null) DirectionButtonsKey[ShifterDirection.Down] = down;
+            if (up is not null) DirectionButtonsKey[ShifterDirection.Up] = up.Button;
+            if (down is not null) DirectionButtonsKey[ShifterDirection.Down] = down.Button;
             return this;
         }
 
         public ShifterFactory<TKey> UpDownButton(string? upButtonKey, string? downButtonKey)
         {
-            IButton? up = GetButton(upButtonKey);
-            IButton? down = GetButton(downButtonKey);
+            ButtonCommand? up = GetButton(upButtonKey);
+            ButtonCommand? down = GetButton(downButtonKey);
             return UpDownButton(up, down);
         }
 
-        public ShifterFactory<TKey> LeftRightButton(IButton? left, IButton? right)
+        public ShifterFactory<TKey> LeftRightButton(ButtonCommand? left, ButtonCommand? right)
         {
-            if (left is not null) DirectionButtonsKey[ShifterDirection.Left] = left;
-            if (right is not null) DirectionButtonsKey[ShifterDirection.Right] = right;
+            if (left is not null) DirectionButtonsKey[ShifterDirection.Left] = left.Button;
+            if (right is not null) DirectionButtonsKey[ShifterDirection.Right] = right.Button;
             return this;
         }
 
         public ShifterFactory<TKey> LeftRightButton(string? leftButtonKey, string? rightButtonKey)
         {
-            IButton? left = GetButton(leftButtonKey);
-            IButton? right = GetButton(rightButtonKey);
+            ButtonCommand? left = GetButton(leftButtonKey);
+            ButtonCommand? right = GetButton(rightButtonKey);
             return LeftRightButton(left, right);
         }
 
-        public ShifterSlotFactory<TKey> RootSlot(TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> RootSlot(TKey key, ButtonCommand? slotButton)
         {
             if (IsRootSlotDefined)
             {
@@ -95,9 +96,9 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.Controll
         }
 
         public ShifterSlotFactory<TKey> RootSlot(TKey key, string? slotButtonKey) => RootSlot(key, GetButton(slotButtonKey));
-        public ShifterSlotFactory<TKey> RootSlot(TKey key) => RootSlot(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> RootSlot(TKey key) => RootSlot(key, (ButtonCommand?)null);
 
-        internal ShifterSlotFactory<TKey> GetOrCreateSlot(TKey key, IButton? slotButton)
+        internal ShifterSlotFactory<TKey> GetOrCreateSlot(TKey key, ButtonCommand? slotButton)
         {
             if (Slots.TryGetValue(key, out ShifterSlotFactory<TKey>? factory))
             {
@@ -112,16 +113,16 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.Controll
                 factory = new(Avatar, this, key);
                 SlotsKey.Add(factory);
 
-                if (slotButton is not null) SlotButtonsKey[key] = slotButton;
+                if (slotButton is not null) SlotButtonsKey[key] = slotButton.Button;
             }
 
             return factory;
         }
 
-        private IButton? GetButton(string? buttonKey)
+        private ButtonCommand? GetButton(string? buttonKey)
         {
             return buttonKey is null ? null
-                : Avatar.Commander.Input.Buttons.GetValue(buttonKey, out IButton button) ? button
+                : Avatar.Commander.Input.Buttons.GetValue(buttonKey, out ButtonCommand button) ? button
                 : null;
         }
 

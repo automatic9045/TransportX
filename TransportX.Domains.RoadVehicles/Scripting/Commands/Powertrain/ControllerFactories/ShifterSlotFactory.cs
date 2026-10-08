@@ -9,6 +9,7 @@ using TransportX.Input;
 
 using TransportX.Scripting.Avatars;
 using TransportX.Scripting.Collections;
+using TransportX.Scripting.Commands;
 
 using TransportX.Domains.RoadVehicles.Powertrain.Controllers;
 
@@ -59,69 +60,69 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.Controll
         public ShifterSlotFactory<TKey> ActionRight(Signal<int> countSignal) => Action(ShifterDirection.Right, countSignal);
         public ShifterSlotFactory<TKey> ActionRight(string countSignalKey) => ActionRight(Avatar.Commander.Signals.Int(countSignalKey));
 
-        public ShifterSlotFactory<TKey> Slot(ShifterDirection direction, TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> Slot(ShifterDirection direction, TKey key, ButtonCommand? slotButton)
         {
             ShifterSlotFactory<TKey> factory = Parent.GetOrCreateSlot(key, slotButton);
             NeighborsKey.Add(direction, factory);
             return factory;
         }
 
-        public ShifterSlotFactory<TKey> SlotUp(TKey key, IButton? slotButton) => Slot(ShifterDirection.Up, key, slotButton);
+        public ShifterSlotFactory<TKey> SlotUp(TKey key, ButtonCommand? slotButton) => Slot(ShifterDirection.Up, key, slotButton);
         public ShifterSlotFactory<TKey> SlotUp(TKey key, string? slotButton) => SlotUp(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotUp(TKey key) => SlotUp(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotUp(TKey key) => SlotUp(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotUpParallel(TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> SlotUpParallel(TKey key, ButtonCommand? slotButton)
         {
             ShifterSlotFactory<TKey> upSlot = SlotUp(key, slotButton);
             upSlot.SlotDown(Key);
             return upSlot;
         }
         public ShifterSlotFactory<TKey> SlotUpParallel(TKey key, string? slotButton) => SlotUpParallel(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotUpParallel(TKey key) => SlotUpParallel(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotUpParallel(TKey key) => SlotUpParallel(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotDown(TKey key, IButton? slotButton) => Slot(ShifterDirection.Down, key, slotButton);
+        public ShifterSlotFactory<TKey> SlotDown(TKey key, ButtonCommand? slotButton) => Slot(ShifterDirection.Down, key, slotButton);
         public ShifterSlotFactory<TKey> SlotDown(TKey key, string? slotButton) => SlotDown(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotDown(TKey key) => SlotDown(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotDown(TKey key) => SlotDown(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotDownParallel(TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> SlotDownParallel(TKey key, ButtonCommand? slotButton)
         {
             ShifterSlotFactory<TKey> downSlot = SlotDown(key, slotButton);
             downSlot.SlotUp(Key);
             return downSlot;
         }
         public ShifterSlotFactory<TKey> SlotDownParallel(TKey key, string? slotButton) => SlotDownParallel(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotDownParallel(TKey key) => SlotDownParallel(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotDownParallel(TKey key) => SlotDownParallel(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotLeft(TKey key, IButton? slotButton) => Slot(ShifterDirection.Left, key, slotButton);
+        public ShifterSlotFactory<TKey> SlotLeft(TKey key, ButtonCommand? slotButton) => Slot(ShifterDirection.Left, key, slotButton);
         public ShifterSlotFactory<TKey> SlotLeft(TKey key, string? slotButton) => SlotLeft(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotLeft(TKey key) => SlotLeft(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotLeft(TKey key) => SlotLeft(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotLeftParallel(TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> SlotLeftParallel(TKey key, ButtonCommand? slotButton)
         {
             ShifterSlotFactory<TKey> LeftSlot = SlotLeft(key, slotButton);
             LeftSlot.SlotRight(Key);
             return LeftSlot;
         }
         public ShifterSlotFactory<TKey> SlotLeftParallel(TKey key, string? slotButton) => SlotLeftParallel(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotLeftParallel(TKey key) => SlotLeftParallel(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotLeftParallel(TKey key) => SlotLeftParallel(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotRight(TKey key, IButton? slotButton) => Slot(ShifterDirection.Right, key, slotButton);
+        public ShifterSlotFactory<TKey> SlotRight(TKey key, ButtonCommand? slotButton) => Slot(ShifterDirection.Right, key, slotButton);
         public ShifterSlotFactory<TKey> SlotRight(TKey key, string? slotButton) => SlotRight(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotRight(TKey key) => SlotRight(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotRight(TKey key) => SlotRight(key, (ButtonCommand?)null);
 
-        public ShifterSlotFactory<TKey> SlotRightParallel(TKey key, IButton? slotButton)
+        public ShifterSlotFactory<TKey> SlotRightParallel(TKey key, ButtonCommand? slotButton)
         {
             ShifterSlotFactory<TKey> rightSlot = SlotRight(key, slotButton);
             rightSlot.SlotLeft(Key);
             return rightSlot;
         }
         public ShifterSlotFactory<TKey> SlotRightParallel(TKey key, string? slotButton) => SlotRightParallel(key, GetButton(slotButton));
-        public ShifterSlotFactory<TKey> SlotRightParallel(TKey key) => SlotRightParallel(key, (IButton?)null);
+        public ShifterSlotFactory<TKey> SlotRightParallel(TKey key) => SlotRightParallel(key, (ButtonCommand?)null);
 
-        private IButton? GetButton(string? buttonKey)
+        private ButtonCommand? GetButton(string? buttonKey)
         {
             return buttonKey is null ? null
-                : Avatar.Commander.Input.Buttons.GetValue(buttonKey, out IButton button) ? button
+                : Avatar.Commander.Input.Buttons.GetValue(buttonKey, out ButtonCommand button) ? button
                 : null;
         }
 
