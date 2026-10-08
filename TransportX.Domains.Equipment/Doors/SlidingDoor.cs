@@ -13,7 +13,7 @@ namespace TransportX.Domains.Equipment.Doors
 {
     public class SlidingDoor : IDoor
     {
-        public static SlidingDoor Empty(string key)
+        public static SlidingDoor Empty()
         {
             DoorAnimationProfile animationProfile = new(new Curve([(0, 0), (1, 1)]), new PidController() { K = new PidGains(1, 0, 0) }, TimeSpan.FromSeconds(1));
             DoorAnimator animator = new(animationProfile, animationProfile, 0, 0);

@@ -10,12 +10,12 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
 {
     public class GlidingDoorCommand : DoorCommand
     {
-        public static new GlidingDoorCommand Empty(string key) => new(key, GlidingDoor.Empty(key));
+        public static new GlidingDoorCommand Empty(string key) => new(key, GlidingDoor.Empty());
 
 
         public new GlidingDoor Source { get; }
 
-        public GlidingDoorCommand(string key, GlidingDoor source) : base(key, source)
+        internal GlidingDoorCommand(string key, GlidingDoor source) : base(key, source)
         {
             Source = source;
         }

@@ -20,7 +20,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         public string Key { get; }
         public ISceneCaptureCamera? Source { get; }
 
-        public SceneCaptureCameraCommand(IErrorCollector errorCollector, string key, ISceneCaptureCamera? source)
+        internal SceneCaptureCameraCommand(IErrorCollector errorCollector, string key, ISceneCaptureCamera? source)
         {
             ErrorCollector = errorCollector;
             Key = key;

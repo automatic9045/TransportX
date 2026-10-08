@@ -14,7 +14,7 @@ namespace TransportX.Domains.Equipment.Doors
 {
     public class BifoldDoor : IDoor
     {
-        public static BifoldDoor Empty(string key)
+        public static BifoldDoor Empty()
         {
             DoorAnimationProfile animationProfile = new(new Curve([(0, 0), (1, 1)]), new PidController() { K = new PidGains(1, 0, 0) }, TimeSpan.FromSeconds(1));
             DoorAnimator animator = new(animationProfile, animationProfile, 0, 0);

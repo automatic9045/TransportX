@@ -16,7 +16,7 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
         public string Key { get; }
         public IDoor Source { get; }
 
-        public DoorCommand(string key, IDoor source)
+        protected DoorCommand(string key, IDoor source)
         {
             Key = key;
             Source = source;
