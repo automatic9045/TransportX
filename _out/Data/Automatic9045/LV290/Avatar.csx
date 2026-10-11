@@ -8,6 +8,8 @@
 #load "Powertrain.csx"
 #load "Powertrain_Amt.csx"
 #load "Horn.csx"
+#load "Lighting.csx"
+#load "Mirrors.csx"
 #load "Doors.csx"
 
 #load "Debug.csx"

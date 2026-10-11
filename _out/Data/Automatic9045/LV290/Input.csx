@@ -2,6 +2,7 @@
 
 Input.SetProfile("Bus");
 
+
 Input.AddAxis("Steering", -1, 0, 1)
     .BindPlusMinusForSteering("Right", "Left", 9, 72, 0.25, 0.03)
     .BindResetForSteering("Slash", 9, 72, 0.3, 0.12)
@@ -22,10 +23,32 @@ Input.AddAxis("Brake", 0, 0, 1)
     .ForwardToSignal("Brake")
     .Build();
 
+
 Input.AddButton("Horn")
     .Bind("H")
     .ForwardToSignal("Horn")
     .Build();
+
+
+Input.AddButton("BlinkerL")
+    .Bind("Comma")
+    .ForwardToSignal("BlinkerL")
+    .Build();
+
+Input.AddButton("BlinkerR")
+    .Bind("Period")
+    .ForwardToSignal("BlinkerR")
+    .Build();
+
+Input.AddButton("Hazard")
+    .Bind("Keypad1")
+    .ForwardToSignal("HazardBase")
+    .Build();
+
+Input.Buttons["BlinkerL"].OnPressed(button => Signals.WriteInt("Blinker", Signals.ReadInt("Blinker") == 0 ? -1 : 0));
+Input.Buttons["BlinkerR"].OnPressed(button => Signals.WriteInt("Blinker", Signals.ReadInt("Blinker") == 0 ? 1 : 0));
+Signals.ToToggle("Hazard", "HazardBase", false);
+
 
 Input.AddButton("FrontDoor")
     .Bind("KeypadDivide")

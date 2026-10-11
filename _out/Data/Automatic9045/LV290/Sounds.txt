@@ -7,6 +7,10 @@ Horn	Sounds\Horn.wav
 HornStart	Sounds\HornStart.wav
 HornEnd	Sounds\HornEnd.wav
 
+BlinkerOn	Sounds\BlinkerOn.wav
+BlinkerOff	Sounds\BlinkerOff.wav
+Blinker	Sounds\Blinker.wav
+
 BifoldDoorOpen	Sounds\BifoldDoorOpen.wav
 BifoldDoorClose	Sounds\BifoldDoorClose.wav
 SlidingDoorOpen	Sounds\SlidingDoorOpen.wav

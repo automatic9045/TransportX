@@ -21,6 +21,7 @@ global using TransportX.Domains.Equipment.Scripting.Commands;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands.Chassis;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands.Extensions;
+global using TransportX.Domains.RoadVehicles.Scripting.Commands.Lighting;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.ControllerFactories;
 global using TransportX.Domains.RoadVehicles.Scripting.Commands.Powertrain.ModuleFactories;
