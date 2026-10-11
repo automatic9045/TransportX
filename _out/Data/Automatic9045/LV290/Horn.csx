@@ -6,7 +6,8 @@
 
 
     Sounds.Create3D("HornStart", "HornStart", 0, 0.6, -0.2, 30, 0, 0, 1)
-        .PlayStopWhen("HornStartCount", "HornEndCount");
+        .PlayStopWhen("HornStartCount", "HornEndCount")
+        .Volume(0.25f);
 
     double hornVolume = 0;
     double hornEndVolume = 0;
@@ -24,10 +25,10 @@
                 hornVolume = 0;
             }
 
-            return hornVolume;
+            return hornVolume * 0.25f;
         });
 
     Sounds.Create3D("HornEnd", "HornEnd", 0, 0.6, -0.2, 30, 0, 0, 1)
         .PlayWhen("HornEndCount")
-        .Volume(elapsed => hornEndVolume);
+        .Volume(elapsed => hornEndVolume * 0.25f);
 }
