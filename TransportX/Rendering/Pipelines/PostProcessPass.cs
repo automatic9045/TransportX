@@ -37,6 +37,7 @@ namespace TransportX.Rendering.Pipelines
 
         private PostProcessingBuffer? Buffer = null;
 
+        private int StagingIndex = -1;
         private float Exposure = 0;
 
         public PostProcessPass(RenderResourceSet resources)
@@ -211,6 +212,7 @@ namespace TransportX.Rendering.Pipelines
         {
             Buffer?.Dispose();
             Buffer = null;
+            StagingIndex = -1;
         }
 
         public void Setup(ID3D11DepthStencilView depthStencil, SizeI size)
@@ -260,17 +262,24 @@ namespace TransportX.Rendering.Pipelines
             deviceContext.PSSetShaderResource(0, null!);
             deviceContext.PSSetShaderResource(1, null!);
 
-            deviceContext.CopyResource(Buffer.StagingTexture, Buffer.LuminanceBuffer.Texture);
-            MappedSubresource map = deviceContext.Map(Buffer.StagingTexture, 0, MapMode.Read, MapFlags.None);
-            float sceneLuminanceLog;
-            unsafe
+            int writeIndex = StagingIndex < 0 ? 0 : 1 - StagingIndex;
+            deviceContext.CopyResource(Buffer.StagingTextures[writeIndex], Buffer.LuminanceBuffer.Texture);
+
+            float sceneLuminanceLog = 0;
+            if (0 <= StagingIndex)
             {
-                sceneLuminanceLog = (float)Unsafe.Read<Half>(map.DataPointer.ToPointer());
+                int readIndex = StagingIndex;
+                MappedSubresource map = deviceContext.Map(Buffer.StagingTextures[readIndex], 0, MapMode.Read, MapFlags.None);
+                unsafe
+                {
+                    sceneLuminanceLog = (float)Unsafe.Read<Half>(map.DataPointer.ToPointer());
+                }
+                deviceContext.Unmap(Buffer.StagingTextures[readIndex], 0);
             }
-            deviceContext.Unmap(Buffer.StagingTexture, 0);
+
+            StagingIndex = writeIndex;
 
             EnvironmentProfile environment = world.DefaultEnvironment;
-
             float targetExposure = environment.Exposure.Key / (float.Exp(sceneLuminanceLog) + 0.0001f);
             targetExposure = float.Clamp(targetExposure, environment.Exposure.Min, environment.Exposure.Max);
             float adaptationSpeed = Exposure < targetExposure ? environment.Exposure.DarkAdaptationSpeed : environment.Exposure.LightAdaptationSpeed;
@@ -329,7 +338,7 @@ namespace TransportX.Rendering.Pipelines
 
             Resources.Context.ApplyState(DownsampleState);
 
-            for (int i = 0; i < PostProcessingBuffer.BloomMipCount - 1; i++)
+            for (int i = 0; i < Buffer.BloomMips.Count - 1; i++)
             {
                 int next = i + 1;
                 deviceContext.OMSetRenderTargets(Buffer.BloomMips[next].RenderTargetView, null);
@@ -352,7 +361,7 @@ namespace TransportX.Rendering.Pipelines
 
             Resources.Context.ApplyState(UpsampleState);
 
-            for (int i = PostProcessingBuffer.BloomMipCount - 1; 0 < i; i--)
+            for (int i = Buffer.BloomMips.Count - 1; 0 < i; i--)
             {
                 int prev = i - 1;
                 deviceContext.OMSetRenderTargets(Buffer.BloomMips[prev].RenderTargetView, null);

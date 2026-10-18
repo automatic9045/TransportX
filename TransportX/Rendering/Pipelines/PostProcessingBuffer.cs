@@ -14,7 +14,8 @@ namespace TransportX.Rendering.Pipelines
 {
     public class PostProcessingBuffer : IDisposable
     {
-        public const int BloomMipCount = 5;
+        private const int StagingTextureCount = 2;
+        private const int BloomMipCount = 5;
 
 
         private readonly ID3D11DeviceContext Context;
@@ -28,7 +29,7 @@ namespace TransportX.Rendering.Pipelines
         public RenderTexture RawShadowDepthBuffer { get; }
 
         public RenderTexture LuminanceBuffer { get; }
-        public ID3D11Texture2D StagingTexture { get; }
+        public IReadOnlyList<ID3D11Texture2D> StagingTextures { get; }
 
         public IReadOnlyList<RenderTexture> BloomMips { get; }
         public RenderTexture LdrBuffer { get; }
@@ -82,7 +83,12 @@ namespace TransportX.Rendering.Pipelines
                 Usage = ResourceUsage.Staging,
                 CPUAccessFlags = CpuAccessFlags.Read,
             };
-            StagingTexture = Context.Device.CreateTexture2D(stagingDesc);
+            ID3D11Texture2D[] stagingTextures = new ID3D11Texture2D[StagingTextureCount];
+            for (int i = 0; i < StagingTextureCount; i++)
+            {
+                stagingTextures[i] = Context.Device.CreateTexture2D(stagingDesc);
+            }
+            StagingTextures = stagingTextures;
 
             desc.Format = Format.R11G11B10_Float;
             RenderTexture[] bloomMips = new RenderTexture[BloomMipCount];
@@ -115,14 +121,11 @@ namespace TransportX.Rendering.Pipelines
             DirectionalBuffer.Dispose();
             ResolvedHdrBuffer.Dispose();
             RawShadowDepthBuffer.Dispose();
+
             LuminanceBuffer.Dispose();
-            StagingTexture.Dispose();
+            for (int i = 0; i < StagingTextureCount; i++) StagingTextures[i].Dispose();
 
-            for (int i = 0; i < BloomMipCount; i++)
-            {
-                BloomMips[i].Dispose();
-            }
-
+            for (int i = 0; i < BloomMipCount; i++) BloomMips[i].Dispose();
             LdrBuffer.Dispose();
         }
 
