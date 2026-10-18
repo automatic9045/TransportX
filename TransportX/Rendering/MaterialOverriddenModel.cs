@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,15 +10,11 @@ namespace TransportX.Rendering
 {
     public class MaterialOverriddenModel : IMeshModel
     {
-        private IMesh[] BaseMeshesCache;
-        private IMesh[] MeshesCache;
-        private Material[] MaterialsCache;
-
         public IMeshModel BaseModel { get; }
         public IReadOnlyDictionary<Material, Material> MaterialOverrides { get; }
 
-        public IReadOnlyList<IMesh> Meshes => MeshesCache;
-        public IReadOnlyList<Material> Materials => MaterialsCache;
+        public IReadOnlyList<IMesh> Meshes { get; }
+        public IReadOnlyList<Material> Materials { get; }
         public BoundingBox BoundingBox => BaseModel.BoundingBox;
 
         public string? DebugName { get; set; }
@@ -29,36 +24,16 @@ namespace TransportX.Rendering
             BaseModel = baseModel;
             MaterialOverrides = materialOverrides;
 
-            UpdateRenderMaterials();
-        }
-
-        public void Dispose()
-        {
-        }
-
-        public void Draw(in DrawContext context)
-        {
-            if (!BaseMeshesCache.SequenceEqual(BaseModel.Meshes)) UpdateRenderMaterials();
-
-            for (int i = 0; i < MeshesCache.Length; i++)
-            {
-                MeshesCache[i].Draw(context);
-            }
-        }
-
-        [MemberNotNull(nameof(BaseMeshesCache), nameof(MeshesCache), nameof(MaterialsCache))]
-        private void UpdateRenderMaterials()
-        {
-            IMesh[] baseMeshes = new IMesh[BaseModel.Meshes.Count];
             IMesh[] meshes = new IMesh[BaseModel.Meshes.Count];
-
             for (int i = 0; i < BaseModel.Meshes.Count; i++)
             {
-                baseMeshes[i] = BaseModel.Meshes[i];
-                MaterialOverrides.TryGetValue(baseMeshes[i].Material, out Material? material);
-
-                meshes[i] = new OverriddenMesh(baseMeshes[i], material ?? baseMeshes[i].Material);
+                IMesh baseMesh = BaseModel.Meshes[i];
+                MaterialOverrides.TryGetValue(baseMesh.Material, out Material? material);
+                Material targetMaterial = material ?? baseMesh.Material;
+                IMesh unwrappedBaseMesh = baseMesh is OverriddenMesh overridden ? overridden.BaseMesh : baseMesh;
+                meshes[i] = new OverriddenMesh(unwrappedBaseMesh, targetMaterial);
             }
+            Meshes = meshes;
 
             Material[] newMaterials = new Material[BaseModel.Materials.Count];
             for (int i = 0; i < BaseModel.Materials.Count; i++)
@@ -67,10 +42,19 @@ namespace TransportX.Rendering
                 MaterialOverrides.TryGetValue(baseMaterial, out Material? overriddenMaterial);
                 newMaterials[i] = overriddenMaterial ?? baseMaterial;
             }
+            Materials = newMaterials.Distinct().ToArray();
+        }
 
-            BaseMeshesCache = baseMeshes;
-            MeshesCache = meshes;
-            MaterialsCache = newMaterials.Distinct().ToArray();
+        public void Dispose()
+        {
+        }
+
+        public void Draw(in DrawContext context)
+        {
+            for (int i = 0; i < Meshes.Count; i++)
+            {
+                Meshes[i].Draw(context);
+            }
         }
 
 
