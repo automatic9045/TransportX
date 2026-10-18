@@ -12,15 +12,18 @@ namespace TransportX.Domains.RoadVehicles.Lighting
     public class LightingComponent : ITickableComponent
     {
         public Blinker Blinker { get; }
+        public BrakeLight BrakeLight { get; }
 
         public LightingComponent()
         {
             Blinker = new Blinker();
+            BrakeLight = new BrakeLight();
         }
 
         public void Tick(TimeSpan elapsed, DateTime now)
         {
             Blinker.Tick(elapsed);
+            BrakeLight.Tick(elapsed);
         }
     }
 }

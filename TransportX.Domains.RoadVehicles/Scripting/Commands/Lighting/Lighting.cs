@@ -21,6 +21,7 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Lighting
         IComponent IComponentCommand.Source => Source;
 
         public Blinkers Blinkers { get; }
+        public Brakes Brakes { get; }
 
         public Lighting(ScriptAvatar avatar)
         {
@@ -28,6 +29,7 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Lighting
             Source = new LightingComponent();
 
             Blinkers = new Blinkers(this);
+            Brakes = new Brakes(this);
         }
 
         public static Lighting Create(ScriptAvatar avatar) => new(avatar);

@@ -152,14 +152,14 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Chassis
         public AxleFactory BrakeL(Signal<float> signal, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
             => BrakeL($"{ChildKeyPrefix}BrakeL", signal, torqueCurvePoints);
 
-        public AxleFactory BrakeL(string signalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
-            => BrakeL($"{ChildKeyPrefix}BrakeL", signalKey, torqueCurvePoints);
+        public AxleFactory BrakeL(string floatSignalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
+            => BrakeL($"{ChildKeyPrefix}BrakeL", floatSignalKey, torqueCurvePoints);
 
         public AxleFactory BrakeL(Signal<float> signal, double maxTorque)
             => BrakeL($"{ChildKeyPrefix}BrakeL", signal, maxTorque);
 
-        public AxleFactory BrakeL(string signalKey, double maxTorque)
-            => BrakeL($"{ChildKeyPrefix}BrakeL", signalKey, maxTorque);
+        public AxleFactory BrakeL(string floatSignalKey, double maxTorque)
+            => BrakeL($"{ChildKeyPrefix}BrakeL", floatSignalKey, maxTorque);
 
         public AxleFactory BrakeR(string jointKey, Signal<float> signal, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
         {
@@ -167,32 +167,32 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Chassis
             return this;
         }
 
-        public AxleFactory BrakeR(string jointKey, string signalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
+        public AxleFactory BrakeR(string jointKey, string floatSignalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
         {
-            Signal<float> signal = Avatar.Commander.Signals.Float(signalKey);
+            Signal<float> signal = Avatar.Commander.Signals.Float(floatSignalKey);
             return BrakeR(jointKey, signal, torqueCurvePoints);
         }
 
         public AxleFactory BrakeR(string jointKey, Signal<float> signal, double maxTorque)
             => BrakeR(jointKey, signal, [(0, 0), (1, (float)maxTorque)]);
 
-        public AxleFactory BrakeR(string jointKey, string signalKey, double maxTorque)
+        public AxleFactory BrakeR(string jointKey, string floatSignalKey, double maxTorque)
         {
-            Signal<float> signal = Avatar.Commander.Signals.Float(signalKey);
+            Signal<float> signal = Avatar.Commander.Signals.Float(floatSignalKey);
             return BrakeR(jointKey, signal, maxTorque);
         }
 
         public AxleFactory BrakeR(Signal<float> signal, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
             => BrakeR($"{ChildKeyPrefix}BrakeR", signal, torqueCurvePoints);
 
-        public AxleFactory BrakeR(string signalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
-            => BrakeR($"{ChildKeyPrefix}BrakeR", signalKey, torqueCurvePoints);
+        public AxleFactory BrakeR(string floatSignalKey, IReadOnlyCollection<CurvePoint> torqueCurvePoints)
+            => BrakeR($"{ChildKeyPrefix}BrakeR", floatSignalKey, torqueCurvePoints);
 
         public AxleFactory BrakeR(Signal<float> signal, double maxTorque)
             => BrakeR($"{ChildKeyPrefix}BrakeR", signal, maxTorque);
 
-        public AxleFactory BrakeR(string signalKey, double maxTorque)
-            => BrakeR($"{ChildKeyPrefix}BrakeR", signalKey, maxTorque);
+        public AxleFactory BrakeR(string floatSignalKey, double maxTorque)
+            => BrakeR($"{ChildKeyPrefix}BrakeR", floatSignalKey, maxTorque);
         #endregion
 
         #region Steerable
@@ -202,9 +202,9 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Chassis
             return this;
         }
 
-        public AxleFactory SteerableL(string signalKey, double leftAngle, double rightAngle)
+        public AxleFactory SteerableL(string floatSignalKey, double leftAngle, double rightAngle)
         {
-            Signal<float> signal = Avatar.Commander.Signals.Float(signalKey);
+            Signal<float> signal = Avatar.Commander.Signals.Float(floatSignalKey);
             return SteerableL(signal, leftAngle, rightAngle);
         }
 
@@ -214,9 +214,9 @@ namespace TransportX.Domains.RoadVehicles.Scripting.Commands.Chassis
             return this;
         }
 
-        public AxleFactory SteerableR(string signalKey, double leftAngle, double rightAngle)
+        public AxleFactory SteerableR(string floatSignalKey, double leftAngle, double rightAngle)
         {
-            Signal<float> signal = Avatar.Commander.Signals.Float(signalKey);
+            Signal<float> signal = Avatar.Commander.Signals.Float(floatSignalKey);
             return SteerableR(signal, leftAngle, rightAngle);
         }
         #endregion
