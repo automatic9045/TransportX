@@ -14,6 +14,7 @@ namespace TransportX.Rendering
         public required ID3D11Buffer InstanceBuffer { get; init; }
         public required int InstanceCount { get; init; }
         public required ID3D11Buffer MaterialBuffer { get; init; }
+        public bool BindMaterial { get; init; } = true;
 
         public DrawContext()
         {

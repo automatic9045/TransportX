@@ -16,6 +16,10 @@ namespace TransportX.Rendering
 {
     public class Mesh : IMesh
     {
+        private static readonly uint[] VertexStrides = [(uint)Vertex.Size, (uint)InstanceData.Size];
+        private static readonly uint[] VertexOffsets = [0, 0];
+
+
         private readonly ID3D11Buffer[] SetVertexBuffersArray;
 
         public string Name { get; }
@@ -32,7 +36,6 @@ namespace TransportX.Rendering
             set
             {
                 DebugNameKey = value;
-
                 if (value is null)
                 {
                     VertexBuffer.DebugName = IndexBuffer.DebugName = null;
@@ -64,7 +67,6 @@ namespace TransportX.Rendering
         {
             Vector3 min = new(float.MaxValue);
             Vector3 max = new(float.MinValue);
-
             foreach (Vertex vertex in vertices)
             {
                 min = Vector3.Min(min, vertex.Position);
@@ -114,26 +116,27 @@ namespace TransportX.Rendering
         public void Draw(in DrawContext context, Material renderMaterial)
         {
             SetVertexBuffersArray[1] = context.InstanceBuffer;
-            context.DeviceContext.IASetVertexBuffers(0, 2, SetVertexBuffersArray, [(uint)Vertex.Size, (uint)InstanceData.Size], [0, 0]);
-
+            context.DeviceContext.IASetVertexBuffers(0, 2, SetVertexBuffersArray, VertexStrides, VertexOffsets);
             context.DeviceContext.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
             context.DeviceContext.IASetPrimitiveTopology(Topology);
 
-            MaterialConstants materialConstants = new()
+            if (context.BindMaterial)
             {
-                BaseColor = renderMaterial.BaseColor,
-                Emissive = renderMaterial.Emissive * 0.001f,
-                Roughness = renderMaterial.Roughness,
-                Metallic = renderMaterial.Metallic,
+                MaterialConstants materialConstants = new()
+                {
+                    BaseColor = renderMaterial.BaseColor,
+                    Emissive = renderMaterial.Emissive * 0.001f,
+                    Roughness = renderMaterial.Roughness,
+                    Metallic = renderMaterial.Metallic,
+                    BaseTextureMode = (uint)renderMaterial.BaseColorTexture.Mode,
+                    NormalTextureMode = (uint)renderMaterial.NormalTexture.Mode,
+                    ORMTextureMode = (uint)renderMaterial.ORMTexture.Mode,
+                    EmissiveTextureMode = (uint)renderMaterial.EmissiveTexture.Mode,
+                };
+                context.DeviceContext.UpdateSubresource(materialConstants, context.MaterialBuffer);
 
-                BaseTextureMode = (uint)renderMaterial.BaseColorTexture.Mode,
-                NormalTextureMode = (uint)renderMaterial.NormalTexture.Mode,
-                ORMTextureMode = (uint)renderMaterial.ORMTexture.Mode,
-                EmissiveTextureMode = (uint)renderMaterial.EmissiveTexture.Mode,
-            };
-            context.DeviceContext.UpdateSubresource(materialConstants, context.MaterialBuffer);
-
-            context.DeviceContext.PSSetShaderResources(0, renderMaterial.TextureViews!);
+                context.DeviceContext.PSSetShaderResources(0, renderMaterial.TextureViews!);
+            }
 
             uint indexCount = IndexBuffer.Description.ByteWidth / sizeof(uint);
             context.DeviceContext.DrawIndexedInstanced(indexCount, (uint)context.InstanceCount, 0, 0, 0);

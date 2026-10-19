@@ -214,6 +214,7 @@ namespace TransportX.Rendering.Pipelines
                     InstanceBuffer = Resources.InstanceBuffer,
                     InstanceCount = 0,
                     MaterialBuffer = Resources.MaterialBuffer,
+                    BindMaterial = false,
                 });
                 RenderQueue.Clear();
             }
