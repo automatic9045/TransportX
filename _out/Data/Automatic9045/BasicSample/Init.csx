@@ -9,6 +9,7 @@ Network.LaneTraffic.AddGroup("Cars", "Buses|NormalCars", "#00FFFF");
 
 Network.LaneLayouts.Load("Layout1", "LaneLayout1.xml");
 Network.LaneLayouts.Load("Layout2", "LaneLayout2.xml");
+Network.LaneLayouts.Load("LayoutSingle", "LaneLayoutSingle.xml");
 
 Component<TrafficAgents>().AddSpawner<RandomTrafficSpawnerTemplate>("Random");
 Component<TrafficAgents>().AddAgent<CarTemplate>("AICar");

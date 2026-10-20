@@ -52,11 +52,12 @@
     tJunction.AddPort("S", "Layout1", 0, 0, 0, 0, 180, 0);
     tJunction.AddPort("N", "Layout1", 0, 0, 24, 0, 0, 0);
     tJunction.AddPort("E", "Layout1", 12, 0, 12, 0, 90, 0);
+    tJunction.AddRelay("SEIn", "SEOut", "LayoutSingle", -1.5, 0, 7, 0, 15, 0);
 
     var tJunctionPath = tJunction.Wire("SN0", "S", 0, "N", 3);
     tJunctionPath.StraightToEnd();
 
-    tJunctionPath = tJunction.Wire("NS_S", "S", 1, "N", 2)
+    tJunctionPath = tJunction.Wire("NS_S", "S", 1, "N", 2) // N→S 直進
         .Deflection(0)
         .Signal("V_Car");
     tJunctionPath.StraightToEnd(out var s1);
@@ -72,7 +73,7 @@
 
     for (double x = 4; x <= 7; x += 1) tJunctionPath.PutProp(["WhiteLine500"], x, 0, 0, 0, 90, 0, 8.5, 1, 1, 8);
 
-    tJunctionPath = tJunction.Wire("SN_S", "S", 2, "N", 1)
+    tJunctionPath = tJunction.Wire("SN_S", "S", 2, "N", 1) // S→N 直進
         .Deflection(0)
         .Signal("V_Car");
     tJunctionPath.StraightToEnd();
@@ -89,7 +90,7 @@
     tJunctionPath = tJunction.Wire("SE0", "S", 0, "E", 3);
     tJunctionPath.BezierToEnd();
 
-    tJunctionPath = tJunction.Wire("ES_L", "S", 1, "E", 2)
+    tJunctionPath = tJunction.Wire("ES_L", "S", 1, "E", 2) // E→S 左折
         .Deflection(1)
         .Signal("H_Car")
         .SpeedLimit(30);
@@ -100,12 +101,16 @@
     tJunctionPath.PutProp(["WhiteLine500"], 1.5, 0, 0, 0, 90, 0, s1 - 0.5, 1, 1, 1);
     tJunctionPath.PutProp(["WhiteLine150"], -2, 0, 0, s1 - 0.75, 1, 1, 1);
 
-    tJunctionPath = tJunction.Wire("SE_R", "S", 2, "E", 1)
+    tJunctionPath = tJunction.Wire("SE_R_In", "S", 2, "SEIn", 0) // S→E 右折
         .Deflection(1)
         .Signal("V_Car")
-        .Yield("NS_S", "NE_L")
         .SpeedLimit(30);
-    tJunctionPath.BezierToEnd();
+    tJunctionPath.BezierToEnd(2);
+    tJunctionPath = tJunction.Wire("SE_R_Out", "SEOut", 0, "E", 1)
+        .Deflection(1)
+        .Yield(("NS_S", 7, 17), ("NE_L", 7, s1))
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(5);
 
     tJunctionPath = tJunction.Wire("SE3", "S", 3, "E", 0);
     tJunctionPath.BezierToEnd();
@@ -316,6 +321,10 @@
     tJunction.AddPort("N", "Layout1", 0, 0, 24, 0, 0, 0);
     tJunction.AddPort("E", "Layout1", 12, 0, 12, 0, 90, 0);
     tJunction.AddPort("W", "Layout1", -12, 0, 12, 0, -90, 0);
+    tJunction.AddRelay("SEIn", "SEOut", "LayoutSingle", -1.5, 0, 7, 0, 15, 0);
+    tJunction.AddRelay("NWIn", "NWOut", "LayoutSingle", 1.5, 0, 17, 0, -165, 0);
+    tJunction.AddRelay("ENIn", "ENOut", "LayoutSingle", 5, 0, 10.5, 0, -75, 0);
+    tJunction.AddRelay("WSIn", "WSOut", "LayoutSingle", -5, 0, 13.5, 0, 105, 0);
 
     var tJunctionPath = tJunction.Wire("SN0", "S", 0, "N", 3);
     tJunctionPath.StraightToEnd();
@@ -351,38 +360,56 @@
 
     tJunctionPath = tJunction.Wire("ES_L", "S", 1, "E", 2) // E→S 左折
         .Deflection(1)
-        .Signal("H_Car");
-    tJunctionPath.BezierToEnd();
+        .Signal("H_Car")
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(out s1);
 
-    tJunctionPath = tJunction.Wire("SE_R", "S", 2, "E", 1) // S→E 右折
+    tJunctionPath = tJunction.Wire("SE_R_In", "S", 2, "SEIn", 0) // S→E 右折
         .Deflection(1)
         .Signal("V_Car")
-        .Yield("NS_S", "NE_L");
-    tJunctionPath.BezierToEnd();
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(2);
+    tJunctionPath = tJunction.Wire("SE_R_Out", "SEOut", 0, "E", 1)
+        .Deflection(1)
+        .Yield(("NS_S", 7, 17), ("NE_L", 7, s1))
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(5);
 
-    tJunctionPath = tJunction.Wire("WS_R", "S", 1, "W", 2) // W→S 右折
+    tJunctionPath = tJunction.Wire("WS_R_Out", "S", 1, "WSOut", 0) // W→S 右折
+        .Deflection(-1)
+        .Yield(("EW_S", 7, 17), ("ES_L", 0, s1 - 7))
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(5);
+    tJunctionPath = tJunction.Wire("WS_R_In", "WSIn", 0, "W", 2)
         .Deflection(-1)
         .Signal("H_Car")
-        .Yield("EW_S", "ES_L");
-    tJunctionPath.BezierToEnd();
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(2);
 
     tJunctionPath = tJunction.Wire("SW_L", "S", 2, "W", 1) // S→W 左折
         .Deflection(-1)
-        .Signal("V_Car");
+        .Signal("V_Car")
+        .SpeedLimit(30);
     tJunctionPath.BezierToEnd();
 
     tJunctionPath = tJunction.Wire("SW3", "S", 3, "W", 0);
     tJunctionPath.BezierToEnd();
 
-    tJunctionPath = tJunction.Wire("EN_R", "N", 1, "E", 2) // E→N 右折
+    tJunctionPath = tJunction.Wire("EN_R_Out", "N", 1, "ENOut", 0) // E→N 右折
+        .Deflection(-1)
+        .Yield(("WE_S", 7, 17), ("WN_L", 0, s1 - 7))
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(5);
+    tJunctionPath = tJunction.Wire("EN_R_In", "ENIn", 0, "E", 2)
         .Deflection(-1)
         .Signal("H_Car")
-        .Yield("WE_S", "WN_L");
-    tJunctionPath.BezierToEnd();
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(2);
 
     tJunctionPath = tJunction.Wire("NE_L", "N", 2, "E", 1) // N→E 左折
         .Deflection(-1)
-        .Signal("V_Car");
+        .Signal("V_Car")
+        .SpeedLimit(30);
     tJunctionPath.BezierToEnd();
 
     tJunctionPath = tJunction.Wire("NE3", "N", 3, "E", 0);
@@ -393,14 +420,20 @@
 
     tJunctionPath = tJunction.Wire("WN_L", "N", 1, "W", 2) // W→N 左折
         .Deflection(1)
-        .Signal("H_Car");
+        .Signal("H_Car")
+        .SpeedLimit(30);
     tJunctionPath.BezierToEnd();
 
-    tJunctionPath = tJunction.Wire("NW_R", "N", 2, "W", 1) // N→W 右折
+    tJunctionPath = tJunction.Wire("NW_R_In", "N", 2, "NWIn", 0) // N→W 右折
         .Deflection(1)
         .Signal("V_Car")
-        .Yield("SN_S", "SW_L");
-    tJunctionPath.BezierToEnd();
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(2);
+    tJunctionPath = tJunction.Wire("NW_R_Out", "NWOut", 0, "W", 1)
+        .Deflection(1)
+        .Yield(("SN_S", 7, 17), ("SW_L", 7, s1))
+        .SpeedLimit(30);
+    tJunctionPath.BezierToEnd(5);
 
     tJunctionPath = tJunction.Wire("EW0", "E", 0, "W", 3);
     tJunctionPath.StraightToEnd();
