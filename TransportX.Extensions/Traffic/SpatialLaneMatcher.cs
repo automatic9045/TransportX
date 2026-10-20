@@ -17,6 +17,7 @@ namespace TransportX.Extensions.Traffic
         private const float LongitudinalTolerance = 0.5f;
         private const float HysteresisMarginSquared = 1.5f;
         private const float DirectionThreshold = 0.4f;
+        private const float CoarseCullMargin = 20;
         private const int InitialCandidateCapacity = 128;
 
         private readonly ITrafficEntity Entity;
@@ -138,12 +139,21 @@ namespace TransportX.Extensions.Traffic
             result = PathMatchResult.Empty;
             if (path.Length < 1e-3f) return false;
 
-            float bestS = path.ProjectToS(entityPose);
+            WorldPose startPose = path.GetWorldPose(0);
+            Vector3 toStart = entityPose.GetOffset(startPose);
+            float maxReach = path.Length + halfWidth + CoarseCullMargin;
+            if (maxReach * maxReach < toStart.LengthSquared())
+            {
+                WorldPose endPose = path.GetWorldPose(path.Length);
+                Vector3 toEnd = entityPose.GetOffset(endPose);
+                if (maxReach * maxReach < toEnd.LengthSquared()) return false;
+            }
 
+            float bestS = path.ProjectToS(entityPose);
             WorldPose pathWorldPose = path.GetWorldPose(bestS);
+
             Vector3 pathDirection = pathWorldPose.Pose.Direction;
             float dotDirection = Vector3.Dot(entityForward, pathDirection);
-
             if (float.Abs(dotDirection) < DirectionThreshold) return false;
 
             EntityDirection heading = 0 < dotDirection ? EntityDirection.Forward : EntityDirection.Backward;
