@@ -105,7 +105,7 @@ namespace TransportX.Scripting.Commands
 
         public ButtonFactory<TParent> ForwardToSignal(string boolSignalKey)
         {
-            Parent.Signals.ForwardBool(boolSignalKey, () => BuiltButton is null ? false : BuiltButton.IsPressed);
+            Parent.Signals.ForwardBool(boolSignalKey, () => BuiltButton is not null && BuiltButton.IsPressed);
             return this;
         }
 

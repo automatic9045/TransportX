@@ -44,7 +44,7 @@ namespace TransportX.Rendering.Pipelines
                 unsafe
                 {
                     float[] dummyData = new float[CascadeCount];
-                    Array.Fill(dummyData, 1.0f);
+                    Array.Fill(dummyData, 1);
 
                     fixed (float* p = dummyData)
                     {

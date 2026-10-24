@@ -126,8 +126,8 @@ namespace TransportX.Rendering.Pipelines
 
             Matrix4x4.Invert(viewContext.View, out Matrix4x4 viewInverse);
 
-            float tanHalfFovX = 1.0f / viewContext.Projection.M11;
-            float tanHalfFovY = 1.0f / viewContext.Projection.M22;
+            float tanHalfFovX = 1 / viewContext.Projection.M11;
+            float tanHalfFovY = 1 / viewContext.Projection.M22;
 
             for (int i = 0; i < CascadeCount; i++)
             {

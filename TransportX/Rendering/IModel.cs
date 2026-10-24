@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Direct3D11;
 using Vortice.Mathematics;
-
-using TransportX.Physics;
 
 namespace TransportX.Rendering
 {

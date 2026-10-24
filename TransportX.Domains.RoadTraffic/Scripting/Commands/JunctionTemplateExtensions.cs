@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Diagnostics;
-using TransportX.Rendering;
 using TransportX.Spatial;
 
 using TransportX.Scripting;

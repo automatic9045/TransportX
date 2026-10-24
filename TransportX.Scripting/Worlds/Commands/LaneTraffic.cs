@@ -71,8 +71,8 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public LaneTrafficGroup AddGroup(string key, string typeKeys, string debugColor)
         {
-            string[] typeKeysSplitted = typeKeys.Split('|', StringSplitOptions.TrimEntries);
-            IEnumerable<LaneTrafficType> types = typeKeysSplitted
+            string[] typeKeysSplit = typeKeys.Split('|', StringSplitOptions.TrimEntries);
+            IEnumerable<LaneTrafficType> types = typeKeysSplit
                 .Select(key => TypesKey.GetValue(key, out LaneTrafficType type) ? type : null)
                 .Where(type => type is not null)
                 .Cast<LaneTrafficType>();
