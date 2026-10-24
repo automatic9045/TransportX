@@ -28,3 +28,9 @@ Sounds.Create3D("HazardOn", "BlinkerOn", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("Ha
 Sounds.Create3D("HazardOff", "BlinkerOff", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("HazardOffCount");
 
 Sounds.Create3D("Blinker", "Blinker", 0.67, 1.2, -0.8, 90, 0, 0, 1).PlayWhen("BlinkerRelayOnCount");
+
+
+Component<Lighting>().Brakes
+    .Signal("Brake");
+
+Component<Lighting>().Brakes.AddEmissiveLamp("Rear", "Body", "RearBrake", 10000, 10000, 10000, 0.1);

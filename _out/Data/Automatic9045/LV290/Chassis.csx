@@ -26,3 +26,5 @@ Component<Chassis>().AddCoilRigidSuspension("SuspensionF", "Body", "F")
 Component<Chassis>().AddCoilRigidSuspension("SuspensionR", "Body", "R")
     .Spring(7)
     .Build();
+
+Signals.ForwardBool("Brake", () => 0.05 < Signals.ReadFloat("Brake"));
