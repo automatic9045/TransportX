@@ -14,6 +14,8 @@ namespace TransportX.Domains.RoadVehicles.Chassis
 {
     public class Brake
     {
+        private float OldSignalValue = float.NaN;
+
         public required Constraint<AngularAxisMotor> Motor { get; init; }
         public required Signal<float>? Signal { get; init; }
         public required Curve TorqueCurve { get; init; }
@@ -26,11 +28,15 @@ namespace TransportX.Domains.RoadVehicles.Chassis
         {
             if (Signal is null) return;
 
+            float signalValue = Signal.Value;
+            if (signalValue == OldSignalValue) return;
+            OldSignalValue = signalValue;
+
             Motor.Description = Motor.Description with
             {
                 Settings = Motor.Description.Settings with
                 {
-                    MaximumForce = TorqueCurve.GetValue(Signal.Value),
+                    MaximumForce = TorqueCurve.GetValue(signalValue),
                 },
             };
         }
