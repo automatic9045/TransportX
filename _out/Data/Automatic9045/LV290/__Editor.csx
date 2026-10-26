@@ -1,8 +1,8 @@
-#r "..\..\..\bin\Release\TransportX.dll"
-#r "..\..\..\bin\Release\TransportX.Extensions.dll"
-#r "..\..\..\bin\Release\TransportX.Scripting.dll"
-#r "..\..\..\bin\Release\Plugins\TransportX.Domains.Equipment.dll"
-#r "..\..\..\bin\Release\Plugins\TransportX.Domains.RoadVehicles.dll"
+#r "../../../bin/Release/TransportX.dll"
+#r "../../../bin/Release/TransportX.Extensions.dll"
+#r "../../../bin/Release/TransportX.Scripting.dll"
+#r "../../../bin/Release/Plugins/TransportX.Domains.Equipment.dll"
+#r "../../../bin/Release/Plugins/TransportX.Domains.RoadVehicles.dll"
 
 global using System;
 global using System.Collections.Generic;

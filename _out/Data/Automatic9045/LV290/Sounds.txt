@@ -1,17 +1,17 @@
-Engine	Sounds\Engine.wav
-EngineIdling	Sounds\EngineIdling.wav
+Engine	Sounds/Engine.wav
+EngineIdling	Sounds/EngineIdling.wav
 
-AmtShifter	Sounds\AmtShifter.wav
+AmtShifter	Sounds/AmtShifter.wav
 
-Horn	Sounds\Horn.wav
-HornStart	Sounds\HornStart.wav
-HornEnd	Sounds\HornEnd.wav
+Horn	Sounds/Horn.wav
+HornStart	Sounds/HornStart.wav
+HornEnd	Sounds/HornEnd.wav
 
-BlinkerOn	Sounds\BlinkerOn.wav
-BlinkerOff	Sounds\BlinkerOff.wav
-Blinker	Sounds\Blinker.wav
+BlinkerOn	Sounds/BlinkerOn.wav
+BlinkerOff	Sounds/BlinkerOff.wav
+Blinker	Sounds/Blinker.wav
 
-BifoldDoorOpen	Sounds\BifoldDoorOpen.wav
-BifoldDoorClose	Sounds\BifoldDoorClose.wav
-SlidingDoorOpen	Sounds\SlidingDoorOpen.wav
-SlidingDoorClose	Sounds\SlidingDoorOpen.wav
+BifoldDoorOpen	Sounds/BifoldDoorOpen.wav
+BifoldDoorClose	Sounds/BifoldDoorClose.wav
+SlidingDoorOpen	Sounds/SlidingDoorOpen.wav
+SlidingDoorClose	Sounds/SlidingDoorOpen.wav

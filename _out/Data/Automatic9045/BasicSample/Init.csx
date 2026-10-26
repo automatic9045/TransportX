@@ -13,7 +13,7 @@ Network.LaneLayouts.Load("LayoutSingle", "LaneLayoutSingle.xml");
 
 Component<TrafficAgents>().AddSpawner<RandomTrafficSpawnerTemplate>("Random");
 Component<TrafficAgents>().AddAgent<CarTemplate>("AICar");
-Component<TrafficAgents>().Generate("NormalCars", @"Traffic\NormalCars.xml");
+Component<TrafficAgents>().Generate("NormalCars", "Traffic/NormalCars.xml");
 
-Component<TrafficSignals>().AddController("4Forked1", @"SignalControllers\4Forked1.xml");
-Component<TrafficSignals>().AddController("4Forked2", @"SignalControllers\4Forked2.xml");
+Component<TrafficSignals>().AddController("4Forked1", "SignalControllers/4Forked1.xml");
+Component<TrafficSignals>().AddController("4Forked2", "SignalControllers/4Forked2.xml");
