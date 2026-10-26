@@ -65,7 +65,7 @@ namespace TransportX.Rendering.Importing
                 int width = converter.Size.Width;
                 int height = converter.Size.Height;
 
-                TextureFactory.ReportIfNpot(width, height, errorCollector);
+                RawTextureFactory.ReportIfNpot(width, height, errorCollector);
 
                 uint stride = (uint)width * 4;
                 uint bufferSize = stride * (uint)height;
@@ -77,7 +77,7 @@ namespace TransportX.Rendering.Importing
                     {
                         converter.CopyPixels(stride, bufferSize, (nint)pBuffer);
 
-                        TextureFactory.Description desc = new()
+                        RawTextureFactory.Description desc = new()
                         {
                             Width = (uint)width,
                             Height = (uint)height,
@@ -87,7 +87,7 @@ namespace TransportX.Rendering.Importing
                             SrcDepthPitch = bufferSize,
                         };
 
-                        ID3D11ShaderResourceView view = TextureFactory.Create(Context, desc);
+                        ID3D11ShaderResourceView view = RawTextureFactory.Create(Context, desc);
                         return view;
                     }
                     finally
@@ -145,7 +145,7 @@ namespace TransportX.Rendering.Importing
             if (gSource is not null) (width, height) = (uint.Max(width, (uint)gSource.Size.Width), uint.Max(height, (uint)gSource.Size.Height));
             if (rSource is not null) (width, height) = (uint.Max(width, (uint)rSource.Size.Width), uint.Max(height, (uint)rSource.Size.Height));
 
-            TextureFactory.ReportIfNpot((int)width, (int)height, errorCollector);
+            RawTextureFactory.ReportIfNpot((int)width, (int)height, errorCollector);
 
 
             using IWICBitmapSource? bResized = bSource is null ? null : ConvertAndResize(bSource, width, height);
@@ -199,7 +199,7 @@ namespace TransportX.Rendering.Importing
                     pd += 4;
                 }
 
-                TextureFactory.Description desc = new()
+                RawTextureFactory.Description desc = new()
                 {
                     Width = width,
                     Height = height,
@@ -209,7 +209,7 @@ namespace TransportX.Rendering.Importing
                     SrcDepthPitch = bufferSize,
                 };
 
-                ID3D11ShaderResourceView view = TextureFactory.Create(Context, desc);
+                ID3D11ShaderResourceView view = RawTextureFactory.Create(Context, desc);
                 return view;
             }
             finally

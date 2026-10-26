@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
-using Vortice.DXGI;
 using Vortice.WIC;
 
 using TransportX.Diagnostics;
@@ -313,10 +312,10 @@ namespace TransportX.Rendering.Importing
                                 case TextureFormat.Uncompressed:
                                     unsafe
                                     {
-                                        TextureFactory.ReportIfNpot(embeddedTexture.Width, embeddedTexture.Height, errorCollector);
+                                        RawTextureFactory.ReportIfNpot(embeddedTexture.Width, embeddedTexture.Height, errorCollector);
 
                                         using MemoryHandle handle = embeddedTexture.Data.Pin();
-                                        TextureFactory.Description desc = new()
+                                        RawTextureFactory.Description desc = new()
                                         {
                                             Width = (uint)embeddedTexture.Width,
                                             Height = (uint)embeddedTexture.Height,
@@ -326,7 +325,7 @@ namespace TransportX.Rendering.Importing
                                             SrcDepthPitch = 0,
                                         };
 
-                                        texture = TextureFactory.Create(Context, desc);
+                                        texture = RawTextureFactory.Create(Context, desc);
                                     }
                                     break;
 

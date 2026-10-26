@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+using Vortice.WIC;
 
 namespace TransportX.Rendering.Backend
 {
@@ -14,6 +15,7 @@ namespace TransportX.Rendering.Backend
         ID3D11Device Device { get; }
         ID3D11DeviceContext Context { get; }
         IDXGIFactory2 DXGIFactory { get; }
+        IWICImagingFactory WICFactory { get; }
 
         event EventHandler? Disposing;
     }

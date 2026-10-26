@@ -8,7 +8,7 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.Direct3D11.Debug;
 using Vortice.DXGI;
-using Vortice.XAudio2;
+using Vortice.WIC;
 
 namespace TransportX.Rendering.Backend
 {
@@ -28,6 +28,7 @@ namespace TransportX.Rendering.Backend
         public ID3D11DeviceContext Context { get; }
         public ID3D11Debug? Debug { get; }
         public IDXGIFactory2 DXGIFactory { get; }
+        public IWICImagingFactory WICFactory { get; } = new();
 
         public event EventHandler? Disposing;
 
@@ -51,6 +52,7 @@ namespace TransportX.Rendering.Backend
         {
             Disposing?.Invoke(this, EventArgs.Empty);
 
+            WICFactory.Dispose();
             DXGIFactory.Dispose();
 
             Context.ClearState();

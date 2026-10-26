@@ -22,9 +22,8 @@ namespace TransportX.Rendering
 {
     public class ModelFactory : IDisposable
     {
-        private readonly IWICImagingFactory WICFactory = new();
-
         private readonly ID3D11DeviceContext Context;
+        private readonly IWICImagingFactory WICFactory;
         private readonly Simulation? Simulation;
         private readonly IErrorCollector ErrorCollector;
 
@@ -36,9 +35,10 @@ namespace TransportX.Rendering
         public bool IsCollisionSupported => Simulation is not null;
         public IReadOnlyCollection<ID3D11ShaderResourceView> Textures => Builder.Textures;
 
-        public ModelFactory(ID3D11DeviceContext context, Simulation? simulation, IErrorCollector errorCollector)
+        public ModelFactory(ID3D11DeviceContext context, IWICImagingFactory wicFactory, Simulation? simulation, IErrorCollector errorCollector)
         {
             Context = context;
+            WICFactory = wicFactory;
             Simulation = simulation;
             ErrorCollector = errorCollector;
 
@@ -50,7 +50,6 @@ namespace TransportX.Rendering
 
         public void Dispose()
         {
-            WICFactory.Dispose();
             AssimpImporter.Dispose();
             GltfImporter.Dispose();
         }

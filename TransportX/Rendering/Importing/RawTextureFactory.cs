@@ -11,7 +11,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Rendering.Importing
 {
-    internal static class TextureFactory
+    internal static class RawTextureFactory
     {
         public static void ReportIfNpot(int width, int height, IErrorCollector errorCollector)
         {
@@ -61,7 +61,7 @@ namespace TransportX.Rendering.Importing
             return view;
         }
 
-        public readonly struct Description
+        internal readonly struct Description
         {
             public required uint Width { get; init; }
             public required uint Height { get; init; }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 using Vortice.Mathematics;
+using Vortice.WIC;
 
 using TransportX.Diagnostics;
 
@@ -75,9 +76,9 @@ namespace TransportX.Rendering
             return boundingBox;
         }
 
-        public static ModelResourceSet Load(ID3D11DeviceContext context, IErrorCollector errorCollector, string path, bool makeLH)
+        public static ModelResourceSet Load(ID3D11DeviceContext context, IWICImagingFactory wicFactory, IErrorCollector errorCollector, string path, bool makeLH)
         {
-            using ModelFactory factory = new(context, null, errorCollector);
+            using ModelFactory factory = new(context, wicFactory, null, errorCollector);
             ModelResourceSet model = factory.Load(path, makeLH);
             return model;
         }

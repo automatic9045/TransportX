@@ -49,7 +49,7 @@ namespace TransportX.Scripting.Commands
                         ? modelError.ChangeSource(list.ListPath, list.LineNumber) : e.Error;
                     ErrorCollector.Report(error);
                 };
-                using ModelFactory factory = new(GraphicsHost.Context, PhysicsHost.Simulation, factoryErrorCollector);
+                using ModelFactory factory = new(GraphicsHost.Context, GraphicsHost.WICFactory, PhysicsHost.Simulation, factoryErrorCollector);
 
                 ModelListInterpreter interpreter = new(parser, PhysicsHost.Simulation, factory, list.ListDirectory, factoryErrorCollector);
 
