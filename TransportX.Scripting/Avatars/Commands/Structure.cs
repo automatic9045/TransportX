@@ -4,11 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Diagnostics;
-using TransportX.Rendering;
-using TransportX.Scripting.Collections;
-using TransportX.Spatial;
-
 namespace TransportX.Scripting.Avatars.Commands
 {
     public class Structure
@@ -28,6 +23,7 @@ namespace TransportX.Scripting.Avatars.Commands
 
         internal void Dispose()
         {
+            Parts.Dispose();
             Joints.Dispose();
         }
 

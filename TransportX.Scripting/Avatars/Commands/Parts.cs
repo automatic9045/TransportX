@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Direct3D11;
+
 using TransportX.Diagnostics;
 using TransportX.Rendering;
 using TransportX.Scripting.Collections;
@@ -15,6 +17,9 @@ namespace TransportX.Scripting.Avatars.Commands
     {
         private readonly ScriptAvatar Avatar;
 
+        internal TextureFactory TextureFactory { get; }
+        internal List<ID3D11ShaderResourceView> CreatedTextures { get; } = [];
+
         private readonly ScriptKeyedList<string, Part> AllKey;
         public IReadOnlyScriptKeyedList<string, Part> All => AllKey;
 
@@ -22,7 +27,17 @@ namespace TransportX.Scripting.Avatars.Commands
         {
             Avatar = avatar;
 
+            TextureFactory = new TextureFactory(Avatar.GraphicsHost.Context, Avatar.GraphicsHost.WICFactory);
+
             AllKey = new ScriptKeyedList<string, Part>(part => part.Key, Avatar.ErrorCollector, "パーツ", key => Part.Empty(Avatar, key));
+        }
+
+        internal void Dispose()
+        {
+            foreach (ID3D11ShaderResourceView shaderResourceView in CreatedTextures)
+            {
+                shaderResourceView.Dispose();
+            }
         }
 
         public PartFactory Add(string key, string modelKey, Pose pose)
