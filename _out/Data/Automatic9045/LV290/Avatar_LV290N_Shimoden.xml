@@ -5,6 +5,6 @@
     <Author>automatic9045</Author>
     <Path>$(bin)TransportX.Scripting.dll</Path>
     <Args>
-        <Arg>Avatar.csx</Arg>
+        <Arg>Avatar_LV290N_Shimoden.csx</Arg>
     </Args>
 </AvatarInfo>

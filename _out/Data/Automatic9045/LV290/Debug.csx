@@ -9,7 +9,7 @@
             var clutch = (FluidClutchFactory)Component<Powertrain>().Modules.Factories["Clutch"];
             var gearbox = (GearboxFactory)Component<Powertrain>().Modules.Factories["Gearbox"];
 
-            Debug.ShowDialog($"{engine.BuiltModule.Rpm:f1} rpm, {gearbox.BuiltModule.Gear}, " +
+            Debug.ShowDialog($"{Avatar.Velocity.Length() * 3.6f:f1} km/h, {engine.BuiltModule.Rpm:f1} rpm, {gearbox.BuiltModule.Gear}, " +
                 $"C{clutch.BuiltModule.Engagement:f2}, T{engine.BuiltModule.Throttle:f2}");
         })
         .Build();
