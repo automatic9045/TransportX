@@ -45,7 +45,7 @@ namespace TransportX.Scripting.Commands
                         string soundKey = line[0];
                         string soundPath = Path.Combine(list.ListDirectory, line[1]);
 
-                        SoundAsset sound = SoundAsset.FromFile(AudioHost.XAudio2, AudioHost.MasteringVoice, AudioHost.X3DAudio, soundPath);
+                        SoundAsset sound = SoundAsset.FromFile(soundPath);
                         sounds.Add(soundKey, sound);
                     }
                     catch (Exception ex)

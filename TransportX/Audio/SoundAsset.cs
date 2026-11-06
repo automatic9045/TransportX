@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,71 +13,72 @@ namespace TransportX.Audio
 {
     public class SoundAsset : ISoundAsset
     {
-        private readonly IXAudio2 XAudio2;
-        private readonly IXAudio2MasteringVoice MasteringVoice;
-        private readonly X3DAudio X3DAudio;
-
         private readonly byte[] AudioBytes;
-        private readonly uint[]? DecodedPacketsInfo;
 
         public WaveFormat Format { get; }
         public TimeSpan Duration { get; }
-        public bool IsMono => Format.Channels == 1;
+        public AudioBuffer Buffer { get; }
+        public uint[]? DecodedPacketsInfo { get; }
 
-        public SoundAsset(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, SoundStream soundStream)
+        public SoundAsset(SoundStream soundStream)
         {
-            XAudio2 = xaudio2;
-            MasteringVoice = masteringVoice;
-            X3DAudio = x3dAudio;
-
-            Format = soundStream.Format ?? throw new InvalidOperationException("音声データのフォーマットを取得できませんでした。");
+            WaveFormat sourceFormat = soundStream.Format ?? throw new InvalidOperationException("音声データのフォーマットを取得できませんでした。");
             DecodedPacketsInfo = soundStream.DecodedPacketsInfo;
 
-            int length = (int)soundStream.Length;
-            byte[] buffer = new byte[length];
-            soundStream.ReadExactly(buffer, 0, length);
-            AudioBytes = buffer;
+            int rawLength = (int)soundStream.Length;
+            byte[] rawBytes = new byte[rawLength];
+            soundStream.ReadExactly(rawBytes, 0, rawLength);
 
-            double totalSeconds = (double)length / Format.AverageBytesPerSecond;
+            if (sourceFormat.Encoding == WaveFormatEncoding.Pcm && sourceFormat.BitsPerSample == 16)
+            {
+                ReadOnlySpan<short> sourceSamples = MemoryMarshal.Cast<byte, short>(rawBytes);
+                float[] floatSamples = new float[sourceSamples.Length];
+
+                for (int i = 0; i < sourceSamples.Length; i++)
+                {
+                    floatSamples[i] = sourceSamples[i] / 32768f;
+                }
+
+                AudioBytes = MemoryMarshal.AsBytes<float>(floatSamples).ToArray();
+                Format = WaveFormat.CreateIeeeFloatWaveFormat(sourceFormat.SampleRate, sourceFormat.Channels);
+            }
+            else if (sourceFormat.Encoding == WaveFormatEncoding.IeeeFloat && sourceFormat.BitsPerSample == 32)
+            {
+                AudioBytes = rawBytes;
+                Format = sourceFormat;
+            }
+            else
+            {
+                throw new NotSupportedException($"未対応のフォーマットです: {sourceFormat.Encoding}, {sourceFormat.BitsPerSample}bit");
+            }
+
+            Buffer = new AudioBuffer(AudioBytes)
+            {
+                AudioBytes = (uint)AudioBytes.Length,
+                LoopCount = XAudio2.NoLoopRegion,
+                Flags = BufferFlags.EndOfStream,
+            };
+
+            double totalSeconds = (double)AudioBytes.Length / Format.AverageBytesPerSecond;
             Duration = TimeSpan.FromSeconds(totalSeconds);
         }
 
-        public static SoundAsset Empty(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio)
+        public static SoundAsset Empty()
         {
             using SoundStream soundStream = new(Stream.Null);
-            return new SoundAsset(xaudio2, masteringVoice, x3dAudio, soundStream);
+            return new SoundAsset(soundStream);
         }
 
-        public static SoundAsset FromFile(IXAudio2 xaudio2, IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, string filePath)
+        public static SoundAsset FromFile(string filePath)
         {
             using FileStream fileStream = File.OpenRead(filePath);
             using SoundStream soundStream = new(fileStream);
-            return new SoundAsset(xaudio2, masteringVoice, x3dAudio, soundStream);
+            return new SoundAsset(soundStream);
         }
 
         public void Dispose()
         {
+            Buffer.Dispose();
         }
-
-        public Sound CreateSound(float maxFrequencyRatio)
-        {
-            IXAudio2SourceVoice sourceVoice = XAudio2.CreateSourceVoice(Format, maxFrequencyRatio: maxFrequencyRatio);
-            return new Sound(AudioBytes, DecodedPacketsInfo, sourceVoice, maxFrequencyRatio);
-        }
-
-        ISound ISoundAsset.CreateSound(float maxFrequencyRatio) => CreateSound(maxFrequencyRatio);
-
-        public Sound3D CreateSound3D(float maxFrequencyRatio)
-        {
-            if (!IsMono)
-            {
-                throw new NotSupportedException("3D サウンド (Sound3D) を生成するには、モノラル (1ch) の音声データである必要があります。");
-            }
-
-            IXAudio2SourceVoice sourceVoice = XAudio2.CreateSourceVoice(Format, maxFrequencyRatio: maxFrequencyRatio);
-            return new Sound3D(MasteringVoice, X3DAudio, AudioBytes, DecodedPacketsInfo, sourceVoice, maxFrequencyRatio);
-        }
-
-        ISound3D ISoundAsset.CreateSound3D(float maxFrequencyRatio) => CreateSound3D(maxFrequencyRatio);
     }
 }

@@ -11,7 +11,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Audio
 {
-    public class Sound3D : Sound, ISound3D
+    public class SoundSource3D : SoundSource, ISoundSource3D
     {
         private readonly Mathematics.Vector3LowPassFilter VelocityFilter = new(0.05f);
         private readonly IXAudio2MasteringVoice MasteringVoice;
@@ -19,7 +19,6 @@ namespace TransportX.Audio
 
         public Emitter Emitter { get; }
         public DspSettings DspSettings { get; }
-
         public IMovable? AttachedTo { get; set; } = null;
 
         public WorldPose WorldPose
@@ -37,9 +36,8 @@ namespace TransportX.Audio
 
         public event MovedEventHandler? Moved;
 
-        public Sound3D(IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio,
-            byte[] audioBytes, uint[]? decodedPacketsInfo, IXAudio2SourceVoice sourceVoice, float maxFrequencyRatio)
-            : base(audioBytes, decodedPacketsInfo, sourceVoice, maxFrequencyRatio)
+        public SoundSource3D(IXAudio2MasteringVoice masteringVoice, X3DAudio x3dAudio, IXAudio2SourceVoice sourceVoice, float maxFrequencyRatio)
+            : base(sourceVoice, maxFrequencyRatio)
         {
             MasteringVoice = masteringVoice;
             X3DAudio = x3dAudio;
@@ -62,6 +60,9 @@ namespace TransportX.Audio
             };
 
             DspSettings = new DspSettings(1, MasteringVoice.VoiceDetails.InputChannels);
+
+            float[] silentMatrix = new float[MasteringVoice.VoiceDetails.InputChannels];
+            SourceVoice.SetOutputMatrix(MasteringVoice, 1, MasteringVoice.VoiceDetails.InputChannels, silentMatrix);
         }
 
         public void Tick(Listener listener, ChunkIndex cameraChunk, TimeSpan elapsed)
@@ -84,7 +85,6 @@ namespace TransportX.Audio
             SourceVoice.SetOutputMatrix(MasteringVoice, 1, MasteringVoice.VoiceDetails.InputChannels, DspSettings.MatrixCoefficients);
             SourceVoice.SetFrequencyRatio(float.Clamp(Pitch * DspSettings.DopplerFactor, XAudio2.MinimumFrequencyRatio, MaxFrequencyRatio), XAudio2.CommitNow);
             SourceVoice.SetVolume(Volume);
-            //SourceVoice.SetOutputMatrix(1, 1, [DspSettings.ReverbLevel]);
 
             FilterParameters filterParameters = new()
             {

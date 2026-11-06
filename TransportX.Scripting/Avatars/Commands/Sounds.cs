@@ -19,21 +19,21 @@ namespace TransportX.Scripting.Avatars.Commands
 
         private int DefaultKeyIndex = 0;
 
-        private readonly ScriptKeyedList<string, Sound3DCommand> Sound3DsKey;
-        public IReadOnlyScriptKeyedList<string, Sound3DCommand> Sound3Ds => Sound3DsKey;
+        private readonly ScriptKeyedList<string, SoundSource3DCommand> Source3DsKey;
+        public IReadOnlyScriptKeyedList<string, SoundSource3DCommand> Source3Ds => Source3DsKey;
 
         internal Sounds(ScriptAvatar avatar)
         {
             Avatar = avatar;
             Internal = new SoundsInternal(Avatar.AudioHost, Avatar.Sounds, Avatar.ErrorCollector);
 
-            Sound3DsKey = new ScriptKeyedList<string, Sound3DCommand>(
-                sound => sound.Key, Avatar.ErrorCollector, "3D サウンド", key => Sound3DCommand.Empty(avatar, key));
+            Source3DsKey = new ScriptKeyedList<string, SoundSource3DCommand>(
+                sound => sound.Key, Avatar.ErrorCollector, "3D サウンド", key => SoundSource3DCommand.Empty(avatar, key));
         }
 
         internal void Dispose()
         {
-            foreach (Sound3DCommand command in Sound3Ds)
+            foreach (SoundSource3DCommand command in Source3Ds)
             {
                 command.Dispose();
             }
@@ -58,44 +58,38 @@ namespace TransportX.Scripting.Avatars.Commands
             return Internal.LoadList(key, listPath, Avatar.BaseDirectory);
         }
 
-        public Sound3DCommand Create3D(string key, string assetKey, Pose pose, double maxFrequencyRatio)
+        public SoundSource3DCommand CreateSource3D(string key, Pose pose, double maxFrequencyRatio)
         {
-            if (!Avatar.SoundsKey.GetSound(assetKey, out ISoundAsset asset)) return Sound3DCommand.Empty(Avatar, key);
+            ISoundSource3D source3D = Avatar.AudioHost.CreateSoundSource3D((float)maxFrequencyRatio);
+            SoundSource3DCommand command = new(Avatar, key, source3D);
+            Source3DsKey.Add(command);
 
-            ISound3D sound3D = asset.CreateSound3D((float)maxFrequencyRatio);
-            sound3D.Volume = 1;
-            sound3D.Pitch = 1;
-
-            Sound3DCommand command = new(Avatar, key, sound3D);
-            Sound3DsKey.Add(command);
-
-            if (Sound3Ds[key] == command)
+            if (Source3Ds[key] == command)
             {
-                sound3D.AttachedTo = new AttachableObject(Avatar, pose);
+                source3D.AttachedTo = new AttachableObject(Avatar, pose);
                 return command;
             }
             else
             {
                 command.Dispose();
-                return Sound3DCommand.Empty(Avatar, key);
+                return SoundSource3DCommand.Empty(Avatar, key);
             }
         }
 
-        public Sound3DCommand Create3D(string key, string assetKey,
-            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double maxFrequencyRatio)
+        public SoundSource3DCommand CreateSource3D(string key, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double maxFrequencyRatio)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return Create3D(key, assetKey, position.ToPose(), maxFrequencyRatio);
+            return CreateSource3D(key, position.ToPose(), maxFrequencyRatio);
         }
 
-        public Sound3DCommand Create3D(string key, string assetKey, double x, double y, double z, double maxFrequencyRatio)
-            => Create3D(key, assetKey, x, y, z, 0, 0, 0, maxFrequencyRatio);
+        public SoundSource3DCommand CreateSource3D(string key, double x, double y, double z, double maxFrequencyRatio)
+            => CreateSource3D(key, x, y, z, 0, 0, 0, maxFrequencyRatio);
 
         internal void Tick(TimeSpan elapsed)
         {
-            for (int i = 0; i < Sound3Ds.Count; i++)
+            for (int i = 0; i < Source3Ds.Count; i++)
             {
-                Sound3Ds[i].Tick(elapsed);
+                Source3Ds[i].Tick(elapsed);
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Multimedia;
 using Vortice.XAudio2;
 
 namespace TransportX.Audio
@@ -13,5 +14,8 @@ namespace TransportX.Audio
         IXAudio2 XAudio2 { get; }
         IXAudio2MasteringVoice MasteringVoice { get; }
         X3DAudio X3DAudio { get; }
+
+        ISoundSource CreateSoundSource(float maxFrequencyRatio, AudioChannelType channelType = AudioChannelType.Stereo);
+        ISoundSource3D CreateSoundSource3D(float maxFrequencyRatio);
     }
 }

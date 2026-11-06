@@ -11,9 +11,9 @@ using TransportX.Spatial;
 
 namespace TransportX.Audio
 {
-    public interface ISound3D : ISound, IMovable
+    public interface ISoundSource3D : ISoundSource, IMovable
     {
-        public static new readonly ISound3D Empty = new Null();
+        public static new readonly ISoundSource3D Empty = new Null();
 
 
         IMovable? AttachedTo { get; set; }
@@ -21,7 +21,7 @@ namespace TransportX.Audio
         void Tick(Listener listener, ChunkIndex cameraChunk, TimeSpan elapsed);
 
 
-        private new class Null : ISound.Null, ISound3D
+        private new class Null : ISoundSource.Null, ISoundSource3D
         {
             public IMovable? AttachedTo { get; set; } = null;
 

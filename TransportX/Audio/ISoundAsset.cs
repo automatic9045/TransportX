@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Multimedia;
+using Vortice.XAudio2;
 
 namespace TransportX.Audio
 {
@@ -15,23 +16,20 @@ namespace TransportX.Audio
 
         WaveFormat Format { get; }
         TimeSpan Duration { get; }
-        bool IsMono { get; }
-
-        ISound CreateSound(float maxFrequencyRatio);
-        ISound3D CreateSound3D(float maxFrequencyRatio);
+        AudioBuffer Buffer { get; }
+        uint[]? DecodedPacketsInfo { get; }
 
 
         private class Null : ISoundAsset
         {
             public WaveFormat Format { get; } = new(44100, 16, 1);
             public TimeSpan Duration => TimeSpan.Zero;
-            public bool IsMono => true;
-
-            public ISound CreateSound(float maxFrequencyRatio) => ISound.Empty;
-            public ISound3D CreateSound3D(float maxFrequencyRatio) => ISound3D.Empty;
+            public AudioBuffer Buffer { get; } = new();
+            public uint[]? DecodedPacketsInfo { get; } = null;
 
             public void Dispose()
             {
+                Buffer.Dispose();
             }
         }
     }
