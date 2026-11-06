@@ -379,6 +379,6 @@ enum AmtPhase
         if (shifter.BuiltController.Lever.Position.Key != lastShifterPosition) shifterCount++;
     });
 
-    Sounds.Create3D("Shifter", "AmtShifter", 0.5, 1.2, -0.5, 1)
-        .PlayWhen(() => shifterCount);
+    Sounds.CreateSource3D("Shifter", 0.5, 1.2, -0.5, 1)
+        .PlayWhen("AmtShifter", () => shifterCount);
 }

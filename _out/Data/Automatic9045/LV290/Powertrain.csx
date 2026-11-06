@@ -70,14 +70,14 @@
         .LimitRpm(3500);
 
 
-    Sounds.Create3D("Engine", "Engine", 0, 0, -10, 5)
-        .Loop()
+    Sounds.CreateSource3D("Engine", 0, 0, -10, 5)
+        .Loop("Engine")
         .Pitch(elapsed => 0.0036f * engine.BuiltModule.Output.AngularVelocity);
 
     float engineThrottleVolume = 0;
     float engineThrottlePitch = 0;
-    Sounds.Create3D("EngineIdling", "EngineIdling", 0, 0, -10, 5)
-        .Loop()
+    Sounds.CreateSource3D("EngineIdling", 0, 0, -10, 5)
+        .Loop("EngineIdling")
         .Volume(elapsed =>
         {
             float throttle = engine.BuiltModule.Throttle;

@@ -19,15 +19,18 @@ Component<Lighting>().Blinkers.Right.AddEmissiveLamp("Rear", "Body", "RearBlinke
 
 Signals.ToIntSwitchFromCounter("BlinkerOnCount", "Blinker", 0);
 Signals.ToIntSwitchCounter("BlinkerOffCount", "Blinker", 0);
-Sounds.Create3D("BlinkerOn", "BlinkerOn", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("BlinkerOnCount");
-Sounds.Create3D("BlinkerOff", "BlinkerOff", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("BlinkerOffCount");
+Sounds.CreateSource3D("BlinkerLever", 0.9, 1.2, -1, 90, 0, 0, 1)
+    .PlayWhen("BlinkerOn", "BlinkerOnCount")
+    .PlayWhen("BlinkerOff", "BlinkerOffCount");
 
 Signals.ToBoolSwitchCounter("HazardOnCount", "Hazard", true);
 Signals.ToBoolSwitchFromCounter("HazardOffCount", "Hazard", true);
-Sounds.Create3D("HazardOn", "BlinkerOn", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("HazardOnCount");
-Sounds.Create3D("HazardOff", "BlinkerOff", 0.9, 1.2, -1, 90, 0, 0, 1).PlayWhen("HazardOffCount");
+Sounds.CreateSource3D("HazardLever", 0.9, 1.2, -1, 90, 0, 0, 1)
+    .PlayWhen("BlinkerOn", "HazardOnCount")
+    .PlayWhen("BlinkerOff", "HazardOffCount");
 
-Sounds.Create3D("Blinker", "Blinker", 0.67, 1.2, -0.8, 90, 0, 0, 1).PlayWhen("BlinkerRelayOnCount");
+Sounds.CreateSource3D("BlinkerRelay", 0.67, 1.2, -0.8, 90, 0, 0, 1)
+    .PlayWhen("Blinker", "BlinkerRelayOnCount");
 
 
 Component<Lighting>().Brakes

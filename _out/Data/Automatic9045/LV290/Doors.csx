@@ -49,15 +49,12 @@
     Signals.ToBoolSwitchCounter("RearDoorCloseCount", "RearDoor", false);
 
 
-    Sounds.Create3D("FrontDoorOpen", "BifoldDoorOpen", -1.15, 3.7, -0.35, 0, 180, 0, 1)
-        .PlayStopWhen("FrontDoorOpenCount", "FrontDoorCloseCount");
 
-    Sounds.Create3D("FrontDoorClose", "BifoldDoorClose", -1.15, 3.7, -0.35, 0, 180, 0, 1)
-        .PlayStopWhen("FrontDoorCloseCount", "FrontDoorOpenCount");
+    Sounds.CreateSource3D("FrontDoor", -1.15, 3.7, -0.35, 0, 180, 0, 1)
+        .PlayWhen("BifoldDoorOpen", "FrontDoorOpenCount")
+        .PlayWhen("BifoldDoorClose", "FrontDoorCloseCount");
 
-    Sounds.Create3D("RearDoorOpen", "SlidingDoorOpen", -1.15, 2.3, -5.2, 0, 90, 0, 1)
-        .PlayStopWhen("RearDoorOpenCount", "RearDoorCloseCount");
-
-    Sounds.Create3D("RearDoorClose", "SlidingDoorClose", -1.15, 2.3, -5.2, 0, 90, 0, 1)
-        .PlayStopWhen("RearDoorCloseCount", "RearDoorOpenCount");
+    Sounds.CreateSource3D("RearDoor", -1.15, 2.3, -5.2, 0, 90, 0, 1)
+        .PlayWhen("SlidingDoorOpen", "RearDoorOpenCount")
+        .PlayWhen("SlidingDoorClose", "RearDoorCloseCount");
 }
