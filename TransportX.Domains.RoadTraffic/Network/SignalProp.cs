@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TransportX.Components;
 using TransportX.Spatial;
 
 namespace TransportX.Domains.RoadTraffic.Network

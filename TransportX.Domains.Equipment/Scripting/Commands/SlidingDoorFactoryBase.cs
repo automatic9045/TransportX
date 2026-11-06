@@ -16,7 +16,7 @@ using TransportX.Domains.Equipment.Doors;
 
 namespace TransportX.Domains.Equipment.Scripting.Commands
 {
-    public abstract class SlidingDoorFactoryBase<T> where T : SlidingDoorFactoryBase<T>
+    public abstract class SlidingDoorFactoryBase<TSelf> where TSelf : SlidingDoorFactoryBase<TSelf>
     {
         private readonly DoorsBase Parent;
 
@@ -42,67 +42,67 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        public T Panel(TransformedModel model, Quaternion originOffset, double width)
+        public TSelf Panel(TransformedModel model, Quaternion originOffset, double width)
         {
             PanelModel = model;
             PanelOriginOffset = originOffset;
             PanelWidth = (float)width;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T Panel(TransformedModel model, double rotationX, double rotationY, double rotationZ, double width)
+        public TSelf Panel(TransformedModel model, double rotationX, double rotationY, double rotationZ, double width)
         {
             SixDoF position = SixDoF.FromDegrees(0, 0, 0, (float)rotationX, (float)rotationY, (float)rotationZ);
             return Panel(model, position.ToQuaternion(), width);
         }
 
-        public T Panel(TransformedModel model, double width)
+        public TSelf Panel(TransformedModel model, double width)
             => Panel(model, Quaternion.Identity, width);
 
-        public T OpenLeft()
+        public TSelf OpenLeft()
         {
             Direction = OpenDirection.Left;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenRight()
+        public TSelf OpenRight()
         {
             Direction = OpenDirection.Right;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public TSelf OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             OpenAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public TSelf OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => OpenAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public T CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public TSelf CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             CloseAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public TSelf CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => CloseAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public T Restitution(double restitution0, double restitution1)
+        public TSelf Restitution(double restitution0, double restitution1)
         {
             Restitution0Value = (float)restitution0;
             Restitution1Value = (float)restitution1;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T DoorSwitch(Signal<bool> signal)
+        public TSelf DoorSwitch(Signal<bool> signal)
         {
             DoorSwitchValue = signal;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T DoorSwitch(string signalKey)
+        public TSelf DoorSwitch(string signalKey)
         {
             Signal<bool> signal = Parent.Signals.Bool(signalKey);
             return DoorSwitch(signal);

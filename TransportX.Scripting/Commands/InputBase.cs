@@ -13,7 +13,7 @@ using TransportX.Scripting.Input;
 
 namespace TransportX.Scripting.Commands
 {
-    public abstract class InputBase<T> where T : InputBase<T>
+    public abstract class InputBase<TSelf> where TSelf : InputBase<TSelf>
     {
         internal IInputClient InputClient { get; }
         internal Signals Signals { get; }
@@ -67,7 +67,7 @@ namespace TransportX.Scripting.Commands
             ButtonsKey.Add(buttonCommand);
         }
 
-        public abstract ButtonFactory<T> AddButton(string key);
+        public abstract ButtonFactory<TSelf> AddButton(string key);
 
         public void AddAxis(IAxis axis)
         {
@@ -75,7 +75,7 @@ namespace TransportX.Scripting.Commands
             AxesKey.Add(axisCommand);
         }
 
-        public abstract AxisFactory<T> AddAxis(string key, double min, double neutral, double max);
+        public abstract AxisFactory<TSelf> AddAxis(string key, double min, double neutral, double max);
 
         internal void Tick(TimeSpan elapsed)
         {

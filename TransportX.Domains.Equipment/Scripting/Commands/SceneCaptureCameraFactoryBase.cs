@@ -20,7 +20,7 @@ using TransportX.Domains.Equipment.Cameras;
 
 namespace TransportX.Domains.Equipment.Scripting.Commands
 {
-    public abstract class SceneCaptureCameraFactoryBase<T> where T : SceneCaptureCameraFactoryBase<T>
+    public abstract class SceneCaptureCameraFactoryBase<TSelf> where TSelf : SceneCaptureCameraFactoryBase<TSelf>
     {
         private readonly CamerasBase Parent;
         private readonly ConcurrentDictionary<TransformedModel, HashSet<Material>> Projections = [];
@@ -41,62 +41,62 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        public T Position(IWorldObject attachTo)
+        public TSelf Position(IWorldObject attachTo)
         {
             AttachedTo = attachTo;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T TextureSize(int width, int height)
+        public TSelf TextureSize(int width, int height)
         {
             TextureSizeValue = new SizeI(width, height);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T FieldOfView(double degrees)
+        public TSelf FieldOfView(double degrees)
         {
             FieldOfViewValue = MathHelper.ToRadians((float)degrees);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T AspectRatio(double ratio)
+        public TSelf AspectRatio(double ratio)
         {
             AspectRatioValue = (float)ratio;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T Reflect()
+        public TSelf Reflect()
         {
             RenderFlags |= RenderPassFlags.Reflect;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T DisableShadows()
+        public TSelf DisableShadows()
         {
             RenderFlags |= RenderPassFlags.DisableShadows;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T ProjectOnto(TransformedModel model, Material targetMaterial)
+        public TSelf ProjectOnto(TransformedModel model, Material targetMaterial)
         {
-            if (!AsMeshModel(model.Resource.Model, out _)) return (T)this;
+            if (!AsMeshModel(model.Resource.Model, out _)) return (TSelf)this;
 
             HashSet<Material> targetMaterials = Projections.GetOrAdd(model, _ => []);
             targetMaterials.Add(targetMaterial);
 
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T ProjectOnto(TransformedModel model, string targetMaterialName)
+        public TSelf ProjectOnto(TransformedModel model, string targetMaterialName)
         {
-            if (!AsMeshModel(model.Resource.Model, out IMeshModel? meshModel)) return (T)this;
+            if (!AsMeshModel(model.Resource.Model, out IMeshModel? meshModel)) return (TSelf)this;
 
             Material? targetMaterial = meshModel.FindMaterial(targetMaterialName);
             if (targetMaterial is null)
             {
                 ScriptError error = new(ErrorLevel.Error, $"材質 '{targetMaterialName}' が見つかりません。");
                 Parent.ErrorCollector.Report(error);
-                return (T)this;
+                return (TSelf)this;
             }
 
             return ProjectOnto(model, targetMaterial);

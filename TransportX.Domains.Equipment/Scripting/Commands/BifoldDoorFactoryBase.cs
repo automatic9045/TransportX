@@ -15,7 +15,7 @@ using TransportX.Domains.Equipment.Doors;
 
 namespace TransportX.Domains.Equipment.Scripting.Commands
 {
-    public abstract class BifoldDoorFactoryBase<T> where T : BifoldDoorFactoryBase<T>
+    public abstract class BifoldDoorFactoryBase<TSelf> where TSelf : BifoldDoorFactoryBase<TSelf>
     {
         private readonly DoorsBase Parent;
 
@@ -41,90 +41,90 @@ namespace TransportX.Domains.Equipment.Scripting.Commands
             Key = key;
         }
 
-        public T HingedPanel(TransformedModel model, Pose originOffset, double width)
+        public TSelf HingedPanel(TransformedModel model, Pose originOffset, double width)
         {
             HingedPanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+        public TSelf HingedPanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return HingedPanel(model, position.ToPose(), width);
         }
 
-        public T HingedPanel(TransformedModel model, double x, double y, double z, double width)
+        public TSelf HingedPanel(TransformedModel model, double x, double y, double z, double width)
             => HingedPanel(model, x, y, z, 0, 0, 0, width);
-        public T HingedPanel(TransformedModel model, double width)
+        public TSelf HingedPanel(TransformedModel model, double width)
             => HingedPanel(model, 0, 0, 0, width);
 
-        public T GuidePanel(TransformedModel model, Pose originOffset, double width)
+        public TSelf GuidePanel(TransformedModel model, Pose originOffset, double width)
         {
             GuidePanelValue = new BifoldDoor.Panel(model, originOffset, (float)width);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
+        public TSelf GuidePanel(TransformedModel model, double x, double y, double z, double rotationX, double rotationY, double rotationZ, double width)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
             return GuidePanel(model, position.ToPose(), width);
         }
 
-        public T GuidePanel(TransformedModel model, double x, double y, double z, double width)
+        public TSelf GuidePanel(TransformedModel model, double x, double y, double z, double width)
             => GuidePanel(model, x, y, z, 0, 0, 0, width);
-        public T GuidePanel(TransformedModel model, double width)
+        public TSelf GuidePanel(TransformedModel model, double width)
             => GuidePanel(model, 0, 0, 0, width);
 
-        public T PanelThickness(double thickness)
+        public TSelf PanelThickness(double thickness)
         {
             PanelThicknessValue = (float)thickness;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenLeft()
+        public TSelf OpenLeft()
         {
             DirectionValue = OpenDirection.Left;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenRight()
+        public TSelf OpenRight()
         {
             DirectionValue = OpenDirection.Right;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public TSelf OpenAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             OpenAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public TSelf OpenAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => OpenAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public T CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
+        public TSelf CloseAnimation(PidGains pidGains, TimeSpan duration, IReadOnlyCollection<CurvePoint> curvePoints)
         {
             CloseAnimationValue = new AnimationProfile(curvePoints, pidGains, duration);
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
+        public TSelf CloseAnimation(double kP, double kI, double kD, double durationSeconds, CurvePoint[] curvePoints)
             => CloseAnimation(new PidGains((float)kP, (float)kI, (float)kD), TimeSpan.FromSeconds(durationSeconds), curvePoints);
 
-        public T Restitution(double restitution0, double restitution1)
+        public TSelf Restitution(double restitution0, double restitution1)
         {
             Restitution0Value = (float)restitution0;
             Restitution1Value = (float)restitution1;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T DoorSwitch(Signal<bool> signal)
+        public TSelf DoorSwitch(Signal<bool> signal)
         {
             DoorSwitchValue = signal;
-            return (T)this;
+            return (TSelf)this;
         }
 
-        public T DoorSwitch(string signalKey)
+        public TSelf DoorSwitch(string signalKey)
         {
             Signal<bool> signal = Parent.Signals.Bool(signalKey);
             return DoorSwitch(signal);
