@@ -48,6 +48,8 @@
     Signals.ToBoolSwitchCounter("RearDoorOpenCount", "RearDoor", true);
     Signals.ToBoolSwitchCounter("RearDoorCloseCount", "RearDoor", false);
 
+    Signals.ForwardBool("AnyDoor", () => Signals.ReadBool("FrontDoor") || Signals.ReadBool("RearDoor"));
+    Signals.ToBoolSwitchCounter("AllDoorCloseCount", "AnyDoor", false);
 
 
     Sounds.CreateSource3D("FrontDoor", -1.15, 3.7, -0.35, 0, 180, 0, 1)
