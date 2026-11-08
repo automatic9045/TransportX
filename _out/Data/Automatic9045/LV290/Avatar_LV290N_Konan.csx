@@ -110,7 +110,7 @@
         {
             exitDoorOpenCount = Signals.ReadInt("FrontDoorOpenCount");
 
-            if (stepId == route.Steps.Count - 1)
+            if (0 <= stepId && stepId == route.Steps.Count - 1)
             {
                 RouteStep step = route.Steps[stepId];
                 if (0 < step.DoorSoundKeys.Count)
