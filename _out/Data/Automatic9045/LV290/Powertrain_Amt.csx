@@ -106,19 +106,22 @@ enum AmtPhase
             .OnTick((elapsed, stateTime) =>
             {
                 minThrottle.Value = 0;
+
+                float pedalThrottle = Signals.ReadFloat("PedalThrottle");
                 if (stateTime < Duration_Idle)
                 {
-                    maxThrottle.Value = Signals.ReadFloat("PedalThrottle") * 0.625f;
+                    maxThrottle.Value = pedalThrottle * 0.625f;
                 }
                 else
                 {
-                    float amount = (float)((stateTime - Duration_Idle) / Duration_ThrottleCut1);
+                    float amount = (float)((stateTime - Duration_Idle) / (float.Max(0.01f, pedalThrottle) * Duration_ThrottleCut1));
                     maxThrottle.Value = float.Lerp(0.5f, 0, amount);
                 }
             })
             .EvaluateTransition((elapsed, stateTime) =>
             {
-                if (Duration_Idle + Duration_ThrottleCut1 <= stateTime) return AmtPhase.ClutchDisengage;
+                float pedalThrottle = Signals.ReadFloat("PedalThrottle");
+                if (Duration_Idle + float.Max(0.01f, pedalThrottle) * Duration_ThrottleCut1 <= stateTime) return AmtPhase.ClutchDisengage;
                 else return AmtPhase.ThrottleCut;
             }));
 
