@@ -20,7 +20,7 @@ cbuffer PostProcessBuffer : register(b0)
 struct PS_IN
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 float3 LottesToneMapper(float3 x)
@@ -31,8 +31,8 @@ float3 LottesToneMapper(float3 x)
 
 float4 main(PS_IN input) : SV_TARGET
 {
-    float3 hdrColor = HDRTexture.Sample(LinearSampler, input.TexCoord).rgb;
-    float3 bloomColor = BloomTexture.Sample(LinearSampler, input.TexCoord).rgb;
+    float3 hdrColor = HDRTexture.Sample(LinearSampler, input.UV).rgb;
+    float3 bloomColor = BloomTexture.Sample(LinearSampler, input.UV).rgb;
 
     hdrColor *= Exposure;
     hdrColor += bloomColor * BloomTint * BloomIntensity;

@@ -9,7 +9,7 @@ struct VSInput
     float4 Color : COLOR0;
     float4 Normal : NORMAL0;
     float4 Tangent : TANGENT0;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 
     float4x4 World : WORLD;
 };

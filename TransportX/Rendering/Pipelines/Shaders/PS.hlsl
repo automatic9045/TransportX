@@ -67,7 +67,7 @@ struct PS_IN
     float3 WorldPosition : WORLDPOS;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 struct PS_OUT
@@ -231,7 +231,7 @@ float2 GetTextureUV(PS_IN input, uint sampleMode)
     switch (sampleMode)
     {
         case TEXSAMPLEMODE_TEXTURE:
-            return input.TexCoord;
+            return input.UV;
         case TEXSAMPLEMODE_SCREEN:
             return input.Position.xy * ViewportSizeInverse;
         default:

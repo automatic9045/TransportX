@@ -12,12 +12,12 @@ cbuffer BlurBuffer : register(b1)
 struct PS_IN
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 float4 main(PS_IN input) : SV_TARGET
 {
-    float2 uv = input.TexCoord;
+    float2 uv = input.UV;
     float2 d = TexelSize * BloomScatter;
 
     float3 color = InputTexture.Sample(LinearSampler, uv).rgb * 0.25;

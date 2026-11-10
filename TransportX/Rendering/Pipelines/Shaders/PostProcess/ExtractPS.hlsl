@@ -15,12 +15,12 @@ cbuffer PostProcessBuffer : register(b0)
 struct PS_IN
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 float4 main(PS_IN input) : SV_TARGET
 {
-    float3 color = InputTexture.Sample(LinearSampler, input.TexCoord).rgb;
+    float3 color = InputTexture.Sample(LinearSampler, input.UV).rgb;
     color *= Exposure;
 
     float brightness = max(color.r, max(color.g, color.b));

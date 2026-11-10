@@ -6,12 +6,12 @@ SamplerState Sampler : register(s0);
 struct PS_IN
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 float4 main(PS_IN input) : SV_Target0
 {
-    float2 uv = input.TexCoord;
+    float2 uv = input.UV;
     float width, height;
     RawShadowTexture.GetDimensions(width, height);
     float2 texelSize = float2(1.0 / float(width), 1.0 / float(height));

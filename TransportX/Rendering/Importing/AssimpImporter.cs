@@ -96,7 +96,7 @@ namespace TransportX.Rendering.Importing
                         Normals = normals,
                         Tangents = tangents,
                         Colors = colors,
-                        TextureCoords = textureCoords,
+                        UVs = textureCoords,
                         MaterialIndex = assimpMesh.MaterialIndex,
                     };
                 }

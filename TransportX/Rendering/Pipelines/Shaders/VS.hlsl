@@ -10,7 +10,7 @@ struct VS_IN
     float4 Color : COLOR0;
     float4 Normal : NORMAL0;
     float4 Tangent : TANGENT0;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 
     // Per instance
     float4x4 World : WORLD;
@@ -24,7 +24,7 @@ struct VS_OUT
     float3 WorldPosition : WORLDPOS;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
-    float2 TexCoord : TEXCOORD;
+    float2 UV : TEXCOORD;
 };
 
 VS_OUT main(VS_IN input)
@@ -40,7 +40,7 @@ VS_OUT main(VS_IN input)
     output.Tangent = normalize(mul(input.Tangent.xyz, (float3x3) input.World));
 
     output.Color = input.Color;
-    output.TexCoord = input.TexCoord;
+    output.UV = input.UV;
 
     return output;
 }

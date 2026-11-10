@@ -15,7 +15,7 @@ namespace TransportX.Rendering.Importing
         public required readonly Vector3[]? Normals { get; init; }
         public required readonly Vector3[]? Tangents { get; init; }
         public required readonly Vector4[]? Colors { get; init; }
-        public required readonly Vector2[]? TextureCoords { get; init; }
+        public required readonly Vector2[]? UVs { get; init; }
         public required readonly int MaterialIndex { get; init; }
     }
 }

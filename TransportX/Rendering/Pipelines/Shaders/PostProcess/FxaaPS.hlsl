@@ -4,7 +4,7 @@ SamplerState LinearSampler : register(s0);
 struct PSInput
 {
     float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD0;
+    float2 UV : TEXCOORD0;
 };
 
 static const float FXAA_EDGE_THRESHOLD_MIN = 0.0312;
@@ -23,13 +23,13 @@ float4 main(PSInput input) : SV_Target
     SourceTexture.GetDimensions(width, height);
     float2 inverseScreenSize = float2(1.0 / (float) width, 1.0 / (float) height);
 
-    float3 colorCenter = SourceTexture.Sample(LinearSampler, input.TexCoord).rgb;
+    float3 colorCenter = SourceTexture.Sample(LinearSampler, input.UV).rgb;
     float lumaCenter = RgbToLuma(colorCenter);
 
-    float lumaDown = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(0.0, 1.0) * inverseScreenSize, 0).rgb);
-    float lumaUp = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(0.0, -1.0) * inverseScreenSize, 0).rgb);
-    float lumaLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(-1.0, 0.0) * inverseScreenSize, 0).rgb);
-    float lumaRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(1.0, 0.0) * inverseScreenSize, 0).rgb);
+    float lumaDown = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(0.0, 1.0) * inverseScreenSize, 0).rgb);
+    float lumaUp = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(0.0, -1.0) * inverseScreenSize, 0).rgb);
+    float lumaLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(-1.0, 0.0) * inverseScreenSize, 0).rgb);
+    float lumaRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(1.0, 0.0) * inverseScreenSize, 0).rgb);
 
     float lumaMin = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
     float lumaMax = max(lumaCenter, max(max(lumaDown, lumaUp), max(lumaLeft, lumaRight)));
@@ -40,10 +40,10 @@ float4 main(PSInput input) : SV_Target
         return float4(colorCenter, 1.0);
     }
 
-    float lumaDownLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(-1.0, 1.0) * inverseScreenSize, 0).rgb);
-    float lumaUpRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(1.0, -1.0) * inverseScreenSize, 0).rgb);
-    float lumaUpLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(-1.0, -1.0) * inverseScreenSize, 0).rgb);
-    float lumaDownRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.TexCoord + float2(1.0, 1.0) * inverseScreenSize, 0).rgb);
+    float lumaDownLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(-1.0, 1.0) * inverseScreenSize, 0).rgb);
+    float lumaUpRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(1.0, -1.0) * inverseScreenSize, 0).rgb);
+    float lumaUpLeft = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(-1.0, -1.0) * inverseScreenSize, 0).rgb);
+    float lumaDownRight = RgbToLuma(SourceTexture.SampleLevel(LinearSampler, input.UV + float2(1.0, 1.0) * inverseScreenSize, 0).rgb);
 
     float edgeHorizontal = abs(-2.0 * lumaLeft + lumaUpLeft + lumaDownLeft) +
                             abs(-2.0 * lumaCenter + lumaUp + lumaDown) * 2.0 +
@@ -66,7 +66,7 @@ float4 main(PSInput input) : SV_Target
     float gradientScaled = 0.25 * max(gradient1, gradient2);
 
     float stepSign = is1Steepest ? -1.0 : 1.0;
-    float2 currentUv = input.TexCoord;
+    float2 currentUv = input.UV;
     if (isHorizontal)
         currentUv.y += stepSign * stepLength * 0.5;
     else
@@ -108,8 +108,8 @@ float4 main(PSInput input) : SV_Target
             uv2 += offset;
     }
 
-    float distance1 = isHorizontal ? (input.TexCoord.x - uv1.x) : (input.TexCoord.y - uv1.y);
-    float distance2 = isHorizontal ? (uv2.x - input.TexCoord.x) : (uv2.y - input.TexCoord.y);
+    float distance1 = isHorizontal ? (input.UV.x - uv1.x) : (input.UV.y - uv1.y);
+    float distance2 = isHorizontal ? (uv2.x - input.UV.x) : (uv2.y - input.UV.y);
 
     bool isDirection1 = distance1 < distance2;
     float distanceFinal = min(distance1, distance2);
@@ -127,7 +127,7 @@ float4 main(PSInput input) : SV_Target
     float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * FXAA_SUBPIXEL_QUALITY;
 
     finalOffset = max(finalOffset, subPixelOffsetFinal);
-    float2 finalUv = input.TexCoord;
+    float2 finalUv = input.UV;
     if (isHorizontal)
         finalUv.y += finalOffset * stepLength * stepSign;
     else

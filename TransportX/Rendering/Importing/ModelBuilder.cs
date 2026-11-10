@@ -219,7 +219,7 @@ namespace TransportX.Rendering.Importing
                         Color = (meshData.Colors is null ? Vector4.One : meshData.Colors[j]).ToLinear(),
                         Normal = meshData.Normals is null ? throw new ArgumentException("法線情報が定義されていません。", nameof(modelData)) : meshData.Normals[j],
                         Tangent = meshData.Tangents is null ? throw new ArgumentException("接線情報が定義されていません。", nameof(modelData)) : meshData.Tangents[j],
-                        TextureCoord = meshData.TextureCoords is null ? default : meshData.TextureCoords[j],
+                        UV = meshData.UVs is null ? default : meshData.UVs[j],
                     };
                 }
 
