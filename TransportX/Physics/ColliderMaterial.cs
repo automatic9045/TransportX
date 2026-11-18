@@ -8,9 +8,9 @@ using BepuPhysics.Constraints;
 
 namespace TransportX.Physics
 {
-    public readonly struct ColliderMaterial
+    public readonly record struct ColliderMaterial
     {
-        public static readonly ColliderMaterial Default = new ColliderMaterial(1, float.MaxValue, new SpringSettings(30, 1));
+        public static readonly ColliderMaterial Default = new(1, float.MaxValue, new SpringSettings(30, 1));
 
 
         public bool IsInitialized { get; } = false;

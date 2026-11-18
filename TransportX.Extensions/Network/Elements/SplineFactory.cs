@@ -14,8 +14,6 @@ namespace TransportX.Extensions.Network.Elements
 {
     public class SplineFactory : WorldObject
     {
-        private readonly List<SplineProp> Props = [];
-
         private Func<NetworkPort?, SplineBase>? Finalizer = null;
 
         public LaneLayout OutletLayout { get; }
@@ -25,6 +23,9 @@ namespace TransportX.Extensions.Network.Elements
         public GradientList Gradients { get; } = new();
         public CantList Cants { get; } = new();
 
+        public List<SplineProp> Props { get; } = [];
+        public List<SplineExtrusion> Extrusions { get; } = [];
+
         public string? DebugName { get; set; } = null;
 
         public SplineFactory(WorldPose worldPose, LaneLayout outletLayout, NetworkPort? sourcePort) : base(worldPose)
@@ -33,16 +34,6 @@ namespace TransportX.Extensions.Network.Elements
 
             if (sourcePort is not null && sourcePort.Layout != OutletLayout) throw new ArgumentException("進路の接続部形状が一致しません。", nameof(sourcePort));
             SourcePort = sourcePort;
-        }
-
-        public void AddProp(SplineProp prop)
-        {
-            Props.Add(prop);
-        }
-
-        public void AddProps(IEnumerable<SplineProp> props)
-        {
-            Props.AddRange(props);
         }
 
         public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
@@ -137,6 +128,7 @@ namespace TransportX.Extensions.Network.Elements
             {
                 SplineBase lastSpline = Finalizer(sourcePort);
                 ApplyProps(lastSpline);
+                ApplyExtrusions(lastSpline, s);
                 splines.Add(lastSpline);
             }
 
@@ -168,6 +160,7 @@ namespace TransportX.Extensions.Network.Elements
                 sourcePort?.ConnectTo(spline.Inlet);
                 sourcePort = spline.Outlet;
                 ApplyProps(spline);
+                ApplyExtrusions(spline, offset);
                 splines.Add(spline);
             }
 
@@ -212,6 +205,15 @@ namespace TransportX.Extensions.Network.Elements
                 }
 
                 spline.PutProps(device, physicsHost, props);
+            }
+
+            void ApplyExtrusions(SplineBase spline, float sOffset)
+            {
+                for (int i = 0; i < Extrusions.Count; i++)
+                {
+                    SplineExtrusion extrusion = Extrusions[i];
+                    spline.PutExtrusion(device, physicsHost, extrusion, sOffset);
+                }
             }
         }
 

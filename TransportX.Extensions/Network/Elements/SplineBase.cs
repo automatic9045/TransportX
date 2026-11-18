@@ -9,6 +9,8 @@ using Vortice.Direct3D11;
 
 using TransportX.Network;
 using TransportX.Physics;
+using TransportX.Rendering;
+using TransportX.Rendering.Procedural;
 using TransportX.Spatial;
 
 namespace TransportX.Extensions.Network.Elements
@@ -34,7 +36,7 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineProp> props)
         {
-            List<StaticTransformedModelTemplate> modelsToMerge = [];
+            Dictionary<ColliderMaterial, List<StaticTransformedModelTemplate>> modelsToMerge = [];
             foreach (SplineProp prop in props)
             {
                 for (int i = 0; i < prop.Count; i++)
@@ -47,8 +49,14 @@ namespace TransportX.Extensions.Network.Elements
 
                     if (template is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                     {
+                        if (!modelsToMerge.TryGetValue(staticTemplate.Collider.Material, out List<StaticTransformedModelTemplate>? models))
+                        {
+                            models = [];
+                            modelsToMerge.Add(staticTemplate.Collider.Material, models);
+                        }
+
                         StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, template.Pose * curvePose * WorldPose.Pose);
-                        modelsToMerge.Add(compiled);
+                        models.Add(compiled);
                     }
                     else
                     {
@@ -58,16 +66,44 @@ namespace TransportX.Extensions.Network.Elements
                 }
             }
 
-            if (0 < modelsToMerge.Count)
+            foreach (List<StaticTransformedModelTemplate> models in modelsToMerge.Values)
             {
-                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, modelsToMerge);
-                mergedModel.Collider.CreateDebugModel(device);
-                mergedModel.Collider.DebugModel!.Color = DebugColors[DebugColorIndex];
-                ModelsKey.Add(mergedModel);
+                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, models);
 
-                DebugColorIndex++;
+                mergedModel.Collider.CreateDebugModel(device);
+                mergedModel.Collider.DebugModel.Color = DebugColors[DebugColorIndex++];
+                if (DebugColorIndex == DebugColors.Count) DebugColorIndex = 0;
+
+                ModelsKey.Add(mergedModel);
+            }
+        }
+
+        public void PutExtrusion(ID3D11Device device, IPhysicsHost physicsHost, SplineExtrusion extrusion, float sOffset)
+        {
+            if (Length < 1e-3f) return;
+
+            IReadOnlyList<float> sSamples = extrusion.Sampler.Sample(this, sOffset);
+            if (sSamples.Count < 2) return;
+
+            List<(Pose Pose, float S)> samples = new(sSamples.Count);
+            for (int i = 0; i < sSamples.Count; i++)
+            {
+                float localS = float.Clamp(sSamples[i], 0, Length);
+                samples.Add((GetPose(localS), localS + sOffset));
+            }
+
+            ModelResourceSet resource = extrusion.CrossSection.Build(
+                device, physicsHost.Simulation, samples, extrusion.Offset, extrusion.VIntervalScale, extrusion.VOffset);
+            TransformedModel model = StaticTransformedModel.CreateStaticOrNonCollision(physicsHost, resource, WorldPose.Pose);
+
+            if (model is CollidableTransformedModel collidable)
+            {
+                collidable.Collider.CreateDebugModel(device);
+                collidable.Collider.DebugModel.Color = DebugColors[DebugColorIndex++];
                 if (DebugColorIndex == DebugColors.Count) DebugColorIndex = 0;
             }
+
+            ModelsKey.Add(model);
         }
 
         protected Pose GetSpanPose(float s, float span)

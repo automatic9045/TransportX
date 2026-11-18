@@ -49,13 +49,19 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> props)
         {
-            List<StaticTransformedModelTemplate> propsToMerge = [];
+            Dictionary<ColliderMaterial, List<StaticTransformedModelTemplate>> propsToMerge = [];
             foreach (TransformedModelTemplate prop in props)
             {
                 if (prop is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                 {
+                    if (!propsToMerge.TryGetValue(staticTemplate.Collider.Material, out List<StaticTransformedModelTemplate>? models))
+                    {
+                        models = [];
+                        propsToMerge.Add(staticTemplate.Collider.Material, models);
+                    }
+
                     StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, prop.Pose * WorldPose.Pose);
-                    propsToMerge.Add(compiled);
+                    models.Add(compiled);
                 }
                 else
                 {
@@ -64,11 +70,11 @@ namespace TransportX.Extensions.Network.Elements
                 }
             }
 
-            if (0 < propsToMerge.Count)
+            foreach (List<StaticTransformedModelTemplate> models in propsToMerge.Values)
             {
-                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, propsToMerge);
+                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, models);
                 mergedModel.Collider.CreateDebugModel(device);
-                mergedModel.Collider.DebugModel!.Color = DebugColors[DebugColorIndex];
+                mergedModel.Collider.DebugModel.Color = DebugColors[DebugColorIndex];
                 ModelsKey.Add(mergedModel);
             }
         }
