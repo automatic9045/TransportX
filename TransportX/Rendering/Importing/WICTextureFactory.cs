@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
-using Vortice.DXGI;
 using Vortice.WIC;
 
 using TransportX.Diagnostics;
@@ -15,13 +15,13 @@ namespace TransportX.Rendering.Importing
 {
     internal class WICTextureFactory
     {
-        private readonly ID3D11DeviceContext Context;
         private readonly IWICImagingFactory WIC;
+        private readonly RawTextureFactory RawFactory;
 
         public WICTextureFactory(ID3D11DeviceContext context, IWICImagingFactory wic)
         {
-            Context = context;
             WIC = wic;
+            RawFactory = new RawTextureFactory(context);
         }
 
         public ID3D11ShaderResourceView Create(IWICBitmapDecoder decoder, bool isLinear, IErrorCollector errorCollector)
@@ -87,7 +87,7 @@ namespace TransportX.Rendering.Importing
                             SrcDepthPitch = bufferSize,
                         };
 
-                        ID3D11ShaderResourceView view = RawTextureFactory.Create(Context, desc);
+                        ID3D11ShaderResourceView view = RawFactory.Create(desc);
                         return view;
                     }
                     finally
@@ -111,16 +111,53 @@ namespace TransportX.Rendering.Importing
             }
         }
 
+        public IWICStream CreateStreamFromFile(string filePath)
+        {
+            IWICStream stream = WIC.CreateStream();
+            try
+            {
+                stream.Initialize(filePath, FileAccess.Read);
+                return stream;
+            }
+            catch
+            {
+                stream.Dispose();
+                throw;
+            }
+        }
+
+        public IWICStream CreateStreamFromMemory(ReadOnlySpan<byte> data)
+        {
+            IWICStream stream = WIC.CreateStream();
+            try
+            {
+                stream.Initialize(data);
+                return stream;
+            }
+            catch
+            {
+                stream.Dispose();
+                throw;
+            }
+        }
+
         public ID3D11ShaderResourceView CreateFromFile(string filePath, bool isLinear, IErrorCollector errorCollector)
         {
-            using IWICBitmapDecoder decoder = WIC.CreateDecoderFromFileName(filePath);
-            return Create(decoder, isLinear, errorCollector);
+            IErrorCollector textureErrorCollector = IErrorCollector.Default();
+            textureErrorCollector.Reported += (sender, e) =>
+            {
+                Error error = e.Error.ChangeSource(filePath);
+                errorCollector.Report(error);
+            };
+
+            using IWICStream stream = CreateStreamFromFile(filePath);
+            using IWICBitmapDecoder decoder = WIC.CreateDecoderFromStream(stream);
+            return Create(decoder, isLinear, textureErrorCollector);
         }
 
         public ID3D11ShaderResourceView CreateFromMemory(ReadOnlySpan<byte> data, bool isLinear, IErrorCollector errorCollector)
         {
-            using IWICStream stream = WIC.CreateStream();
-            stream.Initialize(data);
+            using IWICStream stream = CreateStreamFromMemory(data);
             using IWICBitmapDecoder decoder = WIC.CreateDecoderFromStream(stream);
             return Create(decoder, isLinear, errorCollector);
         }
@@ -209,7 +246,7 @@ namespace TransportX.Rendering.Importing
                     SrcDepthPitch = bufferSize,
                 };
 
-                ID3D11ShaderResourceView view = RawTextureFactory.Create(Context, desc);
+                ID3D11ShaderResourceView view = RawFactory.Create(desc);
                 return view;
             }
             finally

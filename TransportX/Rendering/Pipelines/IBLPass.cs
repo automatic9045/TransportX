@@ -12,6 +12,7 @@ using Vortice.DXGI;
 using Vortice.Mathematics;
 
 using TransportX.Rendering.Backend;
+using TransportX.Rendering.Importing;
 using TransportX.Spatial;
 using TransportX.Worlds;
 

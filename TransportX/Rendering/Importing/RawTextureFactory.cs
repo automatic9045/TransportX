@@ -11,7 +11,7 @@ using TransportX.Diagnostics;
 
 namespace TransportX.Rendering.Importing
 {
-    internal static class RawTextureFactory
+    internal class RawTextureFactory
     {
         public static void ReportIfNpot(int width, int height, IErrorCollector errorCollector)
         {
@@ -25,7 +25,15 @@ namespace TransportX.Rendering.Importing
             static bool IsPowerOfTwo(int x) => 0 < x && (x & (x - 1)) == 0;
         }
 
-        public static ID3D11ShaderResourceView Create(ID3D11DeviceContext context, in Description desc)
+
+        private readonly ID3D11DeviceContext Context;
+
+        public RawTextureFactory(ID3D11DeviceContext context)
+        {
+            Context = context;
+        }
+
+        public ID3D11ShaderResourceView Create(in Description desc)
         {
             Texture2DDescription tempTextureDesc = new()
             {
@@ -41,11 +49,11 @@ namespace TransportX.Rendering.Importing
                 MiscFlags = ResourceOptionFlags.GenerateMips,
             };
 
-            using ID3D11Texture2D tempTexture = context.Device.CreateTexture2D(tempTextureDesc);
-            context.UpdateSubresource(tempTexture, 0, null, desc.SrcData, desc.SrcRowPitch, desc.SrcDepthPitch);
+            using ID3D11Texture2D tempTexture = Context.Device.CreateTexture2D(tempTextureDesc);
+            Context.UpdateSubresource(tempTexture, 0, null, desc.SrcData, desc.SrcRowPitch, desc.SrcDepthPitch);
 
-            using ID3D11ShaderResourceView tempView = context.Device.CreateShaderResourceView(tempTexture);
-            context.GenerateMips(tempView);
+            using ID3D11ShaderResourceView tempView = Context.Device.CreateShaderResourceView(tempTexture);
+            Context.GenerateMips(tempView);
 
             Texture2DDescription textureDesc = tempTextureDesc with
             {
@@ -54,12 +62,13 @@ namespace TransportX.Rendering.Importing
                 MiscFlags = ResourceOptionFlags.None,
             };
 
-            using ID3D11Texture2D texture = context.Device.CreateTexture2D(textureDesc);
-            context.CopyResource(texture, tempTexture);
+            using ID3D11Texture2D texture = Context.Device.CreateTexture2D(textureDesc);
+            Context.CopyResource(texture, tempTexture);
 
-            ID3D11ShaderResourceView view = context.Device.CreateShaderResourceView(texture);
+            ID3D11ShaderResourceView view = Context.Device.CreateShaderResourceView(texture);
             return view;
         }
+
 
         internal readonly struct Description
         {

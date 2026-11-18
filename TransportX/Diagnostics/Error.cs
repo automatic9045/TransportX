@@ -37,7 +37,7 @@ namespace TransportX.Diagnostics
             return $"{Location}({LineNumber},{LinePosition}): {Level} {Code ?? string.Empty}: {Message}";
         }
 
-        public virtual Error ChangeSource(string location, int lineNumber = 0, int linePosition = 0, int length = 0)
+        public virtual Error ChangeSource(string? location, int lineNumber = 0, int linePosition = 0, int length = 0)
         {
             return new Error(Level, Message, location)
             {

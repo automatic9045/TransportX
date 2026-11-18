@@ -36,7 +36,7 @@ namespace TransportX.Rendering
             StackTrace = baseError.StackTrace;
         }
 
-        public override Error ChangeSource(string location, int lineNumber = 0, int linePosition = 0, int length = 0)
+        public override Error ChangeSource(string? location, int lineNumber = 0, int linePosition = 0, int length = 0)
         {
             return new ModelLoadError(Source, Target, Level, Message, location)
             {

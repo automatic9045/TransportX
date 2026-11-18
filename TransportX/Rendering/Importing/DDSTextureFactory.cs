@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using DirectXTexNet;
 using Vortice.Direct3D11;
 
-namespace TransportX.Rendering
+namespace TransportX.Rendering.Importing
 {
-    public class DDSTextureFactory
+    internal class DDSTextureFactory
     {
         private readonly ID3D11Device Device;
 
