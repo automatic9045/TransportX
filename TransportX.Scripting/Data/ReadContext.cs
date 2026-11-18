@@ -198,6 +198,69 @@ namespace TransportX.Scripting.Data
                     displayName, isRequired);
             }
 
+            public void AddSerializedWrappedListElement<TItem>(
+                string wrapperElementName, string itemElementName, string listFieldName, string? displayName = null, bool isRequired = false)
+            {
+                displayName ??= wrapperElementName;
+
+                FieldInfo? field = Source.GetType().GetField(listFieldName) ?? throw new InvalidOperationException($"フィールド '{listFieldName}' が見つかりません。");
+
+                if (!typeof(IList<TItem>).IsAssignableFrom(field.FieldType))
+                {
+                    throw new InvalidOperationException($"フィールド '{listFieldName}' に '{typeof(TItem).Name}' のリストを代入できません。");
+                }
+
+                IList<TItem>? list = (IList<TItem>?)field.GetValue(Source);
+                if (list is null)
+                {
+                    list = [];
+                    field.SetValue(Source, list);
+                }
+
+                ReadElementActions[wrapperElementName] = new ReadElementAction(
+                    _ => ReadWrappedListCore(itemElementName, displayName, list),
+                    displayName, isRequired);
+            }
+
+            private void ReadWrappedListCore<TItem>(string itemElementName, string displayName, IList<TItem> list)
+            {
+                bool wasEmpty = Reader.IsEmptyElement;
+                Reader.ReadStartElement();
+
+                if (wasEmpty)
+                {
+                    return;
+                }
+
+                Reader.MoveToContent();
+
+                while (Reader.NodeType != XmlNodeType.EndElement && Reader.NodeType != XmlNodeType.None)
+                {
+                    if (Reader.NodeType == XmlNodeType.Element)
+                    {
+                        if (Reader.LocalName == itemElementName)
+                        {
+                            ReadSerializedElementCore<TItem>(itemElementName, displayName, obj => list.Add(obj));
+                        }
+                        else
+                        {
+                            Reader.Skip();
+                        }
+                    }
+                    else
+                    {
+                        Reader.Read();
+                    }
+
+                    Reader.MoveToContent();
+                }
+
+                if (Reader.NodeType == XmlNodeType.EndElement)
+                {
+                    Reader.ReadEndElement();
+                }
+            }
+
             private void ReadSerializedElementCore<T>(string elementName, string displayName, Action<T> onSuccess)
             {
                 try

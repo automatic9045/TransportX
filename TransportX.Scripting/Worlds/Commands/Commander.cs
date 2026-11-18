@@ -19,6 +19,7 @@ namespace TransportX.Scripting.Worlds.Commands
         public Camera Camera { get; }
         public Chunks Chunks { get; }
         public Components Components { get; }
+        public CrossSections CrossSections { get; }
         public Debug Debug { get; }
         public DirectionalLight DirectionalLight { get; }
         public WorldEnvironment Environment { get; }
@@ -40,6 +41,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Camera = new Camera(world);
             Chunks = new Chunks(world);
             Components = new Components(world);
+            CrossSections = new CrossSections(world);
             Debug = new Debug(world);
             DirectionalLight = new DirectionalLight(world);
             Environment = new WorldEnvironment(world);
@@ -59,6 +61,7 @@ namespace TransportX.Scripting.Worlds.Commands
             Camera = parent.Camera;
             Chunks = parent.Chunks;
             Components = parent.Components;
+            CrossSections = parent.CrossSections;
             Debug = parent.Debug;
             DirectionalLight = parent.DirectionalLight;
             Environment = parent.Environment;
@@ -72,6 +75,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
         internal void Dispose()
         {
+            CrossSections.Dispose();
             Triggers.Dispose();
         }
 

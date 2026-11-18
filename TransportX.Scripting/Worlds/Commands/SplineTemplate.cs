@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+
+using Vortice.Mathematics;
 
 using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 using TransportX.Rendering;
+using TransportX.Rendering.Procedural;
 using TransportX.Spatial;
 
 using TransportX.Extensions.Network.Elements;
@@ -22,6 +26,9 @@ namespace TransportX.Scripting.Worlds.Commands
 
         private readonly List<SplineProp> PropsKey = [];
         public IReadOnlyList<SplineProp> Props => PropsKey;
+
+        private readonly List<SplineExtrusion> ExtrusionsKey = [];
+        public IReadOnlyList<SplineExtrusion> Extrusions => ExtrusionsKey;
 
         public IComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>> Components { get; }
             = new ComponentCollection<ITemplateComponent<IReadOnlyList<SplineBase>>>();
@@ -41,6 +48,7 @@ namespace TransportX.Scripting.Worlds.Commands
                 return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
             }).ToArray();
             SplineProp prop = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
+
             PropsKey.Add(prop);
             return prop;
         }
@@ -57,10 +65,49 @@ namespace TransportX.Scripting.Worlds.Commands
             return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
         }
 
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from)
+        {
+            if (!World.Commander.CrossSections.All.GetValue(crossSectionKey, out CrossSection? crossSection))
+            {
+                crossSection = CrossSection.Empty;
+            }
+
+            AdaptiveSplineSampler sampler = new((float)baseInterval, (float)maxDeviation, MathHelper.ToRadians((float)maxAngleDelta), (float)from, float.MaxValue);
+            SplineExtrusion extrusion = new(crossSection, sampler, new Vector2((float)x, (float)y))
+            {
+                VIntervalScale = (float)vIntervalScale,
+                VOffset = (float)vOffset - sampler.FromS,
+                Key = key,
+            };
+
+            ExtrusionsKey.Add(extrusion);
+            return extrusion;
+        }
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from)
+            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, vIntervalScale, vOffset, from);
+
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from)
+            => PutExtrusion(key, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, 1, 0, from);
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from)
+            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, from);
+
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey, double baseInterval, double maxDeviation, double maxAngleDelta, double from)
+            => PutExtrusion(key, crossSectionKey, 0, 0, baseInterval, maxDeviation, maxAngleDelta, from);
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey, double baseInterval, double maxDeviation, double maxAngleDelta, double from)
+            => PutExtrusion(null, crossSectionKey, baseInterval, maxDeviation, maxAngleDelta, from);
+
         internal SplineFactoryCommand Build(WorldPose worldPose, NetworkPort? sourcePort)
         {
             SplineFactory factory = new(worldPose, OutletLayout, sourcePort);
-            factory.AddProps(Props);
+            factory.Props.AddRange(Props);
+            factory.Extrusions.AddRange(Extrusions);
 
             SplineFactoryCommand factoryCommand = new(World, factory);
             foreach ((Type type, ITemplateComponent<IReadOnlyList<SplineBase>> component) in Components)

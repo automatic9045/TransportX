@@ -25,6 +25,13 @@ namespace TransportX.Scripting.Data
         protected bool PreserveFullElement { get; set; } = false;
         public XElement? FullElement { get; private set; } = null;
 
+        [XmlIgnore]
+        public string? Location { get; private set; } = null;
+        [XmlIgnore]
+        public int LineNumber { get; private set; } = 0;
+        [XmlIgnore]
+        public int LinePosition { get; private set; } = 0;
+
         protected readonly List<Error> ErrorsKey = [];
         public IReadOnlyList<Error> Errors => ErrorsKey;
 
@@ -36,6 +43,16 @@ namespace TransportX.Scripting.Data
                     .Where(field => field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(XmlValue<>))
                     .ToDictionary(field => field.Name);
             });
+        }
+
+        public Error CreateError(string message, ErrorLevel level = ErrorLevel.Error, Exception? exception = null)
+        {
+            return new Error(level, message, Location)
+            {
+                LineNumber = LineNumber,
+                LinePosition = LinePosition,
+                Exception = exception,
+            };
         }
 
         public XmlSchema? GetSchema() => null;
@@ -80,6 +97,13 @@ namespace TransportX.Scripting.Data
 
             void ProcessReader(XmlReader currentReader, string location)
             {
+                Location = string.IsNullOrEmpty(location) ? null : location;
+                if (currentReader is IXmlLineInfo lineInfo && lineInfo.HasLineInfo())
+                {
+                    LineNumber = lineInfo.LineNumber;
+                    LinePosition = lineInfo.LinePosition;
+                }
+
                 bool isEmpty = currentReader.IsEmptyElement;
 
                 ReadContext context = new(this, currentReader, isEmpty, location);
@@ -116,6 +140,13 @@ namespace TransportX.Scripting.Data
             {
                 WriteSerializedElement(writer, elementName, list[i]);
             }
+        }
+
+        protected static void WriteSerializedWrappedListElements<T>(XmlWriter writer, string wrapperElementName, string itemElementName, IReadOnlyList<T> list)
+        {
+            writer.WriteStartElement(wrapperElementName);
+            WriteSerializedListElements(writer, itemElementName, list);
+            writer.WriteEndElement();
         }
     }
 }
