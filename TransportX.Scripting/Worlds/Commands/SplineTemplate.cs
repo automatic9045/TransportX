@@ -40,30 +40,42 @@ namespace TransportX.Scripting.Worlds.Commands
             OutletLayout = World.Commander.Network.LaneLayouts[outletLayoutKey];
         }
 
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
         {
-            TransformedModelTemplate[] models = modelKeys.Select(key =>
+            TransformedModelTemplate[] models = [.. modelKeys.Select(key =>
             {
                 ModelResourceSet model = World.Models.GetModel(key);
                 return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
-            }).ToArray();
-            SplineProp prop = new(models, (float)from, (float)span, (float)interval, int.MaxValue);
+            })];
+
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, int.MaxValue)
+            {
+                Key = key,
+            };
 
             PropsKey.Add(prop);
             return prop;
         }
 
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval)
+            => PutProp(null, modelKeys, pose, from, span, interval);
+
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval)
         {
             SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutProp(modelKeys, position.ToPose(), from, span, interval);
+            return PutProp(key, modelKeys, position.ToPose(), from, span, interval);
         }
 
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
+            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval)
+            => PutProp(null, modelKeys, x, y, z, rotationX, rotationY, rotationZ, from, span, interval);
+
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
+            => PutProp(key, modelKeys, x, y, z, 0, 0, 0, from, span, interval);
+
         public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval)
-        {
-            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval);
-        }
+            => PutProp(null, modelKeys, x, y, z, from, span, interval);
 
         public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
             double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from)

@@ -53,31 +53,119 @@ namespace TransportX.Scripting.Worlds.Commands
             SplineFactory.InterpolateByBezier(targetPort, (float)handleScale);
         }
 
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {
-            TransformedModelTemplate[] models = modelKeys.Select(key =>
+            TransformedModelTemplate[] models = [.. modelKeys.Select(key =>
             {
                 ModelResourceSet model = World.Models.GetModel(key);
                 return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
-            }).ToArray();
-            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
-            SplineFactory.Props.Add(prop);
+            })];
 
+            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count)
+            {
+                Key = key,
+            };
+
+            SplineFactory.Props.Add(prop);
             return prop;
+        }
+
+        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
+            => PutProp(null, modelKeys, pose, from, span, interval, count);
+
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys,
+            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
+        {
+            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return PutProp(key, modelKeys, position.ToPose(), from, span, interval, count);
         }
 
         public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
-        {
-            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutProp(modelKeys, position.ToPose(), from, span, interval, count);
-        }
+            => PutProp(null, modelKeys, x, y, z, rotationX, rotationY, rotationZ, from, span, interval, count);
+
+        public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys,
+            double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
+            => PutProp(key, modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
 
         public SplineProp PutProp(IReadOnlyList<string> modelKeys,
             double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
+            => PutProp(null, modelKeys, x, y, z, from, span, interval, count);
+
+        public void SkipProp(string key, double from, double to)
         {
-            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
+            if (to <= from) return;
+
+            float skipFrom = (float)from;
+            float skipTo = (float)to;
+
+            bool found = false;
+            for (int i = SplineFactory.Props.Count - 1; 0 <= i; i--)
+            {
+                SplineProp prop = SplineFactory.Props[i];
+                if (prop.Key != key) continue;
+                found = true;
+
+                if (prop.Count <= 0) continue;
+                if (skipTo < prop.From) continue;
+                if (prop.Count < int.MaxValue && prop.From + prop.Interval * (prop.Count - 1) < skipFrom) continue;
+
+                SplineFactory.Props.RemoveAt(i);
+                int insertIndex = i;
+
+                int beforeCount;
+                if (skipFrom <= prop.From)
+                {
+                    beforeCount = 0;
+                }
+                else
+                {
+                    float rawBeforeCount = float.Ceiling((skipFrom - prop.From) / prop.Interval);
+                    beforeCount = prop.Count <= rawBeforeCount ? prop.Count : (int)rawBeforeCount;
+                }
+
+                if (0 < beforeCount)
+                {
+                    SplineProp beforeProp = new(prop.Models, prop.From, prop.Span, prop.Interval, beforeCount)
+                    {
+                        Key = prop.Key,
+                    };
+                    SplineFactory.Props.Insert(insertIndex++, beforeProp);
+                }
+
+                float rawResumeIndex = skipTo < prop.From ? 0 : float.Floor((skipTo - prop.From) / prop.Interval) + 1;
+                if (rawResumeIndex < prop.Count)
+                {
+                    int resumeIndex = (int)rawResumeIndex;
+                    int afterCount = prop.Count == int.MaxValue ? int.MaxValue : prop.Count - resumeIndex;
+                    float afterFrom = prop.From + prop.Interval * resumeIndex;
+
+                    TransformedModelTemplate[] rotatedModels = new TransformedModelTemplate[prop.Models.Count];
+                    if (0 < rotatedModels.Length)
+                    {
+                        for (int j = 0; j < rotatedModels.Length; j++)
+                        {
+                            rotatedModels[j] = prop.Models[(j + resumeIndex) % rotatedModels.Length];
+                        }
+                    }
+
+                    SplineProp afterProp = new(rotatedModels, afterFrom, prop.Span, prop.Interval, afterCount)
+                    {
+                        Key = prop.Key,
+                    };
+                    SplineFactory.Props.Insert(insertIndex, afterProp);
+                }
+            }
+
+            if (!found)
+            {
+                ScriptError error = new(ErrorLevel.Error, $"プロップ '{key}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+            }
         }
+
+        public void SkipProp(string key)
+            => SkipProp(key, 0, double.MaxValue);
 
         public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
             double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from, double to = double.MaxValue)
@@ -118,6 +206,58 @@ namespace TransportX.Scripting.Worlds.Commands
         public SplineExtrusion PutExtrusion(string crossSectionKey,
             double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
             => PutExtrusion(null, crossSectionKey, baseInterval, maxDeviation, maxAngleDelta, from, to);
+
+        public void SkipExtrusion(string key, double from, double to)
+        {
+            if (to <= from) return;
+
+            float skipFrom = float.Max(0, (float)from);
+            float skipTo = (float)to;
+
+            bool found = false;
+            for (int i = SplineFactory.Extrusions.Count - 1; 0 <= i; i--)
+            {
+                SplineExtrusion extrusion = SplineFactory.Extrusions[i];
+                if (extrusion.Key != key) continue;
+                found = true;
+
+                float samplerFrom = extrusion.Sampler.FromS;
+                float samplerTo = extrusion.Sampler.ToS;
+                if (skipTo <= samplerFrom || samplerTo <= skipFrom) continue;
+
+                SplineFactory.Extrusions.RemoveAt(i);
+                int insertIndex = i;
+
+                if (1e-3f < skipFrom - samplerFrom)
+                {
+                    ISplineSampler beforeSampler = BoundedSplineSampler.Create(extrusion.Sampler, samplerFrom, skipFrom);
+                    SplineExtrusion beforeExtrusion = new(extrusion.CrossSection, beforeSampler, extrusion.Offset)
+                    {
+                        Key = extrusion.Key,
+                    };
+                    SplineFactory.Extrusions.Insert(insertIndex++, beforeExtrusion);
+                }
+
+                if (1e-3f < samplerTo - skipTo)
+                {
+                    ISplineSampler afterSampler = BoundedSplineSampler.Create(extrusion.Sampler, skipTo, samplerTo);
+                    SplineExtrusion afterExtrusion = new(extrusion.CrossSection, afterSampler, extrusion.Offset)
+                    {
+                        Key = extrusion.Key,
+                    };
+                    SplineFactory.Extrusions.Insert(insertIndex, afterExtrusion);
+                }
+            }
+
+            if (!found)
+            {
+                ScriptError error = new(ErrorLevel.Error, $"断面押し出し '{key}' が見つかりません。");
+                World.ErrorCollector.Report(error);
+            }
+        }
+
+        public void SkipExtrusion(string key)
+            => SkipExtrusion(key, 0, double.MaxValue);
 
         public SplineCommand Build()
         {

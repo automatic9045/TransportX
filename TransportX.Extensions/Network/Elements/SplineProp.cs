@@ -16,6 +16,8 @@ namespace TransportX.Extensions.Network.Elements
         public float Interval { get; }
         public int Count { get; }
 
+        public string? Key { get; init; } = null;
+
         public SplineProp(IReadOnlyList<TransformedModelTemplate> models, float from, float span, float interval, int count)
         {
             Models = models;
