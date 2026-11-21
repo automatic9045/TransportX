@@ -48,10 +48,14 @@ namespace TransportX.Scripting.Worlds.Commands
             Cants = new CantList(SplineFactory.Cants);
         }
 
-        public void ConnectBezier(NetworkPort targetPort, double handleScale = 0.5)
+        public void ConnectBezier(NetworkPort targetPort, out double s, double handleScale = 0.5)
         {
-            SplineFactory.InterpolateByBezier(targetPort, (float)handleScale);
+            SplineFactory.InterpolateByBezier(targetPort, (float)handleScale, out float floatS);
+            s = floatS;
         }
+
+        public void ConnectBezier(NetworkPort targetPort, double handleScale = 0.5)
+            => ConnectBezier(targetPort, out _, handleScale);
 
         public SplineProp PutProp(string? key, IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {

@@ -36,21 +36,30 @@ namespace TransportX.Extensions.Network.Elements
             SourcePort = sourcePort;
         }
 
-        public void InterpolateByBezier(NetworkPort targetPort, float handleScale = 0.5f)
+        public void InterpolateByBezier(NetworkPort targetPort, float handleScale, out float s)
         {
+            WorldPose endPose = WorldPose;
+            foreach ((SplineSegment _, Pose localPose) in EnumerateSegments())
+            {
+                endPose = localPose * endPose;
+            }
+
+            NetworkElement targetElement = targetPort.Owner;
+            ChunkIndex offset = targetElement.WorldPose.Chunk - endPose.Chunk;
+            Pose to = targetPort.Offset * targetElement.WorldPose.Pose * offset.Pose;
+
+            BezierSpline spline = new(endPose, to, OutletLayout, handleScale)
+            {
+                DebugName = DebugName,
+            };
+
+            s = Curves.S + spline.Length;
+
             Finalizer = fromPort =>
             {
-                NetworkElement targetElement = targetPort.Owner;
-                ChunkIndex offset = targetElement.WorldPose.Chunk - WorldPose.Chunk;
-                Pose to = targetPort.Offset * targetElement.WorldPose.Pose * offset.Pose;
-
-                BezierSpline spline = new(WorldPose, to, OutletLayout, handleScale)
-                {
-                    DebugName = DebugName,
-                };
+                spline.DebugName = DebugName;
                 fromPort?.ConnectTo(spline.Inlet);
                 spline.Outlet.ConnectTo(targetPort);
-
                 return spline;
             };
         }
@@ -63,45 +72,26 @@ namespace TransportX.Extensions.Network.Elements
             WorldPose splinePose = WorldPose;
             Pose splinePoseInv = Pose.Inverse(splinePose.Pose);
 
-            Queue<Span> curves = new(Curves.Spans);
-            Queue<Span> gradients = new(Gradients.Spans);
-            Queue<Span> cants = new(Cants.Spans);
-
-            float s = 0;
             List<SplineSegment> segments = [];
-            while (0 < curves.Count)
+            foreach ((SplineSegment rawSegment, Pose localPose) in EnumerateSegments())
             {
-                Span curve = 0 < curves.Count ? curves.Peek() : new Span(0, 0, s, float.MaxValue);
-                Span gradient = 0 < gradients.Count ? gradients.Peek() : new Span(0, 0, s, float.MaxValue);
-                Span cant = 0 < cants.Count ? cants.Peek() : new Span(0, 0, s, float.MaxValue);
-
-                float nextS = float.Min(float.Min(curve.ToS, gradient.ToS), cant.ToS);
-                float length = nextS - s;
-
-                Span slicedCurve = curve.Slice(s, length);
-                Span slicedGradient = gradient.Slice(s, length);
-                Span slicedCant = cant.Slice(s, length);
-
-                Pose segmentPose = WorldPose.Pose * splinePoseInv;
                 SplineSegment segment = new()
                 {
-                    FromS = s,
-                    ToS = nextS,
-                    Length = nextS - s,
+                    FromS = rawSegment.FromS,
+                    ToS = rawSegment.ToS,
+                    Length = rawSegment.Length,
 
-                    Pose = segmentPose,
+                    Pose = WorldPose.Pose * splinePoseInv,
 
-                    Curvature = slicedCurve.FromValue,
-                    Gradient = slicedGradient.FromValue,
-                    GradientDelta = slicedGradient.ValueDelta,
-                    Cant = slicedCant.FromValue,
-                    CantDelta = slicedCant.ValueDelta,
+                    Curvature = rawSegment.Curvature,
+                    Gradient = rawSegment.Gradient,
+                    GradientDelta = rawSegment.GradientDelta,
+                    Cant = rawSegment.Cant,
+                    CantDelta = rawSegment.CantDelta,
                 };
                 segments.Add(segment);
 
-                Pose pose = segment.GetLocalPose(slicedCurve.Length);
-                ChunkIndex chunkOffset = Move(pose);
-
+                ChunkIndex chunkOffset = Move(localPose);
                 if (!chunkOffset.IsZero)
                 {
                     AddSpline();
@@ -111,12 +101,6 @@ namespace TransportX.Extensions.Network.Elements
 
                     segments = [];
                 }
-
-                s = nextS;
-
-                if (0 < curves.Count && curves.Peek().ToS == nextS) curves.Dequeue();
-                if (0 < gradients.Count && gradients.Peek().ToS == nextS) gradients.Dequeue();
-                if (0 < cants.Count && cants.Peek().ToS == nextS) cants.Dequeue();
             }
 
             if (0 < segments.Count)
@@ -128,7 +112,7 @@ namespace TransportX.Extensions.Network.Elements
             {
                 SplineBase lastSpline = Finalizer(sourcePort);
                 ApplyProps(lastSpline);
-                ApplyExtrusions(lastSpline, s);
+                ApplyExtrusions(lastSpline, Curves.S);
                 splines.Add(lastSpline);
             }
 
@@ -214,6 +198,52 @@ namespace TransportX.Extensions.Network.Elements
                     SplineExtrusion extrusion = Extrusions[i];
                     spline.PutExtrusion(device, physicsHost, extrusion, sOffset);
                 }
+            }
+        }
+
+        private IEnumerable<(SplineSegment Segment, Pose LocalPose)> EnumerateSegments()
+        {
+            int curveIndex = 0;
+            int gradientIndex = 0;
+            int cantIndex = 0;
+
+            float s = 0;
+            while (curveIndex < Curves.Spans.Count)
+            {
+                Span curve = Curves.Spans[curveIndex];
+                Span gradient = gradientIndex < Gradients.Spans.Count ? Gradients.Spans[gradientIndex] : new Span(0, 0, s, float.MaxValue);
+                Span cant = cantIndex < Cants.Spans.Count ? Cants.Spans[cantIndex] : new Span(0, 0, s, float.MaxValue);
+
+                float nextS = float.Min(float.Min(curve.ToS, gradient.ToS), cant.ToS);
+                float length = nextS - s;
+
+                Span slicedCurve = curve.Slice(s, length);
+                Span slicedGradient = gradient.Slice(s, length);
+                Span slicedCant = cant.Slice(s, length);
+
+                SplineSegment segment = new()
+                {
+                    FromS = s,
+                    ToS = nextS,
+                    Length = length,
+
+                    Pose = Pose.Identity,
+
+                    Curvature = slicedCurve.FromValue,
+                    Gradient = slicedGradient.FromValue,
+                    GradientDelta = slicedGradient.ValueDelta,
+                    Cant = slicedCant.FromValue,
+                    CantDelta = slicedCant.ValueDelta,
+                };
+
+                Pose localPose = segment.GetLocalPose(length);
+                yield return (segment, localPose);
+
+                s = nextS;
+
+                if (curveIndex < Curves.Spans.Count && Curves.Spans[curveIndex].ToS == nextS) curveIndex++;
+                if (gradientIndex < Gradients.Spans.Count && Gradients.Spans[gradientIndex].ToS == nextS) gradientIndex++;
+                if (cantIndex < Cants.Spans.Count && Cants.Spans[cantIndex].ToS == nextS) cantIndex++;
             }
         }
 
