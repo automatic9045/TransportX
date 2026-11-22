@@ -5,9 +5,11 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Extensions.Network.Elements
+using TransportX.Mathematics;
+
+namespace TransportX.Extensions.Mathematics
 {
-    public class AdaptiveSplineSampler : ISplineSampler
+    public class AdaptiveCurveSampler : ICurveSampler
     {
         public float BaseInterval { get; }
         public float MaxDeviation { get; }
@@ -15,7 +17,7 @@ namespace TransportX.Extensions.Network.Elements
         public float FromS { get; }
         public float ToS { get; }
 
-        public AdaptiveSplineSampler(float baseInterval, float maxDeviation, float maxAngleDelta, float fromS, float toS)
+        public AdaptiveCurveSampler(float baseInterval, float maxDeviation, float maxAngleDelta, float fromS, float toS)
         {
             BaseInterval = float.Max(1e-3f, baseInterval);
             MaxDeviation = float.Max(1e-3f, maxDeviation);
@@ -24,18 +26,18 @@ namespace TransportX.Extensions.Network.Elements
             ToS = float.Max(FromS, toS);
         }
 
-        public IReadOnlyList<float> Sample(SplineBase spline, float sOffset, float fromS, float toS)
+        public IReadOnlyList<float> Sample(IPoseCurve curve, float sOffset, float fromS, float toS)
         {
             float effectiveFromS = float.Max(FromS, fromS);
             float effectiveToS = float.Min(ToS, toS);
 
             float startS = sOffset;
-            float endS = sOffset + spline.Length;
+            float endS = sOffset + curve.Length;
 
             if (endS <= effectiveFromS || effectiveToS <= startS) return [];
 
             float localStart = float.Max(0, effectiveFromS - sOffset);
-            float localEnd = float.Min(spline.Length, effectiveToS - sOffset);
+            float localEnd = float.Min(curve.Length, effectiveToS - sOffset);
             float totalLength = localEnd - localStart;
 
             float minInterval = float.Max(1e-5f, float.Min(BaseInterval * 0.01f, MaxDeviation * 0.1f));
@@ -49,16 +51,16 @@ namespace TransportX.Extensions.Network.Elements
             float minCosAngle = float.Cos(MaxAngleDelta);
 
             float anchorS = localStart;
-            Pose anchorPose = spline.GetPose(anchorS);
+            Pose anchorPose = curve.GetPose(anchorS);
 
             float s = localStart;
             while (s < localEnd)
             {
                 float nextS = float.Min(s + BaseInterval, localEnd);
-                Pose nextPose = spline.GetPose(nextS);
+                Pose nextPose = curve.GetPose(nextS);
 
                 float middleS = (anchorS + nextS) * 0.5f;
-                Pose middlePose = spline.GetPose(middleS);
+                Pose middlePose = curve.GetPose(middleS);
 
                 if (!NeedsSubdivision(anchorPose, nextPose, middlePose))
                 {
@@ -79,7 +81,7 @@ namespace TransportX.Extensions.Network.Elements
                     {
                         samples.Add(s);
                         anchorS = s;
-                        anchorPose = spline.GetPose(anchorS);
+                        anchorPose = curve.GetPose(anchorS);
                     }
 
                     Subdivide(anchorS, nextS, anchorPose, nextPose);
@@ -115,7 +117,7 @@ namespace TransportX.Extensions.Network.Elements
                 if (length <= minInterval) return;
 
                 float middleS = (s0 + s1) * 0.5f;
-                Pose middlePose = spline.GetPose(middleS);
+                Pose middlePose = curve.GetPose(middleS);
 
                 if (NeedsSubdivision(pose0, pose1, middlePose))
                 {
@@ -129,7 +131,7 @@ namespace TransportX.Extensions.Network.Elements
             }
         }
 
-        public IReadOnlyList<float> Sample(SplineBase spline, float sOffset)
-            => Sample(spline, sOffset, FromS, ToS);
+        public IReadOnlyList<float> Sample(IPoseCurve curve, float sOffset)
+            => Sample(curve, sOffset, FromS, ToS);
     }
 }

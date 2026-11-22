@@ -14,6 +14,7 @@ using TransportX.Rendering;
 using TransportX.Rendering.Procedural;
 using TransportX.Spatial;
 
+using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Elements;
 
 namespace TransportX.Scripting.Worlds.Commands
@@ -179,7 +180,7 @@ namespace TransportX.Scripting.Worlds.Commands
                 crossSection = CrossSection.Empty;
             }
 
-            AdaptiveSplineSampler sampler = new((float)baseInterval, (float)maxDeviation, MathHelper.ToRadians((float)maxAngleDelta), (float)from, (float)to);
+            AdaptiveCurveSampler sampler = new((float)baseInterval, (float)maxDeviation, MathHelper.ToRadians((float)maxAngleDelta), (float)from, (float)to);
             SplineExtrusion splineExtrusion = new(crossSection, sampler, new Vector2((float)x, (float)y))
             {
                 VIntervalScale = (float)vIntervalScale,
@@ -234,7 +235,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
                 if (1e-3f < skipFrom - samplerFrom)
                 {
-                    ISplineSampler beforeSampler = BoundedSplineSampler.Create(extrusion.Sampler, samplerFrom, skipFrom);
+                    ICurveSampler beforeSampler = BoundedCurveSampler.Create(extrusion.Sampler, samplerFrom, skipFrom);
                     SplineExtrusion beforeExtrusion = new(extrusion.CrossSection, beforeSampler, extrusion.Offset)
                     {
                         Key = extrusion.Key,
@@ -244,7 +245,7 @@ namespace TransportX.Scripting.Worlds.Commands
 
                 if (1e-3f < samplerTo - skipTo)
                 {
-                    ISplineSampler afterSampler = BoundedSplineSampler.Create(extrusion.Sampler, skipTo, samplerTo);
+                    ICurveSampler afterSampler = BoundedCurveSampler.Create(extrusion.Sampler, skipTo, samplerTo);
                     SplineExtrusion afterExtrusion = new(extrusion.CrossSection, afterSampler, extrusion.Offset)
                     {
                         Key = extrusion.Key,

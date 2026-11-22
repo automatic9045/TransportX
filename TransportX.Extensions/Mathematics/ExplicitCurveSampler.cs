@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TransportX.Extensions.Network.Elements
+using TransportX.Mathematics;
+
+namespace TransportX.Extensions.Mathematics
 {
-    public class ExplicitSplineSampler : ISplineSampler
+    public class ExplicitCurveSampler : ICurveSampler
     {
         public IReadOnlyList<float> SSamples { get; }
         public float FromS => SSamples[0];
         public float ToS => SSamples[^1];
 
-        public ExplicitSplineSampler(IReadOnlyList<float> sSamples)
+        public ExplicitCurveSampler(IReadOnlyList<float> sSamples)
         {
             if (sSamples.Count < 2)
             {
@@ -22,13 +24,13 @@ namespace TransportX.Extensions.Network.Elements
             SSamples = [.. sSamples.Order()];
         }
 
-        public IReadOnlyList<float> Sample(SplineBase spline, float sOffset, float fromS, float toS)
+        public IReadOnlyList<float> Sample(IPoseCurve curve, float sOffset, float fromS, float toS)
         {
             float effectiveFromS = float.Max(FromS, fromS);
             float effectiveToS = float.Min(ToS, toS);
 
             float startS = sOffset;
-            float endS = sOffset + spline.Length;
+            float endS = sOffset + curve.Length;
 
             if (endS <= effectiveFromS || effectiveToS <= startS) return [];
 
@@ -61,7 +63,7 @@ namespace TransportX.Extensions.Network.Elements
             return deduplicatedSamples.Count < 2 ? [] : deduplicatedSamples;
         }
 
-        public IReadOnlyList<float> Sample(SplineBase spline, float sOffset)
-            => Sample(spline, sOffset, FromS, ToS);
+        public IReadOnlyList<float> Sample(IPoseCurve curve, float sOffset)
+            => Sample(curve, sOffset, FromS, ToS);
     }
 }
