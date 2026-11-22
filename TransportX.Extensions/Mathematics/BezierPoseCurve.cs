@@ -18,7 +18,7 @@ namespace TransportX.Extensions.Mathematics
         public Pose EndPose { get; }
         public float Length => Curve.Length;
 
-        public BezierPoseCurve(Pose startPose, Pose endPose, float? controlScale = null)
+        public BezierPoseCurve(Pose startPose, Pose endPose, float handleScale = 0.5f)
         {
             StartPose = startPose;
             EndPose = endPose;
@@ -28,8 +28,7 @@ namespace TransportX.Extensions.Mathematics
             Vector3 p0 = Vector3.Zero;
             Vector3 p3 = transition.Position;
 
-            float dist = p3.Length();
-            float handleLength = controlScale ?? dist * 0.5f;
+            float handleLength = p3.Length() * handleScale;
 
             Vector3 p1 = p0 + Vector3.UnitZ * handleLength;
 

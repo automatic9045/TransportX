@@ -96,7 +96,7 @@ namespace TransportX.Scripting.Worlds.Commands
             return this;
         }
 
-        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s, double? controlScale = null)
+        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s, double handleScale = 0.5)
         {
             if (!CheckNotFinalized())
             {
@@ -105,7 +105,7 @@ namespace TransportX.Scripting.Worlds.Commands
             }
 
             Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
-            BezierPoseCurve curve = new(LastCurvePoint, to, (float?)controlScale);
+            BezierPoseCurve curve = new(LastCurvePoint, to, (float)handleScale);
             Curves.Add(curve);
 
             Length += curve.Length;
@@ -130,7 +130,7 @@ namespace TransportX.Scripting.Worlds.Commands
             s = Length;
         }
 
-        public void BezierToEnd(out double s, double? controlScale = null)
+        public void BezierToEnd(out double s, double handleScale = 0.5)
         {
             if (!CheckNotFinalized())
             {
@@ -140,7 +140,7 @@ namespace TransportX.Scripting.Worlds.Commands
             IsFinalized = true;
 
             Pose to = ToPort.GetPinLocalPose(ToPinIndex);
-            BezierPoseCurve curve = new(LastCurvePoint, to, (float?)controlScale);
+            BezierPoseCurve curve = new(LastCurvePoint, to, (float)handleScale);
             Curves.Add(curve);
 
             Length += curve.Length;
@@ -149,10 +149,10 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
             => StraightTo(x, y, z, rotationX, rotationY, rotationZ, out _);
-        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double? controlScale = null)
-            => BezierTo(x, y, z, rotationX, rotationY, rotationZ, out _, controlScale);
+        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double handleScale = 0.5)
+            => BezierTo(x, y, z, rotationX, rotationY, rotationZ, out _, handleScale);
         public void StraightToEnd() => StraightToEnd(out _);
-        public void BezierToEnd(double? controlScale = null) => BezierToEnd(out _, controlScale);
+        public void BezierToEnd(double handleScale = 0.5) => BezierToEnd(out _, handleScale);
 
         public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
         {

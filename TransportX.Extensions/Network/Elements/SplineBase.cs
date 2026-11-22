@@ -30,8 +30,6 @@ namespace TransportX.Extensions.Network.Elements
         {
         }
 
-        public abstract Vector3 GetPoint(float s);
-        public abstract Vector3 GetUp(float s);
         public abstract Pose GetPose(float s);
 
         public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<SplineProp> props)

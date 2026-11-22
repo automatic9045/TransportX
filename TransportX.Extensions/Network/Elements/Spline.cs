@@ -59,17 +59,6 @@ namespace TransportX.Extensions.Network.Elements
             return localPose * segment.Pose;
         }
 
-        public override Vector3 GetPoint(float s)
-        {
-            return GetPose(s).Position;
-        }
-
-        public override Vector3 GetUp(float s)
-        {
-            Pose pose = GetPose(s);
-            return Pose.TransformNormal(Vector3.UnitY, pose);
-        }
-
         private ref readonly SplineSegment FindSegment(float s)
         {
             if (s < Segments[0].FromS) return ref Segments[0];
