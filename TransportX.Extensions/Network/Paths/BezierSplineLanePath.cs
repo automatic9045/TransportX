@@ -23,14 +23,14 @@ namespace TransportX.Extensions.Network.Paths
             Length = ParentSpline.Length; // TODO: 正確に計算するようにする
         }
 
-        protected override Pose GetLocalPoseCore(float at)
+        protected override Pose GetLocalPoseCore(float s)
         {
-            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
+            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(s / Length * ParentSpline.Length);
         }
 
-        public override LaneWidth GetWidth(float at)
+        public override LaneWidth GetWidth(float s)
         {
-            return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+            return LaneWidth.Lerp(FromWidth, To.Definition.Width, s / Length);
         }
     }
 }

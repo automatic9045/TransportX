@@ -51,7 +51,7 @@ namespace TransportX.Network
             return Reverse ? -viewVelocity : viewVelocity;
         }
 
-        public Pose GetLocalPose(float viewS) => DirectionPose * Source.GetLocalPose(FromViewS(viewS));
+        public Pose GetLocalPose(float viewS) => DirectionPose * Source.GetPose(FromViewS(viewS));
         public WorldPose GetWorldPose(float viewS) => DirectionPose * Source.GetWorldPose(FromViewS(viewS));
     }
 }

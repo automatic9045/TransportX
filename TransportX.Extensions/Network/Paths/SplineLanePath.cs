@@ -22,14 +22,14 @@ namespace TransportX.Extensions.Network.Paths
             ParentSpline = from.Port.Owner as Spline ?? throw new ArgumentException($"親が {nameof(Spline)} の進路端子である必要があります。", nameof(from));
         }
 
-        protected override Pose GetLocalPoseCore(float at)
+        protected override Pose GetLocalPoseCore(float s)
         {
-            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(at / Length * ParentSpline.Length);
+            return Pose.CreateRotationY(float.Pi) * From.LocalPose * ParentSpline.GetPose(s / Length * ParentSpline.Length);
         }
 
-        public override LaneWidth GetWidth(float at)
+        public override LaneWidth GetWidth(float s)
         {
-            return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+            return LaneWidth.Lerp(FromWidth, To.Definition.Width, s / Length);
         }
     }
 }

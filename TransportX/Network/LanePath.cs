@@ -70,32 +70,32 @@ namespace TransportX.Network
             DebugModel?.Dispose();
         }
 
-        public Pose GetLocalPose(float at)
+        public Pose GetPose(float s)
         {
-            if (at < 0)
+            if (s < 0)
             {
                 Pose start = GetLocalPoseCore(0);
                 Vector3 forward = Pose.TransformNormal(Vector3.UnitZ, start);
-                return Pose.CreateWorldLH(start.Position + forward * at, forward, start.Up);
+                return Pose.CreateWorldLH(start.Position + forward * s, forward, start.Up);
             }
-            if (Length < at)
+            if (Length < s)
             {
                 Pose end = GetLocalPoseCore(Length);
                 Vector3 forward = Pose.TransformNormal(Vector3.UnitZ, end);
-                return Pose.CreateWorldLH(end.Position + forward * (at - Length), forward, end.Up);
+                return Pose.CreateWorldLH(end.Position + forward * (s - Length), forward, end.Up);
             }
 
-            return GetLocalPoseCore(at);
+            return GetLocalPoseCore(s);
         }
 
-        protected abstract Pose GetLocalPoseCore(float at);
+        protected abstract Pose GetLocalPoseCore(float s);
 
-        public WorldPose GetWorldPose(float at)
+        public WorldPose GetWorldPose(float s)
         {
-            return GetLocalPose(at) * Owner.WorldPose;
+            return GetPose(s) * Owner.WorldPose;
         }
 
-        public abstract LaneWidth GetWidth(float at);
+        public abstract LaneWidth GetWidth(float s);
 
         public virtual float ProjectToS(in WorldPose pose)
         {
@@ -175,7 +175,7 @@ namespace TransportX.Network
                 {
                     float s = (i == stepCount) ? Length : (float)i;
 
-                    Pose pose = GetLocalPose(s);
+                    Pose pose = GetPose(s);
 
                     int currentSpineIndex = spineVertices.Count;
                     spineVertices.Add(new Vertex(pose.Position, Vector4.One));
@@ -190,7 +190,7 @@ namespace TransportX.Network
                     if (SweepBack <= s)
                     {
                         float sWing = s - SweepBack;
-                        Pose wingPose = GetLocalPose(sWing);
+                        Pose wingPose = GetPose(sWing);
                         LaneWidth wingWidth = GetWidth(sWing);
 
                         Vector3 wingRight = Pose.TransformNormal(Vector3.UnitX, wingPose);

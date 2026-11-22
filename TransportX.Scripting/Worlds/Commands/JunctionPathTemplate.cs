@@ -14,6 +14,7 @@ using TransportX.Spatial;
 using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Elements;
 using TransportX.Extensions.Network.Paths;
+using TransportX.Mathematics;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
@@ -28,13 +29,13 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly PortDefinition ToPort;
         private readonly int ToPinIndex;
 
-        private readonly List<PoseCurveBase> Curves = [];
+        private readonly List<IPoseCurve> Curves = [];
 
         private bool IsFinalized = false;
 
         public string Key { get; }
 
-        private Pose LastCurvePoint => Curves.Count == 0 ? Pose.CreateRotationY(float.Pi) * FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].To;
+        private Pose LastCurvePoint => Curves.Count == 0 ? Pose.CreateRotationY(float.Pi) * FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].EndPose;
 
         public float Length { get; private set; } = 0;
         public WidthPointList Width { get; }

@@ -23,11 +23,11 @@ namespace TransportX.Extensions.Network.Paths
             Curve = new LinearPoseCurve(Pose.CreateRotationY(float.Pi) * from.LocalPose, to.LocalPose);
         }
 
-        protected override Pose GetLocalPoseCore(float at) => Curve.GetPose(at);
+        protected override Pose GetLocalPoseCore(float s) => Curve.GetPose(s);
 
-        public override LaneWidth GetWidth(float at)
+        public override LaneWidth GetWidth(float s)
         {
-            return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+            return LaneWidth.Lerp(FromWidth, To.Definition.Width, s / Length);
         }
 
         public override float ProjectToS(in WorldPose pose)

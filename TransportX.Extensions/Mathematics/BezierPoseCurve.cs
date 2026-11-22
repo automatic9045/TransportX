@@ -5,19 +5,25 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Mathematics;
+
 namespace TransportX.Extensions.Mathematics
 {
-    public class BezierPoseCurve : PoseCurveBase
+    public class BezierPoseCurve : IPoseCurve
     {
         private readonly CubicBezier3D Curve;
         private readonly Vector3 TransitionUp;
 
-        public override float Length => Curve.Length;
+        public Pose StartPose { get; }
+        public Pose EndPose { get; }
+        public float Length => Curve.Length;
 
-        public BezierPoseCurve(Pose from, Pose to, float? controlScale = null) : base(from, to)
+        public BezierPoseCurve(Pose startPose, Pose endPose, float? controlScale = null)
         {
-            Pose fromInv = Pose.Inverse(From);
-            Pose transition = to * fromInv;
+            StartPose = startPose;
+            EndPose = endPose;
+
+            Pose transition = EndPose * Pose.Inverse(StartPose);
 
             Vector3 p0 = Vector3.Zero;
             Vector3 p3 = transition.Position;
@@ -35,9 +41,9 @@ namespace TransportX.Extensions.Mathematics
             TransitionUp = transition.Up;
         }
 
-        public override Pose GetPose(float at)
+        public Pose GetPose(float s)
         {
-            float t = Curve.GetT(at);
+            float t = Curve.GetT(s);
 
             Vector3 position = Curve.GetPoint(t);
             Vector3 tangent = Curve.GetTangent(t);
@@ -45,7 +51,7 @@ namespace TransportX.Extensions.Mathematics
             Vector3 up = Vector3.Normalize(Vector3.Lerp(Vector3.UnitY, TransitionUp, t));
             Pose localPose = Pose.CreateWorldLH(position, tangent, up);
 
-            return localPose * From;
+            return localPose * StartPose;
         }
     }
 }

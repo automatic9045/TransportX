@@ -90,8 +90,8 @@ namespace TransportX.Scripting.Worlds.Commands
 
             Pose GetSpanPose(float s, float span)
             {
-                Pose front = Path.GetLocalPose(s + span);
-                Pose back = Path.GetLocalPose(s);
+                Pose front = Path.GetPose(s + span);
+                Pose back = Path.GetPose(s);
                 Vector3 forward = front.Position - back.Position;
                 if (forward.LengthSquared() < 1e-6f) return back;
 

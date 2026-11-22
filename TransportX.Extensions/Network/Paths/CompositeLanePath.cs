@@ -5,9 +5,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Mathematics;
 using TransportX.Network;
-
-using TransportX.Extensions.Mathematics;
 
 namespace TransportX.Extensions.Network.Paths
 {
@@ -15,12 +14,12 @@ namespace TransportX.Extensions.Network.Paths
     {
         private readonly IReadOnlyList<float> TotalLengths;
 
-        public IReadOnlyList<PoseCurveBase> Curves { get; }
+        public IReadOnlyList<IPoseCurve> Curves { get; }
         public IReadOnlyList<Pose> CurvePoints { get; }
         public override float Length => TotalLengths[^1];
         public IReadOnlyList<WidthPoint> WidthPoints { get; }
 
-        public CompositeLanePath(string name, LanePin from, LanePin to, IEnumerable<PoseCurveBase> curves, IEnumerable<WidthPoint> widthPoints) : base(name, from, to)
+        public CompositeLanePath(string name, LanePin from, LanePin to, IEnumerable<IPoseCurve> curves, IEnumerable<WidthPoint> widthPoints) : base(name, from, to)
         {
             Curves = curves.ToArray();
             if (Curves.Count == 0) throw new ArgumentException("パスを構成するには少なくとも 1 つの曲線が必要です。", nameof(curves));
@@ -35,35 +34,35 @@ namespace TransportX.Extensions.Network.Paths
             Pose[] curvePoints = new Pose[int.Max(0, Curves.Count - 1)];
             for (int i = 0; i < Curves.Count - 1; i++)
             {
-                curvePoints[i] = Curves[i].To;
+                curvePoints[i] = Curves[i].EndPose;
             }
             CurvePoints = curvePoints;
 
             WidthPoints = widthPoints.ToArray();
         }
 
-        protected override Pose GetLocalPoseCore(float at)
+        protected override Pose GetLocalPoseCore(float s)
         {
-            if (at <= 0) return Curves[0].From;
-            if (Length <= at) return Curves[^1].To;
+            if (s <= 0) return Curves[0].StartPose;
+            if (Length <= s) return Curves[^1].EndPose;
 
             for (int i = 0; i < Curves.Count; i++)
             {
-                if (at <= TotalLengths[i] || i == Curves.Count - 1)
+                if (s <= TotalLengths[i] || i == Curves.Count - 1)
                 {
                     float offset = i == 0 ? 0 : TotalLengths[i - 1];
-                    return Curves[i].GetPose(at - offset);
+                    return Curves[i].GetPose(s - offset);
                 }
             }
 
             throw new InvalidOperationException();
         }
 
-        public override LaneWidth GetWidth(float at)
+        public override LaneWidth GetWidth(float s)
         {
             if (WidthPoints.Count == 0)
             {
-                return LaneWidth.Lerp(FromWidth, To.Definition.Width, at / Length);
+                return LaneWidth.Lerp(FromWidth, To.Definition.Width, s / Length);
             }
 
             float fromS = 0;
@@ -75,7 +74,7 @@ namespace TransportX.Extensions.Network.Paths
             for (int i = 0; i < WidthPoints.Count; i++)
             {
                 WidthPoint point = WidthPoints[i];
-                if (point.S <= at)
+                if (point.S <= s)
                 {
                     fromS = point.S;
                     fromWidth = point.Width;
@@ -89,7 +88,7 @@ namespace TransportX.Extensions.Network.Paths
             }
 
             float range = toS - fromS;
-            return range <= 1e-3f ? fromWidth : LaneWidth.Lerp(fromWidth, toWidth, (at - fromS) / range);
+            return range <= 1e-3f ? fromWidth : LaneWidth.Lerp(fromWidth, toWidth, (s - fromS) / range);
         }
 
 

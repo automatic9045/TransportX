@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TransportX.Components;
+using TransportX.Mathematics;
 using TransportX.Rendering;
 using TransportX.Spatial;
 using TransportX.Traffic;
 
 namespace TransportX.Network
 {
-    public interface ILanePath : IDebugDrawable
+    public interface ILanePath : IPoseCurve, IDebugDrawable
     {
         string Name { get; }
 
@@ -21,7 +22,6 @@ namespace TransportX.Network
 
         LanePin From { get; }
         LanePin To { get; }
-        float Length { get; }
 
         IComponentCollection<IComponent> Components { get; }
 
@@ -29,9 +29,8 @@ namespace TransportX.Network
 
         string? DebugName { get; set; }
 
-        Pose GetLocalPose(float at);
-        WorldPose GetWorldPose(float at);
-        LaneWidth GetWidth(float at);
+        WorldPose GetWorldPose(float s);
+        LaneWidth GetWidth(float s);
         float ProjectToS(in WorldPose pose);
 
         void Enter(ITrafficEntity entity);

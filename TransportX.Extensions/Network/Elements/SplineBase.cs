@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 using Vortice.Direct3D11;
 
+using TransportX.Mathematics;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Rendering;
-using TransportX.Rendering.Procedural;
 using TransportX.Spatial;
 
 namespace TransportX.Extensions.Network.Elements
 {
-    public abstract class SplineBase : NetworkEdge
+    public abstract class SplineBase : NetworkEdge, IPoseCurve
     {
         private static readonly IReadOnlyList<Vector4> DebugColors = [new(0, 0, 1, 1), new(0, 0.75f, 1, 1), new(0, 0.375f, 1, 1), new(0, 0, 0.625f, 1)];
         private static int DebugColorIndex = 0;

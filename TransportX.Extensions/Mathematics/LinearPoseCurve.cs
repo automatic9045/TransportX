@@ -5,33 +5,39 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using TransportX.Mathematics;
+
 namespace TransportX.Extensions.Mathematics
 {
-    public class LinearPoseCurve : PoseCurveBase
+    public class LinearPoseCurve : IPoseCurve
     {
         private readonly Vector3 TransitionUp;
         private readonly Vector3 Direction;
 
-        public override float Length { get; }
+        public Pose StartPose { get; }
+        public Pose EndPose { get; }
+        public float Length { get; }
 
-        public LinearPoseCurve(Pose from, Pose to) : base(from, to)
+        public LinearPoseCurve(Pose startPose, Pose endPose)
         {
-            Pose fromInv = Pose.Inverse(From);
-            Pose transition = to * fromInv;
+            StartPose = startPose;
+            EndPose = endPose;
+
+            Pose transition = EndPose * Pose.Inverse(StartPose);
             TransitionUp = transition.Up;
             Length = transition.Position.Length();
             Direction = transition.Position / Length;
         }
 
-        public override Pose GetPose(float at)
+        public Pose GetPose(float s)
         {
-            if (Length < 1e-3f) return From;
-            if (at <= 0) return From;
-            if (Length <= at) return To;
+            if (Length < 1e-3f) return StartPose;
+            if (s <= 0) return StartPose;
+            if (Length <= s) return EndPose;
 
-            Vector3 up = Vector3.Lerp(Vector3.UnitY, TransitionUp, float.Clamp(at / Length, 0, 1));
-            Pose transition = Pose.CreateWorldLH(Direction * at, Direction, up);
-            return transition * From;
+            Vector3 up = Vector3.Lerp(Vector3.UnitY, TransitionUp, float.Clamp(s / Length, 0, 1));
+            Pose transition = Pose.CreateWorldLH(Direction * s, Direction, up);
+            return transition * StartPose;
         }
     }
 }
