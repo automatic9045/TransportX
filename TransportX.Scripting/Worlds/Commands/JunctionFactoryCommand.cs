@@ -70,13 +70,24 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public JunctionCommand Build()
         {
+            List<TransformedModelTemplate> models = [.. Props];
             foreach (JunctionPathFactoryCommand path in Paths)
             {
-                List<TransformedModelTemplate> props = path.BuildProps();
-                Props.AddRange(props);
+                foreach (SplineProp prop in path.Props)
+                {
+                    IEnumerable<TransformedModelTemplate> props = prop.Build(World.PhysicsHost, path.Path);
+                    models.AddRange(props);
+                }
             }
+            Junction.AddProps(World.GraphicsHost.Device, World.PhysicsHost, models);
 
-            Junction.PutProps(World.GraphicsHost.Device, World.PhysicsHost, Props);
+            foreach (JunctionPathFactoryCommand path in Paths)
+            {
+                foreach (SplineExtrusion extrusion in path.Extrusions)
+                {
+                    Junction.PutExtrusions(World.GraphicsHost.Device, World.PhysicsHost, path.Path, [extrusion]);
+                }
+            }
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();
             componentErrorCollector.Reported += (sender, e) =>

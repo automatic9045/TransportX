@@ -37,14 +37,9 @@ namespace TransportX.Extensions.Network.Elements
             Dictionary<ColliderMaterial, List<StaticTransformedModelTemplate>> modelsToMerge = [];
             foreach (SplineProp prop in props)
             {
-                for (int i = 0; i < prop.Count; i++)
+                IEnumerable<TransformedModelTemplate> templates = prop.Build(physicsHost, this);
+                foreach (TransformedModelTemplate template in templates)
                 {
-                    float s = prop.From + prop.Interval * i;
-                    if (Length < s) break;
-
-                    TransformedModelTemplate template = prop.Models[i % prop.Models.Count];
-                    Pose curvePose = GetSpanPose(s, prop.Span);
-
                     if (template is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                     {
                         if (!modelsToMerge.TryGetValue(staticTemplate.Collider.Material, out List<StaticTransformedModelTemplate>? models))
@@ -53,12 +48,12 @@ namespace TransportX.Extensions.Network.Elements
                             modelsToMerge.Add(staticTemplate.Collider.Material, models);
                         }
 
-                        StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, template.Pose * curvePose * WorldPose.Pose);
+                        StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, staticTemplate.Pose * WorldPose.Pose);
                         models.Add(compiled);
                     }
                     else
                     {
-                        TransformedModel model = template.Build(pose => pose * curvePose * WorldPose.Pose);
+                        TransformedModel model = template.Build(pose => pose * WorldPose.Pose);
                         ModelsKey.Add(model);
                     }
                 }
@@ -78,21 +73,8 @@ namespace TransportX.Extensions.Network.Elements
 
         public void PutExtrusion(ID3D11Device device, IPhysicsHost physicsHost, SplineExtrusion extrusion, float sOffset)
         {
-            if (Length < 1e-3f) return;
-
-            IReadOnlyList<float> sSamples = extrusion.Sampler.Sample(this, sOffset);
-            if (sSamples.Count < 2) return;
-
-            List<(Pose Pose, float S)> samples = new(sSamples.Count);
-            for (int i = 0; i < sSamples.Count; i++)
-            {
-                float localS = float.Clamp(sSamples[i], 0, Length);
-                samples.Add((GetPose(localS), localS + sOffset));
-            }
-
-            ModelResourceSet resource = extrusion.CrossSection.Build(
-                device, physicsHost.Simulation, samples, extrusion.Offset, extrusion.VIntervalScale, extrusion.VOffset);
-            TransformedModel model = StaticTransformedModel.CreateStaticOrNonCollision(physicsHost, resource, WorldPose.Pose);
+            TransformedModel? model = extrusion.Build(device, physicsHost, this, WorldPose.Pose, sOffset);
+            if (model is null) return;
 
             if (model is CollidableTransformedModel collidable)
             {
@@ -102,21 +84,6 @@ namespace TransportX.Extensions.Network.Elements
             }
 
             ModelsKey.Add(model);
-        }
-
-        protected Pose GetSpanPose(float s, float span)
-        {
-            Vector3 front = GetPoint(s + span);
-            Vector3 back = GetPoint(s);
-            Vector3 forward = front - back;
-            if (forward.LengthSquared() < 1e-6f) return GetPose(s);
-
-            Vector3 upFront = GetUp(s + span);
-            Vector3 upBack = GetUp(s);
-            Vector3 up = Vector3.Normalize(Vector3.Lerp(upFront, upBack, 0.5f));
-
-            Vector3 tangent = Vector3.Normalize(forward);
-            return Pose.CreateWorldLH(back, tangent, up);
         }
     }
 }

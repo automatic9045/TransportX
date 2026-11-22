@@ -9,6 +9,7 @@ using Vortice.Direct3D11;
 
 using TransportX.Collections;
 using TransportX.Components;
+using TransportX.Mathematics;
 using TransportX.Network;
 using TransportX.Physics;
 using TransportX.Spatial;
@@ -36,7 +37,7 @@ namespace TransportX.Extensions.Network.Elements
             Ports = new KeyedList<string, NetworkPort>(item => item.Name, ports.Select(def => new NetworkPort(def.Name, this, def.Offset, def.Layout)));
         }
 
-        public ILanePath Wire(ILanePath path)
+        public void Wire(ILanePath path)
         {
             if (!Ports.Contains(path.From.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));
             if (!Ports.Contains(path.To.Port)) throw new ArgumentException($"他の {nameof(NetworkElement)} に属しているピンを指定することはできません。", nameof(path));
@@ -44,38 +45,69 @@ namespace TransportX.Extensions.Network.Elements
             path.From.Wire(path);
             path.To.Wire(path);
             PathsKey.Add(path);
-            return path;
         }
 
-        public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> props)
+        public void AddProps(ID3D11Device device, IPhysicsHost physicsHost, IEnumerable<TransformedModelTemplate> props)
         {
-            Dictionary<ColliderMaterial, List<StaticTransformedModelTemplate>> propsToMerge = [];
-            foreach (TransformedModelTemplate prop in props)
+            Dictionary<ColliderMaterial, List<StaticTransformedModelTemplate>> templatesToMerge = [];
+            foreach (TransformedModelTemplate template in props)
             {
-                if (prop is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
+                if (template is StaticTransformedModelTemplate staticTemplate && staticTemplate.CanMerge)
                 {
-                    if (!propsToMerge.TryGetValue(staticTemplate.Collider.Material, out List<StaticTransformedModelTemplate>? models))
+                    if (!templatesToMerge.TryGetValue(staticTemplate.Collider.Material, out List<StaticTransformedModelTemplate>? list))
                     {
-                        models = [];
-                        propsToMerge.Add(staticTemplate.Collider.Material, models);
+                        list = [];
+                        templatesToMerge.Add(staticTemplate.Collider.Material, list);
                     }
 
-                    StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, prop.Pose * WorldPose.Pose);
-                    models.Add(compiled);
+                    StaticTransformedModelTemplate compiled = new(physicsHost, staticTemplate.Resource, template.Pose * WorldPose.Pose);
+                    list.Add(compiled);
                 }
                 else
                 {
-                    TransformedModel model = prop.Build(pose => pose * WorldPose.Pose);
+                    TransformedModel model = template.Build(pose => pose * WorldPose.Pose);
                     ModelsKey.Add(model);
                 }
             }
 
-            foreach (List<StaticTransformedModelTemplate> models in propsToMerge.Values)
+            foreach (List<StaticTransformedModelTemplate> mergeGroup in templatesToMerge.Values)
             {
-                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, models);
+                MergedStaticTransformedModel mergedModel = MergedStaticTransformedModel.Create(physicsHost, mergeGroup);
                 mergedModel.Collider.CreateDebugModel(device);
-                mergedModel.Collider.DebugModel.Color = DebugColors[DebugColorIndex];
+                mergedModel.Collider.DebugModel.Color = DebugColors[DebugColorIndex++];
+                if (DebugColors.Count <= DebugColorIndex) DebugColorIndex = 0;
+
                 ModelsKey.Add(mergedModel);
+            }
+        }
+
+        public void PutProps(ID3D11Device device, IPhysicsHost physicsHost, IPoseCurve curve, IEnumerable<SplineProp> props)
+        {
+            List<TransformedModelTemplate> placedModels = [];
+            foreach (SplineProp prop in props)
+            {
+                IEnumerable<TransformedModelTemplate> templates = prop.Build(physicsHost, curve);
+                placedModels.AddRange(templates);
+            }
+
+            AddProps(device, physicsHost, placedModels);
+        }
+
+        public void PutExtrusions(ID3D11Device device, IPhysicsHost physicsHost, IPoseCurve curve, IEnumerable<SplineExtrusion> extrusions, float sOffset = 0)
+        {
+            foreach (SplineExtrusion extrusion in extrusions)
+            {
+                TransformedModel? model = extrusion.Build(device, physicsHost, curve, WorldPose.Pose, sOffset);
+                if (model is null) continue;
+
+                if (model is CollidableTransformedModel collidable)
+                {
+                    collidable.Collider.CreateDebugModel(device);
+                    collidable.Collider.DebugModel.Color = DebugColors[DebugColorIndex++];
+                    if (DebugColorIndex == DebugColors.Count) DebugColorIndex = 0;
+                }
+
+                ModelsKey.Add(model);
             }
         }
 

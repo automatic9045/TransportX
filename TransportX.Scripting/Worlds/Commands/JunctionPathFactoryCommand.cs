@@ -5,12 +5,16 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
+using Vortice.Mathematics;
+
 using TransportX.Components;
 using TransportX.Diagnostics;
 using TransportX.Network;
 using TransportX.Rendering;
+using TransportX.Rendering.Procedural;
 using TransportX.Spatial;
 
+using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Elements;
 using TransportX.Extensions.Network.Paths;
 
@@ -20,7 +24,7 @@ namespace TransportX.Scripting.Worlds.Commands
     {
         private static LanePin EmptyPin(NetworkElement owner) => new(new NetworkPort(string.Empty, owner, Pose.Identity, new LaneLayout()), owner.Ports.Count);
         internal static JunctionPathFactoryCommand Empty(ScriptWorld world, NetworkElement owner)
-            => new(world, string.Empty, new StraightLanePath(string.Empty, EmptyPin(owner), EmptyPin(owner)), []);
+            => new(world, string.Empty, new StraightLanePath(string.Empty, EmptyPin(owner), EmptyPin(owner)), [], []);
 
 
         private readonly ScriptWorld World;
@@ -31,15 +35,19 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly List<SplineProp> PropsKey;
         public IReadOnlyList<SplineProp> Props => PropsKey;
 
+        private readonly List<SplineExtrusion> ExtrusionsKey = [];
+        public IReadOnlyList<SplineExtrusion> Extrusions => ExtrusionsKey;
+
         public IComponentCollection<ITemplateComponent<ILanePath>> Components { get; } = new ComponentCollection<ITemplateComponent<ILanePath>>();
 
-        public JunctionPathFactoryCommand(ScriptWorld world, string key, ILanePath path, IEnumerable<SplineProp> templateProps)
+        public JunctionPathFactoryCommand(ScriptWorld world, string key, ILanePath path, IEnumerable<SplineProp> props, IEnumerable<SplineExtrusion> extrusions)
         {
             World = world;
 
             Key = key;
             Path = path;
-            PropsKey = [.. templateProps];
+            PropsKey = [.. props];
+            ExtrusionsKey = [.. extrusions];
         }
 
         public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
@@ -62,45 +70,47 @@ namespace TransportX.Scripting.Worlds.Commands
         }
 
         public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
-        {
-            return PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
-        }
+            => PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
 
-        internal List<TransformedModelTemplate> BuildProps()
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from, double to = double.MaxValue)
         {
-            List<TransformedModelTemplate> props = [];
-            foreach (SplineProp prop in Props)
+            if (!World.Commander.CrossSections.All.GetValue(crossSectionKey, out CrossSection? crossSection))
             {
-                for (int i = 0; i < prop.Count; i++)
-                {
-                    float s = prop.From + prop.Interval * i;
-                    if (Path.Length < s) break;
-
-                    TransformedModelTemplate template = prop.Models[i % prop.Models.Count];
-                    Pose curvePose = GetSpanPose(s, prop.Span);
-                    Pose pose = template.Pose * curvePose;
-
-                    TransformedModelTemplate compiled = StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, template.Resource, pose);
-                    props.Add(compiled);
-                }
+                crossSection = CrossSection.Empty;
             }
 
-            return props;
-
-
-            Pose GetSpanPose(float s, float span)
+            AdaptiveCurveSampler sampler = new((float)baseInterval, (float)maxDeviation, MathHelper.ToRadians((float)maxAngleDelta), (float)from, (float)to);
+            SplineExtrusion extrusion = new(crossSection, sampler, new Vector2((float)x, (float)y))
             {
-                Pose front = Path.GetPose(s + span);
-                Pose back = Path.GetPose(s);
-                Vector3 forward = front.Position - back.Position;
-                if (forward.LengthSquared() < 1e-6f) return back;
+                VIntervalScale = (float)vIntervalScale,
+                VOffset = (float)vOffset - sampler.FromS,
+                Key = key,
+            };
 
-                Vector3 up = Vector3.Normalize(Vector3.Lerp(front.Up, back.Up, 0.5f));
-
-                Vector3 tangent = Vector3.Normalize(forward);
-                return Pose.CreateWorldLH(back.Position, tangent, up);
-            }
+            ExtrusionsKey.Add(extrusion);
+            return extrusion;
         }
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from, double to = double.MaxValue)
+            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, vIntervalScale, vOffset, from, to);
+
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
+            => PutExtrusion(key, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, 1, 0, from, to);
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey,
+            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
+            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, from, to);
+
+        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
+            double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
+            => PutExtrusion(key, crossSectionKey, 0, 0, baseInterval, maxDeviation, maxAngleDelta, from, to);
+
+        public SplineExtrusion PutExtrusion(string crossSectionKey,
+            double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
+            => PutExtrusion(null, crossSectionKey, baseInterval, maxDeviation, maxAngleDelta, from, to);
 
         internal void BuildComponents(IErrorCollector errorCollector)
         {
