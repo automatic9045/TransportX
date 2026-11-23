@@ -2,6 +2,18 @@
 
 Models.LoadList("Models.txt");
 
+CrossSections.Load("DikeL", "CrossSections/DikeL.xml");
+CrossSections.Load("DikeR", "CrossSections/DikeR.xml");
+CrossSections.Load("Road1L", "CrossSections/Road1L.xml");
+CrossSections.Load("Road1R", "CrossSections/Road1R.xml");
+CrossSections.Load("Road2L", "CrossSections/Road2L.xml");
+CrossSections.Load("Road2R", "CrossSections/Road2R.xml");
+CrossSections.Load("WhiteLine150", "CrossSections/WhiteLine150.xml");
+CrossSections.Load("WhiteLine500", "CrossSections/WhiteLine500.xml");
+CrossSections.Load("WhiteLineDashed150", "CrossSections/WhiteLineDashed150.xml");
+CrossSections.Load("WhiteLineDashed500", "CrossSections/WhiteLineDashed500.xml");
+CrossSections.Load("YellowLine150", "CrossSections/YellowLine150.xml");
+
 Network.LaneTraffic.AddType("Pedestrians", "歩行者", "#FFFF00");
 Network.LaneTraffic.AddType("Buses", "バス", "#00FF00");
 Network.LaneTraffic.AddType("NormalCars", "その他自動車", "#0000FF");

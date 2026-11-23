@@ -26,6 +26,7 @@ Background Background => null!;
 Camera Camera => null!;
 Chunks Chunks => null!;
 Components Components => null!;
+CrossSections CrossSections => null!;
 Debug Debug => null!;
 DirectionalLight DirectionalLight => null!;
 WorldEnvironment Environment => null!;

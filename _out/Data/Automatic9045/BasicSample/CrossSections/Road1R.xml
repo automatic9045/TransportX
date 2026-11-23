@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CrossSection>
+    <Vertices>
+        <Vertex Key="Road0"      X="0"    Y="-0.12" NormalX="0"     NormalY="1"    U="0"     />
+        <Vertex Key="Road1"      X="4.25" Y="-0.12" NormalX="0.03"  NormalY="1"    U="3.542" />
+        
+        <Vertex Key="Apron0"     X="4.25" Y="-0.12" NormalX="0.03"  NormalY="1"    U="0.417" />
+        <Vertex Key="Apron1"     X="4.75" Y="-0.15" NormalX="0.06"  NormalY="1"    U="0"     />
+        
+        <Vertex Key="Curbstone0" X="4.75" Y="-0.15" NormalX="-1"     NormalY="0"   U="0.21"  />
+        <Vertex Key="Curbstone1" X="4.75" Y="-0.02" NormalX="-0.92" NormalY="0.38" U="0.11"  />
+        <Vertex Key="Curbstone2" X="4.77" Y="0"     NormalX="-0.38" NormalY="0.92" U="0.1"   />
+        <Vertex Key="Curbstone3" X="4.9"  Y="0"     NormalX="0"     NormalY="1"    U="0"     />
+
+        <Vertex Key="Sidewalk0"  X="4.9"  Y="0"     NormalX="0"     NormalY="1"    U="2.375" />
+        <Vertex Key="Sidewalk1"  X="7.75" Y="0"     NormalX="0"     NormalY="1"    U="0"     />
+    </Vertices>
+    <Surfaces>
+        <Surface VInterval="1" VOffset="0" Material="Asphalt" ColliderMaterial="Default">
+            <Vertices>
+                <VertexRef Key="Road0" />
+                <VertexRef Key="Road1" />
+            </Vertices>
+        </Surface>
+        <Surface VInterval="1.2" VOffset="0" Material="Apron" ColliderMaterial="Default">
+            <Vertices>
+                <VertexRef Key="Apron0" />
+                <VertexRef Key="Apron1" />
+            </Vertices>
+        </Surface>
+        <Surface VInterval="1.2" VOffset="0" Material="Curbstone" ColliderMaterial="Default">
+            <Vertices>
+                <VertexRef Key="Curbstone0" />
+                <VertexRef Key="Curbstone1" />
+                <VertexRef Key="Curbstone2" />
+                <VertexRef Key="Curbstone3" />
+            </Vertices>
+        </Surface>
+        <Surface VInterval="1" VOffset="0" Material="Asphalt" ColliderMaterial="Default">
+            <Vertices>
+                <VertexRef Key="Sidewalk0" />
+                <VertexRef Key="Sidewalk1" />
+            </Vertices>
+        </Surface>
+    </Surfaces>
+    <Materials>
+        <Material Name="Asphalt" Metallic="0" Roughness="0.7">
+            <BaseColorTexture Path="Asphalt.png" />
+        </Material>
+        <Material Name="Curbstone" Metallic="0" Roughness="1">
+            <BaseColorTexture Path="Curbstone.png" />
+            <OcclusionTexture Path="CurbstoneOcclusion.png" />
+        </Material>
+        <Material Name="Apron" Metallic="0" Roughness="1">
+            <BaseColorTexture Path="Curbstone.png" />
+        </Material>
+    </Materials>
+    <ColliderMaterials>
+        <ColliderMaterial Name="Default" FrictionCoefficient="0.9" MaxRecoveryVelocity="5" SpringFrequency="30" SpringDampingRatio="1" />
+    </ColliderMaterials>
+</CrossSection>

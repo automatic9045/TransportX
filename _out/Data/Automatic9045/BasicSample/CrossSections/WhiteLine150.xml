@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CrossSection>
+    <Vertices>
+        <Vertex Key="0"  X="-0.075" Y="0.01" NormalX="0" NormalY="1" />
+        <Vertex Key="1"  X="0.075"  Y="0.01" NormalX="0" NormalY="1" />
+    </Vertices>
+    <Surfaces>
+        <Surface Material="White">
+            <Vertices>
+                <VertexRef Key="0" />
+                <VertexRef Key="1" />
+            </Vertices>
+        </Surface>
+    </Surfaces>
+    <Materials>
+        <Material Name="White" BaseColor="#ffffff" Metallic="0" Roughness="0.8" />
+    </Materials>
+    <ColliderMaterials>
+    </ColliderMaterials>
+</CrossSection>
