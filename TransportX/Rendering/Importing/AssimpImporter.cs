@@ -71,7 +71,7 @@ namespace TransportX.Rendering.Importing
                         List<Vector4> channel = assimpMesh.VertexColorChannels[0];
 
                         colors = new Vector4[channel.Count];
-                        for (int j = 0; i < colors.Length; j++)
+                        for (int j = 0; j < colors.Length; j++)
                         {
                             colors[j] = channel[j].ToLinear();
                         }

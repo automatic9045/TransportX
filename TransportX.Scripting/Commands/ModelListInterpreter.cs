@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,13 @@ namespace TransportX.Scripting.Commands
             BaseDirectory = baseDirectory;
             ErrorCollector = errorCollector;
 
+            Reset();
+        }
+
+        [MemberNotNull(nameof(ModelLoadFunc))]
+        public void Reset()
+        {
+            MakeLH = true;
             ModelLoadFunc = modelPath => modelPath is null ? ModelResourceSet.Empty() : Factory.Load(modelPath, MakeLH);
         }
 

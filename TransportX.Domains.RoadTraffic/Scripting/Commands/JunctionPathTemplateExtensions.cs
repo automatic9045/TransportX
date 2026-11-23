@@ -30,7 +30,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
 
         public static JunctionPathTemplate SpeedLimit(this JunctionPathTemplate template, double maxSpeed)
         {
-            SpeedLimitComponent component = new((float)maxSpeed);
+            SpeedLimitComponent component = new((float)maxSpeed / 3.6f);
             template.Components.Add(component);
             return template;
         }

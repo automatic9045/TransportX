@@ -25,7 +25,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Data.Signals
 
         public override void WriteXml(XmlWriter writer)
         {
-            writer.WriteAttributeString(nameof(Duration), Duration.Value.Seconds.ToString(CultureInfo.InvariantCulture));
+            writer.WriteAttributeString(nameof(Duration), Duration.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture));
             WriteSerializedListElements(writer, nameof(Group), Groups);
         }
     }

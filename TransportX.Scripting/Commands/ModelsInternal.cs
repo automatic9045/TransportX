@@ -59,6 +59,8 @@ namespace TransportX.Scripting.Commands
                 {
                     try
                     {
+                        interpreter.Reset();
+
                         string modelKey = line[0];
                         string? modelPath =
                             line[1] == string.Empty || line[1].Equals("NONE", StringComparison.OrdinalIgnoreCase) ? null
