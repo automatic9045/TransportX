@@ -21,21 +21,25 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly List<TransformedModelTemplate> Props = [];
 
         public Junction Junction { get; }
+        public IReadOnlyScriptKeyedList<string, JunctionCurveFactoryCommand> Curves { get; }
         public IReadOnlyScriptKeyedList<string, JunctionPathFactoryCommand> Paths { get; }
 
         public string? Key { get; set; } = null;
 
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction, IReadOnlyScriptKeyedList<string, JunctionPathFactoryCommand> paths)
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction,
+            IReadOnlyScriptKeyedList<string, JunctionPathFactoryCommand> paths, IReadOnlyScriptKeyedList<string, JunctionCurveFactoryCommand> curves)
         {
             World = world;
             Junction = junction;
             Paths = paths;
+            Curves = curves;
         }
 
-        public JunctionFactoryCommand(ScriptWorld world, Junction junction) : this(world, junction, new ScriptKeyedList<string, JunctionPathFactoryCommand>(
-            path => path.Key, world.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(world, junction)))
+        public JunctionFactoryCommand(ScriptWorld world, Junction junction) : this(world, junction,
+            new ScriptKeyedList<string, JunctionPathFactoryCommand>(path => path.Key, world.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(world, junction)),
+            new ScriptKeyedList<string, JunctionCurveFactoryCommand>(path => path.Key, world.ErrorCollector, "曲線", key => JunctionCurveFactoryCommand.Empty(world)))
         {
         }
 
@@ -70,23 +74,22 @@ namespace TransportX.Scripting.Worlds.Commands
 
         public JunctionCommand Build()
         {
+            ReadOnlySpan<CurveFactoryCommandBase> curves = [.. Curves, .. Paths];
+
             List<TransformedModelTemplate> models = [.. Props];
-            foreach (JunctionPathFactoryCommand path in Paths)
+            foreach (CurveFactoryCommandBase curve in curves)
             {
-                foreach (SplineProp prop in path.Props)
+                foreach (SplineProp prop in curve.Props)
                 {
-                    IEnumerable<TransformedModelTemplate> props = prop.Build(World.PhysicsHost, path.Path);
+                    IEnumerable<TransformedModelTemplate> props = prop.Build(World.PhysicsHost, curve.Curve);
                     models.AddRange(props);
                 }
             }
             Junction.AddProps(World.GraphicsHost.Device, World.PhysicsHost, models);
 
-            foreach (JunctionPathFactoryCommand path in Paths)
+            foreach (CurveFactoryCommandBase curve in curves)
             {
-                foreach (SplineExtrusion extrusion in path.Extrusions)
-                {
-                    Junction.PutExtrusions(World.GraphicsHost.Device, World.PhysicsHost, path.Path, [extrusion]);
-                }
+                Junction.PutExtrusions(World.GraphicsHost.Device, World.PhysicsHost, curve.Curve, curve.Extrusions);
             }
 
             IErrorCollector componentErrorCollector = IErrorCollector.Default();

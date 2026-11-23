@@ -44,7 +44,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
 
         public static JunctionPathTemplate Signal(this JunctionPathTemplate template, string controllerKey, string groupKey)
         {
-            TrafficSignals signals = template.World.Commander.Component<TrafficSignals>();
+            TrafficSignals signals = template.Parent.World.Commander.Component<TrafficSignals>();
             ISignalController controller = signals.Controllers[controllerKey];
             SignalComponent component = new(controller, groupKey);
             template.Components.Add(component);
@@ -56,7 +56,7 @@ namespace TransportX.Domains.RoadTraffic.Scripting.Commands
             if (!template.Parent.Components.TryGet<DefaultSignalController>(out DefaultSignalController? defaultComponent))
             {
                 ScriptError error = new(ErrorLevel.Error, $"親となるジャンクションに既定の信号制御機が指定されていません。");
-                template.World.ErrorCollector.Report(error);
+                template.Parent.World.ErrorCollector.Report(error);
                 return template;
             }
 

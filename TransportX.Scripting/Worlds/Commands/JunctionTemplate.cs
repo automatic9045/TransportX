@@ -21,10 +21,15 @@ namespace TransportX.Scripting.Worlds.Commands
 {
     public class JunctionTemplate
     {
+        public ScriptWorld World { get; }
+
         private readonly ScriptKeyedList<string, PortDefinition> PortsKey;
         public IReadOnlyScriptKeyedList<string, PortDefinition> Ports => PortsKey;
 
         private readonly List<(string Input, string Output)> Relays = [];
+
+        private readonly ScriptKeyedList<string, JunctionCurveTemplate> CurvesKey;
+        public IReadOnlyScriptKeyedList<string, JunctionCurveTemplate> Curves => CurvesKey;
 
         private readonly ScriptKeyedList<string, JunctionPathTemplate> PathsKey;
         public IReadOnlyScriptKeyedList<string, JunctionPathTemplate> Paths => PathsKey;
@@ -32,7 +37,6 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly List<TransformedModelTemplate> PropsKey = [];
         public IReadOnlyList<TransformedModelTemplate> Props => PropsKey;
 
-        public ScriptWorld World { get; }
         public IComponentCollection<ITemplateComponent<Junction>> Components { get; } = new ComponentCollection<ITemplateComponent<Junction>>();
 
         internal JunctionTemplate(ScriptWorld world)
@@ -41,8 +45,8 @@ namespace TransportX.Scripting.Worlds.Commands
 
             PortsKey = new ScriptKeyedList<string, PortDefinition>(item => item.Name,
                 World.ErrorCollector, "進路端子", key => new PortDefinition(string.Empty, new LaneLayout(), Pose.Identity));
-            PathsKey = new ScriptKeyedList<string, JunctionPathTemplate>(item => item.Key,
-                World.ErrorCollector, "進路パス", key => JunctionPathTemplate.Empty(World, this));
+            PathsKey = new ScriptKeyedList<string, JunctionPathTemplate>(item => item.Key, World.ErrorCollector, "進路パス", key => JunctionPathTemplate.Empty(this));
+            CurvesKey = new ScriptKeyedList<string, JunctionCurveTemplate>(item => item.Key, World.ErrorCollector, "曲線", key => JunctionCurveTemplate.Empty(this));
         }
 
         public void AddPort(string key, string layoutKey, Pose offset)
@@ -76,32 +80,61 @@ namespace TransportX.Scripting.Worlds.Commands
             AddRelay(inputKey, outputKey, layoutKey, offset.ToPose());
         }
 
+        public JunctionCurveTemplate AddCurve(string key, Pose pose)
+        {
+            JunctionCurveTemplate curve = new(this, key, pose);
+            CurvesKey.Add(curve);
+            return curve;
+        }
+
+        public JunctionCurveTemplate AddCurve(string key, string portKey, int pinIndex, Pose offset)
+        {
+            if (!CheckPin(portKey, pinIndex, out PortDefinition? port)) return JunctionCurveTemplate.Empty(this);
+
+            Pose pose = offset * Pose.CreateRotationY(float.Pi) * port.GetPinLocalPose(pinIndex);
+            return AddCurve(key, pose);
+        }
+
+        public JunctionCurveTemplate AddCurve(string key, string portKey, int pinIndex, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        {
+            SixDoF offset = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return AddCurve(key, portKey, pinIndex, offset.ToPose());
+        }
+
+        public JunctionCurveTemplate AddCurve(string key, string portKey, int pinIndex)
+            => AddCurve(key, portKey, pinIndex, Pose.Identity);
+
+        public JunctionCurveTemplate AddCurve(string key, double x, double y, double z, double rotationX, double rotationY, double rotationZ)
+        {
+            SixDoF startPose = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
+            return AddCurve(key, startPose.ToPose());
+        }
+
         public JunctionPathTemplate Wire(string key, string fromPortKey, int fromPinIndex, string toPortKey, int toPinIndex)
         {
-            if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(World, this);
-            if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(World, this);
+            if (!CheckPin(fromPortKey, fromPinIndex, out PortDefinition? fromPort)) return JunctionPathTemplate.Empty(this);
+            if (!CheckPin(toPortKey, toPinIndex, out PortDefinition? toPort)) return JunctionPathTemplate.Empty(this);
 
-            JunctionPathTemplate path = new(World, this, key, fromPort, fromPinIndex, toPort, toPinIndex);
+            JunctionPathTemplate path = new(this, key, fromPort, fromPinIndex, toPort, toPinIndex);
             PathsKey.Add(path);
 
             return path;
+        }
 
+        private bool CheckPin(string portKey, int pinIndex, [MaybeNullWhen(false)] out PortDefinition port)
+        {
+            if (!PortsKey.GetValue(portKey, out port)) return false;
 
-            bool CheckPin(string portKey, int pinIndex, [MaybeNullWhen(false)] out PortDefinition port)
+            if (pinIndex < 0 || port.Layout.Lanes.Count <= pinIndex)
             {
-                if (!PortsKey.GetValue(portKey, out port)) return false;
+                ScriptError error = new(ErrorLevel.Error,
+                    $"進路端子 '{portKey}' にピン {pinIndex} は存在しません。有効なピン番号は 0 以上 {port.Layout.Lanes.Count} 未満です。");
+                World.ErrorCollector.Report(error);
 
-                if (pinIndex < 0 || port.Layout.Lanes.Count <= pinIndex)
-                {
-                    ScriptError error = new(ErrorLevel.Error,
-                        $"進路端子 '{portKey}' にピン {pinIndex} は存在しません。有効なピン番号は 0 以上 {port.Layout.Lanes.Count} 未満です。");
-                    World.ErrorCollector.Report(error);
-
-                    return false;
-                }
-
-                return true;
+                return false;
             }
+
+            return true;
         }
 
         public TransformedModelTemplate PutProp(string modelKey, Pose pose)
@@ -147,7 +180,11 @@ namespace TransportX.Scripting.Worlds.Commands
                 }),
                 World.ErrorCollector, "進路パス", key => JunctionPathFactoryCommand.Empty(World, junction));
 
-            JunctionFactoryCommand factoryCommand = new(World, junction, pathFactories);
+            ScriptKeyedList<string, JunctionCurveFactoryCommand> curveFactories = new(x => x.Key,
+                Curves.Select(curve => curve.Build()),
+                World.ErrorCollector, "曲線", key => JunctionCurveFactoryCommand.Empty(World));
+
+            JunctionFactoryCommand factoryCommand = new(World, junction, pathFactories, curveFactories);
             factoryCommand.AddProps(Props);
             foreach ((Type type, ITemplateComponent<Junction> component) in Components)
             {

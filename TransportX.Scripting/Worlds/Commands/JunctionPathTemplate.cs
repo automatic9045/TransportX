@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-using Vortice.Mathematics;
-
 using TransportX.Components;
-using TransportX.Diagnostics;
-using TransportX.Mathematics;
 using TransportX.Network;
-using TransportX.Rendering;
-using TransportX.Rendering.Procedural;
-using TransportX.Spatial;
 
 using TransportX.Extensions.Mathematics;
 using TransportX.Extensions.Network.Elements;
@@ -21,10 +13,10 @@ using TransportX.Extensions.Network.Paths;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
-    public class JunctionPathTemplate
+    public class JunctionPathTemplate : CurveTemplateBase<JunctionPathTemplate>
     {
         private static PortDefinition EmptyPort() => new(string.Empty, new LaneLayout(), Pose.Identity);
-        internal static JunctionPathTemplate Empty(ScriptWorld world, JunctionTemplate parent) => new(world, parent, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
+        internal static JunctionPathTemplate Empty(JunctionTemplate parent) => new(parent, string.Empty, EmptyPort(), 0, EmptyPort(), 0);
 
 
         private readonly PortDefinition FromPort;
@@ -32,215 +24,52 @@ namespace TransportX.Scripting.Worlds.Commands
         private readonly PortDefinition ToPort;
         private readonly int ToPinIndex;
 
-        private readonly List<IPoseCurve> Curves = [];
-
-        private bool IsFinalized = false;
-
-        public string Key { get; }
-
-        private Pose LastCurvePoint => Curves.Count == 0 ? Pose.CreateRotationY(float.Pi) * FromPort.GetPinLocalPose(FromPinIndex) : Curves[^1].EndPose;
-
-        public float Length { get; private set; } = 0;
+        public Pose EndPose { get; }
         public WidthPointList Width { get; }
-
-        private readonly List<SplineProp> PropsKey = [];
-        public IReadOnlyList<SplineProp> Props => PropsKey;
-
-        private readonly List<SplineExtrusion> ExtrusionsKey = [];
-        public IReadOnlyList<SplineExtrusion> Extrusions => ExtrusionsKey;
-
-        public ScriptWorld World { get; }
-        public JunctionTemplate Parent { get; }
         public IComponentCollection<ITemplateComponent<ILanePath>> Components { get; } = new ComponentCollection<ITemplateComponent<ILanePath>>();
 
-        public JunctionPathTemplate(ScriptWorld world, JunctionTemplate parent, string key, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
+        public JunctionPathTemplate(JunctionTemplate parent, string key, PortDefinition fromPort, int fromPinIndex, PortDefinition toPort, int toPinIndex)
+            : base(parent, key, Pose.CreateRotationY(float.Pi) * fromPort.GetPinLocalPose(fromPinIndex))
         {
-            World = world;
-            Parent = parent;
-
-            Key = key;
             FromPort = fromPort;
             FromPinIndex = fromPinIndex;
             ToPort = toPort;
             ToPinIndex = toPinIndex;
 
+            EndPose = toPort.GetPinLocalPose(toPinIndex);
             Width = new(LaneWidth.Opposition(FromPort.Layout.Lanes[FromPinIndex].Width));
         }
 
-        private bool CheckNotFinalized()
+        public JunctionPathTemplate StraightToEnd(out double s)
         {
-            if (IsFinalized)
-            {
-                ScriptError error = new(ErrorLevel.Error, "これ以上セグメントを追加することはできません。");
-                World.ErrorCollector.Report(error);
-                return false;
-            }
-
-            return true;
-        }
-
-        private Pose CreateCurvePoint(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
-        {
-            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return position.ToPose();
-        }
-
-        public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s)
-        {
-            if (!CheckNotFinalized())
-            {
-                s = Length;
-                return this;
-            }
-
-            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
-            LinearPoseCurve curve = new(LastCurvePoint, to);
-            Curves.Add(curve);
-
-            Length += curve.Length;
-            s = Length;
+            StraightTo(EndPose, out s);
+            IsFinalized = true;
             return this;
         }
 
-        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, out double s, double handleScale = 0.5)
+        public JunctionPathTemplate StraightToEnd() => StraightToEnd(out _);
+
+        public JunctionPathTemplate BezierToEnd(out double s, double handleScale = 0.5)
         {
-            if (!CheckNotFinalized())
-            {
-                s = Length;
-                return this;
-            }
-
-            Pose to = CreateCurvePoint(x, y, z, rotationX, rotationY, rotationZ);
-            BezierPoseCurve curve = new(LastCurvePoint, to, (float)handleScale);
-            Curves.Add(curve);
-
-            Length += curve.Length;
-            s = Length;
+            BezierTo(EndPose, out s, handleScale);
+            IsFinalized = true;
             return this;
         }
 
-        public void StraightToEnd(out double s)
-        {
-            if (!CheckNotFinalized())
-            {
-                s = Length;
-                return;
-            }
-            IsFinalized = true;
-
-            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
-            LinearPoseCurve curve = new(LastCurvePoint, to);
-            Curves.Add(curve);
-
-            Length += curve.Length;
-            s = Length;
-        }
-
-        public void BezierToEnd(out double s, double handleScale = 0.5)
-        {
-            if (!CheckNotFinalized())
-            {
-                s = Length;
-                return;
-            }
-            IsFinalized = true;
-
-            Pose to = ToPort.GetPinLocalPose(ToPinIndex);
-            BezierPoseCurve curve = new(LastCurvePoint, to, (float)handleScale);
-            Curves.Add(curve);
-
-            Length += curve.Length;
-            s = Length;
-        }
-
-        public JunctionPathTemplate StraightTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ)
-            => StraightTo(x, y, z, rotationX, rotationY, rotationZ, out _);
-        public JunctionPathTemplate BezierTo(double x, double y, double z, double rotationX, double rotationY, double rotationZ, double handleScale = 0.5)
-            => BezierTo(x, y, z, rotationX, rotationY, rotationZ, out _, handleScale);
-        public void StraightToEnd() => StraightToEnd(out _);
-        public void BezierToEnd(double handleScale = 0.5) => BezierToEnd(out _, handleScale);
-
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys, Pose pose, double from, double span, double interval, int count = int.MaxValue)
-        {
-            TransformedModelTemplate[] models = modelKeys.Select(key =>
-            {
-                ModelResourceSet model = World.Models.GetModel(key);
-                return StaticTransformedModelTemplate.CreateStaticOrNonCollision(World.PhysicsHost, model, pose);
-            }).ToArray();
-            SplineProp prop = new(models, (float)from, (float)span, (float)interval, count);
-            PropsKey.Add(prop);
-            return prop;
-        }
-
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys,
-            double x, double y, double z, double rotationX, double rotationY, double rotationZ, double from, double span, double interval, int count = int.MaxValue)
-        {
-            SixDoF position = SixDoF.FromDegrees((float)x, (float)y, (float)z, (float)rotationX, (float)rotationY, (float)rotationZ);
-            return PutProp(modelKeys, position.ToPose(), from, span, interval, count);
-        }
-
-        public SplineProp PutProp(IReadOnlyList<string> modelKeys, double x, double y, double z, double from, double span, double interval, int count = int.MaxValue)
-            => PutProp(modelKeys, x, y, z, 0, 0, 0, from, span, interval, count);
-
-        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
-            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from, double to = double.MaxValue)
-        {
-            if (!World.Commander.CrossSections.All.GetValue(crossSectionKey, out CrossSection? crossSection))
-            {
-                crossSection = CrossSection.Empty;
-            }
-
-            AdaptiveCurveSampler sampler = new((float)baseInterval, (float)maxDeviation, MathHelper.ToRadians((float)maxAngleDelta), (float)from, (float)to);
-            SplineExtrusion extrusion = new(crossSection, sampler, new Vector2((float)x, (float)y))
-            {
-                VIntervalScale = (float)vIntervalScale,
-                VOffset = (float)vOffset - sampler.FromS,
-                Key = key,
-            };
-
-            ExtrusionsKey.Add(extrusion);
-            return extrusion;
-        }
-
-        public SplineExtrusion PutExtrusion(string crossSectionKey,
-            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double vIntervalScale, double vOffset, double from, double to = double.MaxValue)
-            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, vIntervalScale, vOffset, from, to);
-
-        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
-            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
-            => PutExtrusion(key, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, 1, 0, from, to);
-
-        public SplineExtrusion PutExtrusion(string crossSectionKey,
-            double x, double y, double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
-            => PutExtrusion(null, crossSectionKey, x, y, baseInterval, maxDeviation, maxAngleDelta, from, to);
-
-        public SplineExtrusion PutExtrusion(string? key, string crossSectionKey,
-            double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
-            => PutExtrusion(key, crossSectionKey, 0, 0, baseInterval, maxDeviation, maxAngleDelta, from, to);
-
-        public SplineExtrusion PutExtrusion(string crossSectionKey,
-            double baseInterval, double maxDeviation, double maxAngleDelta, double from, double to = double.MaxValue)
-            => PutExtrusion(null, crossSectionKey, baseInterval, maxDeviation, maxAngleDelta, from, to);
+        public JunctionPathTemplate BezierToEnd(double handleScale = 0.5) => BezierToEnd(out _, handleScale);
 
         internal JunctionPathFactoryCommand Build(Junction junction)
         {
             LanePin from = junction.Ports[FromPort.Name].Pins[FromPinIndex];
             LanePin to = junction.Ports[ToPort.Name].Pins[ToPinIndex];
 
-            ILanePath path;
-            if (Curves.Count == 0 && Width.Items.Count == 0)
-            {
-                path = new BezierLanePath(Key, from, to);
-            }
-            else
-            {
-                if (!IsFinalized) BezierToEnd();
-                path = new CompositeLanePath(Key, from, to, Curves, Width.Items);
-            }
+            if (!IsFinalized) BezierToEnd();
+            IsFinalized = true;
 
+            CompositeLanePath path = new(Key, from, to, Curves, Width.Items);
             junction.Wire(path);
 
-            return new JunctionPathFactoryCommand(World, Key, path, Props, Extrusions);
+            return new JunctionPathFactoryCommand(Parent.World, Key, path, Props, Extrusions);
         }
 
 
