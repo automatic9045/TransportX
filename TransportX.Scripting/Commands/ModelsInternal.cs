@@ -35,7 +35,7 @@ namespace TransportX.Scripting.Commands
         [MethodImpl(MethodImplOptions.NoInlining)]
         public ModelBundle LoadList(string key, string path, string defaultBaseDirectory)
         {
-            using AssetList list = new(path, defaultBaseDirectory, "モデルリスト", [2, 3], ErrorCollector);
+            using AssetList list = new(path, 4, defaultBaseDirectory, "モデルリスト", [2, 3], ErrorCollector);
             if (!list.IsValid) return ModelBundle.Empty(key);
 
             try

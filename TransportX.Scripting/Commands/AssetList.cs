@@ -21,12 +21,12 @@ namespace TransportX.Scripting.Commands
         public bool IsValid { get; } = false;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public AssetList(string path, string defaultBaseDirectory, string name, int[] validColumnLengths, IErrorCollector errorCollector)
+        public AssetList(string path, int frameIndex, string defaultBaseDirectory, string name, int[] validColumnLengths, IErrorCollector errorCollector)
         {
             ValidColumnLengths = validColumnLengths;
             ErrorCollector = errorCollector;
 
-            string? baseDir = BaseDirectory.Find(4) ?? defaultBaseDirectory;
+            string? baseDir = BaseDirectory.Find(frameIndex) ?? defaultBaseDirectory;
             ListPath = Path.GetFullPath(Path.Combine(baseDir, path));
             if (!File.Exists(ListPath))
             {

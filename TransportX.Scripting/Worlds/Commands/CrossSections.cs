@@ -17,6 +17,7 @@ using TransportX.Rendering;
 using TransportX.Rendering.Procedural;
 using TransportX.Extensions.Utilities;
 using TransportX.Scripting.Collections;
+using TransportX.Scripting.Commands;
 
 namespace TransportX.Scripting.Worlds.Commands
 {
@@ -63,10 +64,62 @@ namespace TransportX.Scripting.Worlds.Commands
                 return CrossSection.Empty;
             }
 
+            CrossSection crossSection = LoadFromFile(fullPath);
+            Add(key, crossSection);
+            return crossSection;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void LoadList(string listPath)
+        {
+            using AssetList list = new(listPath, 3, World.BaseDirectory, "断面リスト", [2], World.ErrorCollector);
+            if (!list.IsValid) return;
+
+            try
+            {
+                while (list.ReadLine(out string[] line))
+                {
+                    try
+                    {
+                        string crossSectionKey = line[0];
+                        string crossSectionPath = Path.GetFullPath(Path.Combine(list.ListDirectory, line[1]));
+                        if (!File.Exists(crossSectionPath))
+                        {
+                            Error error = new(ErrorLevel.Error, $"断面定義ファイル '{crossSectionPath}' が見つかりません。", list.ListPath)
+                            {
+                                LineNumber = list.LineNumber,
+                            };
+                            World.ErrorCollector.Report(error);
+                            Add(crossSectionKey, CrossSection.Empty);
+                            continue;
+                        }
+
+                        CrossSection crossSection = LoadFromFile(crossSectionPath);
+                        Add(crossSectionKey, crossSection);
+                    }
+                    catch (Exception ex)
+                    {
+                        Error error = new(ErrorLevel.Error, $"レコード '{line[0]}' は無効です。", list.ListPath)
+                        {
+                            LineNumber = list.LineNumber,
+                            Exception = ex,
+                        };
+                        World.ErrorCollector.Report(error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ScriptError error = new(ErrorLevel.Error, ex, $"断面リスト '{list.ListPath}' を読み込めませんでした。");
+                World.ErrorCollector.Report(error);
+            }
+        }
+
+        private CrossSection LoadFromFile(string fullPath)
+        {
             Data.Rendering.CrossSection? data = XmlSerializer<Data.Rendering.CrossSection>.FromXml(fullPath, World.ErrorCollector);
             if (data is null)
             {
-                Add(key, CrossSection.Empty);
                 return CrossSection.Empty;
             }
 
@@ -233,9 +286,7 @@ namespace TransportX.Scripting.Worlds.Commands
                 surfaces.Add(surface);
             }
 
-            CrossSection crossSection = new(surfaces);
-            Add(key, crossSection);
-            return crossSection;
+            return new CrossSection(surfaces);
 
 
             TextureSlot LoadTextureSlot(Data.Rendering.TextureSlot slotData, bool isLinear)

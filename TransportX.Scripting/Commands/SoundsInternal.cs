@@ -31,7 +31,7 @@ namespace TransportX.Scripting.Commands
         [MethodImpl(MethodImplOptions.NoInlining)]
         public SoundBundle LoadList(string key, string path, string defaultBaseDirectory)
         {
-            using AssetList list = new(path, defaultBaseDirectory, "サウンドリスト", [2], ErrorCollector);
+            using AssetList list = new(path, 4, defaultBaseDirectory, "サウンドリスト", [2], ErrorCollector);
             if (!list.IsValid) return SoundBundle.Empty(key);
 
             try
