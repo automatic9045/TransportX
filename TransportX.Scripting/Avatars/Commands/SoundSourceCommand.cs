@@ -14,7 +14,7 @@ namespace TransportX.Scripting.Avatars.Commands
         protected readonly ScriptAvatar Avatar;
 
         private readonly List<Action> Triggers = [];
-        
+
         private Func<TimeSpan, float> VolumeFactory = _ => 1;
         private Func<TimeSpan, float> PitchFactory = _ => 1;
 
