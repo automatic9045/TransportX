@@ -35,6 +35,8 @@ namespace TransportX.Spatial
         {
             if (sources.Count == 0) throw new ArgumentException("結合するモデルがありません。", nameof(sources));
 
+            ColliderMaterial material = sources[0].Collider.Material;
+
             int triangleCount = sources.Sum(m => m.Collider is ColliderBase<ColliderMesh> meshCollider ? meshCollider.Shape.Triangles.Length : 0);
             physicsHost.Simulation.BufferPool.Take(triangleCount, out Buffer<Triangle> combinedTriangles);
 
@@ -43,6 +45,12 @@ namespace TransportX.Spatial
             for (int i = 0; i < sources.Count; i++)
             {
                 StaticTransformedModelTemplate source = sources[i];
+
+                if (source.Collider.Material != material)
+                {
+                    physicsHost.Simulation.BufferPool.Return(ref combinedTriangles);
+                    throw new NotImplementedException("複数材質の組み合わせは未対応です。");
+                }
 
                 if (source.Collider is ColliderBase<ColliderMesh> meshCollider)
                 {
@@ -81,7 +89,6 @@ namespace TransportX.Spatial
                 boundingBox = i == 0 ? sourceBox : BoundingBox.CreateMerged(boundingBox, sourceBox);
             }
 
-            ColliderMaterial material = sources[0].Collider.Material;
             ColliderBase<ColliderMesh> newCollider = ColliderFactory.Mesh(physicsHost.Simulation, newMesh, material, new Pose(center), true);
 
             ModelResourceSet wrapperModel = new()
