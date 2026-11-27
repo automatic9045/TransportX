@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <CrossSection>
     <Vertices>
-        <Vertex Key="0" X="-12.25" Y="-10"   NormalX="-0.69" NormalY="0.73" U="-4.9" />
-        <Vertex Key="1" X="-3.25"  Y="-1.5"  NormalX="-0.62" NormalY="0.79" U="-1.3" />
-        <Vertex Key="2" X="-1.25"  Y="-0.2"  NormalX="-0.37" NormalY="0.93" U="-0.5" />
-        <Vertex Key="3" X="-0.25"  Y="-0.02" NormalX="-0.13" NormalY="0.99" U="-0.1" />
-        <Vertex Key="4" X="0"      Y="0"     NormalX="-0.08" NormalY="1"    U="0"    />
+        <Vertex Key="0" X="-12.25" Y="-10" NormalX="-0.69" NormalY="0.73" U="-4.9" Color="#FFFFFF" />
+        <Vertex Key="1" X="-3.25" Y="-1.5" NormalX="-0.62" NormalY="0.79" U="-1.3" Color="#FFFFFF" />
+        <Vertex Key="2" X="-1.25" Y="-0.2" NormalX="-0.37" NormalY="0.93" U="-0.5" Color="#FFFFFF" />
+        <Vertex Key="3" X="-0.25" Y="-0.02" NormalX="-0.13" NormalY="0.99" U="-0.1" Color="#FFFFFF" />
+        <Vertex Key="4" X="0" Y="0" NormalX="-0.08" NormalY="1" U="0" Color="#FFFFFF" />
     </Vertices>
     <Surfaces>
         <Surface VInterval="2" VOffset="0" Material="Grass" ColliderMaterial="Default">
@@ -19,9 +19,9 @@
         </Surface>
     </Surfaces>
     <Materials>
-        <Material Name="Grass" Metallic="0" Roughness="1">
-            <BaseColorTexture Path="Grass.png" />
-            <NormalTexture Path="GrassNormal.png" />
+        <Material Name="Grass" BaseColor="#FFFFFF" Metallic="0" Roughness="1" Emissive="#FFFFFF" EmissiveStrength="1">
+            <BaseColorTexture Path="Grass.png" SampleMode="Texture" />
+            <NormalTexture Path="GrassNormal.png" SampleMode="Texture" />
         </Material>
     </Materials>
     <ColliderMaterials>

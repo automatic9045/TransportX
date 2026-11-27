@@ -1,16 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <CrossSection>
     <Vertices>
-        <Vertex Key="Road0"      X="0"    Y="-0.12" NormalX="0"     NormalY="1"    U="0" />
-        <Vertex Key="Road1"      X="3.1"  Y="-0.12" NormalX="0.03"  NormalY="1"    U="2.583" />
-        
-        <Vertex Key="Apron0"     X="3.1"  Y="-0.12" NormalX="0.03"  NormalY="1"    U="0.417" />
-        <Vertex Key="Apron1"     X="3.6"  Y="-0.15" NormalX="0.06"  NormalY="1"    U="0" />
-
-        <Vertex Key="Curbstone0" X="3.6"  Y="-0.15" NormalX="-1"    NormalY="0"    U="0.21" />
-        <Vertex Key="Curbstone1" X="3.6"  Y="-0.02" NormalX="-0.92" NormalY="0.38" U="0.11" />
-        <Vertex Key="Curbstone2" X="3.62" Y="0"     NormalX="-0.38" NormalY="0.92" U="0.1" />
-        <Vertex Key="Curbstone3" X="3.75" Y="0"     NormalX="0"     NormalY="1"    U="0" />
+        <Vertex Key="Road0" X="0" Y="-0.12" NormalX="0" NormalY="1" U="0" Color="#FFFFFF" />
+        <Vertex Key="Road1" X="3.1" Y="-0.12" NormalX="0.03" NormalY="1" U="2.583" Color="#FFFFFF" />
+        <Vertex Key="Apron0" X="3.1" Y="-0.12" NormalX="0.03" NormalY="1" U="0.417" Color="#FFFFFF" />
+        <Vertex Key="Apron1" X="3.6" Y="-0.15" NormalX="0.06" NormalY="1" U="0" Color="#FFFFFF" />
+        <Vertex Key="Curbstone0" X="3.6" Y="-0.15" NormalX="-1" NormalY="0" U="0.21" Color="#FFFFFF" />
+        <Vertex Key="Curbstone1" X="3.6" Y="-0.02" NormalX="-0.92" NormalY="0.38" U="0.11" Color="#FFFFFF" />
+        <Vertex Key="Curbstone2" X="3.62" Y="0" NormalX="-0.38" NormalY="0.92" U="0.1" Color="#FFFFFF" />
+        <Vertex Key="Curbstone3" X="3.75" Y="0" NormalX="0" NormalY="1" U="0" Color="#FFFFFF" />
     </Vertices>
     <Surfaces>
         <Surface VInterval="1" VOffset="0" Material="Asphalt" ColliderMaterial="Default">
@@ -35,15 +33,15 @@
         </Surface>
     </Surfaces>
     <Materials>
-        <Material Name="Asphalt" Metallic="0" Roughness="0.7">
-            <BaseColorTexture Path="Asphalt.png" />
+        <Material Name="Asphalt" BaseColor="#FFFFFF" Metallic="0" Roughness="0.7" Emissive="#FFFFFF" EmissiveStrength="1">
+            <BaseColorTexture Path="Asphalt.png" SampleMode="Texture" />
         </Material>
-        <Material Name="Curbstone" Metallic="0" Roughness="1">
-            <BaseColorTexture Path="Curbstone.png" />
-            <OcclusionTexture Path="CurbstoneOcclusion.png" />
+        <Material Name="Curbstone" BaseColor="#FFFFFF" Metallic="0" Roughness="1" Emissive="#FFFFFF" EmissiveStrength="1">
+            <BaseColorTexture Path="Curbstone.png" SampleMode="Texture" />
+            <OcclusionTexture Path="CurbstoneOcclusion.png" SampleMode="Texture" />
         </Material>
-        <Material Name="Apron" Metallic="0" Roughness="1">
-            <BaseColorTexture Path="Curbstone.png" />
+        <Material Name="Apron" BaseColor="#FFFFFF" Metallic="0" Roughness="1" Emissive="#FFFFFF" EmissiveStrength="1">
+            <BaseColorTexture Path="Curbstone.png" SampleMode="Texture" />
         </Material>
     </Materials>
     <ColliderMaterials>

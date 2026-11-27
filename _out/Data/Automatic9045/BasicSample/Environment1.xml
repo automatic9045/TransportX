@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<EnvironmentProfile DiffuseTexturePath="hello">
+<?xml version="1.0" encoding="utf-8"?>
+<EnvironmentProfile>
     <IBL>
         <Intensity>1</Intensity>
         <Saturation>0.25</Saturation>
@@ -22,6 +22,6 @@
         <Intensity>0.2</Intensity>
         <Scatter>1</Scatter>
         <SoftKnee>0.5</SoftKnee>
-        <Tint>#ffffff</Tint>
+        <Tint>#FFFFFF</Tint>
     </Bloom>
 </EnvironmentProfile>

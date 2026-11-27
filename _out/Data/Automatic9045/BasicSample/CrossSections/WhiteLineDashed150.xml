@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <CrossSection>
     <Vertices>
-        <Vertex Key="0"  X="-0.075" Y="0.01" NormalX="0" NormalY="1" U="0" />
-        <Vertex Key="1"  X="0.075"  Y="0.01" NormalX="0" NormalY="1" U="1" />
+        <Vertex Key="0" X="-0.075" Y="0.01" NormalX="0" NormalY="1" U="0" Color="#FFFFFF" />
+        <Vertex Key="1" X="0.075" Y="0.01" NormalX="0" NormalY="1" U="1" Color="#FFFFFF" />
     </Vertices>
     <Surfaces>
         <Surface VInterval="2" VOffset="0" Material="White">
@@ -13,10 +13,9 @@
         </Surface>
     </Surfaces>
     <Materials>
-        <Material Name="White" BaseColor="#ffffff" Metallic="0" Roughness="0.8">
-            <BaseColorTexture Path="Dot.png" />
+        <Material Name="White" BaseColor="#FFFFFF" Metallic="0" Roughness="0.8" Emissive="#FFFFFF" EmissiveStrength="1">
+            <BaseColorTexture Path="Dot.png" SampleMode="Texture" />
         </Material>
     </Materials>
-    <ColliderMaterials>
-    </ColliderMaterials>
+    <ColliderMaterials />
 </CrossSection>

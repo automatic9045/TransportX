@@ -12,6 +12,7 @@ global using System.Threading.Tasks;
 
 global using TransportX;
 global using TransportX.Scripting;
+global using TransportX.Scripting.Commands;
 global using TransportX.Scripting.Worlds;
 global using TransportX.Scripting.Worlds.Commands;
 global using TransportX.Scripting.Worlds.Commands.Extensions;
@@ -30,8 +31,11 @@ CrossSections CrossSections => null!;
 Debug Debug => null!;
 DirectionalLight DirectionalLight => null!;
 WorldEnvironment Environment => null!;
+Input Input => null!;
 Models Models => null!;
 Network Network => null!;
+Signals Signals => null!;
+Sounds Sounds => null!;
 Triggers Triggers => null!;
 
-public T Component<T>() where T : class, IComponentCommand => throw new InvalidOperationException();
+public T Component<T>() where T : class, IWorldInstantiable<T>, IComponentCommand => throw new InvalidOperationException();
